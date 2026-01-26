@@ -6,44 +6,91 @@
   margin: (top: 2.5cm, bottom: 2.5cm, left: 3cm, right: 3cm),
   footer: context {
     let i = counter(page).at(here()).at(0)
-    if i > 1 {
-      set align(center)
-      counter(page).display()
-    }
+    if i > 1 [
+      #line(length: 100%, stroke: 0.5pt + gray)
+      #v(-0.5em)
+      #set text(size: 9pt, style: "italic", fill: gray.darken(30%))
+      #counter(page).display()
+    ]
   },
+  header: context {
+    if counter(page).get().first() > 1 [
+      #set text(size: 9pt, style: "italic", fill: gray.darken(30%))
+      #grid(
+        columns: (1fr, 1fr),
+        align: (left, right),
+        [IR-Board], [Javier Carrasco Arango],
+      )
+      #v(-0.5em)
+      #line(length: 100%, stroke: 0.5pt + gray)
+    ]
+  },
+  header-ascent: 30%, // Espacio entre el encabezado y el cuerpo
 )
 
 #set text(
-  size: 12pt,
+  font: "Inter",
+  size: 11pt,
 )
 
 #set par(
   justify: true,
 )
 
-#set heading(
-  numbering: "1.",
-)
-
-// Título y Estilo
-
-#v(1cm)
+#set heading(numbering: (..nums) => {
+  let n = nums.pos()
+  if n.len() == 1 {
+    return "Chapter " + str(n.at(0)) + ". "
+  } else {
+    return n.map(str).join(".") + " "
+  }
+})
 
 // ===============================
 // Portada
 // ===============================
 
-#align(center)[
-  #title()[IR-Board: Requirements Management Platform] \
-  #text(size: 14pt, style: "italic")[Documento de Especificación de TFG]
+#page(
+  background: rect(
+    width: 100% - 1.5cm,
+    height: 100% - 1.5cm,
+    stroke: 1pt + black,
+  ),
+)[
+  #set text(font: "Times New Roman", size: 14pt)
+  #grid(
+    columns: (1.25fr, 0.5fr, 1fr),
+    align: (left, right),
+    image("Emblema Universidad de Oviedo Horizontal Color.png"),
+    [],
+    image("EII_logotipo_version_principal_PREFERIDO.png"),
+  )
+  #v(1fr)
+  #align(center)[
+    UNIVERSIDAD DE OVIEDO\
+    ESCUELA DE INGENIERÍA INFORMÁTICA\
+    GRADO EN INGENIERÍA INFORMÁTICA DEL SOFTWARE
+  ]
 
+  #v(1fr)
+  #align(center)[#text()[#strong()[TRABAJO DE FIN DE GRADO]]]
 
-  \
-  #align(bottom)[
-    \
-    Universidad de Oviedo \
-    Javier Carrasco Arango - UO294532\
-    2026/01/18
+  #v(1fr)
+  #align(center)[
+    #title()[#text(size: 14pt)[IR-Board]]
+    #text()[Requirements Management Platform]
+  ]
+  #v(1fr)
+
+  #align(center + bottom)[
+    #set text(size: 11pt)
+    #strong()[Author:]\
+    Javier Carrasco Arango\
+    #strong()[Tutors:]\
+    Jorge Álvarez Fidalgo\
+    Benjamín López Pérez
+    #v(1mm)
+    #datetime.today().display()
   ]
 ]
 
@@ -58,9 +105,15 @@
   indent: auto,
   depth: 2,
 )
-
-#pagebreak()
 #counter(page).update(1)
+// función que auto separa secciones
+#show heading.where(level: 1): it => {
+  pagebreak(weak: true)
+  it
+}
+= Declaration of originality
+
+= Special thanks to
 
 = Descripción general
 
@@ -74,7 +127,8 @@ de los atributos de calidad, y dando soporte a distintas estándares y normas (g
 de la ISO 29148)
 Se incorporarán facilidades para incluir información de técnicas estáticas y dinámicas (como casos de uso,
 diagramas de flujo y tablas de decisión) y la aplicación de metodologías ágiles como las historias de usuario.
-#pagebreak()
+
+
 = Decisiones arquitectónicas
 - Debido a petición de los tutores, se decidió un sistema web sobre standalone.
 Se elige React con Material UI debido a su conocimiento previo, además de una gran versatilidad y enfoque destinado a portabilidad y adaptabilidad. Se prefiere sobre la madurez de otros frameworks como Angular, o sobre bibliotecas de componentes como Ant Design o TailwindCss debido a dicho enfoque y simplificación del desarrollo.
@@ -85,7 +139,8 @@ Se elige React con Material UI debido a su conocimiento previo, además de una g
 - Arquitectura web simulando trabajo colaborativo similar al word con los mutex a nivel de párrafo = requisito
 
 - La asociación entre elementos a fin de marcar como pendientes de revisar debe ser bidireccional, y de forma que el patrón de publicador-suscriptor debe estar unido para cada entidad. Para evitar bucles infinitos, se puede hacer una revisión por separado de una modificación, que a efectos, aplica el mutex de la misma manera, y o bien valida o modifica aquello marcado. Se ha decidido ante la visión que, aunque se pueda entrar en un bucle de modificar todo, forma parte del proceso de refinado, y es en esencia, una buena práctica.
-#pagebreak()
+
+
 = Funcionalidades de alto nivel
 == Gestión de proyectos
 - Creación de proyecto
@@ -155,7 +210,8 @@ Aparte de UUID interno y orden externo (del usuario).
 Número de versión **del PROYECTO**. Semantic versioning Major-Minor.
 - Guardado de versión
 - Recargado de versión
-#pagebreak()
+
+
 = Requisitos no funcionales
 - RN-01 Persistencia Normativa: La base de datos debe permitir la trazabilidad exigida por la ISO 29148 (id, descripción, prioridad, estado, origen, justificación).
 - RN-02 Control de Concurrencia: El sistema debe implementar un mecanismo de bloqueo a nivel de requisito (mutex) para evitar condiciones de carrera durante la edición simultánea.
