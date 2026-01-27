@@ -22,6 +22,14 @@ Se elige React con Material UI debido a su conocimiento previo, además de una g
 
 - La asociación entre elementos a fin de marcar como pendientes de revisar debe ser bidireccional, y de forma que el patrón de publicador-suscriptor debe estar unido para cada entidad. Para evitar bucles infinitos, se puede hacer una revisión por separado de una modificación, que a efectos, aplica el mutex de la misma manera, y o bien valida o modifica aquello marcado. Se ha decidido ante la visión que, aunque se pueda entrar en un bucle de modificar todo, forma parte del proceso de refinado, y es en esencia, una buena práctica.
 
+- Arquitectura de microservicios
+  -- Ory Kratos - Identification & Sessions
+  -- Ory Oathkeeper - Enforcement
+  -- Traefik - Gateway (ya tengo una mínima experiencia con este de ASR)
+- Consideraciones de la arquitectura a indicar que valoré pero descarté
+Ory Hydra - (unneeded because I'm not an identity provider)
+Ory Keto - Authorization (unneded because the role groups are simple)
+gateways Kong y Typhoon.
 
 = Funcionalidades de alto nivel
 == Gestión de proyectos
