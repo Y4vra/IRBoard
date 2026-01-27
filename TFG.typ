@@ -127,7 +127,11 @@
 == Project Context and Motivation
 
 == State of the Art and Related Work
+=== Existing Requirement Management Tools
+//TODO echar un ojo a Jira, Polarion, ReqIF / DOORS
+=== Limitations of Existing Solutions
 
+=== Key Lessons and Takeaways
 == Problem Definition
 
 == Objectives
@@ -136,25 +140,130 @@
 
 == Development Methodology and Planning
 
-= System architecture // 3
+// 3
+= System architecture
+== Overall System Architecture
+
+== Technology Stack
+
+== Infrastructure Decisions
+
+== Justification of Technology Choices
+
+// 4
+= Feasibility study
+
+== Feasibility of Alternatives
+
+== Selected Alternative and Justification
+
+== Risk Assessment (High-Level)
+
+// 5
+= Project management and planning
+== Work Breakdown Structure (WBS)
+
+== Risk Management
+
+== Timeline and Milestones
+
+== Budget and Resources
+
+== Lessons Learned / Reflection
+
+// 6
+= System analysis
+== System Definition
+
+=== Determination of System Scope
+
+=== System Context Diagram
+
+== Requirements Elicitation and Specification
+
+=== Functional Requirements
+
+=== Non-Functional Requirements
+
+=== Actors and Use Cases
+
+== Analysis of Subsystems
+
+=== Subsystem Description
+
+=== Interfaces Between Subsystems
+
+== Use Case Analysis
+
+=== Use Case 1
+
+=== Use Case 2
+
+== Class Analysis
+
+=== Class Diagrams
+
+=== Class Descriptions
+
+== User Interface Definition
+
+=== Layout and Components
+
+=== Interaction Design
+
+=== Navigation Flow
+
+== Test Planning
+
+=== Unit Test Plan
+
+=== Integration Test Plan
+
+=== System Test Plan
+
+// 7
+= System design
+== Use Case Design
+
+== Class Design
+
+== Module Architecture Design
+
+== Data Design (Database / ER diagrams)
 
 
-= Feasibility study // 4
+== Detailed Test Plan / Test Cases
 
+// 8
+= System implementation
+== Development Environment Setup
 
-= Project management and planning // 5
+== Code Implementation
 
+== Unit Testing
 
-= System analysis // 6
+== Integration Testing
 
+== System Testing
 
-= System design // 7
+=== Usability Tests
 
+=== Accessibility Tests
 
-= System implementation // 8
+== User and Developer Manuals
 
+== Migration Scripts Implementation
 
-= Deployment and system acceptance // 9
+// 9
+= Deployment and system acceptance
+== Deployment Plan
 
+== Acceptance Testing
 
-= Conclusions and future work // 10
+== Maintenance Considerations
+
+// 10
+= Conclusions and future work
+== Conclusions
+
+== Future Work / Enhancements
