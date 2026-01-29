@@ -20,16 +20,32 @@ Se elige React con Material UI debido a su conocimiento previo, además de una g
 
 - Arquitectura web simulando trabajo colaborativo similar al word con los mutex a nivel de párrafo = requisito
 
-- La asociación entre elementos a fin de marcar como pendientes de revisar debe ser bidireccional, y de forma que el patrón de publicador-suscriptor debe estar unido para cada entidad. Para evitar bucles infinitos, se puede hacer una revisión por separado de una modificación, que a efectos, aplica el mutex de la misma manera, y o bien valida o modifica aquello marcado. Se ha decidido ante la visión que, aunque se pueda entrar en un bucle de modificar todo, forma parte del proceso de refinado, y es en esencia, una buena práctica.
+- La asociación entre elementos a fin de marcar como pendientes de revisar debe ser bidireccional, y de forma que el patrón observer debe estar unido para cada entidad. Para evitar bucles infinitos, se puede hacer una revisión por separado de una modificación, que a efectos, aplica el mutex de la misma manera, y o bien valida o modifica aquello marcado. Se ha decidido ante la visión que, aunque se pueda entrar en un bucle de modificar todo, forma parte del proceso de refinado, y es en esencia, una buena práctica.
 
 - Arquitectura de microservicios
-  -- Ory Kratos - Identification & Sessions
+  // red public
+  -- Traefik        - Gateway (ya tengo una mínima experiencia con este de ASR)
+  -- React          - frontend
+  // red internal
+  -- Ory Kratos     - Identification & Sessions
   -- Ory Oathkeeper - Enforcement
-  -- Traefik - Gateway (ya tengo una mínima experiencia con este de ASR)
+  -- springboot     - backend con el RMS
+  -- PostgreSQL     - BD Identidad para Ory Kratos
+  -- PostgreSQL     - BD del RMS
+  -- Loki           - Logging centralizado
+  -- Promtail       - Agente que recolecta los logs para Loki
+  -- Grafana        - Dashboard para métricas y logs de Loki
 - Consideraciones de la arquitectura a indicar que valoré pero descarté
 Ory Hydra - (unneeded because I'm not an identity provider)
 Ory Keto - Authorization (unneded because the role groups are simple)
 gateways Kong y Typhoon.
+
+- Elegí microservicios por una mayor escalabilidad e integración más sencilla con servicios existentes.
+- Elegí hacer uso de sistemas ya probados de seguridad modulares, como Ory, así como la gateway de traefik, debido a la complejidad, trabajo añadido y probablemente menor eficiencia que tendría crearlos por mi cuenta. Asimismo, evitarlo me asegura un proyecto más sólido, con más facilidad de añadir nuevas funcionalidades, más seguro, y más eficiente.
+
+- Elección de postgre como base de datos relacional debido a que el dominio es estable, se trata de requisitos y datos a guardar considerados estándar, y debido a su integración preferida por Ory. Además, permite usar columnas JSONB, que ofrecen la flexibilidad de bases de datos NoSQL para tener atributos personalizados. Por último, tiene una buena integración con un driver de mucha madurez con springboot.
+
+- Elegí separar en dos redes la arquitectura para dar una mayor seguridad a la arquitectura siguiendo el principio de menor privilegio.
 
 = Funcionalidades de alto nivel
 == Gestión de proyectos
@@ -53,13 +69,13 @@ gateways Kong y Typhoon.
   - Flagging de otros que lo referencien
 - Añadido de requisito
   - El guardado del requisito lo envía al servidor y pasa a ser modificado de un requisito existente.
-  - Linking con stakeholder (Observer pattern)
+  - Linking con stakeholder
   - Linking con otros requisitos
 - Modificado de requisito
   - Mutex de edición, otros usuarios no puede editar este requisito hasta su liberación.
     - Se libera el requisito tras un timeout de inactividad.
     - Se libera el requisito si se intenta modificar otro requisito diferente.
-  - Linking con stakeholder (Observer pattern)
+  - Linking con stakeholder
   - Linking con otros requisitos
   - Al guardado con cambios, debe marcarse el material asociado como pendiente de revisar
 - Revisión de material marcado como pendiente de revisar
@@ -97,7 +113,7 @@ Definición de plantillas o proyectos abstractos.
 En la industria se tira por copia y pega.
 == Control de versiones
 Aparte de UUID interno y orden externo (del usuario).
-Número de versión **del PROYECTO**. Semantic versioning Major-Minor.
+Número de versión del PROYECTO. Semantic versioning Major-Minor.
 - Guardado de versión
 - Recargado de versión
 

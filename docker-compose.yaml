@@ -1,0 +1,134 @@
+version: '3.8'
+
+networks:
+  public:
+    driver: bridge
+  internal:
+    driver: bridge
+
+services:
+  # --- GATEWAY ---
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080" # Dashboard de Traefik
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - public
+
+  # --- IDENTITY (ORY) ---
+  kratos-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${KRATOS_DB_USER}
+      - POSTGRES_PASSWORD=${KRATOS_DB_PASSWORD}
+      - POSTGRES_DB=${KRATOS_DB_NAME}
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KRATOS_DB_USER} -d ${KRATOS_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  kratos:
+    image: oryd/kratos:latest
+    depends_on:
+      kratos-db:
+        condition: service_healthy
+    environment:
+      # Paso la URL de conexión construida con las variables
+      - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
+    volumes:
+      - ./config/kratos:/etc/config/kratos
+    command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
+    networks:
+      - internal
+      - public
+
+  oathkeeper:
+    image: oryd/oathkeeper:latest
+    depends_on:
+      - kratos
+    volumes:
+      - ./config/oathkeeper:/etc/config/oathkeeper
+    command: serve proxy -c /etc/config/oathkeeper/oathkeeper.yaml
+    networks:
+      - public
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`)"
+
+  # --- BUSINESS LOGIC ---
+  rms-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${RMS_DB_USER}
+      - POSTGRES_PASSWORD=${RMS_DB_PASSWORD}
+      - POSTGRES_DB=${RMS_DB_NAME}
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${RMS_DB_USER} -d ${RMS_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    depends_on:
+      rms-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://rms-db:5432/${RMS_DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${RMS_DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
+    networks:
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${API_DOMAIN}`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+
+  frontend:
+    build: ./frontend
+    networks:
+      - public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+  # --- OBSERVABILITY ---
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    ports:
+      - "3000:3000"
+    networks:
+      - public
+      - internal
+  
+  
+  loki:
+    image: grafana/loki:latest
+    networks:
+      - internal
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - internal
