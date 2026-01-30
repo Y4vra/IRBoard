@@ -48,19 +48,35 @@ gateways Kong y Typhoon.
 - Elegí separar en dos redes la arquitectura para dar una mayor seguridad a la arquitectura siguiendo el principio de menor privilegio.
 
 = Funcionalidades de alto nivel
-== Gestión de proyectos
+== project management
 - Creación de proyecto
 - Borrado de proyecto
 - Modificado de proyecto
-- Asignación de proyecto a usuarios
+- The system must allow to link users with a project
+  - The system must allow an admin to link users to a project as project manager
+  - The system must allow a project manager to link users to a project as requirement engineers.
 - Vista general de proyecto
   - % de requisitos aprobados
   - Requisitos pendientes de revisión
-== Gestión de stakeholders
-- Añadido de stakeholder
+== Stakeholders management
+- Creation of stakeholder
+  - The system must ask for the following:
+    - Name
+    - Description
+    - TODO
 - Borrado de stakeholder
-- Modificado de stakeholder
-  - Flagging de requisitos asociados a revisar.
+  - The system must show the amount of elements affected by the deletion
+  - The system must ask for confirmation before deleting
+- Modifying a stakeholder
+  - The system must deny editing a stakeholder to other users when one is doing so.
+    - The system must free the stakeholder after a predetermined inactivity timeout.
+    - The system must free the stakeholder if the user editing it begins to edit another.
+  - The system must flag linked entities upon saving with changes.
+- Visualización de asociados
+  - El sistema debe mostrar los requisitos asociados al stakeholder
+- Linking
+  - el sistema debe permitir asociar stakeholders a requisitos
+  - el sistema debe permitir desasociar stakeholders de requisitos
 == Gestión de requisitos
 - Visión de requisito
   - Si otro usuario está editando el requisito, otros usuarios lo verán en modo lectura, con un indicador de quién lo está editando.
@@ -68,24 +84,28 @@ gateways Kong y Typhoon.
   - Debe exigirse una confirmación
   - Flagging de otros que lo referencien
 - Añadido de requisito
-  - El guardado del requisito lo envía al servidor y pasa a ser modificado de un requisito existente.
-  - Linking con stakeholder
-  - Linking con otros requisitos
-- Modificado de requisito
-  - Mutex de edición, otros usuarios no puede editar este requisito hasta su liberación.
-    - Se libera el requisito tras un timeout de inactividad.
-    - Se libera el requisito si se intenta modificar otro requisito diferente.
-  - Linking con stakeholder
-  - Linking con otros requisitos
-  - Al guardado con cambios, debe marcarse el material asociado como pendiente de revisar
+  - The system must assign automatically the identifier
+    - The identifier must be based on its relation to other requirements.
+  - The system must allow the user to generate a requirement as a child of another requirement.
+- Linking
+  - The system must allow to link a requirement with a stakeholder
+  - The system must allow to un-link a requirement with a stakeholder
+  - The system must allow to link a requirement with other requirements
+  - The system must allow to un-link a requirement with other requirements
+- Modifying a requirement
+  - The system must deny editing a requirement to other users when one is doing so.
+    - The system must free the requirement after a predetermined inactivity timeout.
+    - The system must free the requirement if the user editing it begins to edit another.
+  - The system must flag linked entities upon saving with changes.
 - Revisión de material marcado como pendiente de revisar
   - Se permite o bien modificar el requisito o marcarlo como correcto.
 - Filtrado
-  - Según orden natural
-  - Según orden
-== Gestión de usuarios
-- Añadido de usuario
-  - Niveles de permiso: (Admin - (proyectos, gest. usuarios, asignado gestor proyecto), gestor de proyecto - (asignar usuarios como ingeniero requisitos), ingeniero requisitos - (gestión de requisitos de medio - bajo), Usuario stakeholder (solo permiso de visión))
+  - El usuario debe poder reorganizar los requisitos según un orden lógico
+  - (future work) The system must allow a user to search requirements by text
+== User management
+- The system must allow an admin to add new users to the system
+  - The system must provide different levels of authorisation.
+    - The system must have the levels: Admin, project manager, requirement engineer and stakeholder
 - Borrado de usuario
 - Modificado de usuario
 - Asignación de usuarios
@@ -106,17 +126,21 @@ gateways Kong y Typhoon.
 - Borrado
 - Modelado de diagramas mediante integración de Draw.io
 
+== Control de versiones
+Aparte de UUID interno y orden de usuario.
+Número de versión del PROYECTO. Semantic versioning Major-Minor.
+- Guardado de versión
+- Recargado de versión
+
+== Soporte a normas
+- El sistema debe dar soporte a las guías del IEEE 830
+- El sistema debe dar sooporte a el estándar de la ISO 29148
+
 == Control de variantes
 Muy ambicioso solo si voy bien de tiempo.
 Tenerlo en cuenta aunque no lo implemente, reutilización de requisitos.
 Definición de plantillas o proyectos abstractos.
 En la industria se tira por copia y pega.
-== Control de versiones
-Aparte de UUID interno y orden externo (del usuario).
-Número de versión del PROYECTO. Semantic versioning Major-Minor.
-- Guardado de versión
-- Recargado de versión
-
 
 = Requisitos no funcionales
 - RN-01 Persistencia Normativa: La base de datos debe permitir la trazabilidad exigida por la ISO 29148 (id, descripción, prioridad, estado, origen, justificación).
