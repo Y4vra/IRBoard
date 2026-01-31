@@ -49,7 +49,7 @@ gateways Kong y Typhoon.
 
 = Funcionalidades de alto nivel
 == project management
-- Creación de proyecto
+- The system must allow an admin to create a project
 - Borrado de proyecto
 - Modificado de proyecto
 - The system must allow to link users with a project
@@ -71,37 +71,79 @@ gateways Kong y Typhoon.
   - The system must deny editing a stakeholder to other users when one is doing so.
     - The system must free the stakeholder after a predetermined inactivity timeout.
     - The system must free the stakeholder if the user editing it begins to edit another.
-  - The system must flag linked entities upon saving with changes.
+  - The system must flag as pending review linked entities upon saving with changes.
 - Visualización de asociados
   - El sistema debe mostrar los requisitos asociados al stakeholder
 - Linking
   - el sistema debe permitir asociar stakeholders a requisitos
   - el sistema debe permitir desasociar stakeholders de requisitos
-== Gestión de requisitos
-- Visión de requisito
-  - Si otro usuario está editando el requisito, otros usuarios lo verán en modo lectura, con un indicador de quién lo está editando.
-- Borrado de requisito
-  - Debe exigirse una confirmación
-  - Flagging de otros que lo referencien
-- Añadido de requisito
+== Requirement management
+- The system must allow users linked to a project access to its contents
+  - The system must show if a user is modifying a requirement
+    - The system must show who is modifying that requirement
+  - The system must show if a requirement is flagged as pending review
+  - The system must show the identifier, the name and part of the description
+  - The system must allow to collapse and expand requirements with children
+  - The system must allow to view the details of a requirement
+    - The system must show:
+      - All atributes of a requirement
+      - All elements linked to it
+  - The system must show if a non functional requirement is passed or not
+  - The system must allow filtering the requirements
+    - The system must allow a requirement engineer or a project manager to reorder requirements
+    - The system must allow any user to filter the requirements based on MOSCOW priority
+    - (future work) The system must allow a user to search requirements by text
+- The system must allow a requirement engineer or a project manager to delete a requirement on a project
+  - The system must only allow a requirement to be deleted from a project by a user linked to said project.
+  - The system must only allow a requirement engineer to delete a requirement as high as the level set on the project settings
+  - The system must ask for confirmation
+  - The system must flag any element linked to the deleted requirement as pending review
+- The system must allow a requirement engineer or a project manager to add a requirement to a project
+  - The system must only allow a requirement to be added to a project the user is linked to.
+  - The system must only allow a requirement engineer to add a requirement as high as the level set on the project settings
+  - The system must allow the user to generate a requirement as a child of another requirement.
   - The system must assign automatically the identifier
     - The identifier must be based on its relation to other requirements.
-  - The system must allow the user to generate a requirement as a child of another requirement.
+    - The identifier must represent if it is a functional or non functional requirement (FR or NFR)
+    - The identifier must represent the folder/component that holds the requirement (user management -> UM)
+  - The system must ask for the following data for a functional requirement:
+    - The following are required:
+      - Name
+      - Description
+      - a priority
+        - The system must allow MOSCOW categories (either Must, Should, Could or Won't have)
+        - The system must allow to set a priority value from 1-5 with the MOSCOW value
+    - The following are not required:
+      - Stability
+      - Origin
+  - The system must ask for the following data for a non functional requirement:
+    - The following are required:
+      - Name
+      - Description
+      - Measurement unit
+      - comparison operator
+        - equal to, less than or greater than
+      - Threshold value
+        - This value represents the minimum value to mark the requirement as passed
+      - Target value
+        - This value represents the optimal value desired by the team
+      - Actual value
+        - This value represents the current status of the measurement
+
 - Linking
   - The system must allow to link a requirement with a stakeholder
   - The system must allow to un-link a requirement with a stakeholder
   - The system must allow to link a requirement with other requirements
   - The system must allow to un-link a requirement with other requirements
-- Modifying a requirement
+- The system must allow a requirement engineer or a project manager to modify a requirement on a project
+  - The system must only allow modifying a requirement of a project by a user linked to said project.
+  - The system must only allow a requirement engineer to modify a requirement as high as the level set on the project settings
   - The system must deny editing a requirement to other users when one is doing so.
     - The system must free the requirement after a predetermined inactivity timeout.
     - The system must free the requirement if the user editing it begins to edit another.
-  - The system must flag linked entities upon saving with changes.
+  - The system must flag linked entities as pending review upon saving with changes.
 - Revisión de material marcado como pendiente de revisar
   - Se permite o bien modificar el requisito o marcarlo como correcto.
-- Filtrado
-  - El usuario debe poder reorganizar los requisitos según un orden lógico
-  - (future work) The system must allow a user to search requirements by text
 == User management
 - The system must allow an admin to add new users to the system
   - The system must provide different levels of authorisation.
@@ -114,7 +156,7 @@ gateways Kong y Typhoon.
     - Puede asignar permisos de acceso a editar según que niveles de la estructura (requisitos de alto - medio - bajo).
     - Puede asignar permisos de gestor de archivos (añadir, borrar, editar)
     - (Opcional) Generar un grupo con conjunto de permisos (copiar a linux)
-== Gestión de documentos asociados y modelado (Integración Draw.io)
+== Document management and modelling
 - Visión de documento
   - Visión de asociados
 - Añadido de documento
@@ -122,9 +164,29 @@ gateways Kong y Typhoon.
   - A otro documento
   - A uno/s requisito/s
 - Modificación
-  - Flagging de documento al cambiar un requisito/funcionalidad asociada
+  - The system must flag as pending review any elements linked to the document
 - Borrado
-- Modelado de diagramas mediante integración de Draw.io
+- The system must allow a requirement engineer to model diagrams using a Draw.io integration
+- (future work) The system must allow a requirement engineer fill a tabular use case
+  - The system must have the following fields:
+    - Name
+    - Description
+    - Actors
+    - Initial Condition
+    - Preconditions
+    - Postconditions
+    - Normal flow
+    - Alternative flows
+    - Exceptions
+- (future work) The system must allow a requirement engineer fill a scenario
+  - The system must have the following fields:
+    - Name
+    - Description
+    - Actors
+    - Initial Condition
+    - Preconditions
+    - Postconditions
+    - Flow
 
 == Control de versiones
 Aparte de UUID interno y orden de usuario.

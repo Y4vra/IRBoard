@@ -161,6 +161,8 @@
 
 // 5
 = Project management and planning
+== Project planning
+=== ?
 == Work Breakdown Structure (WBS)
 
 == Risk Management
