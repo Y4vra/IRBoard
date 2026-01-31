@@ -47,6 +47,10 @@ gateways Kong y Typhoon.
 
 - Elegí separar en dos redes la arquitectura para dar una mayor seguridad a la arquitectura siguiendo el principio de menor privilegio.
 
+- 2026/01/31 I decided that when flagging an element, it will have a is_suspect boolean value, and a impact_summary field. Whenever a new flagging occcurs, it will simply check the flag and set it if its flase, and append why to the impact_summary. Reviewing it removes everything in its impact_summary field.
+
+- 2026/01/31 I decided that to ensure natural ordering for a better UX, the identifiers are calculated on the frontend virtually. To ensure a way to order, the entities will have both a UUID and a sort_order field, with float values. if an element were to be placed between element 1 and 2, its sort_order would be its mid point: 1.5. To ensure a problem would not happen, if the difference between two numbers is less than a constant, a re-normalization would ocurr, iterating over all elements and setting their sort_order to their integer index.
+
 = Funcionalidades de alto nivel
 == project management
 - The system must allow an admin to create a project
@@ -59,24 +63,35 @@ gateways Kong y Typhoon.
   - % de requisitos aprobados
   - Requisitos pendientes de revisión
 == Stakeholders management
-- Creation of stakeholder
+- The system must allow any user linked with the project access to view its stakeholders
+  - The system must show if a user is modifying a stakeholder
+    - The system must show who is modifying that stakeholder
+  - The system must show if a stakeholder is flagged as pending review
+  - The system must show the identifier, the name and part of the description
+  - The system must allow to collapse and expand stakeholders with children
+  - The system must allow to view the details of a stakeholder
+    - The system must show:
+      - All atributes of a stakeholder
+      - All elements linked to it
+- The system must allow a project manager to add a new stakeholder to a project
+  - The system must only allow a stakeholder to be added to a project the user is linked to.
   - The system must ask for the following:
     - Name
     - Description
-    - TODO
-- Borrado de stakeholder
-  - The system must show the amount of elements affected by the deletion
+  - The system must generate the identifier for the stakeholder
+- Linking
+  - el sistema debe permitir asociar stakeholders a requisitos
+  - el sistema debe permitir desasociar stakeholders de requisitos
+- The system must allow a project manager to delete a stakeholder from a project
+  - The system must only allow a requirement to be deleted from a project by a user linked to said project.
+  - The system must show the user the amount of entities affected by the deletion
   - The system must ask for confirmation before deleting
+  - The system must flag all entities linked as pending review
 - Modifying a stakeholder
   - The system must deny editing a stakeholder to other users when one is doing so.
     - The system must free the stakeholder after a predetermined inactivity timeout.
     - The system must free the stakeholder if the user editing it begins to edit another.
   - The system must flag as pending review linked entities upon saving with changes.
-- Visualización de asociados
-  - El sistema debe mostrar los requisitos asociados al stakeholder
-- Linking
-  - el sistema debe permitir asociar stakeholders a requisitos
-  - el sistema debe permitir desasociar stakeholders de requisitos
 == Requirement management
 - The system must allow users linked to a project access to its contents
   - The system must show if a user is modifying a requirement
@@ -93,11 +108,6 @@ gateways Kong y Typhoon.
     - The system must allow a requirement engineer or a project manager to reorder requirements
     - The system must allow any user to filter the requirements based on MOSCOW priority
     - (future work) The system must allow a user to search requirements by text
-- The system must allow a requirement engineer or a project manager to delete a requirement on a project
-  - The system must only allow a requirement to be deleted from a project by a user linked to said project.
-  - The system must only allow a requirement engineer to delete a requirement as high as the level set on the project settings
-  - The system must ask for confirmation
-  - The system must flag any element linked to the deleted requirement as pending review
 - The system must allow a requirement engineer or a project manager to add a requirement to a project
   - The system must only allow a requirement to be added to a project the user is linked to.
   - The system must only allow a requirement engineer to add a requirement as high as the level set on the project settings
@@ -129,12 +139,17 @@ gateways Kong y Typhoon.
         - This value represents the optimal value desired by the team
       - Actual value
         - This value represents the current status of the measurement
-
 - Linking
   - The system must allow to link a requirement with a stakeholder
   - The system must allow to un-link a requirement with a stakeholder
   - The system must allow to link a requirement with other requirements
   - The system must allow to un-link a requirement with other requirements
+- The system must allow a requirement engineer or a project manager to delete a requirement on a project
+  - The system must only allow a requirement to be deleted from a project by a user linked to said project.
+  - The system must only allow a requirement engineer to delete a requirement as high as the level set on the project settings
+  - The system must show the user the amount of entities that will be affected by the deletion
+  - The system must ask for confirmation
+  - The system must flag any element linked to the deleted requirement as pending review
 - The system must allow a requirement engineer or a project manager to modify a requirement on a project
   - The system must only allow modifying a requirement of a project by a user linked to said project.
   - The system must only allow a requirement engineer to modify a requirement as high as the level set on the project settings
