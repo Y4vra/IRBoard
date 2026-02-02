@@ -51,17 +51,25 @@ gateways Kong y Typhoon.
 
 - 2026/01/31 I decided that to ensure natural ordering for a better UX, the identifiers are calculated on the frontend virtually. To ensure a way to order, the entities will have both a UUID and a sort_order field, with float values. if an element were to be placed between element 1 and 2, its sort_order would be its mid point: 1.5. To ensure a problem would not happen, if the difference between two numbers is less than a constant, a re-normalization would ocurr, iterating over all elements and setting their sort_order to their integer index.
 
+- 2026/02/02 I decided that the project, before a baseline is saved, will allow reordering of requirements, which will make requirements have a dynamic semantic ID (FR-UM-1.5 -> fuctional requirement user management 1.5). This ensures a better UX until it is reasonable that the project is past its inception, and then will lock the semantic IDs once the first baseline is set. Any semantic ID used before, even if deactivated, won't be used again, ensuring compliance with ISO 29148 and its traceability.
+
+- 2026/02/02 I decided that in order to comply with ISO 29148, the system can't allow any user to deactivate anything, but rather deactivate it.
 = Funcionalidades de alto nivel
 == project management
 - The system must allow an admin to create a project
+- The system must allow a project manager to add a functionality to a project
+- The system must allow a project manager to modify a functionality TODO
 - Borrado de proyecto
 - Modificado de proyecto
 - The system must allow to link users with a project
   - The system must allow an admin to link users to a project as project manager
   - The system must allow a project manager to link users to a project as requirement engineers.
-- Vista general de proyecto
-  - % de requisitos aprobados
-  - Requisitos pendientes de revisión
+- The system must allow access to the project description/dashboard to users linked to it.
+  - The system must show the percentage of passed requirements
+  - The system must show the amount of requirements pending a review
+  - The system must show the different functionalities of the project
+- The system must allow a project manager to generate a baseline for a project.
+  - The system must perform a snapshot of the project once a baseline is set.
 == Stakeholders management
 - The system must allow any user linked with the project access to view its stakeholders
   - The system must show if a user is modifying a stakeholder
@@ -82,10 +90,10 @@ gateways Kong y Typhoon.
 - Linking
   - el sistema debe permitir asociar stakeholders a requisitos
   - el sistema debe permitir desasociar stakeholders de requisitos
-- The system must allow a project manager to delete a stakeholder from a project
-  - The system must only allow a requirement to be deleted from a project by a user linked to said project.
-  - The system must show the user the amount of entities affected by the deletion
-  - The system must ask for confirmation before deleting
+- The system must allow a project manager to deactivate a stakeholder from a project
+  - The system must only allow a requirement to be deactivated from a project by a user linked to said project.
+  - The system must show the user the amount of entities affected by the deactivations
+  - The system must ask for confirmation before deactivating
   - The system must flag all entities linked as pending review
 - Modifying a stakeholder
   - The system must deny editing a stakeholder to other users when one is doing so.
@@ -144,12 +152,12 @@ gateways Kong y Typhoon.
   - The system must allow to un-link a requirement with a stakeholder
   - The system must allow to link a requirement with other requirements
   - The system must allow to un-link a requirement with other requirements
-- The system must allow a requirement engineer or a project manager to delete a requirement on a project
-  - The system must only allow a requirement to be deleted from a project by a user linked to said project.
-  - The system must only allow a requirement engineer to delete a requirement as high as the level set on the project settings
-  - The system must show the user the amount of entities that will be affected by the deletion
+- The system must allow a requirement engineer or a project manager to deactivate a requirement on a project
+  - The system must only allow a requirement to be deactivated from a project by a user linked to said project.
+  - The system must only allow a requirement engineer to deactivate a requirement as high as the level set on the project settings
+  - The system must show the user the amount of entities that will be affected by the deactivation
   - The system must ask for confirmation
-  - The system must flag any element linked to the deleted requirement as pending review
+  - The system must flag any element linked to the deactivated requirement as pending review
 - The system must allow a requirement engineer or a project manager to modify a requirement on a project
   - The system must only allow modifying a requirement of a project by a user linked to said project.
   - The system must only allow a requirement engineer to modify a requirement as high as the level set on the project settings
@@ -203,16 +211,6 @@ gateways Kong y Typhoon.
     - Postconditions
     - Flow
 
-== Control de versiones
-Aparte de UUID interno y orden de usuario.
-Número de versión del PROYECTO. Semantic versioning Major-Minor.
-- Guardado de versión
-- Recargado de versión
-
-== Soporte a normas
-- El sistema debe dar soporte a las guías del IEEE 830
-- El sistema debe dar sooporte a el estándar de la ISO 29148
-
 == Control de variantes
 Muy ambicioso solo si voy bien de tiempo.
 Tenerlo en cuenta aunque no lo implemente, reutilización de requisitos.
@@ -223,4 +221,3 @@ En la industria se tira por copia y pega.
 - RN-01 Persistencia Normativa: La base de datos debe permitir la trazabilidad exigida por la ISO 29148 (id, descripción, prioridad, estado, origen, justificación).
 - RN-02 Control de Concurrencia: El sistema debe implementar un mecanismo de bloqueo a nivel de requisito (mutex) para evitar condiciones de carrera durante la edición simultánea.
 - RN-03 Disponibilidad y Web: Acceso multiplataforma mediante navegador, garantizando un diseño responsive gracias a Material UI.
-- RN-04
