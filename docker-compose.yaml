@@ -127,8 +127,14 @@ services:
 
   promtail:
     image: grafana/promtail:latest
+    container_name: promtail
+    user: root # Possible threat, but added as hardening the project's observability is beyond the project's scope
     volumes:
-      - /var/log:/var/log
+      - ./config/promtail/promtail-config.yaml:/etc/promtail/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yaml
     networks:
       - internal
+    depends_on:
+      - loki
