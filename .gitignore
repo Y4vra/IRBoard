@@ -21,3 +21,15 @@ docker-compose.override.yml
 *.swp
 .DS_Store
 Thumbs.db
+
+**/node_modules/
+**/dist/
+
+**/target/
+**/build/
+*.jar
+*.war
+
+.mvn/
+mvnw
+mvnw.cmd

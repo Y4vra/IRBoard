@@ -7,13 +7,14 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  # --- ANÁLISIS DEL BACKEND (JAVA) ---
   backend-analysis:
     name: Backend Quality (Spring Boot)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # allows sonar to compare versions
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -26,20 +27,22 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          cd backend/IRBoard-backend
-          ./mvnw verify sonar:sonar \
+          cd backend
+          # Usamos 'mvn' porque ignoramos 'mvnw'. Eliminamos 'IRBoard-backend' de la ruta.
+          mvn verify sonar:sonar \
             -Dsonar.projectKey=Y4vra_IRBoard_Backend \
             -Dsonar.organization=y4vra \
             -Dsonar.host.url=https://sonarcloud.io
 
+  # --- ANÁLISIS DEL FRONTEND (REACT + TS) ---
   frontend-analysis:
     name: Frontend Quality (React)
     runs-on: ubuntu-latest
-    # Only executes if a change happens on frontend
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -47,4 +50,15 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './frontend/package-lock.json'
 
-      # Placeholder, poner los comandos de npm install, test y el scanner de Sonar para JS
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: frontend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
