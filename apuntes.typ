@@ -53,12 +53,22 @@ gateways Kong y Typhoon.
 
 - 2026/02/02 I decided that the project, before a baseline is saved, will allow reordering of requirements, which will make requirements have a dynamic semantic ID (FR-UM-1.5 -> fuctional requirement user management 1.5). This ensures a better UX until it is reasonable that the project is past its inception, and then will lock the semantic IDs once the first baseline is set. Any semantic ID used before, even if deactivated, won't be used again, ensuring compliance with ISO 29148 and its traceability.
 
-- 2026/02/02 I decided that in order to comply with ISO 29148, the system can't allow any user to deactivate anything, but rather deactivate it.
+- 2026/02/02 I decided that in order to comply with ISO 29148, the system can't allow any user to delete anything, but rather deactivate it.
+
+- 2026/02/05 Along with my tutors, we decided to always allow reordering of entities, with the corresponding modification of the entity's dynamic id. This was done to prioritize UX. To comply with ISO 29148's trazability, it will be implemented via the internal UUID; To ensure users can follow this trazability, the system will show both the dynamically generated id and the internal UUID of the entities, and the system will allow to search by UUID.
+
+- 2026/02/05 Along with my tutors, we decided to add a set of states for all entities of a project, as suggested by the lifecycle of an element on ISO 29148. The flagging as pending a review will be absorved into this system.
+
+- 2026/02/05 Along with my tutors, we decided that for now, all documents linked to a project are global and accesible by those linked to said project. Access control for these elements falls beyond the scope of this project.
+
+- 2026/02/05 Along with my tutors, we decided that the linking will be first via a context menu, and if the project advances at a sufficiently rapid pace, implement a markdown style linking. The linking between elements will be unidirectional after all, as linking a requirement to another does not imply that the observed requirement is affected by the observer, and similarly with linking to a stakeholder or to a document, the recipient of the observation is most of the times, unlikely to change, and when it does is when one would be interested in being notified.
+
+- 2026/02/06 requirement engineer will have acess via linking with read or write acess to each functionality on a project, not level access. This is done to avoid breaking the workflow due to a req. engineer needing to modify a parent and not being able to do so.
+
+-2026/02/06 las dependencias a usar en el backend de springboot son Lombok, Spring Web, Spring Boot DevTools, H2 Database, Spring Data JPA, PostgreSQL Driver, y Validation.
 = Functional requirements of the system
 == project management
 - The system must allow an admin to create a project
-- The system must allow a project manager to add a functionality to a project
-- The system must allow a project manager to modify a functionality TODO
 - The system must allow an admin to deactivate a project
 - The system must allow an admin to modify a project
 - The system must allow to link users with a project
@@ -68,6 +78,16 @@ gateways Kong y Typhoon.
   - The system must show the percentage of passed requirements
   - The system must show the amount of requirements pending a review
   - The system must show the different functionalities of the project
+- The system must allow a project manager to add a functionality to a project
+  - A functionality needs a name and unique set of letters for its dynamic identifier.
+  - The system must automatically attempt to get the letters for the dynamic identifier from the name
+    - The system must take the first letter from every word in the name.
+    - If the identifier is already in use by another functionality on the same project, the system will suggest one letter more of each word on the name.
+    - If the system cannot generate a new set of letters to identify its requirements, a message must be shown to the project manager.
+  - The system must check the letters for the identifier are not the same from another functionality on the same project.
+    - The system must deny adding a functionality that breaks the rule above.
+- The system must allow a project manager to modify a functionality.
+- The system must allow a project manager to deactivate a functionality.
 - The system must allow a project manager to generate a baseline for a project.
   - The system must perform a snapshot of the project once a baseline is set.
 == Stakeholders management

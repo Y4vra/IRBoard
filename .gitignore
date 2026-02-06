@@ -1,1 +1,23 @@
+# Local binary database data
+postgres_data/
+kratos_data/
+loki_data/
+grafana_data/
+*.db
+*.log
+
+# --- Secrets & local conf ---
 .env
+*.env.local
+docker-compose.override.yml
+
+# Temp folders of sonarcloud
+.sonar/
+.scannerwork/
+
+# --- IDEs and OS ---
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

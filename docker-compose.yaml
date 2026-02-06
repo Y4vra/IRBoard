@@ -93,6 +93,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
     networks:
       - internal
+      - public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${API_DOMAIN}`)"
