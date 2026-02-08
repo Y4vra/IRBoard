@@ -2,6 +2,14 @@
 
 **IR-Board** es una plataforma web integral para la gestión de requisitos de software. Su objetivo es cerrar la brecha entre los estándares de ingeniería (IEEE 830, ISO 29148) y las metodologías ágiles, proporcionando un entorno colaborativo en tiempo real con trazabilidad total.
 
+## Estado del proyecto
+
+El proyecto es analizado por Sonarcloud para asegurar un buen desarrollo y calidad.
+### Estado del frontend
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Y4vra_IRBoard_Frontend&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Y4vra_IRBoard_Frontend)
+### Estado del backend
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Y4vra_IRBoard_Backend&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Y4vra_IRBoard_Backend)
+
 ## ✨ Características Principales
 
 * **Gestión Normativa:** Soporte nativo para estándares **IEEE 830** e **ISO 29148**.
