@@ -128,7 +128,6 @@
 
 == State of the Art and Related Work
 === Existing Requirement Management Tools
-//TODO echar un ojo a Jira, Polarion, ReqIF / DOORS
 === Limitations of Existing Solutions
 
 === Key Lessons and Takeaways

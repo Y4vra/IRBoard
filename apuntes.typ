@@ -69,14 +69,26 @@ gateways Kong y Typhoon.
 = Functional requirements of the system
 == project management
 - The system must allow an admin to create a project
+  - The following are required:
+    - Project name
+    - Description
+    - Owner
 - The system must allow an admin to deactivate a project
-- The system must allow an admin to modify a project
+  - The system must put the project on read only mode for those linked to it
+- The system must allow an admin to reactivate a deactivated project
+- The system must allow an admin to modify an active project
+  - The system must forbid other users from modifying the entity
+    - The system must release automatically the entity upon saving
+    - The system must release automatically the entity after a predetermined timeout period
+    - The system must release automatically the entity if the user editing it modifies another entity
+    - The system must only accept changes to the entity from the user who holds the entity
+  - The system must display for other users who is modifying the entity
 - The system must allow to link users with a project
   - The system must allow an admin to link users to a project as project manager
+  - The system must allow an admin or project manager linked to the project to link users to a functionality on said project as a stakeholder user
   - The system must allow a project manager to link users to one or more functionalities of a project as requirement engineers.
-- The system must allow access to the project description/dashboard to users linked to it.
-  - The system must show the percentage of passed requirements
-  - The system must show the amount of requirements pending a review
+- The system must allow access to the project description/dashboard to users linked to it or a functionality of it.
+  - The system must show the total split of requirements by their states (pie chart)
   - The system must show the different functionalities of the project
 - The system must allow a project manager to add a functionality to a project
   - A functionality needs a name and unique set of letters for its dynamic identifier.
@@ -86,47 +98,53 @@ gateways Kong y Typhoon.
     - If the system cannot generate a new set of letters to identify its requirements, a message must be shown to the project manager.
   - The system must check the letters for the identifier are not the same from another functionality on the same project.
     - The system must deny adding a functionality that breaks the rule above.
+  - The system must automatically link the project manager to the new functionality
 - The system must allow a project manager to modify a functionality.
+  - The system must forbid other users from modifying the entity
+    - The system must release automatically the entity upon saving
+    - The system must release automatically the entity after a predetermined timeout period
+    - The system must release automatically the entity if the user editing it modifies another entity
+    - The system must only accept changes to the entity from the user who holds the entity
+  - The system must display for other users who is modifying the entity
 - The system must allow a project manager to deactivate a functionality.
+- The system must allow a project manager to reactivate a functionality.
 - The system must allow a project manager to generate a baseline for a project.
   - The system must perform a snapshot of the project once a baseline is set.
+- The system must allow a project manager to export the project's requirements onto a pdf file
 == Stakeholders management
 - The system must allow any user linked with the project access to view its stakeholders
-  - The system must show if a user is modifying a stakeholder
-    - The system must show who is modifying that stakeholder
   - The system must show if a stakeholder is flagged as pending review
   - The system must show the identifier, the name and part of the description
   - The system must allow to collapse and expand stakeholders with children
   - The system must allow to view the details of a stakeholder
     - The system must show:
       - All atributes of a stakeholder
-      - All elements linked to it
+      - All requirements linked to it
 - The system must allow a project manager to add a new stakeholder to a project
   - The system must only allow a stakeholder to be added to a project the user is linked to.
   - The system must ask for the following:
     - Name
     - Description
   - The system must generate the identifier for the stakeholder
-- The system must allow a project manager or requirement engineer to link a stakeholder to a requirement
-  - The linking must be between two entities sharing project
-  - The system must only allow a requirement engineer to perform the action on a level as high as the level set on the project settings
-  - The system must allow linking a stakeholder to one or more requirements
-  - The system must allow unlinking a stakeholder from one or more requirements
+- The system must allow a project manager or requirement engineer to link a stakeholder to one or more requirements on the same project
+  - The system must only allow the user to link the stakeholder to a requirement on a functionality they are linked to
+- The system must allow a project manager or requirement engineer to unlink a stakeholder from one or more requirements
+  - The system must only allow the user to unlink a stakeholder from a requirement of a functionality they are linked to.
 - The system must allow a project manager to deactivate a stakeholder from a project
   - The system must only allow a requirement to be deactivated from a project by a user linked to said project.
   - The system must show the user the amount of entities affected by the deactivations
   - The system must ask for confirmation before deactivating
   - The system must flag all entities linked as pending review
 - The system must allow a project manager or requirement engineer to modify a stakeholder
-  - The system must deny editing a stakeholder to other users when one is doing so.
-    - The system must free the stakeholder after a predetermined inactivity timeout.
-    - The system must free the stakeholder if the user editing it begins to edit another.
-  - The system must only allow a requirement engineer to perform the action on a level as high as the level set on the project settings
+  - The system must forbid other users from modifying the entity
+    - The system must release automatically the entity upon saving
+    - The system must release automatically the entity after a predetermined timeout period
+    - The system must release automatically the entity if the user editing it modifies another entity
+    - The system must only accept changes to the entity from the user who holds the entity
+  - The system must display for other users who is modifying the entity
   - The system must flag as pending review linked entities upon saving with changes.
 == Requirement management
 - The system must allow users linked to a project access to its contents
-  - The system must show if a user is modifying a requirement
-    - The system must show who is modifying that requirement
   - The system must show if a requirement is flagged as pending review
   - The system must show the identifier, the name and part of the description
   - The system must allow to collapse and expand requirements with children
@@ -140,8 +158,7 @@ gateways Kong y Typhoon.
     - The system must allow any user to filter the requirements based on MOSCOW priority
     - (future work) The system must allow a user to search requirements by text
 - The system must allow a requirement engineer or a project manager to add a requirement to a project
-  - The system must only allow a requirement to be added to a project the user is linked to.
-  - The system must only allow a requirement engineer to perform the action on a level as high as the level set on the project settings
+  - The system must only allow a requirement to be added to a project on a functionality the user is linked to.
   - The system must allow the user to generate a requirement as a child of another requirement.
   - The system must assign automatically the identifier
     - The identifier must be based on its relation to other requirements.
@@ -171,26 +188,24 @@ gateways Kong y Typhoon.
       - Actual value
         - This value represents the current status of the measurement
 - The system must allow a project manager or requirement engineer to link a requirement to another entity
-  - The system must only allow a requirement engineer to perform the action on a level as high as the level set on the project settings
   - The system must allow to link a requirement with a stakeholder
   - The system must allow to un-link a requirement with a stakeholder
   - The system must allow to link a requirement with other requirements
   - The system must allow to un-link a requirement with other requirements
 - The system must allow a requirement engineer or a project manager to deactivate a requirement on a project
   - The system must only allow a requirement to be deactivated from a project by a user linked to said project.
-  - The system must only allow a requirement engineer to perform the action on a level as high as the level set on the project settings
   - The system must show the user the amount of entities that will be affected by the deactivation
   - The system must ask for confirmation
   - The system must flag any element linked to the deactivated requirement as pending review
 - The system must allow a requirement engineer or a project manager to modify a requirement on a project
-  - The system must only allow modifying a requirement of a project by a user linked to said project.
-  - The system must only allow a requirement engineer to modify a requirement as high as the level set on the project settings
-  - The system must deny editing a requirement to other users when one is doing so.
-    - The system must free the requirement after a predetermined inactivity timeout.
-    - The system must free the requirement if the user editing it begins to edit another.
+  - The system must forbid other users from modifying the entity
+    - The system must release automatically the entity upon saving
+    - The system must release automatically the entity after a predetermined timeout period
+    - The system must release automatically the entity if the user editing it modifies another entity
+    - The system must only accept changes to the entity from the user who holds the entity
+  - The system must display for other users who is modifying the entity
   - The system must flag linked entities as pending review upon saving with changes.
 - The system must allow a project manager or requirement engineer to review an requirement flagged as pending a review
-  - The system must only allow a requirement engineer to perform the action on a level as high as the level set on the project settings
   - The system must allow removing the flag if no changes are required.
   - The system must allow modifying the requirement upon review.
     - The system must remove the flag upon saving with changes.
@@ -202,15 +217,17 @@ gateways Kong y Typhoon.
 - The system must allow an admin to deactivate a user from the system
 - The system must allow an admin to modify a user from the system
 == Document management and modelling
-- Visión de documento
-  - Visión de asociados
-- Añadido de documento
-- Asociado de documento
-  - A otro documento
-  - A uno/s requisito/s
-- Modificación
-  - The system must flag as pending review any elements linked to the document
-- Borrado
+- The system must allow users linked to a project access to documents of that project
+  - The system must show entities linked to the document.
+- The system must allow a project manager or a requirement engineer to add document to a project
+  - The user must be linked to the project
+- The system must allow a document to be linked to one or more requirements of the same project
+  - The system must flag those requirements linked to it as pending a review if the document is altered
+- The system must allow a project manager or requirement engineer to update a document
+  - The user must be linked to the project the document is on.
+  - The system must flag as pending a review any requirements linked to the document
+- The system must allow a project manager to disable a document
+  - The system must flag as pending a review any requirements linked to the document
 - The system must allow a requirement engineer to model diagrams using a Draw.io integration
 - (future work) The system must allow a requirement engineer fill a tabular use case
   - The system must have the following fields:
@@ -233,11 +250,11 @@ gateways Kong y Typhoon.
     - Postconditions
     - Flow
 
-== Control de variantes
-Muy ambicioso solo si voy bien de tiempo.
-Tenerlo en cuenta aunque no lo implemente, reutilización de requisitos.
-Definición de plantillas o proyectos abstractos.
-En la industria se tira por copia y pega.
+== Variant control
+Highly ambitious—only if time permits.
+Keep this in mind even if not implemented: requirement reuse.
+Defining templates or abstract projects.
+In the industry, "copy and paste" is the standard approach.
 
 = Requisitos no funcionales
 - RN-01 Persistencia Normativa: La base de datos debe permitir la trazabilidad exigida por la ISO 29148 (id, descripción, prioridad, estado, origen, justificación).
