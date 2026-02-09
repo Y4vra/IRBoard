@@ -130,8 +130,7 @@ gateways Kong y Typhoon.
   - The system must only allow the user to link the stakeholder to a requirement on a functionality they are linked to
 - The system must allow a project manager or requirement engineer to unlink a stakeholder from one or more requirements
   - The system must only allow the user to unlink a stakeholder from a requirement of a functionality they are linked to.
-- The system must allow a project manager to deactivate a stakeholder from a project
-  - The system must only allow a requirement to be deactivated from a project by a user linked to said project.
+- The system must allow a project manager to deactivate a stakeholder from a project the user is linked to
   - The system must show the user the amount of entities affected by the deactivations
   - The system must ask for confirmation before deactivating
   - The system must flag all entities linked as pending review
@@ -144,26 +143,37 @@ gateways Kong y Typhoon.
   - The system must display for other users who is modifying the entity
   - The system must flag as pending review linked entities upon saving with changes.
 == Requirement management
-- The system must allow users linked to a project access to its contents
-  - The system must show if a requirement is flagged as pending review
-  - The system must show the identifier, the name and part of the description
+- The system must allow users linked to a project or functionality of a project access to its requirements
+  - The system must only allow users linked to the functionality of a functional requirement access to it
   - The system must allow to collapse and expand requirements with children
+  - The system must show the dynamic identifier, the name, state and part of the description
+    - The system must show as "state" on a non-functional requirement whether it is passed or not
   - The system must allow to view the details of a requirement
     - The system must show:
+      - The internal unique identifier
       - All atributes of a requirement
-      - All elements linked to it
-  - The system must show if a non functional requirement is passed or not
-  - The system must allow filtering the requirements
-    - The system must allow a requirement engineer or a project manager to reorder requirements
-    - The system must allow any user to filter the requirements based on MOSCOW priority
+      - All stakeholders linked to it
+      - All requirements cross-linked with it
+      - All documents linked to it
+      - The previous dynamic identifiers
+  - The system must allow users to filter the requirements they have access to
+    - The system must allow searching by internal unique identifier.
+    - The system must allow users to filter the requirements on a functionality they are linked to
+    - The system must allow users to filter the non-functional requirements of a project they are linked to
+    - The system must allow filtering the requirements based on MOSCOW priority
+    - The system must allow filtering the requirements based on state
     - (future work) The system must allow a user to search requirements by text
-- The system must allow a requirement engineer or a project manager to add a requirement to a project
-  - The system must only allow a requirement to be added to a project on a functionality the user is linked to.
-  - The system must allow the user to generate a requirement as a child of another requirement.
-  - The system must assign automatically the identifier
+- The system must allow a requirement engineer or a project manager to add a requirement to a project the user is linked to
+  - The system must only allow a functional requirement to be added to a functionality the user is linked to.
+  - The system must allow the user to generate a requirement as a child of another requirement (nesting).
+  - The system must assign automatically the dynamic identifier
     - The identifier must be based on its relation to other requirements.
     - The identifier must represent if it is a functional or non functional requirement (FR or NFR)
     - The identifier must represent the folder/component that holds the requirement (user management -> UM)
+  - The system must assign automatically the internal unique identifier
+    - The identifier must represent in some way the project that will hold the requirement
+    - The identifier must represent in some way whether the requirement is functional or non functional
+    - The identifier must have a random element to ensure a low colision rate
   - The system must ask for the following data for a functional requirement:
     - The following are required:
       - Name
@@ -187,35 +197,56 @@ gateways Kong y Typhoon.
         - This value represents the optimal value desired by the team
       - Actual value
         - This value represents the current status of the measurement
-- The system must allow a project manager or requirement engineer to link a requirement to another entity
-  - The system must allow to link a requirement with a stakeholder
+- The system must allow a project manager or requirement engineer to link a requirement on a functionality they are linked to, to another entity
+  - The system must allow to link a requirement with a stakeholder of the same project
   - The system must allow to un-link a requirement with a stakeholder
-  - The system must allow to link a requirement with other requirements
-  - The system must allow to un-link a requirement with other requirements
-- The system must allow a requirement engineer or a project manager to deactivate a requirement on a project
-  - The system must only allow a requirement to be deactivated from a project by a user linked to said project.
+  - The system must allow to link a requirement with one or more requirements of functionalities of the same project the user is linked to
+  - The system must allow to un-link a requirement with other requirements of functionalities of the same project the user is linked to
+  - The system must allow to link a requirement with one or more documents of the same project.
+  - The system must allow to un-link a requirement with one or more documents of the same project.
+- The system must allow a requirement engineer or a project manager to deactivate a functional requirement on a functionality they are linked to
   - The system must show the user the amount of entities that will be affected by the deactivation
   - The system must ask for confirmation
-  - The system must flag any element linked to the deactivated requirement as pending review
+  - The system must flag any requirements linked to the deactivated requirement as pending review
+- The system must allow a requirement engineer or a project manager to reactivate a requirement on a functionality they are linked to
+  - The system must show the user the amount of entities that will be affected by the reactivation
+  - The system must ask for confirmation
+  - The system must flag any requirements linked to the reactivated requirement as pending review
 - The system must allow a requirement engineer or a project manager to modify a requirement on a project
+  - The system must only allow a project manager or requirement engineer to modify functional requiremets of a functionality the user is linked to.
   - The system must forbid other users from modifying the entity
     - The system must release automatically the entity upon saving
     - The system must release automatically the entity after a predetermined timeout period
     - The system must release automatically the entity if the user editing it modifies another entity
     - The system must only accept changes to the entity from the user who holds the entity
   - The system must display for other users who is modifying the entity
-  - The system must flag linked entities as pending review upon saving with changes.
+  - The system must flag linked requirements as pending review upon saving with changes.
+- The system must allow a project manager or requirement engineer linked to a functionality of the project to change the position of a requirement
+  - The system must allow reordering of functional requirements to users linked to the same functionality.
+  - The system must update the dynamic identifier automatically
+  - The system must set the order of requirements using a floating point order value
 - The system must allow a project manager or requirement engineer to review an requirement flagged as pending a review
   - The system must allow removing the flag if no changes are required.
   - The system must allow modifying the requirement upon review.
     - The system must remove the flag upon saving with changes.
     - The system must flag the linked entities as pending a review.
 == User management
-- The system must allow an admin to add new users to the system
+- The system must allow an admin to invite new users to the system
   - The system must provide different levels of authorisation.
-    - The system must have the levels: Admin, project manager, requirement engineer and stakeholder
+    - The system must have the levels: Admin, project manager, requirement engineer and stakeholder user
+  - The system must ask the admin to set the name, surname, and email of the invited user
+    - The system must generate an signup code as a temporal password
+    - The system must automatically send an invitation with the signup code to the email of the invited user
+- The system must allow an admin to modify the name and surname of a user from the system
+- The system must allow an admin to generate a new invite with a signup code for a user
+- The system must allow any user with valid credentials to sign in to the system
+  - The system must prompt any user signing in with a signup code to set a permanent password.
+    - The system must ensure the password is between 15 and 64 characters long.
+    - The system must make use of a random salt specific of each user.
+    - The system must remove any password or signup code of the user upon seting a permanent password.
+  - The system must temporally block the user after 3 consecutive failed attempts
 - The system must allow an admin to deactivate a user from the system
-- The system must allow an admin to modify a user from the system
+- The system must allow an admin to reactivate a user from the system
 == Document management and modelling
 - The system must allow users linked to a project access to documents of that project
   - The system must show entities linked to the document.
