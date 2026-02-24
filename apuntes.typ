@@ -71,3 +71,35 @@ gateways Kong y Typhoon.
 - RN-01 Persistencia Normativa: La base de datos debe permitir la trazabilidad exigida por la ISO 29148 (id, descripción, prioridad, estado, origen, justificación).
 - RN-02 Control de Concurrencia: El sistema debe implementar un mecanismo de bloqueo a nivel de requisito (mutex) para evitar condiciones de carrera durante la edición simultánea.
 - RN-03 Disponibilidad y Web: Acceso multiplataforma mediante navegador, garantizando un diseño responsive gracias a Material UI.
+
+== Future Work / Enhancements
+=== Document management
+- (future work) The system must allow a requirement engineer fill a tabular use case
+  - The system must have the following fields:
+    - Name
+    - Description
+    - Actors
+    - Initial Condition
+    - Preconditions
+    - Postconditions
+    - Normal flow
+    - Alternative flows
+    - Exceptions
+- (future work) The system must allow a requirement engineer fill a scenario
+  - The system must have the following fields:
+    - Name
+    - Description
+    - Actors
+    - Initial Condition
+    - Preconditions
+    - Postconditions
+    - Flow
+- The system must allow a project manager generate a customized pdf of requirements for a stakeholder
+- The system must allow a project manager define a stencil for pdf generation of the srs export
+=== Variant control
+Highly ambitious—only if time permits.
+Keep this in mind even if not implemented: requirement reuse.
+Defining templates or abstract projects.
+In the industry, "copy and paste" is the standard approach.
+=== Search and filtering
+The system must allow a user to search requirements by text
