@@ -1,9 +1,11 @@
 @startuml ArchitectureC2
 title Architecture diagram (IR-Board)
 
+actor user
+
 ' Redes (Networks)
 package "Network: public" #line.dotted {
-    [React Frontend] as spa
+    [RMS Frontend] as front
     [Traefik] as gateway
 }
 
@@ -11,7 +13,7 @@ package "Network: internal" #AliceBlue {
     [Ory Oathkeeper] as proxy
     [Ory Kratos] as kratos
     [Ory Keto] as keto
-    [Spring Boot Backend] as backend
+    [RMS Backend] as backend
     [Loki]
     [Grafana]
     [Promtail]
@@ -22,18 +24,20 @@ package "Network: internal" #AliceBlue {
 }
 
 ' Conexiones de tráfico
-spa --> gateway 
-gateway --> proxy 
+user -down-> gateway
+gateway -down-> front 
+gateway -down--> proxy 
 
 ' Consultas internas Ory
-proxy --> kratos 
-proxy --> keto 
+proxy -> kratos 
+proxy -left-> keto 
+proxy .> Grafana
 
 ' Paso final al Backend
-proxy --> backend
+proxy -down-> backend
 
 ' Persistencia
-backend .right.> keto : Write Tuples (GRPC)
+backend .> keto : Write Tuples (GRPC)
 
 backend -down-> db_rms
 kratos -down-> db_auth
@@ -43,10 +47,10 @@ keto -down-> db_perm
 
 Grafana --> Loki
 Promtail ..> Loki : deliver logs
-Promtail ..> kratos : observes
-Promtail ..> keto : observes
-Promtail ..> backend : observes
-Promtail .left.> proxy : observes
+Promtail ..> kratos
+Promtail ..> keto
+Promtail ..> backend
+Promtail .left.> proxy
 
 
 @enduml

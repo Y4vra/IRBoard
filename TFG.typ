@@ -573,32 +573,46 @@ It's a complex state to ease development, as the pending review can be seen as a
 
 === Supporting Information
 
-== Test Plan Analysis
+#text(green)[== Test Plan Analysis]
+To ensure the reliability, maintainability, and performance of the IR-Board system, a multi-dimensional testing strategy has been defined. This plan covers the entire development lifecycle, from code quality to system behavior under stress.
+
+=== Code maintainability and unit testing with SonarQube
+The project utilizes SonarQube as a Static Application Security Testing (SAST) tool. This analysis is integrated into the development workflow to ensure the following:
+- Maintainability: Identification of "code smells" and technical debt that could hinder future scalability.
+- Code Coverage Validation: Monitoring the percentage of the source code executed during automated tests. This ensures that critical business logic is thoroughly verified, maintaining a high safety net against regressions and establishing a minimum threshold of tested code before deployment.
+- Reliability: Detection of potential bugs and logic errors through automated pattern matching.
+- Security: Scanning for common vulnerabilities and ensuring compliance with industry standards (e.g., OWASP Top 10).
+
+=== Load testing
+For the load testing phase, the primary focus will be on stressing the critical entry points of the system, specifically the traffic flow passing through Traefik and Oathkeeper toward the Spring Boot backend. The goal is to simulate bursts of concurrent users to identify the exact point where identity validation latency begins to degrade the user experience or if Kratos' session management can handle the expected volume. This process goes beyond checking for server crashes; it involves using the Grafana stack to monitor how container resources scale and ensuring the internal network routing maintains stability under heavy pressure.
+
+=== Usability testing
+Regarding usability testing, the plan involves observing real users interacting with the React interface to validate that the integration of Grafana dashboards feels intuitive and seamless. Special attention will be paid to how easily users can navigate between Loki logs and the core business logic, ensuring that the underlying complexity of the microservices architecture remains completely transparent to the end user. The ultimate objective is to confirm that authentication flows do not create unnecessary friction and that the frontend information hierarchy allows for efficient data management without requiring prior technical knowledge from the operator.
 
 = System Design //6
 
 #text(green)[== System Architecture]
-In this project, I will be using a microservices approach to ensure security and flexibility in a reasonable manner. Furthermore, to provide a better level of security while restricting the scope of the project, I delegated these responsabilities to third-party microservices.
+The system architecture follows a Microservices approach based on the Zero Trust security model. This ensures flexibility and scalability while maintaining a high level of isolation between business logic and infrastructure concerns. To guarantee a professional security standard while maintaining a manageable project scope, core identity and access management responsibilities have been delegated to the Ory Open Source ecosystem.
 
 #figure(image("docs/diagrams/ArchitectureC2.svg"), caption: "Architecture C2 component diagram")
 
-#strong[Traefik] -
+#strong[Traefik] - Acts as the system's entry point and TLS Termination Proxy. It handles dynamic routing and load balancing, effectively hiding the internal network topology and eliminating the need to expose multiple ports to the public internet.
 
-#strong[React] -
+#strong[RMS Frontend] - Built with React and TypeScript, served as static content. It executes within the user's browser and communicates with the backend services through the API Gateway.
 
-#strong[Ory Oathkeeper] -
+#strong[Ory Oathkeeper] - A policy-enforcement engine that acts as a gatekeeper between the public and internal networks. It intercepted every request to validate session integrity (via Kratos) and fine-grained permissions (via Keto) before allowing traffic to reach the internal services.
 
-#strong[Ory Keto] -
+#strong[Ory Keto] - A relationship-based access control (ReBAC) server inspired by Google’s Zanzibar. It manages permission tuples, allowing the system to verify complex authorization rules (e.g., checking if a user is linked to a specific project).
 
-#strong[Ory Kratos] -
+#strong[Ory Kratos] - Manages the full identity lifecycle, including user registration, multi-factor authentication, and session management, ensuring that sensitive credentials are handled by a specialized security component.
 
-#strong[Springboot backend] -
+#strong[RMS Backend] - The core service developed using Spring Boot, containing the domain-specific business logic and data persistence.
 
-#strong[Promtail] -
+#strong[Promtail] - An agent that ships local logs from the various microservices to the central store. and sends them to Loki.
 
-#strong[Loki] -
+#strong[Loki] - A horizontally scalable, highly available log aggregation system.
 
-#strong[Grafana] -
+#strong[Grafana] - A visualization platform used to build observability dashboards. In this architecture, it is placed within the internal network and accessed through the Identity Proxy to ensure that system logs are only visible to authorized personnel.
 
 == Real Use Case Design
 
