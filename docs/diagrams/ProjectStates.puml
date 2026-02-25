@@ -1,0 +1,27 @@
+@startuml ProjectStates
+title Lifecycle of a Project (IR-Board)
+
+state Active
+
+State Closed: Completed/finished
+
+State Deactivated: Cancelled/postponed
+
+State Removed: Hidden from sight, archived
+
+
+' Transiciones
+[*] -down-> Active: Project creation
+
+Active -right-> Closed
+Closed -left-> Active
+
+Active --> Deactivated
+Deactivated --> Active
+
+Deactivated --> Removed
+Removed --> Deactivated
+
+Removed --> [*]: Purged from archive
+
+@enduml

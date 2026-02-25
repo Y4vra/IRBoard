@@ -51,7 +51,6 @@ services:
     command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
     networks:
       - internal
-      - public
 
   oathkeeper:
     image: oryd/oathkeeper:latest
@@ -93,7 +92,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
     networks:
       - internal
-      - public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${API_DOMAIN}`)"
@@ -114,6 +112,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - ./config/grafana/:/var/lib/grafana/
     ports:
       - "3000:3000"
     networks:

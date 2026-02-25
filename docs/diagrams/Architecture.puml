@@ -1,0 +1,52 @@
+@startuml ArchitectureC2
+title Architecture diagram (IR-Board)
+
+' Redes (Networks)
+package "Network: public" #line.dotted {
+    [React Frontend] as spa
+    [Traefik] as gateway
+}
+
+package "Network: internal" #AliceBlue {
+    [Ory Oathkeeper] as proxy
+    [Ory Kratos] as kratos
+    [Ory Keto] as keto
+    [Spring Boot Backend] as backend
+    [Loki]
+    [Grafana]
+    [Promtail]
+    
+    database "PostgreSQL (RMS)" as db_rms
+    database "PostgreSQL (Identity)" as db_auth
+    database "PostgreSQL (Permissions)" as db_perm
+}
+
+' Conexiones de tráfico
+spa --> gateway 
+gateway --> proxy 
+
+' Consultas internas Ory
+proxy --> kratos 
+proxy --> keto 
+
+' Paso final al Backend
+proxy --> backend
+
+' Persistencia
+backend .right.> keto : Write Tuples (GRPC)
+
+backend -down-> db_rms
+kratos -down-> db_auth
+keto -down-> db_perm
+
+' Observabilidad
+
+Grafana --> Loki
+Promtail ..> Loki : deliver logs
+Promtail ..> kratos : observes
+Promtail ..> keto : observes
+Promtail ..> backend : observes
+Promtail .left.> proxy : observes
+
+
+@enduml

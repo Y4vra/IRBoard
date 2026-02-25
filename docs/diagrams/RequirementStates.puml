@@ -1,40 +1,39 @@
 @startuml RequirementStates
 title Lifecycle of a Requirement (IR-Board)
 
-state PendingApproval
-
-state PendingReview {
-  PendingReview : Flagged due to changes in 
-  PendingReview : linked Stakeholders/Docs/Requirements
+state PendingApproval{
+  state Reviewed : By default
+  state PendingReview {
+    PendingReview : Flagged due to changes in 
+    PendingReview : linked Stakeholders/Docs/Requirements
+  }
 }
 
 state Approved
-note right of Approved
-  These have been validated 
-  by the appropiate stakeholders 
-  with the project manager 
-  outside the system
-end note
+state Closed: Finished, implemented
 
-state Deactivated{
-  Deactivated : Read-only mode
-}
+state Deactivated : Read-only mode
+
+state Removed: Archived, hidden from view
+
 
 ' Transiciones
-[*] --> PendingApproval : Requirement is created and saved
+[*] -down-> PendingApproval : Requirement is created and saved
 
-PendingReview --> PendingApproval : Review completed (modifying it or accepting it)
-PendingApproval --> PendingReview 
+PendingReview -up-> Reviewed : Review completed (modifying it or accepting it)
 
-PendingApproval --> Approved 
-Approved --> PendingApproval : modified
-Approved --> PendingReview
+PendingApproval -right-> Approved 
+Approved -up-> PendingApproval : modified
 
-PendingApproval --> Deactivated 
-PendingReview --> Deactivated 
+Approved -right-> Closed : completed
+Closed -left-> PendingApproval : modified
 
-Approved --> Deactivated 
+PendingApproval -down-> Deactivated 
+Deactivated -up-> PendingApproval
 
-Deactivated --> PendingReview 
+Deactivated -down-> Removed
+Removed -up-> Deactivated
+
+Removed -down->[*]
 
 @enduml

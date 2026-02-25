@@ -176,10 +176,44 @@ It has been adapted and modified to fit the specific needs of the project during
 
 == Input Documentation
 
-== Users and Characteristics
+#text(green)[== Users and Characteristics]
+In this project, instead of conventional system-wide roles, the approach I found fit best the nature of requirement management systems was a relation-based role system. Therefore, two sets of user permissions can be defined: system-level permissions and project-level permissions.
+#figure(
+  table(columns: 2)[#strong[User]][#strong[Description]][Admin][Has access to project creation, deactivation, purge of removed projects... Still needs a project role to add to or modify a project, even if created by himself. Can link users as project manager to a project.][Basic][A basic user, the default. Has access to his profile management.],
+  caption: "List of permission levels on the system",
+)
+A user is either an admin or not. Due to zero-trust, unless he is added as project manager to it he wont be able to modify any project, even if it was created by himself.
+#figure(
+  table(columns: 2)[#strong[User]][#strong[Description]][ProjectManager][Access to add, edit and disable functionalities, requirements within those functionalities, documents, and can link users to that project.][RequirementEngineer][Linked to a functionality, has access to add, modify and disable requirements in that functionality, as well as with documents linked to the project.][Stakeholder][Linked to a functionality, has read-only access to the requirements of that functionality, and documents linked to the project.],
+  caption: "List of permissions within a project",
+)
+These permissions overlap, in case a user is linked to a project in several ways. In that situation, due to this overlap, the most high level permission prevails.
 
-== Requirements Analysis
+For example, if a user is listed as requirement engineer and stakeholder in the same functionality, the user will be able to view (both permissions), and add, modify, disable and all other requirement engineer actions as well.
+
+#text(green)[== Requirements Analysis]
+Here are presented some diagrams that helped during the requirement edduction process.
+
+#figure(image("docs/diagrams/ProjectStates.svg"), caption: "Lifecicle of a project entity")
+#strong[Active] - A project entity that is currently in progress.
+
+#strong[Closed] - A project entity that has been finished. As the nature of a project is that one never ends, it does not represent an end state.
+
+#strong[Deactivated] - A project entity that has been cancelled, postponed etc; A project that is not finished but is not currently in use.
+
+#strong[Removed] - A project entity that has been archived for removal, placed in the trash bin in case it is needed as last resort.
+
 #figure(image("docs\diagrams\RequirementStates.svg"), caption: "Requirement entity's state diagram")
+#strong[PendingApproval] - A requirement entity that has not been validated by a stakeholder as it currently is.
+It's a complex state to ease development, as the pending review can be seen as an extension of itself, and therefore can be a simple boolean flag.
+
+#strong[PendingReview] - A requirement entity that needs attention and possible modification, due to a change on a linked entity. Expected to be purely a flag.
+
+#strong[Approved] - A requirement entity that has been validated by the appropiate stakeholders with the project manager outside the system.
+
+#strong[Deactivated] - A requirement entity has been deactivated for some reason, be cancelled or an error, and does not count towards the metrics of the project.
+
+#strong[Removed] - A requirement entity that has been deemed innecessary to the project. It is hidden from view, archived.
 
 == System Analysis
 
@@ -253,6 +287,7 @@ It has been adapted and modified to fit the specific needs of the project during
   [The system must allow access to the project description/dashboard to users linked to it or a functionality of it.],
   (
     [The system must show the total split of requirements by their states (pie chart)],
+    text(green)[The system must not take into account deactivated requirements toward any metric],
     [The system must show the different functionalities of the project],
   ),
   [The system must allow a project manager to mark as approved all elements in a project],
@@ -388,12 +423,20 @@ It has been adapted and modified to fit the specific needs of the project during
     [The system must allow to link a requirement with one or more documents of the same project.],
     [The system must allow to un-link a requirement with one or more documents of the same project.],
   ),
-  [The system must allow a requirement engineer or a project manager to deactivate a requirement on a functionality they are linked to],
+  text(
+    green,
+  )[The system must allow a requirement engineer or a project manager to deactivate a requirement pending approval on a functionality they are linked to],
   (
     [The system must show the user the amount of entities that will be affected by the deactivation],
     [The system must ask for confirmation],
     [The system must flag any requirements linked to the deactivated requirement as pending review],
     [The system must put the requirement on read only],
+  ),
+  text(
+    green,
+  )[The system must allow a project manager or requirement engineer to set a deactivated requirement as removed],
+  (
+    text(green)[The system must hide from view a removed requirement, effectively archiving it],
   ),
   [The system must allow a requirement engineer or a project manager to reactivate a requirement on a functionality they are linked to],
   (
@@ -408,6 +451,11 @@ It has been adapted and modified to fit the specific needs of the project during
   (
     [The system must only allow to mark as approved a requirement that is pending approval, not pending review nor deactivated.],
   ),
+  text(green)[The system must allow a project manager to mark as closed a requirement],
+  (
+    text(green)[The system must set the requirement as pending approval if it is modified.],
+  ),
+
   [The system must allow a project manager or requirement engineer linked to a functionality of the project to change the position of a requirement],
   (
     [The system must allow reordering of functional requirements to users linked to the same functionality.],
@@ -438,7 +486,9 @@ It has been adapted and modified to fit the specific needs of the project during
       [The system must automatically send an invitation with the signup code to the email of the invited user],
     ),
   ),
+  text(green)[The system must allow an admin to view the name and surname of a user from the system],
   [The system must allow an admin to modify the name and surname of a user from the system],
+  text(green)[The system must allow an admin to view the current permissions of a user from the system],
   [The system must allow an admin to generate a new invite with a signup code for a user],
   [The system must allow any user with valid credentials to sign in to the system],
   (
@@ -527,7 +577,28 @@ It has been adapted and modified to fit the specific needs of the project during
 
 = System Design //6
 
-== System Architecture
+#text(green)[== System Architecture]
+In this project, I will be using a microservices approach to ensure security and flexibility in a reasonable manner. Furthermore, to provide a better level of security while restricting the scope of the project, I delegated these responsabilities to third-party microservices.
+
+#figure(image("docs/diagrams/ArchitectureC2.svg"), caption: "Architecture C2 component diagram")
+
+#strong[Traefik] -
+
+#strong[React] -
+
+#strong[Ory Oathkeeper] -
+
+#strong[Ory Keto] -
+
+#strong[Ory Kratos] -
+
+#strong[Springboot backend] -
+
+#strong[Promtail] -
+
+#strong[Loki] -
+
+#strong[Grafana] -
 
 == Real Use Case Design
 

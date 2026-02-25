@@ -29,8 +29,10 @@ Se elige React con Material UI debido a su conocimiento previo, además de una g
   // red internal
   -- Ory Kratos     - Identification & Sessions
   -- Ory Oathkeeper - Enforcement
+  -- Ory Keto       - Manages complex
   -- springboot     - backend con el RMS
   -- PostgreSQL     - BD Identidad para Ory Kratos
+  -- PostgreSQL     - BD de tuplas para Ory Keto
   -- PostgreSQL     - BD del RMS
   -- Loki           - Logging centralizado
   -- Promtail       - Agente que recolecta los logs para Loki
