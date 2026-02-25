@@ -258,6 +258,10 @@ It's a complex state to ease development, as the pending review can be seen as a
   name: "SF_List",
   list-style: "SF.1.1.1.",
 )
+#let O_List = efilrst.reflist.with(
+  name: "O_List",
+  list-style: "O.1.1.1.",
+)
 ==== project management
 #PM_List(
   [The system must allow an admin to create a project],
@@ -561,6 +565,14 @@ It's a complex state to ease development, as the pending review can be seen as a
     [Any filter must be reversible; ascending or descending order],
   ),
 )
+#text(green)[
+  ==== Observability
+  #O_List(
+    [The system must allow an admin to acess an observability dashboard with information logs],
+    [The system must allow an admin to monitor the health and performance metrics of the microservices infrastructure],
+    [The system must allow an admin to query and visualize logs from all system components],
+  )]
+
 === Usability Requirements
 
 === Performance Requirements
