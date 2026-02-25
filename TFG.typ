@@ -141,11 +141,21 @@ It has been adapted and modified to fit the specific needs of the project during
   it
 }
 
-= Introduction // 1
 #set page(numbering: "1")
+= Introduction // 1
 #counter(page).update(2)
-== Object
+#text(green)[== Object
+  The primary object of this project is the design and implementation of *IR-Board*, a comprehensive Requirements Management Platform (RMP) designed to support the full lifecycle of software requirements engineering. The system aims to bridge the gap between traditional documentation standards and modern agile methodologies, providing a centralized environment for eliciting, refining, and managing requirements.
 
+  Key objectives of the system include:
+
+  - *Methodological Compliance:* Implementing a framework that follows international standards for requirements specification, specifically the *IEEE 830* guidelines and the *ISO/IEC/IEEE 29148* standard.
+  - *Hybrid Documentation Support:* Providing tools for both traditional modeling (use cases, flowcharts, and decision tables) and Agile practices (user story mapping and management).
+  - *Relation-Based Access Control (ReBAC):* Developing a sophisticated security model where permissions are not merely role-based but determined by the dynamic relationship between users and specific entities (Projects and Functionalities), implemented through a *Zero-Trust* architecture.
+  - *Lifecycle and State Management:* Automating the management of requirement states (Pending Approval, Approved, Deactivated, etc.) and project lifecycles to ensure data integrity and traceability.
+  - *Collaborative Engineering:* Facilitating stakeholder management and real-time concurrency control to prevent data conflicts during collaborative editing sessions.
+  - *System Observability:* Integrating a high-standard monitoring stack to provide administrators with full visibility into the infrastructure's health and security audit logs.
+]
 == Background
 
 == Current state
