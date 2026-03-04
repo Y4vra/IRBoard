@@ -12,6 +12,8 @@ services:
     image: traefik:v2.10
     container_name: traefik
     command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -22,6 +24,32 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - public
+
+  # --- MIGRATION (PREPARE ORY TABLES) ---
+  keto-migrate:
+    image: oryd/keto:latest
+    depends_on:
+      keto-db:
+        condition: service_healthy
+    environment:
+      - DSN=postgres://${KETO_DB_USER}:${KETO_DB_PASSWORD}@keto-db:5432/${KETO_DB_NAME}?sslmode=disable
+    volumes:
+      - ./config/keto:/etc/config/keto
+    command: -c /etc/config/keto/keto.yaml migrate up --yes
+    networks:
+      - internal
+  kratos-migrate:
+    image: oryd/kratos:latest
+    environment:
+      - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
+    volumes:
+      - ./config/kratos:/etc/config/kratos
+    command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
+    depends_on:
+      kratos-db:
+        condition: service_healthy
+    networks:
+      - internal
 
   # --- IDENTITY (ORY) ---
   kratos-db:
@@ -37,18 +65,63 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    volumes:
+      - db_data_kratos:/var/lib/postgresql/data
+  keto-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${KETO_DB_USER}
+      - POSTGRES_PASSWORD=${KETO_DB_PASSWORD}
+      - POSTGRES_DB=${KETO_DB_NAME}
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KETO_DB_USER} -d ${KETO_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db_data_keto:/var/lib/postgresql/data
 
   kratos:
     image: oryd/kratos:latest
     depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
       kratos-db:
         condition: service_healthy
+      mailpit:
+        condition: service_healthy
     environment:
-      # Paso la URL de conexión construida con las variables
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
+      - SERVE_PUBLIC_BASE_URL=http://${AUTH_DOMAIN}/
+      - SERVE_ADMIN_BASE_URL=http://kratos:4434/
+      - SERVE_PUBLIC_CORS_ALLOWED_ORIGINS=http://${DOMAIN_NAME}
+      - SELFSERVICE_ALLOWED_RETURN_URLS=http://${DOMAIN_NAME}
+      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/dashboard
+      - SELFSERVICE_FLOWS_ERROR_UI_URL=http://${DOMAIN_NAME}/error
+      - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://${DOMAIN_NAME}/login
+      - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://${DOMAIN_NAME}/registration
+      - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://${DOMAIN_NAME}/settings
+      - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://${DOMAIN_NAME}/setup-password
     volumes:
       - ./config/kratos:/etc/config/kratos
     command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
+    networks:
+      - internal
+
+  keto:
+    image: oryd/keto:latest
+    depends_on:
+      keto-migrate:
+        condition: service_completed_successfully
+      keto-db:
+        condition: service_healthy
+    environment:
+      - DSN=postgres://${KETO_DB_USER}:${KETO_DB_PASSWORD}@keto-db:5432/${KETO_DB_NAME}?sslmode=disable
+    volumes:
+      - ./config/keto:/etc/config/keto
+    command: serve -c /etc/config/keto/keto.yaml
     networks:
       - internal
 
@@ -56,6 +129,7 @@ services:
     image: oryd/oathkeeper:latest
     depends_on:
       - kratos
+      - keto
     volumes:
       - ./config/oathkeeper:/etc/config/oathkeeper
     command: serve proxy -c /etc/config/oathkeeper/oathkeeper.yaml
@@ -64,7 +138,8 @@ services:
       - internal
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`)"
+      - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) || Host(`grafana.${DOMAIN_NAME}`)"
+      - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
 
   # --- BUSINESS LOGIC ---
   rms-db:
@@ -80,6 +155,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    volumes:
+    - db_data_rms:/var/lib/postgresql/data
 
   backend:
     build: ./backend
@@ -92,10 +169,6 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
     networks:
       - internal
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`${API_DOMAIN}`)"
-      - "traefik.http.services.backend.loadbalancer.server.port=8080"
 
   frontend:
     build: ./frontend
@@ -106,6 +179,15 @@ services:
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
+  # --- MAIL SERVER ---
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025" 
+      - "1025:1025" 
+    networks:
+      - internal
+
   # --- OBSERVABILITY ---
   grafana:
     image: grafana/grafana:latest
@@ -113,11 +195,8 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
     volumes:
-      - ./config/grafana/:/var/lib/grafana/
-    ports:
-      - "3000:3000"
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
     networks:
-      - public
       - internal
   
   
@@ -139,3 +218,8 @@ services:
       - internal
     depends_on:
       - loki
+
+volumes:
+  db_data_kratos:
+  db_data_keto:
+  db_data_rms:

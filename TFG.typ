@@ -144,18 +144,18 @@ It has been adapted and modified to fit the specific needs of the project during
 #set page(numbering: "1")
 = Introduction // 1
 #counter(page).update(2)
-#text(green)[== Object
-  The primary object of this project is the design and implementation of *IR-Board*, a comprehensive Requirements Management Platform (RMP) designed to support the full lifecycle of software requirements engineering. The system aims to bridge the gap between traditional documentation standards and modern agile methodologies, providing a centralized environment for eliciting, refining, and managing requirements.
+== Object
+The primary object of this project is the design and implementation of *IR-Board*, a comprehensive Requirements Management Platform (RMP) designed to support the full lifecycle of software requirements engineering. The system aims to bridge the gap between traditional documentation standards and modern agile methodologies, providing a centralized environment for eliciting, refining, and managing requirements.
 
-  Key objectives of the system include:
+Key objectives of the system include:
 
-  - *Methodological Compliance:* Implementing a framework that follows international standards for requirements specification, specifically the *IEEE 830* guidelines and the *ISO/IEC/IEEE 29148* standard.
-  - *Hybrid Documentation Support:* Providing tools for both traditional modeling (use cases, flowcharts, and decision tables) and Agile practices (user story mapping and management).
-  - *Relation-Based Access Control (ReBAC):* Developing a sophisticated security model where permissions are not merely role-based but determined by the dynamic relationship between users and specific entities (Projects and Functionalities), implemented through a *Zero-Trust* architecture.
-  - *Lifecycle and State Management:* Automating the management of requirement states (Pending Approval, Approved, Deactivated, etc.) and project lifecycles to ensure data integrity and traceability.
-  - *Collaborative Engineering:* Facilitating stakeholder management and real-time concurrency control to prevent data conflicts during collaborative editing sessions.
-  - *System Observability:* Integrating a high-standard monitoring stack to provide administrators with full visibility into the infrastructure's health and security audit logs.
-]
+- *Methodological Compliance:* Implementing a framework that follows international standards for requirements specification, specifically the *IEEE 830* guidelines and the *ISO/IEC/IEEE 29148* standard.
+- *Hybrid Documentation Support:* Providing tools for both traditional modeling (use cases, flowcharts, and decision tables) and Agile practices (user story mapping and management).
+- *Relation-Based Access Control (ReBAC):* Developing a sophisticated security model where permissions are not merely role-based but determined by the dynamic relationship between users and specific entities (Projects and Functionalities), implemented through a *Zero-Trust* architecture.
+- *Lifecycle and State Management:* Automating the management of requirement states (Pending Approval, Approved, Deactivated, etc.) and project lifecycles to ensure data integrity and traceability.
+- *Collaborative Engineering:* Facilitating stakeholder management and real-time concurrency control to prevent data conflicts during collaborative editing sessions.
+- *System Observability:* Integrating a high-standard monitoring stack to provide administrators with full visibility into the infrastructure's health and security audit logs.
+
 == Background
 
 == Current state
@@ -186,7 +186,7 @@ It has been adapted and modified to fit the specific needs of the project during
 
 == Input Documentation
 
-#text(green)[== Users and Characteristics]
+== Users and Characteristics
 In this project, instead of conventional system-wide roles, the approach I found fit best the nature of requirement management systems was a relation-based role system. Therefore, two sets of user permissions can be defined: system-level permissions and project-level permissions.
 #figure(
   table(columns: 2)[#strong[User]][#strong[Description]][Admin][Has access to project creation, deactivation, purge of removed projects... Still needs a project role to add to or modify a project, even if created by himself. Can link users as project manager to a project.][Basic][A basic user, the default. Has access to his profile management.],
@@ -201,7 +201,7 @@ These permissions overlap, in case a user is linked to a project in several ways
 
 For example, if a user is listed as requirement engineer and stakeholder in the same functionality, the user will be able to view (both permissions), and add, modify, disable and all other requirement engineer actions as well.
 
-#text(green)[== Requirements Analysis]
+== Requirements Analysis
 Here are presented some diagrams that helped during the requirement edduction process.
 
 #figure(image("docs/diagrams/ProjectStates.svg"), caption: "Lifecicle of a project entity")
@@ -301,7 +301,7 @@ It's a complex state to ease development, as the pending review can be seen as a
   [The system must allow access to the project description/dashboard to users linked to it or a functionality of it.],
   (
     [The system must show the total split of requirements by their states (pie chart)],
-    text(green)[The system must not take into account deactivated requirements toward any metric],
+    [The system must not take into account deactivated requirements toward any metric],
     [The system must show the different functionalities of the project],
   ),
   [The system must allow a project manager to mark as approved all elements in a project],
@@ -314,7 +314,7 @@ It's a complex state to ease development, as the pending review can be seen as a
       [If the identifier is already in use by another functionality on the same project, the system will suggest one letter more of each word on the name.],
       [If the system cannot generate a new set of letters to identify its requirements, a message must be shown to the project manager.],
     ),
-    text(green)[The system must deny adding any functionality with an identifier matching another on the same project.],
+    [The system must deny adding any functionality with an identifier matching another on the same project.],
     [The system must automatically link the project manager to the new functionality],
   ),
   [The system must allow a project manager to modify a functionality.],
@@ -347,8 +347,8 @@ It's a complex state to ease development, as the pending review can be seen as a
   [The system must allow a project manager to add a new stakeholder to a project],
   (
     [The system must only allow a stakeholder to be added to a project the user is linked to.],
-    text(green)[The system must require a name to generate a stakeholder],
-    text(green)[The system must require a description to generate a stakeholder],
+    [The system must require a name to generate a stakeholder],
+    [The system must require a description to generate a stakeholder],
     [The system must generate the identifier for the stakeholder],
   ),
   [The system must allow a project manager or requirement engineer to link a stakeholder to one or more requirements on the same project],
@@ -426,7 +426,7 @@ It's a complex state to ease development, as the pending review can be seen as a
       [The system must allow to set an actual value],
       ([This value represents the current status of the measurement],),
     ),
-    text(green)[The system must automatically set the new requirement as pending approval ],
+    [The system must automatically set the new requirement as pending approval ],
   ),
   [The system must allow a project manager or requirement engineer to link a requirement on a functionality they are linked to, to another entity],
   (
@@ -450,7 +450,7 @@ It's a complex state to ease development, as the pending review can be seen as a
     green,
   )[The system must allow a project manager or requirement engineer to set a deactivated requirement as removed],
   (
-    text(green)[The system must hide from view a removed requirement, effectively archiving it],
+    [The system must hide from view a removed requirement, effectively archiving it],
   ),
   [The system must allow a requirement engineer or a project manager to reactivate a requirement on a functionality they are linked to],
   (
@@ -465,9 +465,9 @@ It's a complex state to ease development, as the pending review can be seen as a
   (
     [The system must only allow to mark as approved a requirement that is pending approval, not pending review nor deactivated.],
   ),
-  text(green)[The system must allow a project manager to mark as closed a requirement],
+  [The system must allow a project manager to mark as closed a requirement],
   (
-    text(green)[The system must set the requirement as pending approval if it is modified.],
+    [The system must set the requirement as pending approval if it is modified.],
   ),
 
   [The system must allow a project manager or requirement engineer linked to a functionality of the project to change the position of a requirement],
@@ -500,9 +500,9 @@ It's a complex state to ease development, as the pending review can be seen as a
       [The system must automatically send an invitation with the signup code to the email of the invited user],
     ),
   ),
-  text(green)[The system must allow an admin to view the name and surname of a user from the system],
+  [The system must allow an admin to view the name and surname of a user from the system],
   [The system must allow an admin to modify the name and surname of a user from the system],
-  text(green)[The system must allow an admin to view the current permissions of a user from the system],
+  [The system must allow an admin to view the current permissions of a user from the system],
   [The system must allow an admin to generate a new invite with a signup code for a user],
   [The system must allow any user with valid credentials to sign in to the system],
   (
@@ -575,13 +575,13 @@ It's a complex state to ease development, as the pending review can be seen as a
     [Any filter must be reversible; ascending or descending order],
   ),
 )
-#text(green)[
-  ==== Observability
-  #O_List(
-    [The system must allow an admin to acess an observability dashboard with information logs],
-    [The system must allow an admin to monitor the health and performance metrics of the microservices infrastructure],
-    [The system must allow an admin to query and visualize logs from all system components],
-  )]
+
+==== Observability
+#O_List(
+  [The system must allow an admin to acess an observability dashboard with information logs],
+  [The system must allow an admin to monitor the health and performance metrics of the microservices infrastructure],
+  [The system must allow an admin to query and visualize logs from all system components],
+)
 
 === Usability Requirements
 
@@ -595,7 +595,7 @@ It's a complex state to ease development, as the pending review can be seen as a
 
 === Supporting Information
 
-#text(green)[== Test Plan Analysis]
+== Test Plan Analysis
 To ensure the reliability, maintainability, and performance of the IR-Board system, a multi-dimensional testing strategy has been defined. This plan covers the entire development lifecycle, from code quality to system behavior under stress.
 
 === Code maintainability and unit testing with SonarQube
@@ -613,7 +613,7 @@ Regarding usability testing, the plan involves observing real users interacting 
 
 = System Design //6
 
-#text(green)[== System Architecture]
+== System Architecture
 The system architecture follows a Microservices approach based on the Zero Trust security model. This ensures flexibility and scalability while maintaining a high level of isolation between business logic and infrastructure concerns. To guarantee a professional security standard while maintaining a manageable project scope, core identity and access management responsibilities have been delegated to the Ory Open Source ecosystem.
 
 #figure(image("docs/diagrams/ArchitectureC2.svg"), caption: "Architecture C2 component diagram")

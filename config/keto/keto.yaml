@@ -1,0 +1,16 @@
+version: v0.1.1 # Actualizado
+
+dsn: postgres://${KETO_DB_USER}:${KETO_DB_PASSWORD}@keto-db:5432/${KETO_DB_NAME}?sslmode=disable
+
+serve:
+  read:
+    port: 4466
+  write:
+    port: 4467
+
+namespaces:
+  location: file:///etc/config/keto/namespaces/schema.ts
+
+log:
+  level: debug
+  format: json

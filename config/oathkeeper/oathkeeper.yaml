@@ -1,0 +1,55 @@
+serve:
+  proxy:
+    port: 4455
+  api:
+    port: 4456
+
+errors:
+  fallback:
+    - json
+  handlers:
+    json:
+      enabled: true
+      config:
+        verbose: true
+
+access_rules:
+  repositories:
+    - file:///etc/config/oathkeeper/access-rules.yaml
+
+authenticators:
+  noop:
+    enabled: true
+  
+  cookie_session:
+    enabled: true
+    config:
+      check_session_url: http://kratos:4433/sessions/whoami
+      preserve_path: true
+      preserve_query: true
+
+authorizers:
+  allow:
+    enabled: true
+  
+  remote_json:
+    enabled: true
+    config:
+      remote: http://keto:4466/relation-tuples/check/openapi
+      payload: |
+        {
+          "namespace": "{{ index .MatchContext.RegexpCaptureGroups 0 }}",
+          "object": "{{ index .MatchContext.RegexpCaptureGroups 1 }}",
+          "relation": "{{ index .MatchContext.RegexpCaptureGroups 2 }}",
+          "subject_id": "{{ .Subject }}"
+        }
+
+mutators:
+  noop:
+    enabled: true
+  
+  header:
+    enabled: true
+    config:
+      headers:
+        X-User: "{{ print .Subject }}"

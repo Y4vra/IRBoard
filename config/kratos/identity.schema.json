@@ -1,0 +1,53 @@
+{
+  "$id": "https://schemas.ir-board.com/identity.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "traits": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "title": "E-Mail",
+          "ory.sh/kratos": {
+            "credentials": {
+              "password": {
+                "identifier": true
+              }
+            },
+            "recovery": {
+              "via": "email"
+            },
+            "verification": {
+              "via": "email"
+            }
+          }
+        },
+        "name": {
+          "type": "string",
+          "title": "First Name"
+        },
+        "surname": {
+          "type": "string",
+          "title": "Last Name"
+        },
+        "is_admin": {
+          "type": "boolean",
+          "title": "System Administrator Flag",
+          "default": false
+        }
+      },
+      "required": [
+        "email",
+        "name",
+        "surname"
+      ],
+      "additionalProperties": false
+    },
+    "metadata_admin": {
+        "setup_required": true
+    }
+  }
+}
