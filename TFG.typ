@@ -681,6 +681,13 @@ The figure below shows the main flow of the application represented by solid arr
 = Conclusions and Future Work //11
 
 = References //12
-
+https://vite.dev/config/
+https://typst.app/docs/
+[1]
+“Welcome to Ory! | Ory,” Ory.com, Oct. 15, 2025. https://www.ory.com/docs/ (accessed Mar. 07, 2026).
+[2]
+“Configuring Vite,” vitejs, 2025. https://vite.dev/config/
+[3]
+“Typst Documentation,” Typst, 2024. https://typst.app/docs/
 = Appendices
 == Supplementary Material
