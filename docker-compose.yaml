@@ -102,6 +102,7 @@ services:
       - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://${DOMAIN_NAME}/registration
       - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://${DOMAIN_NAME}/settings
       - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://${DOMAIN_NAME}/setup-password
+      - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/kratos:/etc/config/kratos
     command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
@@ -128,6 +129,10 @@ services:
     depends_on:
       - kratos
       - keto
+    environment:
+      - AUTHENTICATORS_COOKIE_SESSION_CONFIG_CHECK_SESSION_URL=http://kratos:4433/sessions/whoami
+      - AUTHORIZERS_REMOTE_JSON_CONFIG_REMOTE=http://keto:4466/relation-tuples/check/openapi
+      - ERRORS_HANDLERS_REDIRECT_CONFIG_TO=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/oathkeeper:/etc/config/oathkeeper
     command: serve proxy -c /etc/config/oathkeeper/oathkeeper.yaml
@@ -213,14 +218,17 @@ services:
       rms-db:
         condition: service_healthy
     volumes:
-      - ./backend:/app
+      - ./backend:/app/dev
       - ~/.m2:/root/.m2
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://rms-db:5432/${RMS_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${RMS_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - internal
+    working_dir: /app/dev # remove for production, this allows hot-reload
+    command: mvn spring-boot:run # remove for production, this allows hot-reload
 
   frontend:
     build: ./frontend
