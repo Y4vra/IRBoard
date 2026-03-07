@@ -10,7 +10,7 @@ state PendingApproval{
 }
 
 state Approved
-state Closed: Finished, implemented
+state Finished: Implemented
 
 state Deactivated : Read-only mode
 
@@ -25,8 +25,8 @@ PendingReview -up-> Reviewed : Review completed (modifying it or accepting it)
 PendingApproval -right-> Approved 
 Approved -up-> PendingApproval : modified
 
-Approved -right-> Closed : completed
-Closed -left-> PendingApproval : modified
+Approved -right-> Finished : completed
+Finished -left-> PendingApproval : modified
 
 PendingApproval -down-> Deactivated 
 Deactivated -up-> PendingApproval

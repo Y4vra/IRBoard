@@ -17,6 +17,7 @@ package "Network: internal" #AliceBlue {
     [Loki]
     [Grafana]
     [Promtail]
+    [Mailpit] as mail
     
     database "PostgreSQL (RMS)" as db_rms
     database "PostgreSQL (Identity)" as db_auth
@@ -35,6 +36,9 @@ proxy .> Grafana
 
 ' Paso final al Backend
 proxy -down-> backend
+
+' mailing provisional
+kratos -> mail : SMTP (1025)
 
 ' Persistencia
 backend .> keto : Write Tuples (GRPC)

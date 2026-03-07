@@ -141,6 +141,59 @@ services:
       - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) || Host(`grafana.${DOMAIN_NAME}`)"
       - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
 
+  # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ---
+  initial-setup-admin:
+    image: alpine:latest
+    depends_on:
+      kratos:
+        condition: service_started
+      keto:
+        condition: service_started
+    networks:
+      - internal
+    environment:
+      - KRATOS_URL=http://kratos:4434/admin/identities
+      - KETO_URL=http://keto:4467/admin/relation-tuples
+    entrypoint: /bin/sh -c
+    command:
+      - | 
+        apk add --no-cache curl jq
+        sleep 10;
+        echo '
+        {
+          "schema_id": "default",
+          "traits": {
+            "email": "admin@irboard.com",
+            "name": "Admin",
+            "surname": "System",
+            "is_admin": true
+          },
+          "credentials": {
+            "password": {
+              "config": {
+                "password": "15_char_admin_password"
+              }
+            }
+          }
+        }' > ./file.json
+        USER_ID=$(curl -X POST $$KRATOS_URL -H "Content-Type: application/json" -d @file.json | jq -r '.id')
+        echo 'user id:\n'
+        echo $USER_ID
+        echo $$USER_ID
+        if [ "$$USER_ID" != "null" ]; then
+          curl -X PUT $$KETO_URL \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"namespace\": \"User\",
+              \"object\": \"System\",
+              \"relation\": \"admin\",
+              \"subject_id\": \"$$USER_ID\"
+            }"
+          echo "Usuario admin configurado con éxito."
+        else
+          echo "Error: No se pudo obtener el ID de Kratos."
+        fi
+
   # --- BUSINESS LOGIC ---
   rms-db:
     image: postgres:15-alpine

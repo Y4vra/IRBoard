@@ -3,7 +3,7 @@ title Lifecycle of a Project (IR-Board)
 
 state Active
 
-State Closed: Completed/finished
+State Finished: Completed
 
 State Deactivated: Cancelled/postponed
 
@@ -13,8 +13,8 @@ State Removed: Hidden from sight, archived
 ' Transiciones
 [*] -down-> Active: Project creation
 
-Active -right-> Closed
-Closed -left-> Active
+Active -right-> Finished
+Finished -left-> Active
 
 Active --> Deactivated
 Deactivated --> Active
