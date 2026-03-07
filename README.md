@@ -44,10 +44,23 @@ Para garantizar el principio de menor privilegio, la arquitectura se divide en:
 ## 🚀 Instalación y Desarrollo (TFG en progreso)
 
 Actualmente, el proyecto se encuentra en fase de desarrollo.
+### Configuración Local
 
+1. **Clonar el repositorio:**
 ```bash
-# Clonar el repositorio
 git clone https://github.com/tu-usuario/ir-board.git
+
+```
+
+
+2. **Configuración del Entorno:**
+Crea y configura tu archivo `.env` basado en el ejemplo proporcionado.
+3. **Configuración del archivo Hosts:**
+Para que el Proxy Inverso (Traefik) y el sistema de identidad funcionen correctamente, **debes añadir el nombre de dominio definido en tu archivo `.env` a tu archivo de hosts local** (ej. `/etc/hosts` en Linux/macOS o `C:\Windows\System32\drivers\etc\hosts` en Windows).
+*Ejemplo:*
+Si en tu `.env` tienes `DOMAIN_NAME=irboard.local`, añade la siguiente línea:
+```text
+127.0.0.1  irboard.local
 
 ```
 
