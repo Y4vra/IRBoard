@@ -4,19 +4,7 @@ serve:
   public:
     port: 4433
     cors:
-      enabled: true
-      allowed_methods:
-        - POST
-        - GET
-        - PUT
-        - PATCH
-        - DELETE
-      allowed_headers:
-        - Authorization
-        - Content-Type
-      exposed_headers:
-        - Content-Type
-      allow_credentials: true
+      enabled: false
   admin:
     port: 4434 
 

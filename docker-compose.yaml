@@ -17,7 +17,7 @@ services:
       - "--entrypoints.web.address=:80"
     ports:
       - "80:80"
-      - "8080:8080" # Dashboard de Traefik
+      - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -94,7 +94,8 @@ services:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
       - SERVE_PUBLIC_BASE_URL=http://${AUTH_DOMAIN}/
       - SERVE_ADMIN_BASE_URL=http://kratos:4434/
-      - SERVE_PUBLIC_CORS_ALLOWED_ORIGINS=http://${DOMAIN_NAME}
+      - SESSIONS_COOKIE_SECURE=false
+      - SESSIONS_COOKIE_DOMAIN=${DOMAIN_NAME}
       - SELFSERVICE_ALLOWED_RETURN_URLS=http://${DOMAIN_NAME}
       - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/dashboard
       - SELFSERVICE_FLOWS_ERROR_UI_URL=http://${DOMAIN_NAME}/error
@@ -105,7 +106,7 @@ services:
       - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/kratos:/etc/config/kratos
-    command: serve -c /etc/config/kratos/kratos.yaml --watch-courier
+    command: serve -c /etc/config/kratos/kratos.yaml --dev --watch-courier
     networks:
       - internal
 
@@ -143,6 +144,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) || Host(`grafana.${DOMAIN_NAME}`)"
       - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
+      - "traefik.docker.network=public"
 
   # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ---
   initial-setup-admin:
@@ -157,28 +159,33 @@ services:
     environment:
       - KRATOS_URL=http://kratos:4434/admin/identities
       - KETO_URL=http://keto:4467/admin/relation-tuples
+      - ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+      - ADMIN_NAME=${INITIAL_ADMIN_NAME}
+      - ADMIN_SURNAME=${INITIAL_ADMIN_SURNAME}
     entrypoint: /bin/sh -c
     command:
       - | 
         apk add --no-cache curl jq
         sleep 10;
-        echo '
+        cat <<EOF > ./file.json
         {
           "schema_id": "default",
           "traits": {
-            "email": "admin@irboard.com",
-            "name": "Admin",
-            "surname": "System",
+            "email": "${INITIAL_ADMIN_EMAIL}",
+            "name": "${INITIAL_ADMIN_NAME}",
+            "surname": "${INITIAL_ADMIN_SURNAME}",
             "is_admin": true
           },
           "credentials": {
             "password": {
               "config": {
-                "password": "15_char_admin_password"
+                "password": "${INITIAL_ADMIN_PASSWORD}"
               }
             }
           }
-        }' > ./file.json
+        }
+        EOF
         USER_ID=$(curl -X POST $$KRATOS_URL -H "Content-Type: application/json" -d @file.json | jq -r '.id')
         echo 'user id:\n'
         if [ "$$USER_ID" != "null" ]; then
@@ -213,7 +220,9 @@ services:
     - db_data_rms:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      target: build
     depends_on:
       rms-db:
         condition: service_healthy
@@ -227,22 +236,28 @@ services:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - internal
-    working_dir: /app/dev # remove for production, this allows hot-reload
-    command: mvn spring-boot:run # remove for production, this allows hot-reload
+    working_dir: /app/dev # [PROD] remove for production, this allows hot-reload
+    command: mvn spring-boot:run # [PROD] remove for production, this allows hot-reload
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      target: build-stage # [PROD] remove for production
+    working_dir: /app
+    command: npm run dev -- --host 0.0.0.0 # [PROD] remove for production
     volumes:
       - ./frontend:/app
       - /app/node_modules
     environment:
       - VITE_DOMAIN_NAME=${DOMAIN_NAME}
+      - VITE_AUTH_DOMAIN=${AUTH_DOMAIN}
+      - VITE_API_DOMAIN=${API_DOMAIN}
     networks:
       - public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173" # Default Vite port for Dev mode. Update to 80 for Production-stage (Nginx).
 
   # --- MAIL SERVER ---
   mailpit:
@@ -284,7 +299,7 @@ services:
     depends_on:
       - loki
 
-volumes:
+volumes: # [PROD] remove volumes in production
   db_data_kratos:
   db_data_keto:
   db_data_rms:

@@ -1,19 +1,64 @@
 - id: "allow-frontend-static"
   match:
     methods: ["GET"]
-    url: "http://irboard.local/<.*>"
-  authenticators: [{ handler: "noop" }]
-  authorizer: { handler: "allow" }
-  mutator: { handler: "noop" }
+    url: "http://irboard.local/<.*>" # [PROD] change the domains for production
+  authenticators:
+    - handler: "noop"
+  authorizer:
+    handler: "allow"
+  mutators:
+    - handler: "noop"
   upstream:
     url: "http://frontend:5173"
+
+- id: "kratos-self-service-pass"
+  match:
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+    url: "http://auth.irboard.local/<self-service/.*>"
+  authenticators:
+    - handler: "noop"
+  authorizer:
+    handler: "allow"
+  mutators:
+    - handler: "noop"
+  upstream:
+    url: "http://kratos:4433" 
+    preserve_host: true
 
 - id: "api-backend-protected"
   match:
     methods: ["GET", "POST", "PUT", "DELETE"]
     url: "http://api.irboard.local/<.*>"
-  authenticators: [{ handler: "cookie_session" }]
-  authorizer: { handler: "allow" }
-  mutator: { handler: "header" }
+  authenticators:
+    - handler: "cookie_session"
+  authorizer:
+    handler: "allow"
+  mutators:
+    - handler: "header"
+      config:
+        headers:
+          X-User: "{{ print .Subject }}"
   upstream:
     url: "http://backend:8080"
+
+- id: "grafana-protected"
+  match:
+    methods: ["GET", "POST"]
+    url: "http://grafana.irboard.local/<.*>"
+  authenticators:
+    - handler: "cookie_session"
+  authorizer:
+    handler: "remote_json"
+    config:
+      remote: "http://keto:4466/relation-tuples/check/openapi"
+      payload: |
+        {
+          "namespace": "User",
+          "object": "System",
+          "relation": "admin",
+          "subject_id": "{{ print .Subject }}"
+        }
+  mutators:
+    - handler: "noop"
+  upstream:
+    url: "http://grafana:3000"
