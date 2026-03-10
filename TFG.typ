@@ -640,6 +640,8 @@ The figure below shows the main flow of the application represented by solid arr
 
 == Class Design
 
+#figure(image("docs/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
+
 == Database Design
 
 == User Interface Design

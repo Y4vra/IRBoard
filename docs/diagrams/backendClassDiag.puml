@@ -1,0 +1,114 @@
+@startuml backendClassDiagram
+title Backend Class DiagramBorderColor
+
+enum PriorityStyle {
+    TERNARY
+    MOSCOW
+}
+
+enum ProjectState {
+    ACTIVE
+    FINISHED
+    DEACTIVATED
+    REMOVED
+}
+
+enum FunctionalityState {
+    ACTIVE
+    DEACTIVATED
+    REMOVED
+}
+
+enum RequirementState {
+    PENDING_APPROVAL
+    APPROVED
+    FINISHED
+    DEACTIVATED
+    REMOVED
+}
+
+enum ComparisonOperator {
+    EQUAL_TO
+    LESS_THAN
+    GREATER_THAN
+}
+
+class Project {
+    - UUID id
+    - String name
+    - String description
+    - PriorityStyle priorityStyle
+    - ProjectState state
+    - LocalDateTime createdAt
+    - Functionality[] functionalities
+    - NonFunctionalRequirement[] NonFunctionalRequirements
+    - Stakeholder[] stakeholders
+    - Document[] documents
+}
+
+class Functionality {
+    - UUID id
+    - String name
+    - String label
+    - FunctionalityState state
+    - FunctionalRequirement[] Requirements
+}
+
+abstract class Requirement {
+    - UUID id
+    - Float orderValue
+    - String name
+    - String description
+    - RequirementState state
+    - Boolean isPendingReview
+}
+
+class FunctionalRequirement {
+    - String priority
+    - String stability
+}
+
+class NonFunctionalRequirement {
+    - String measurementUnit
+    - ComparisonOperator operator
+    - Double thresholdValue
+    - Double targetValue
+    - Double actualValue
+}
+
+class Stakeholder {
+    - UUID id
+    - String name
+    - String description
+    - State state
+}
+
+class Document {
+    - UUID id
+    - String name
+    - String storagePath
+    - State state
+}
+
+Project "1" ... "1" ProjectState
+Functionality "1" ... "1" FunctionalityState
+Requirement "1" ... "1" RequirementState
+Requirement "1" ... "1" PriorityStyle
+NonFunctionalRequirement "1" ... "1" ComparisonOperator
+
+Project "1" *-- "0..*" Functionality
+Project "1" *--- "0..*" NonFunctionalRequirement
+Project "1" *--- "0..*" Document
+Project "1" *--- "0..*" Stakeholder
+
+Functionality "1" *-- "0..*" FunctionalRequirement
+
+Requirement <|- FunctionalRequirement
+Requirement <|- NonFunctionalRequirement
+
+Requirement "0..*" -- "0..*" Stakeholder : linked
+Requirement "1" o-- "0..*" Requirement : (Parent/Child)
+Requirement "0..*" -- "0..*" Requirement : crossed trazability
+Requirement "0..*" -- "0..*" Document : linked
+
+@enduml
