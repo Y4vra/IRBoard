@@ -1,6 +1,6 @@
-package com.y4vra.irboardbackend.entities;
+package com.y4vra.irboardbackend.domain.model;
 
-import com.y4vra.irboardbackend.entities.enums.RequirementState;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import jakarta.persistence.*;
 
 import java.util.HashSet;

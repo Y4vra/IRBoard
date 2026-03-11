@@ -1,4 +1,4 @@
-package com.y4vra.irboardbackend.entities;
+package com.y4vra.irboardbackend.domain.model;
 
 public class Associations {
 //    public static void link(Journey journey, Vehicle vehicle){

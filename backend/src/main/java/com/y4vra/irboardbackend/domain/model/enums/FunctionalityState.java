@@ -1,4 +1,4 @@
-package com.y4vra.irboardbackend.entities.enums;
+package com.y4vra.irboardbackend.domain.model.enums;
 
 public enum FunctionalityState {
     ACTIVE,

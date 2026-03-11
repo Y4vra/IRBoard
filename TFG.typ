@@ -486,7 +486,7 @@ It's a complex state to ease development, as the pending review can be seen as a
 #UM_List(
   [The system must allow an admin to invite new users to the system.],
   (
-    [The system must provide different levels of authorisation.],
+    [The system must provide different levels of authorisation, based on the relationship between its elements.],
     (
       [The system must have the levels: Admin, project manager, requirement engineer and stakeholder user.],
     ),

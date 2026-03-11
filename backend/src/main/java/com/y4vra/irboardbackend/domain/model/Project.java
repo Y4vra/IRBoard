@@ -1,10 +1,11 @@
-package com.y4vra.irboardbackend.entities;
+package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.entities.enums.*;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +36,8 @@ public class Project {
     private Set<Stakeholder> stakeholders = new HashSet<>();
     @OneToMany(mappedBy = "project")
     private Set<Document> documents = new HashSet<>();
+    @OneToMany(mappedBy = "project")
+    private Set<User> projectManagers=new HashSet<>();
 
     protected Project(){
 

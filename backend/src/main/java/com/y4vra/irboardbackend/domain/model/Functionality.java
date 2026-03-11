@@ -1,6 +1,6 @@
-package com.y4vra.irboardbackend.entities;
+package com.y4vra.irboardbackend.domain.model;
 
-import com.y4vra.irboardbackend.entities.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -25,4 +25,8 @@ public class Functionality {
 
     @ManyToOne
     private Project project;
+    @ManyToMany(mappedBy = "engineerFunctionalities")
+    private Set<User> requirementEngineers = new HashSet<User>();
+    @ManyToMany(mappedBy = "stakeholderFunctionalities")
+    private Set<User> stakeholders = new HashSet<User>();
 }

@@ -84,13 +84,22 @@ class Document {
     - byte[] content
 }
 
-Project "1" ... "1" ProjectState
-Functionality "1" ... "1" FunctionalityState
-Requirement "1" ... "1" RequirementState
-Requirement "1" ... "1" PriorityStyle
-NonFunctionalRequirement "1" ... "1" ComparisonOperator
+class User {
+    - UUID id
+    - String email
+    - String name
+    - String surname
+    - Boolean isAdmin
+    - Boolean active
+}
 
-Project "1" *-- "0..*" Functionality
+Project "1" .. "1" ProjectState
+Functionality "1" .. "1" FunctionalityState
+Requirement "1" .. "1" RequirementState
+Requirement "1" .. "1" PriorityStyle
+NonFunctionalRequirement "1" .. "1" ComparisonOperator
+
+Project "1" *-down-- "0..*" Functionality
 Project "1" *--- "0..*" NonFunctionalRequirement
 Project "1" *--- "0..*" Document
 Project "1" *--- "0..*" Stakeholder
@@ -104,5 +113,9 @@ Requirement "0..*" -- "0..*" Stakeholder : linked
 Requirement "1" o-- "0..*" Requirement : (Parent/Child)
 Requirement "0..*" -- "0..*" Requirement : crossed trazability
 Requirement "0..*" -- "0..*" Document : linked
+
+Project "1" o-- "0..*" User : Project manager
+Functionality "1" o-- "0..*" User : Requirement engineer
+Functionality "1" o-- "0..*" User : Stakeholder
 
 @enduml

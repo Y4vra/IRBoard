@@ -230,6 +230,7 @@ services:
       - ./backend:/app/dev
       - ~/.m2:/root/.m2
     environment:
+      - FRONTEND_URL=http://${DOMAIN_NAME}/
       - SPRING_DATASOURCE_URL=jdbc:postgresql://rms-db:5432/${RMS_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${RMS_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}

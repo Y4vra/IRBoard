@@ -1,6 +1,6 @@
-package com.y4vra.irboardbackend.entities;
+package com.y4vra.irboardbackend.domain.model;
 
-import com.y4vra.irboardbackend.entities.enums.ComparisonOperator;
+import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
 import jakarta.persistence.*;
 
 @Entity
