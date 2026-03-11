@@ -21,8 +21,8 @@ enum FunctionalityState {
 
 enum RequirementState {
     PENDING_APPROVAL
-    APPROVED
     FINISHED
+    APPROVED
     DEACTIVATED
     REMOVED
 }
@@ -40,10 +40,6 @@ class Project {
     - PriorityStyle priorityStyle
     - ProjectState state
     - LocalDateTime createdAt
-    - Functionality[] functionalities
-    - NonFunctionalRequirement[] NonFunctionalRequirements
-    - Stakeholder[] stakeholders
-    - Document[] documents
 }
 
 class Functionality {
@@ -51,7 +47,6 @@ class Functionality {
     - String name
     - String label
     - FunctionalityState state
-    - FunctionalRequirement[] Requirements
 }
 
 abstract class Requirement {
@@ -80,14 +75,13 @@ class Stakeholder {
     - UUID id
     - String name
     - String description
-    - State state
 }
 
 class Document {
     - UUID id
-    - String name
-    - String storagePath
-    - State state
+    - String fileName
+    - String mimeType
+    - byte[] content
 }
 
 Project "1" ... "1" ProjectState
