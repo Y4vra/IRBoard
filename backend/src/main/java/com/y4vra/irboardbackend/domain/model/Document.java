@@ -1,15 +1,15 @@
 package com.y4vra.irboardbackend.domain.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
-import java.util.UUID;
-
+@Data
 @Entity
 public class Document {
 
     @Id
     @GeneratedValue
-    private UUID id;
+    private long id;
     @Column(unique=true)
     private String fileName;
     private String mimeType;
@@ -20,4 +20,6 @@ public class Document {
 
     @ManyToOne
     private Project project;
+
+
 }

@@ -2,7 +2,11 @@ package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @DiscriminatorValue("NFR")
 public class NonFunctionalRequirement extends Requirement {

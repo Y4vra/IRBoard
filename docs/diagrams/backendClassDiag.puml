@@ -34,7 +34,7 @@ enum ComparisonOperator {
 }
 
 class Project {
-    - UUID id
+    - long id
     - String name
     - String description
     - PriorityStyle priorityStyle
@@ -43,14 +43,15 @@ class Project {
 }
 
 class Functionality {
-    - UUID id
+    - long id
     - String name
     - String label
     - FunctionalityState state
 }
 
 abstract class Requirement {
-    - UUID id
+    - long id
+    - String slug
     - Float orderValue
     - String name
     - String description
@@ -72,20 +73,20 @@ class NonFunctionalRequirement {
 }
 
 class Stakeholder {
-    - UUID id
+    - long id
     - String name
     - String description
 }
 
 class Document {
-    - UUID id
+    - long id
     - String fileName
     - String mimeType
     - byte[] content
 }
 
 class User {
-    - UUID id
+    - long id
     - String email
     - String name
     - String surname

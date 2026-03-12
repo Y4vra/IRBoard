@@ -398,7 +398,7 @@ It's a complex state to ease development, as the pending review can be seen as a
       [The identifier must represent if it is a functional or non functional requirement (FR or NFR).],
       [The identifier must represent the folder/component that holds the requirement (user management -> UM).],
     ),
-    [The system must assign automatically the internal unique identifier.],
+    [The system must assign automatically an internal unique slug.],
     (
       [The identifier must represent the project that will hold the requirement.],
       [The identifier must represent whether the requirement is functional or non functional.],
