@@ -1,14 +1,14 @@
 package com.y4vra.irboardbackend.domain.model;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class User {
 
@@ -30,9 +30,9 @@ public class User {
     private Set<Functionality> engineerFunctionalities= new HashSet<>();
     @ManyToMany(mappedBy = "stakeholders")
     @Getter(AccessLevel.NONE)
-    private Set<Stakeholder> stakeholderFunctionalities = new HashSet<>();
+    private Set<Functionality> stakeholderFunctionalities = new HashSet<>();
 
-    public Set<Stakeholder> getStakeholderFunctionalities() {
+    public Set<Functionality> getStakeholderFunctionalities() {
         return new HashSet<>(stakeholderFunctionalities);
     }
     public Set<Functionality> getEngineerFunctionalities() {
@@ -41,7 +41,7 @@ public class User {
     public Set<Project> getProjects() {
         return new HashSet<>(projects);
     }
-    protected Set<Stakeholder> _getStakeholderFunctionalities() {
+    protected Set<Functionality> _getStakeholderFunctionalities() {
         return stakeholderFunctionalities;
     }
     protected Set<Functionality> _getEngineerFunctionalities() {

@@ -3,9 +3,7 @@ package com.y4vra.irboardbackend.domain.model;
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -13,12 +11,14 @@ import java.util.Set;
 
 @Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name="project")
 public class Project {
 
     @Id
     @GeneratedValue
-    private long projectId;
+    private long id;
 
     @Column(unique=true)
     private String name;
@@ -46,7 +46,6 @@ public class Project {
     @Getter(AccessLevel.NONE)
     private Set<User> projectManagers=new HashSet<>();
 
-    protected Project(){}
 
     protected Set<User> _getProjectManagers() {
         return projectManagers;

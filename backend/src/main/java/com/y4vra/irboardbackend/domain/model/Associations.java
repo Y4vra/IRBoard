@@ -8,21 +8,62 @@ public class Associations {
     public static void unlink(Project p, Functionality f){
         p._getFunctionalities().remove(f);
         f.setProject(null);
-    }//TODO generate rest of links
-//    public static void link(Journey journey, Vehicle vehicle){
-//        journey.setVehicle(vehicle);
-//        vehicle._getJourneys().add(journey);
-//    }
-//    public static void link(Journey journey, Employee employee){
-//        journey.setEmployee(employee);
-//        employee._getJourneys().add(journey);
-//    }
-//    public static void link(Journey journey,Refuel refuel){
-//        refuel.setJourney(journey);
-//        journey._getRefuels().add(refuel);
-//    }
-//    public static void link(Journey journey,Incidence incidence){
-//        incidence.setJourney(journey);
-//        journey._getIncidences().add(incidence);
-//    }
+    }
+    public static void link(Project p, Stakeholder s){
+        s.setProject(p);
+        p._getStakeholders().add(s);
+    }
+    public static void unlink(Project p, Stakeholder s){
+        p._getStakeholders().remove(s);
+        s.setProject(null);
+    }
+    public static void link(Project p, NonFunctionalRequirement nfr){
+        nfr.setProject(p);
+        p._getNonFunctionalRequirements().add(nfr);
+    }
+    public static void unlink(Project p, NonFunctionalRequirement nfr){
+        p._getNonFunctionalRequirements().remove(nfr);
+        nfr.setProject(null);
+    }
+    public static void link(Project p, Document d){
+        d.setProject(p);
+        p._getDocuments().add(d);
+    }
+    public static void unlink(Project p, Document d){
+        p._getDocuments().remove(d);
+        d.setProject(null);
+    }
+    public static void link(Project p, User u){
+        u._getProjects().add(p);
+        p._getProjectManagers().add(u);
+    }
+    public static void unlink(Project p, User u){
+        p._getProjectManagers().remove(u);
+        u._getProjects().remove(p);
+    }
+    public static void linkStakeholder(Functionality f, User u){
+        u._getStakeholderFunctionalities().add(f);
+        f._getStakeholders().add(u);
+    }
+    public static void unlinkStakeholder(Functionality f, User u){
+        f._getStakeholders().remove(u);
+        u._getStakeholderFunctionalities().remove(f);
+    }
+    public static void linkRequirementEngineer(Functionality f, User u){
+        u._getEngineerFunctionalities().add(f);
+        f._getRequirementEngineers().add(u);
+    }
+    public static void unlinkRequirementEngineer(Functionality f, User u){
+        f._getRequirementEngineers().remove(u);
+        u._getEngineerFunctionalities().remove(f);
+    }
+    public static void link(Functionality f, FunctionalRequirement fr){
+        fr.setFunctionality(f);
+        f._getRequirements().add(fr);
+    }
+    public static void unlink(Functionality f, FunctionalRequirement fr){
+        f._getRequirements().remove(fr);
+        fr.setFunctionality(null);
+    }
+
 }

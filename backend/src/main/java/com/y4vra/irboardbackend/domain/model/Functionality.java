@@ -2,14 +2,14 @@ package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Functionality {
 
