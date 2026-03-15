@@ -42,6 +42,8 @@ authenticators:
     enabled: true
     config:
       check_session_url: http://kratos:4433/sessions/whoami
+      subject_from: identity.id
+      extra_from: "@this"
       preserve_path: true
       preserve_query: true
 
@@ -68,7 +70,8 @@ mutators:
   header:
     enabled: true
     config:
-      headers: {}
+      headers:
+        X-User: "{{ print .Subject }}"
 
 log:
   level: debug

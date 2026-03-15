@@ -25,7 +25,7 @@
     - handler: "header"
       config:
         headers:
-          X-User: "{{ print .Subject }}"
+          X-User: "{{ .Subject }}"
   upstream:
     url: "http://backend:8080"
 

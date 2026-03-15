@@ -1,6 +1,5 @@
 package com.y4vra.irboardbackend.infrastructure.configuration;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +14,7 @@ public class SecurityConfig {
     private final HeaderAuthenticationFilter headerFilter;
 
     public SecurityConfig(HeaderAuthenticationFilter headerFilter) {
+        System.out.println("DEBUG: ¡SecurityConfig CARGADO EXITOSAMENTE!"); // <--- SI NO VES ESTO, SPRING NO ESTÁ LEYENDO ESTE ARCHIVO
         this.headerFilter = headerFilter;
     }
 
@@ -22,7 +22,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(headerFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
