@@ -26,7 +26,7 @@ services:
 
   # --- MIGRATION (PREPARE ORY TABLES) ---
   keto-migrate:
-    image: oryd/keto:latest
+    image: oryd/keto:v25.4.0
     depends_on:
       keto-db:
         condition: service_healthy
@@ -38,7 +38,7 @@ services:
     networks:
       - internal
   kratos-migrate:
-    image: oryd/kratos:latest
+    image: oryd/kratos:v25.4.0
     environment:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
     volumes:
@@ -83,7 +83,7 @@ services:
       - db_data_keto:/var/lib/postgresql/data
 
   kratos:
-    image: oryd/kratos:latest
+    image: oryd/kratos:v25.4.0
     depends_on:
       kratos-migrate:
         condition: service_completed_successfully
@@ -112,7 +112,7 @@ services:
       - internal
 
   keto:
-    image: oryd/keto:latest
+    image: oryd/keto:v25.4.0
     depends_on:
       keto-migrate:
         condition: service_completed_successfully
@@ -127,7 +127,7 @@ services:
       - internal
 
   oathkeeper:
-    image: oryd/oathkeeper:latest
+    image: oryd/oathkeeper:v25.4.0
     depends_on:
       - kratos
       - keto
@@ -149,7 +149,7 @@ services:
 
   # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ON KRATOS, KETO, AND BACKEND ---
   initial-setup-admin:
-    image: alpine:latest
+    image: alpine:3.23.3
     depends_on:
       kratos:
         condition: service_started
@@ -282,7 +282,7 @@ services:
 
   # --- MAIL SERVER ---
   mailpit:
-    image: axllent/mailpit
+    image: axllent/mailpit:v1.29
     ports:
       - "8025:8025" 
       - "1025:1025" 
@@ -291,7 +291,7 @@ services:
 
   # --- OBSERVABILITY ---
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:12.3.5
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
@@ -302,12 +302,12 @@ services:
   
   
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.5.12
     networks:
       - internal
 
   promtail:
-    image: grafana/promtail:latest
+    image: grafana/promtail:3.5.12
     container_name: promtail
     user: root # Possible threat, but added as hardening the project's observability is beyond the project's scope
     volumes:
