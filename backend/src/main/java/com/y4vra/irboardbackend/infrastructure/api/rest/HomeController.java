@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.ProjectDTO; // Asegúrate de que el paquete sea correcto
 import com.y4vra.irboardbackend.application.services.ProjectService;
+import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,19 +20,25 @@ public class HomeController {
         this.projectService = projectService;
     }
 
-    @GetMapping("/v1/home")
+    @GetMapping("/home")
     public Map<String, Object> getHome(Authentication authentication) {
         Map<String, Object> data = new HashMap<>();
 
-        String role = authentication.getAuthorities().stream()
-                .findFirst()
-                .map(GrantedAuthority::getAuthority)
-                .orElse("ROLE_USER");
+        User user = (User) authentication.getPrincipal();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        data.put("username", authentication.getName());
-        data.put("role", role);
+        data.put("message", "Hola " + user.getName() + " " + user.getSurname());
+        data.put("email", user.getEmail());
+        data.put("oryId", user.getOryId());
+        data.put("role", isAdmin ? "ADMIN" : "USER");
 
-        List<ProjectDTO> projects = projectService.findAllProjects();
+        List<ProjectDTO> projects;
+        if (isAdmin) {
+            projects = projectService.findAllProjects();
+        } else {
+            projects = projectService.findProjectsForUser(user.getOryId());
+        }
         data.put("projects", projects);
 
         return data;

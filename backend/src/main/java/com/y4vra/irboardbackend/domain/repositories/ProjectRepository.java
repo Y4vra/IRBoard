@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface ProjectRepository {
     List<Project> findAll();
+    List<Project> findAllById(Iterable<Long> ids);
     Optional<Project> findById(Long id);
     Project save(Project project);
     void deleteById(Long id);

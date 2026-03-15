@@ -28,24 +28,6 @@ public class Functionality {
     @JoinColumn(name = "project_id")
     private Project project;
 
-    // Owning side of User <-> Functionality (requirementEngineers)
-    @ManyToMany
-    @JoinTable(
-            name = "functionality_requirement_engineers",
-            joinColumns = @JoinColumn(name = "functionality_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<User> requirementEngineers = new HashSet<>();
-
-    // Owning side of User <-> Functionality (stakeholders)
-    @ManyToMany
-    @JoinTable(
-            name = "functionality_stakeholders",
-            joinColumns = @JoinColumn(name = "functionality_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private Set<User> stakeholders = new HashSet<>();
-
     public Functionality() {}
 
     public Long getId() { return id; }
@@ -65,9 +47,4 @@ public class Functionality {
     public Set<FunctionalRequirement> getRequirements() { return new HashSet<>(requirements); }
     protected Set<FunctionalRequirement> _getRequirements() { return requirements; }
 
-    public Set<User> getRequirementEngineers() { return new HashSet<>(requirementEngineers); }
-    protected Set<User> _getRequirementEngineers() { return requirementEngineers; }
-
-    public Set<User> getStakeholders() { return new HashSet<>(stakeholders); }
-    protected Set<User> _getStakeholders() { return stakeholders; }
 }

@@ -19,6 +19,10 @@ serve:
   api:
     port: 4456
 
+access_rules:
+  repositories:
+    - file:///etc/config/oathkeeper/access-rules.yaml
+
 errors:
   fallback:
     - json
@@ -27,10 +31,8 @@ errors:
       enabled: true
       config:
         verbose: true
-
-access_rules:
-  repositories:
-    - file:///etc/config/oathkeeper/access-rules.yaml
+    redirect:
+      enabled: false
 
 authenticators:
   noop:
@@ -66,8 +68,7 @@ mutators:
   header:
     enabled: true
     config:
-      headers:
-        X-User: "{{ print .Subject }}"
+      headers: {}
 
 log:
   level: debug

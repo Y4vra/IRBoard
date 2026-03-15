@@ -147,7 +147,7 @@ services:
       - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
       - "traefik.docker.network=irboard_public"
 
-  # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ---
+  # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ON KRATOS, KETO, AND BACKEND ---
   initial-setup-admin:
     image: alpine:latest
     depends_on:
@@ -155,11 +155,16 @@ services:
         condition: service_started
       keto:
         condition: service_started
+      backend-db:
+        condition: service_healthy
     networks:
       - internal
     environment:
       - KRATOS_URL=http://kratos:4434/admin/identities
       - KETO_URL=http://keto:4467/admin/relation-tuples
+      - DB_USER=${RMS_DB_USER}
+      - DB_PASS=${RMS_DB_PASSWORD}
+      - DB_NAME=${RMS_DB_NAME}
       - ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
       - ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
       - ADMIN_NAME=${INITIAL_ADMIN_NAME}
@@ -167,7 +172,9 @@ services:
     entrypoint: /bin/sh -c
     command:
       - | 
-        apk add --no-cache curl jq
+        apk add --no-cache curl jq postgresql-client
+        export PGPASSWORD="$$DB_PASS"
+        DB_CON_STR="postgresql://$$DB_USER:$$DB_PASS@backend-db:5432/$$DB_NAME"
         sleep 10;
         cat <<EOF > ./file.json
         {
@@ -188,23 +195,36 @@ services:
         }
         EOF
         USER_ID=$(curl -X POST $$KRATOS_URL -H "Content-Type: application/json" -d @file.json | jq -r '.id')
-        echo 'user id:\n'
-        if [ "$$USER_ID" != "null" ]; then
+        if [ "$$USER_ID" != "null" ] && [ -n "$$USER_ID" ]; then
+          echo "Admin user correctly added to Kratos."
+
           curl -X PUT $$KETO_URL \
             -H "Content-Type: application/json" \
             -d "{
-              \"namespace\": \"User\",
-              \"object\": \"System\",
-              \"relation\": \"admin\",
+              \"namespace\": \"System\",
+              \"object\": \"main\",
+              \"relation\": \"admins\",
               \"subject_id\": \"$$USER_ID\"
             }"
-          echo "Usuario admin configurado con éxito."
+          echo "Admin user correctly added to Keto."
+
+          echo "Waiting for springboot to setup the entity database..."
+          until psql "$$DB_CON_STR" -c "SELECT 1 FROM app_user LIMIT 1;" > /dev/null 2>&1; do
+            sleep 2
+          done
+          echo "Tablas detectadas, procediendo con la inyección..."
+
+          psql "$$DB_CON_STR" -c "INSERT INTO app_user (ory_id, email, name, surname) \
+            VALUES ('$$USER_ID', '${INITIAL_ADMIN_EMAIL}', '${INITIAL_ADMIN_NAME}', '${INITIAL_ADMIN_SURNAME}') \
+            ON CONFLICT (ory_id) DO NOTHING;"
+          
+          echo "Admin user correctly added to backend-db."
         else
-          echo "Error: No se pudo obtener el ID de Kratos."
+          echo "Error: Unable to obtain adminId from Kratos response."
         fi
 
   # --- BUSINESS LOGIC ---
-  rms-db:
+  backend-db:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=${RMS_DB_USER}
@@ -221,24 +241,23 @@ services:
     - db_data_rms:/var/lib/postgresql/data
 
   backend:
-    build: 
-      context: ./backend
-      target: build
+    image: maven:3.9.6-eclipse-temurin-21 # [PROD] substitute for build: ./backend
     depends_on:
-      rms-db:
+      backend-db:
         condition: service_healthy
     volumes:
-      - ./backend:/app/dev
+      - ./backend:/app
       - ~/.m2:/root/.m2
     environment:
-      - FRONTEND_URL=http://${DOMAIN_NAME}/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://rms-db:5432/${RMS_DB_NAME}
+      - KETO_READ_URL=http://keto:4466
+      - KETO_WRITE_URL=http://keto:4467
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://backend-db:5432/${RMS_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${RMS_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - internal
-    working_dir: /app/dev # [PROD] remove for production, this allows hot-reload
+    working_dir: /app # [PROD] remove for production, this allows hot-reload
     command: mvn spring-boot:run # [PROD] remove for production, this allows hot-reload
 
   frontend:

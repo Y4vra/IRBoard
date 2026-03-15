@@ -54,9 +54,9 @@
   #grid(
     columns: (1.25fr, 0.5fr, 1fr),
     align: (left, right),
-    image("Emblema Universidad de Oviedo Horizontal Color.png"),
+    image("./assets/logos/Emblema Universidad de Oviedo Horizontal Color.png"),
     [],
-    image("EII_logotipo_version_principal_PREFERIDO.png"),
+    image("./assets/logos/EII_logotipo_version_principal_PREFERIDO.png"),
   )
   #v(1fr)
   #align(center)[
@@ -204,7 +204,7 @@ For example, if a user is listed as requirement engineer and stakeholder in the 
 == Requirements Analysis
 Here are presented some diagrams that helped during the requirement edduction process.
 
-#figure(image("docs/diagrams/ProjectStates.svg"), caption: "Lifecicle of a project entity")
+#figure(image("./assets/diagrams/ProjectStates.svg"), caption: "Lifecicle of a project entity")
 #strong[Active] - A project entity that is currently in progress.
 
 #strong[finished] - A project entity that has been implemented. As the nature of a project is that one never ends, it does not represent an end state.
@@ -213,7 +213,7 @@ Here are presented some diagrams that helped during the requirement edduction pr
 
 #strong[Removed] - A project entity that has been archived for removal, placed in the trash bin in case it is needed as last resort.
 
-#figure(image("docs\diagrams\RequirementStates.svg"), caption: "Requirement entity's state diagram")
+#figure(image("./assets/diagrams/RequirementStates.svg"), caption: "Requirement entity's state diagram")
 #strong[PendingApproval] - A requirement entity that has not been validated by a stakeholder as it currently is.
 It's a complex state to ease development, as the pending review can be seen as an extension of itself, and therefore can be a simple boolean flag.
 
@@ -614,7 +614,7 @@ The system architecture follows a Microservices approach based on the Zero Trust
 
 The figure below shows the main flow of the application represented by solid arrows, and secondary messaging between microservices represented by a dotted arrows.
 
-#figure(image("docs/diagrams/ArchitectureC2.svg"), caption: "Architecture C2 component diagram")
+#figure(image("./assets/diagrams/ArchitectureC2.svg"), caption: "Architecture C2 component diagram")
 
 #strong[Traefik] - Acts as the system's entry point and TLS Termination Proxy. It handles dynamic routing and load balancing, effectively hiding the internal network topology and eliminating the need to expose multiple ports to the public internet.
 
@@ -626,7 +626,7 @@ The figure below shows the main flow of the application represented by solid arr
 
 #strong[Ory Kratos] - Manages the full identity lifecycle, including user registration, multi-factor authentication, and session management, ensuring that sensitive credentials are handled by a specialized security component.
 
-#strong[RMS Backend] - The core service developed using Spring Boot, containing the domain-specific business logic and data persistence.
+#strong[RMS Backend] - The core service developed using Spring Boot, containing the domain-specific business logic and data persistence. It interacts with keto both to write Relation-Based Access Control (ReBAC) tuples and to filter by permissions.
 
 #strong[Promtail] - An agent that ships local logs from the various microservices to the central store. and sends them to Loki.
 
@@ -640,7 +640,9 @@ The figure below shows the main flow of the application represented by solid arr
 
 == Class Design
 
-#figure(image("docs/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
+#figure(image("./assets/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
+
+#strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value isActive is also delegated to the ReBAC system, as it represents a user-to-system relationship.
 
 == Database Design
 

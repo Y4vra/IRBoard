@@ -1,4 +1,4 @@
-version: v0.1.1 # Actualizado
+version: v0.1.1
 
 dsn: postgres://${KETO_DB_USER}:${KETO_DB_PASSWORD}@keto-db:5432/${KETO_DB_NAME}?sslmode=disable
 

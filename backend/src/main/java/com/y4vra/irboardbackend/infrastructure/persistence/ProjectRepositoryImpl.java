@@ -27,6 +27,11 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
+    public List<Project> findAllById(Iterable<Long> ids) {
+        return jpaRepository.findAllById(ids);
+    }
+
+    @Override
     public Optional<Project> findById(Long id) {
         return jpaRepository.findById(id);
     }

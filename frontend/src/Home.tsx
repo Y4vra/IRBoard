@@ -11,7 +11,14 @@ function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${VITE_API_DOMAIN}/v1/home`);
+        const response = await fetch(`http://${VITE_API_DOMAIN}/v1/home`, {
+          method: 'GET',
+          credentials: 'include', // <--- ESTO ES VITAL
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
         if (!response.ok) throw new Error('Error al conectar con la API');
         
         const result = await response.json();

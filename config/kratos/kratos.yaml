@@ -36,6 +36,7 @@ selfservice:
 session:
   lifespan: 24h
   cookie:
+    domain: irboard.local
     name: irboard_session
     same_site: Lax
 

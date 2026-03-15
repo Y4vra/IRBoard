@@ -41,10 +41,6 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Document> documents = new HashSet<>();
 
-    // Inverse side — User is the owner via @ManyToMany in User
-    @ManyToMany(mappedBy = "projects")
-    private Set<User> projectManagers = new HashSet<>();
-
     public Project() {}
 
     public Long getId() { return id; }
@@ -76,7 +72,4 @@ public class Project {
 
     public Set<Document> getDocuments() { return Set.copyOf(documents); }
     protected Set<Document> _getDocuments() { return documents; }
-
-    public Set<User> getProjectManagers() { return Set.copyOf(projectManagers); }
-    protected Set<User> _getProjectManagers() { return projectManagers; }
 }

@@ -33,30 +33,6 @@ public class Associations {
         p._getDocuments().remove(d);
         d.setProject(null);
     }
-    public static void link(Project p, User u){
-        u._getProjects().add(p);
-        p._getProjectManagers().add(u);
-    }
-    public static void unlink(Project p, User u){
-        p._getProjectManagers().remove(u);
-        u._getProjects().remove(p);
-    }
-    public static void linkStakeholder(Functionality f, User u){
-        u._getStakeholderFunctionalities().add(f);
-        f._getStakeholders().add(u);
-    }
-    public static void unlinkStakeholder(Functionality f, User u){
-        f._getStakeholders().remove(u);
-        u._getStakeholderFunctionalities().remove(f);
-    }
-    public static void linkRequirementEngineer(Functionality f, User u){
-        u._getEngineerFunctionalities().add(f);
-        f._getRequirementEngineers().add(u);
-    }
-    public static void unlinkRequirementEngineer(Functionality f, User u){
-        f._getRequirementEngineers().remove(u);
-        u._getEngineerFunctionalities().remove(f);
-    }
     public static void link(Functionality f, FunctionalRequirement fr){
         fr.setFunctionality(f);
         f._getRequirements().add(fr);
