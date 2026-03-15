@@ -1,5 +1,4 @@
 version: v1.1.0
-
 serve:
   public:
     port: 4433

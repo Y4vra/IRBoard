@@ -35,7 +35,7 @@ function Login() {
           csrf_token: csrfToken,
         },
       })
-      window.location.href = "/dashboard"
+      window.location.href = "/home"
     } catch (err) {
       console.error("Error en el login:", err)
       alert("Credenciales incorrectas")

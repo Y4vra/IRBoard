@@ -68,3 +68,7 @@ mutators:
     config:
       headers:
         X-User: "{{ print .Subject }}"
+
+log:
+  level: debug
+  format: text

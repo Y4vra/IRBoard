@@ -65,5 +65,12 @@ public class Associations {
         f._getRequirements().remove(fr);
         fr.setFunctionality(null);
     }
-
+    public static void link(Requirement parent, Requirement child){
+        child.setParent(parent);
+        parent._getChildren().add(child);
+    }
+    public static void unlink(Requirement parent, Requirement child){
+        parent._getChildren().remove(child);
+        child.setParent(null);
+    }
 }

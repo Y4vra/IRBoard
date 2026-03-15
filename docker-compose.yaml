@@ -10,6 +10,7 @@ services:
     image: traefik:v2.10
     container_name: traefik
     command:
+      - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--providers.docker=true"
@@ -97,7 +98,7 @@ services:
       - SESSIONS_COOKIE_SECURE=false
       - SESSIONS_COOKIE_DOMAIN=${DOMAIN_NAME}
       - SELFSERVICE_ALLOWED_RETURN_URLS=http://${DOMAIN_NAME}
-      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/dashboard
+      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/home
       - SELFSERVICE_FLOWS_ERROR_UI_URL=http://${DOMAIN_NAME}/error
       - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://${DOMAIN_NAME}/login
       - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://${DOMAIN_NAME}/registration
@@ -144,7 +145,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) || Host(`grafana.${DOMAIN_NAME}`)"
       - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
-      - "traefik.docker.network=public"
+      - "traefik.docker.network=irboard_public"
 
   # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ---
   initial-setup-admin:

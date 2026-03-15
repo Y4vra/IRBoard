@@ -12,15 +12,15 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class DashboardController {
+public class HomeController {
     private final ProjectService projectService;
 
-    public DashboardController(ProjectService projectService) {
+    public HomeController(ProjectService projectService) {
         this.projectService = projectService;
     }
 
-    @GetMapping("/v1/dashboard")
-    public Map<String, Object> getDashboardInfo(Authentication authentication) {
+    @GetMapping("/v1/home")
+    public Map<String, Object> getHome(Authentication authentication) {
         Map<String, Object> data = new HashMap<>();
 
         String role = authentication.getAuthorities().stream()

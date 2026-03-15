@@ -1,20 +1,8 @@
-- id: "allow-frontend-static"
-  match:
-    methods: ["GET"]
-    url: "http://irboard.local/<.*>" # [PROD] change the domains for production
-  authenticators:
-    - handler: "noop"
-  authorizer:
-    handler: "allow"
-  mutators:
-    - handler: "noop"
-  upstream:
-    url: "http://frontend:5173"
 
 - id: "kratos-self-service-pass"
   match:
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
-    url: "http://auth.irboard.local/<self-service/.*>"
+    url: "http://auth.irboard.local/<.*>"
   authenticators:
     - handler: "noop"
   authorizer:
