@@ -1,19 +1,33 @@
-// src/context/AuthProvider.tsx
 import { useEffect, useState } from "react";
 import { kratos } from "../lib/kratos";
 import type { Session } from "@ory/client";
-import { AuthContext } from "./AuthContext";
+import { AuthContext, type UserProfile } from "./AuthContext";
+import { API_BASE_URL } from "@/lib/globalVars";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const checkSession = async () => {
     try {
       const { data } = await kratos.toSession();
       setSession(data);
+
+      if (data){
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        }
+      }
     } catch (error) {
       setSession(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -33,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!session, session, loading, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!session, session, user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

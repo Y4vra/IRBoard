@@ -1,10 +1,20 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 
 import './App.css'
 import Login from './Login'
 import Home from './Home'
 import { AuthProvider } from './context/AuthProvider'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { NavBar } from './components/Navbar'
+
+const WindowLayout = () => (
+  <div className="min-h-screen flex flex-col">
+    <NavBar /> 
+    <main className="p-4">
+      <Outlet />
+    </main>
+  </div>
+);
 
 function App() {
   return (
@@ -12,9 +22,13 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<WindowLayout />}>
+              <Route path="/" element={<Home />}/>
+              <Route path="/home" element={<Home />}/>
+            </Route>
+          </Route>
           <Route path="*" element={<Navigate to="/home" replace />} />
-          
-          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>}/>
         </Routes>
       </BrowserRouter>
     </AuthProvider>

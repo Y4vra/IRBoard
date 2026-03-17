@@ -21,26 +21,16 @@ public class HomeController {
     }
 
     @GetMapping("/home")
-    public Map<String, Object> getHome(Authentication authentication) {
-        Map<String, Object> data = new HashMap<>();
-
+    public List<ProjectDTO> getHome(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        data.put("message", "Hola " + user.getName() + " " + user.getSurname());
-        data.put("email", user.getEmail());
-        data.put("oryId", user.getOryId());
-        data.put("role", isAdmin ? "ADMIN" : "USER");
-
         List<ProjectDTO> projects;
         if (isAdmin) {
-            projects = projectService.findAllProjects();
+            return projectService.findAllProjects();
         } else {
-            projects = projectService.findProjectsForUser(user.getOryId());
+            return projectService.findProjectsForUser(user.getOryId());
         }
-        data.put("projects", projects);
-
-        return data;
     }
 }

@@ -4,21 +4,31 @@ import { Button } from "@/components/ui/button"
 import {Card,CardContent,CardDescription,CardFooter,CardHeader,CardTitle,} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/context/AuthContext"
 
 function Login() {
   const [flowData, setFlowData] = useState<any>(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
+  const { isAuthenticated, loading } = useAuth()
+  const navigate = useNavigate()
+
   useEffect(() => {
-    kratos.createBrowserLoginFlow()
-      .then(({ data }) => setFlowData(data))
-      .catch((err) => console.error("Error iniciando flow:", err))
-  }, [])
+    if (!loading){
+      if(isAuthenticated) {
+        navigate("/", { replace: true });
+      }else{
+        kratos.createBrowserLoginFlow()
+        .then(({ data }) => setFlowData(data))
+        .catch((err) => console.error("Error setting up flow:", err))
+      }
+    }
+  }, [isAuthenticated, loading, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!flowData) return
 
     const csrfToken = flowData.ui.nodes.find(
@@ -35,7 +45,7 @@ function Login() {
           csrf_token: csrfToken,
         },
       })
-      window.location.href = "/home"
+      window.location.href = "/"
     } catch (err) {
       console.error("Error en el login:", err)
       alert("Credenciales incorrectas")
@@ -50,8 +60,8 @@ function Login() {
           Enter your email below to login to the site
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent>
+      <CardContent>
+        <form onSubmit={handleSubmit} id="loginForm">
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -69,13 +79,13 @@ function Login() {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
           </div>
-        </CardContent>
+        </form>
+      </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button type="submit" className="w-full">
+          <Button type="submit" form="loginForm" className="w-full">
             Login
           </Button>
         </CardFooter>
-      </form>
     </Card>
   )
 }

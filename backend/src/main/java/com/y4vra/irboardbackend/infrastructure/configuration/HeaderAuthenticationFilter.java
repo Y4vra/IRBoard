@@ -33,11 +33,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("--- NUEVA PETICIÓN RECIBIDA EN EL FILTRO ---");
-        System.out.println("URL: " + request.getRequestURL());
-
         String oryId = request.getHeader("X-User");
-        System.out.println("X-User Header: " + (oryId == null ? "NULL (No llegó)" : oryId));
 
         if (oryId != null && !oryId.isEmpty()) {
 
@@ -54,7 +50,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             });
         }else{
-            System.out.println("ALERTA: Petición sin header X-User. Saltando autenticación.");
+            System.out.println("ALERT: Request without X-User. No authentication provided.");
         }
 
         filterChain.doFilter(request, response);

@@ -1,9 +1,16 @@
 import { createContext, useContext } from "react";
 import type { Session } from "@ory/client";
 
-interface AuthContextType {
+export interface UserProfile {
+  name: string;
+  surname: string;
+  email: string;
+  isAdmin: boolean;
+}
+export interface AuthContextType {
   isAuthenticated: boolean;
   session: Session | null;
+  user: UserProfile | null;
   loading: boolean;
   logout: () => void;
 }
