@@ -87,8 +87,3 @@ This project is distributed under the **GNU GPLv3** license. Refer to the `LICEN
 Developed as a Bachelor's Thesis (TFG) for the University of Oviedo.
 
 **Author:** Javier Carrasco Arango - Y4vra
-
----
-
-**Next Steps:**
-Would you like me to help you draft the **System Implementation** or **Installation Guide** chapters for your TFG document based on this README?
