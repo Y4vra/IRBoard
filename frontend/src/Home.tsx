@@ -63,8 +63,7 @@ function Home() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-2">
-            <LayoutGrid className="text-indigo-600" />
-            Project Dashboard
+            Projects
           </h1>
           <p className="text-slate-500 mt-1">Explore the projects you have access to.</p>
         </div>

@@ -76,7 +76,7 @@ function Login() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input id="password" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
           </div>
         </form>
