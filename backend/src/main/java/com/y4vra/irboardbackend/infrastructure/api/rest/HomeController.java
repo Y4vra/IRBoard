@@ -3,6 +3,8 @@ package com.y4vra.irboardbackend.infrastructure.api.rest;
 import com.y4vra.irboardbackend.application.dtos.ProjectDTO; // Asegúrate de que el paquete sea correcto
 import com.y4vra.irboardbackend.application.services.ProjectService;
 import com.y4vra.irboardbackend.domain.model.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,16 +23,16 @@ public class HomeController {
     }
 
     @GetMapping("/home")
-    public List<ProjectDTO> getHome(Authentication authentication) {
+    public ResponseEntity<List<ProjectDTO>> getHome(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         List<ProjectDTO> projects;
         if (isAdmin) {
-            return projectService.findAllProjects();
+            return ResponseEntity.status(HttpStatus.OK).body(projectService.findAllProjects());
         } else {
-            return projectService.findProjectsForUser(user.getOryId());
+            return ResponseEntity.status(HttpStatus.OK).body(projectService.findProjectsForUser(user.getOryId()));
         }
     }
 }

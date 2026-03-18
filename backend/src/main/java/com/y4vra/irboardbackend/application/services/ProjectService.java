@@ -2,8 +2,10 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.application.mappers.ProjectMapper;
+import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,5 +43,23 @@ public class ProjectService {
         return projectRepository.findAllById(longIds).stream()
                 .map(projectMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectDTO createProject(ProjectDTO projectDTO) {
+        Project project = new Project();
+        Project savedProject = projectRepository.save(project);
+        return projectMapper.toDto(savedProject);
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectDTO findById(String oryId, long id) {
+        boolean isAuthorized = ketoClient.check("Project", String.valueOf(id), "viewDashboard", oryId);
+        if (!isAuthorized) {
+            throw new RuntimeException("User not authorized to view this project");
+        }
+        return projectRepository.findById(id)
+                .map(projectMapper::toDto)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
     }
 }

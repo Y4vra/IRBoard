@@ -43,6 +43,14 @@ public class Project {
 
     public Project() {}
 
+    public Project(String name, String description, PriorityStyle priorityStyle) {
+        this.name = name;
+        this.description = description;
+        this.priorityStyle = priorityStyle;
+        this.state = ProjectState.ACTIVE;
+        this.createdAt = LocalDateTime.now();
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
