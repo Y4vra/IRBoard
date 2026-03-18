@@ -574,13 +574,6 @@ It's a complex state to ease development, as the pending review can be seen as a
   ),
 )
 
-==== Observability
-#O_List(
-  [The system must allow an admin to acess an observability dashboard with information logs.],
-  [The system must allow an admin to monitor the health and performance metrics of the microservices infrastructure.],
-  [The system must allow an admin to query and visualize logs from all system components.],
-)
-
 === Usability Requirements
 
 === Performance Requirements
@@ -629,12 +622,6 @@ The figure below shows the main flow of the application represented by solid arr
 #strong[Ory Kratos] - Manages the full identity lifecycle, including user registration, multi-factor authentication, and session management, ensuring that sensitive credentials are handled by a specialized security component.
 
 #strong[RMS Backend] - The core service developed using Spring Boot, containing the domain-specific business logic and data persistence. It interacts with keto both to write Relation-Based Access Control (ReBAC) tuples and to filter by permissions.
-
-#strong[Promtail] - An agent that ships local logs from the various microservices to the central store. and sends them to Loki.
-
-#strong[Loki] - A horizontally scalable, highly available log aggregation system.
-
-#strong[Grafana] - A visualization platform used to build observability dashboards. In this architecture, it is placed within the internal network and accessed through the Identity Proxy to ensure that system logs are only visible to authorized personnel.
 
 #strong[Mailpit] - A simple email server that receives all messages sent by Ory Kratos. Acts as a placeholder for development instead of a real email server, to ensure the signup works.
 

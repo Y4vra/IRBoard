@@ -14,9 +14,6 @@ package "Network: internal" #AliceBlue {
     [Ory Kratos] as kratos
     [Ory Keto] as keto
     [RMS Backend] as backend
-    [Loki]
-    [Grafana]
-    [Promtail]
     [Mailpit] as mail
     
     database "PostgreSQL (RMS)" as db_rms
@@ -30,31 +27,22 @@ gateway -down-> front
 gateway -down--> proxy 
 
 ' Consultas internas Ory
-proxy -> kratos 
-proxy -left-> keto 
-proxy .> Grafana
+proxy ---> kratos 
+proxy ---> keto 
 
 ' Paso final al Backend
-proxy -down-> backend
+proxy -down--> backend
 
 ' mailing provisional
-kratos -> mail : SMTP (1025)
+kratos --> mail : SMTP (1025)
 
 ' Persistencia
-backend .> keto : Write Tuples (GRPC)
+backend ..> keto : Write Tuples (GRPC)
+backend ..> kratos : Add user
 
 backend -down-> db_rms
 kratos -down-> db_auth
 keto -down-> db_perm
-
-' Observabilidad
-
-Grafana --> Loki
-Promtail ..> Loki : deliver logs
-Promtail ..> kratos
-Promtail ..> keto
-Promtail ..> backend
-Promtail .left.> proxy
 
 
 @enduml
