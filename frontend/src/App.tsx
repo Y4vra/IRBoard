@@ -6,6 +6,7 @@ import Home from './Home'
 import { AuthProvider } from './context/AuthProvider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { NavBar } from './components/Navbar'
+import NewProject from './newProject'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col">
@@ -26,6 +27,7 @@ function App() {
             <Route element={<WindowLayout />}>
               <Route path="/" element={<Home />}/>
               <Route path="/home" element={<Home />}/>
+              <Route path="/projects/new" element={<NewProject />}/>
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/home" replace />} />

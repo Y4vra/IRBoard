@@ -67,13 +67,17 @@ export function NavBar() {
         <div className={cn(
           "flex items-center transition-all duration-300 relative",
           open 
-            ? "w-full px-3 py-2.5 justify-between rounded-xl border border-slate-200 bg-white" 
+            ? "w-full p-1 justify-between rounded-xl border border-slate-200 bg-white" 
             : "w-full justify-center border-none bg-transparent"
         )}>
-          <div className={cn(
-            "flex items-center gap-2 min-w-0 transition-all duration-300",
-            !open && "w-full justify-center"
-          )}>
+          <Link
+            to={finishedOpening ? "/profile" : "#"}
+            className={cn(
+              "flex items-center gap-2 min-w-0 transition-all duration-300 flex-1 rounded-lg p-1.5",
+              !open && "w-full justify-center",
+              open && "hover:bg-slate-50 active:bg-slate-100"
+            )}
+          >
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 border border-slate-200">
               {open ? <User className="h-4 w-4 text-slate-500" /> : <MoreHorizontal className="h-5 w-5 text-slate-400" />}
             </div>
@@ -84,12 +88,15 @@ export function NavBar() {
                 <p className="truncate text-xs text-slate-400 mt-0.5">{user.email}</p>
               </div>
             )}
-          </div>
+          </Link>
 
           <button
-            onClick={() => logout()}
+            onClick={(e) => {
+              e.preventDefault();
+              logout();
+            }}
             className={cn(
-                "flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 px-2 py-1 rounded-lg hover:bg-red-50 shrink-0 transition-all duration-500 ease-in-out",
+                "flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 px-2 py-1 rounded-lg hover:bg-red-50 shrink-0 transition-all duration-500 ease-in-out mr-1",
                 open && finishedOpening 
                   ? "opacity-100 translate-x-0 visible" 
                   : "opacity-0 -translate-x-4 invisible pointer-events-none absolute right-3"
@@ -108,31 +115,33 @@ export function NavBar() {
             "flex flex-col gap-2 overflow-hidden transition-all duration-500",
             open ? "translate-y-0" : "-translate-y-4"
           )}>
-            <div className="relative mt-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            <div className="relative mt-1 px-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               <input
                 placeholder="Search anything..."
                 disabled={!finishedOpening}
-                className="w-full pl-9 pr-3 h-10 rounded-xl border border-slate-200 bg-white text-sm placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all"
+                className="w-full pl-10 pr-3 h-10 rounded-xl border border-slate-200 bg-white text-sm placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all"
               />
             </div>
 
-            <NavItem icon={<Folder className="h-4 w-4" />} label="Projects" to="/projects" active={isProjectView} disabled={!finishedOpening} />
+            <div className="px-1 flex flex-col gap-2">
+              <NavItem icon={<Folder className="h-4 w-4" />} label="Projects" to="/projects" active={isProjectView} disabled={!finishedOpening} />
 
-            {isProjectView && (
-              <div className="flex flex-col gap-1 pl-2 ml-3 border-l-2 border-indigo-100">
-                <NavItem icon={<LayoutList className="h-4 w-4" />} label="Functionalities" to={`${projectBasePath}/functionalities`} disabled={!finishedOpening} />
-                <NavItem icon={<UsersRound className="h-4 w-4" />} label="Stakeholders" to={`${projectBasePath}/stakeholders`} disabled={!finishedOpening} />
-                <NavItem icon={<ShieldAlert className="h-4 w-4" />} label="Non-Functional" to={`${projectBasePath}/non-functional-requirements`} disabled={!finishedOpening} />
-                <NavItem icon={<FileText className="h-4 w-4" />} label="Documents" to={`${projectBasePath}/documents`} disabled={!finishedOpening} />
-              </div>
-            )}
+              {isProjectView && (
+                <div className="flex flex-col gap-1 pl-2 ml-3 border-l-2 border-indigo-100">
+                  <NavItem icon={<LayoutList className="h-4 w-4" />} label="Functionalities" to={`${projectBasePath}/functionalities`} disabled={!finishedOpening} />
+                  <NavItem icon={<UsersRound className="h-4 w-4" />} label="Stakeholders" to={`${projectBasePath}/stakeholders`} disabled={!finishedOpening} />
+                  <NavItem icon={<ShieldAlert className="h-4 w-4" />} label="Non-Functional" to={`${projectBasePath}/non-functional-requirements`} disabled={!finishedOpening} />
+                  <NavItem icon={<FileText className="h-4 w-4" />} label="Documents" to={`${projectBasePath}/documents`} disabled={!finishedOpening} />
+                </div>
+              )}
 
-            {isProjectView && <hr className="border-slate-100 my-0.5" />}
+              {isProjectView && <hr className="border-slate-100 my-0.5" />}
 
-            {user.isAdmin && (
-              <NavItem icon={<Users className="h-4 w-4" />} label="User management" to="/admin/users" disabled={!finishedOpening} />
-            )}
+              {user.isAdmin && (
+                <NavItem icon={<Users className="h-4 w-4" />} label="User management" to="/admin/users" disabled={!finishedOpening} />
+              )}
+            </div>
           </div>
         </div>
       </div>
