@@ -3,6 +3,8 @@
 // ===============================
 #import "@preview/efilrst:0.3.2" as efilrst
 #show ref: efilrst.show-rule
+#show link: set text(fill: blue)
+#show link: underline
 #set page(
   margin: (top: 2.5cm, bottom: 2.5cm, left: 3cm, right: 3cm),
   footer: context {
@@ -647,7 +649,10 @@ The figure below shows the main flow of the application represented by solid arr
 == Database Design
 
 == User Interface Design
+To design the user interfaces, the design tool moqups was used to model the UI wireframes.
+All designs provided were shared and accepted by the tutors, and are free to be inspected here:
 
+#link("https://app.moqups.com/YJhvDCqTutTvP6fK9lrmLLpEvfYlnCLR/view/page/a662b029d", "TFG moqups")
 == Test Plan Specification
 
 = System Implementation //7
