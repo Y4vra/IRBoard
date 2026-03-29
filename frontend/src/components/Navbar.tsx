@@ -21,16 +21,18 @@ export function NavBar() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [finishedOpening, setFinishedOpening] = useState(false);
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    let openingTimeout: NodeJS.Timeout;
+    let openingTimeout: ReturnType<typeof setTimeout>;
+    
     if (open) {
       openingTimeout = setTimeout(() => setFinishedOpening(true), 300);
-    } else {
-      setFinishedOpening(false);
-    }
-    return () => clearTimeout(openingTimeout);
+    } 
+    
+    return () => {
+      clearTimeout(openingTimeout);
+    };
   }, [open]);
 
   const handleMouseEnter = () => {
@@ -41,6 +43,7 @@ export function NavBar() {
   const handleMouseLeave = () => {
     closeTimeoutRef.current = setTimeout(() => {
       setOpen(false);
+      setFinishedOpening(false);
     }, 200);
   };
 
