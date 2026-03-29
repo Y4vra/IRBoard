@@ -21,6 +21,11 @@ export default defineConfig(({ mode }) => {
       watch: {
         usePolling: true, // allows hotreload
       }
-    }
+    },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/tests/setup.ts',
+    },
 }
 })
