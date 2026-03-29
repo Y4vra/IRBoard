@@ -34,6 +34,7 @@ public abstract class Requirement {
     public Requirement() {}
 
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public Float getOrderValue() { return orderValue; }
     public void setOrderValue(Float orderValue) { this.orderValue = orderValue; }

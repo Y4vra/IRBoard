@@ -1,5 +1,7 @@
 import { Namespace, SubjectSet, Context } from "@ory/keto-namespace-types"
 
+class User implements Namespace {}
+
 class System implements Namespace {
   related: {
     admins: User[]
@@ -8,6 +10,7 @@ class System implements Namespace {
   permits = {
     manageProjects: (ctx: Context) => this.related.admins.includes(ctx.subject),
     inviteUsers: (ctx: Context) => this.related.admins.includes(ctx.subject),
+    viewAll: (ctx: Context) => this.related.admins.includes(ctx.subject),
   }
 }
 
@@ -20,13 +23,17 @@ class Project implements Namespace {
   permits = {
     edit: (ctx: Context) =>
       this.related.managers.includes(ctx.subject) ||
-      this.related.parent_system.traverse((s) => s.permits.manageProjects(ctx)),
+      this.related.parent_system.traverse((s) => s.permits.edit(ctx)),
     
-    linkUsers: (ctx: Context) => this.related.managers.includes(ctx.subject),
-    
-    viewDashboard: (ctx: Context) => 
+    view: (ctx: Context) => 
       this.related.managers.includes(ctx.subject) ||
-      this.related.parent_system.traverse((s) => s.permits.manageProjects(ctx))
+      this.related.parent_system.traverse((s) => s.permits.view(ctx)),
+    
+    linkManagers: (ctx: Context) => 
+      this.related.parent_system.traverse((s) => s.permits.manageProjects(ctx)),
+
+    linkProjectUsers: (ctx: Context) => this.related.managers.includes(ctx.subject)
+      
   }
 }
 
@@ -38,17 +45,18 @@ class Functionality implements Namespace {
   }
 
   permits = {
-    editRequirements: (ctx: Context) =>
-      this.related.engineers.includes(ctx.subject) ||
-      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
+    permits = {
+      editRequirements: (ctx: Context) =>
+        this.related.engineers.includes(ctx.subject) ||
+        this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
 
-    viewRequirements: (ctx: Context) =>
-      this.related.stakeholders.includes(ctx.subject) ||
-      this.permits.editRequirements(ctx),
+      viewRequirements: (ctx: Context) =>
+        this.related.stakeholders.includes(ctx.subject) ||
+        this.related.engineers.includes(ctx.subject) ||
+        this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
 
-    approveElements: (ctx: Context) =>
-      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject))
+      approveAll: (ctx: Context) =>
+        this.related.project.traverse((p) => p.related.managers.includes(ctx.subject))
+    }
   }
 }
-
-class User implements Namespace {}

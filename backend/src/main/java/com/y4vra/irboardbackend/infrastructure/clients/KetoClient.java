@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
+import com.y4vra.irboardbackend.infrastructure.api.rest.errors.ReBACException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -13,11 +14,13 @@ public class KetoClient {
 
     private final RestTemplate restTemplate;
     private final String ketoReadUrl;
+    private final String ketoWriteUrl;
 
     public KetoClient(@Value("${keto.read.url}") String ketoReadUrl,
                       @Value("${keto.write.url}") String ketoWriteUrl) {
         this.restTemplate = new RestTemplate();
         this.ketoReadUrl = ketoReadUrl;
+        this.ketoWriteUrl = ketoWriteUrl;
     }
 
     public boolean check(String namespace, String object, String relation, String subjectId) {
@@ -59,6 +62,23 @@ public class KetoClient {
                     .toList();
         } catch (Exception e) {
             return List.of();
+        }
+    }
+
+    public void createRelation(String namespace, String object, String relation, String subjectId) {
+        String url = ketoWriteUrl + "/relation-tuples";
+
+        Map<String, String> body = Map.of(
+                "namespace", namespace,
+                "object", object,
+                "relation", relation,
+                "subject_id", subjectId
+        );
+
+        try {
+            restTemplate.put(url, body);
+        } catch (Exception e) {
+            throw new ReBACException("Failed to create ReBAC tuple in Keto", e);
         }
     }
 }

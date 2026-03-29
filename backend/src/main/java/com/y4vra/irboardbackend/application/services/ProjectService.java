@@ -6,6 +6,7 @@ import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +36,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public List<ProjectDTO> findProjectsForUser(String oryId) {
-        List<String> stringIds = ketoClient.getAuthorizedObjects(oryId, "Project", "viewer");
+        List<String> stringIds = ketoClient.getAuthorizedObjects(oryId, "Project", "view");
 
         List<Long> longIds = stringIds.stream()
                 .map(Long::valueOf)
@@ -45,18 +46,20 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public ProjectDTO createProject(ProjectDTO projectDTO) {
-        Project project = new Project();
+    @Transactional
+    public ProjectDTO createProject(ProjectDTO projectDTO, String oryId) {
+        Project project = projectMapper.toEntity(projectDTO);
         Project savedProject = projectRepository.save(project);
+        ketoClient.createRelation("Project", String.valueOf(savedProject.getId()), "managers", oryId);
+
         return projectMapper.toDto(savedProject);
     }
 
     @Transactional(readOnly = true)
     public ProjectDTO findById(String oryId, long id) {
-        boolean isAuthorized = ketoClient.check("Project", String.valueOf(id), "viewDashboard", oryId);
+        boolean isAuthorized = ketoClient.check("Project", String.valueOf(id), "view", oryId);
         if (!isAuthorized) {
-            throw new RuntimeException("User not authorized to view this project");
+            throw new AccessDeniedException("User not authorized to view this project");
         }
         return projectRepository.findById(id)
                 .map(projectMapper::toDto)
