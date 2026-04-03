@@ -6,13 +6,16 @@ import {
   LayoutGrid, 
   AlignLeft, 
   UserCircle,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { API_BASE_URL } from "./lib/globalVars";
 
 export default function NewProject() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -22,11 +25,39 @@ export default function NewProject() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    setTimeout(() => {
+    setError(null);
+
+    if (!API_BASE_URL) {
+      setError("La variable de entorno 'api_domain' no está configurada.");
       setLoading(false);
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/new`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error("You must be an admin to perform this action.");
+        }
+        throw new Error('An error ocurred while creating the project');
+      }
+
       navigate("/projects");
-    }, 1000);
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,6 +80,13 @@ export default function NewProject() {
             <h1 className={cn("text-2xl font-bold text-slate-800")}>Create New Project</h1>
             <p className={cn("text-slate-500 mt-1")}>Define the basic parameters for your requirement management workspace.</p>
           </div>
+
+          {error && (
+            <div className="mx-8 mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 animate-in zoom-in-95">
+              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className={cn("p-8 space-y-6")}>
             <div className={cn("space-y-2")}>

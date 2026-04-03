@@ -7,29 +7,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class DocumentMapper {
 
-    public DocumentDTO toDto(Document entity) {
+    public DocumentDTO toDto(Document entity, String accessUrl) {
         if (entity == null) return null;
 
-        DocumentDTO dto = new DocumentDTO();
-        dto.setId(entity.getId());
-        dto.setFileName(entity.getFileName());
-        dto.setMimeType(entity.getMimeType());
-        dto.setFileSize(entity.getFileSize());
-        if (entity.getProject() != null) {
-            dto.setProjectId(entity.getProject().getId());
-        }
-
-        return dto;
+        return new DocumentDTO(
+            entity.getId(),
+            entity.getFileName(),
+            entity.getMimeType(),
+            entity.getFileSize(),
+            entity.getProject() != null? entity.getProject().getId():null,
+            accessUrl
+        );
     }
 
     public Document toEntity(DocumentDTO dto) {
         if (dto == null) return null;
 
         Document entity = new Document();
-        entity.setId(dto.getId());
-        entity.setFileName(dto.getFileName());
-        entity.setMimeType(dto.getMimeType());
-        entity.setFileSize(dto.getFileSize());
+        entity.setId(dto.id());
+        entity.setFileName(dto.fileName());
+        entity.setMimeType(dto.mimeType());
+        entity.setFileSize(dto.fileSize());
 
         return entity;
     }

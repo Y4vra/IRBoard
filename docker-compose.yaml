@@ -239,6 +239,30 @@ services:
       retries: 5
     volumes:
     - db_data_rms:/var/lib/postgresql/data
+  
+  object-storage:
+    image: minio/minio
+    networks:
+      - internal
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${OBJ_STORAGE_USER}
+      - MINIO_ROOT_PASSWORD=${OBJ_STORAGE_PASS}
+    command: server /data --console-address ":9001"
+
+  object-storage-client:
+    image: minio/mc
+    depends_on:
+      - object-storage
+    networks:
+      - internal
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set myminio http://object-storage:9000 ${OBJ_STORAGE_USER} ${OBJ_STORAGE_PASS}) do sleep 1; done;
+      /usr/bin/mc mb myminio/documents;
+      exit 0;
+      "
 
   backend:
     image: maven:3.9.6-eclipse-temurin-21 # [PROD] substitute for build: ./backend
@@ -251,6 +275,9 @@ services:
     environment:
       - KETO_READ_URL=http://keto:4466
       - KETO_WRITE_URL=http://keto:4467
+      - OBJ_STORAGE_URL=http://object-storage:9000
+      - OBJ_STORAGE_USER=${OBJ_STORAGE_USER}
+      - OBJ_STORAGE_PASS=${OBJ_STORAGE_PASS}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://backend-db:5432/${RMS_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${RMS_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
@@ -324,3 +351,4 @@ volumes: # [PROD] remove volumes in production
   db_data_kratos:
   db_data_keto:
   db_data_rms:
+  minio_data:

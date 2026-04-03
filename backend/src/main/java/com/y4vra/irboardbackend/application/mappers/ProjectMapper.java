@@ -11,11 +11,12 @@ public class ProjectMapper {
     public ProjectDTO toDto(Project project) {
         if (project == null) return null;
 
-        ProjectDTO dto = new ProjectDTO();
-        dto.setId(project.getId());
-        dto.setName(project.getName());
-        dto.setDescription(project.getDescription());
-        dto.setState(project.getState().toString());
+        ProjectDTO dto = new ProjectDTO(
+                project.getId(),
+                project.getName(),
+                project.getDescription(),
+                project.getState() != null ? project.getState().toString() : null,
+                0);
 
         return dto;
     }
@@ -24,10 +25,10 @@ public class ProjectMapper {
         if (dto == null) return null;
 
         Project project = new Project();
-        project.setId(dto.getId());
-        project.setName(dto.getName());
-        project.setDescription(dto.getDescription());
-        project.setState(ProjectState.valueOf(dto.getState()));
+        project.setId(dto.id());
+        project.setName(dto.name());
+        project.setDescription(dto.description());
+        project.setState(ProjectState.valueOf(dto.state()));
 
         return project;
     }

@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.mappers.DocumentMapper;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
+import com.y4vra.irboardbackend.infrastructure.clients.MinioService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,15 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentMapper documentMapper;
     private final KetoClient ketoClient;
+    private final MinioService minioService;
 
     public DocumentService(DocumentRepository documentRepository,
                            DocumentMapper documentMapper,
-                           KetoClient ketoClient) {
+                           KetoClient ketoClient,MinioService minioService) {
         this.documentRepository = documentRepository;
         this.documentMapper = documentMapper;
         this.ketoClient = ketoClient;
+        this.minioService = minioService;
     }
 
     @Transactional(readOnly = true)
@@ -36,8 +39,11 @@ public class DocumentService {
             throw new AccessDeniedException("User not authorized to view documents of this project");
         }
         return documentRepository.findAllByProjectId(projectId).stream()
-                .map(documentMapper::toDto)
-                .collect(Collectors.toList());
+                .map(doc -> {
+                    String url = minioService.getPresignedUrl(doc.getFileName());
+                    return documentMapper.toDto(doc, url);
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -47,9 +53,11 @@ public class DocumentService {
         if (!hasProjectAccess) {
             throw new AccessDeniedException("User not authorized to view documents of this project");
         }
-        return documentRepository.findById(id)
-                .map(documentMapper::toDto)
+        Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found"));
+
+        String url = minioService.getPresignedUrl(document.getFileName());
+        return documentMapper.toDto(document, url);
     }
 
     @Transactional
@@ -65,6 +73,7 @@ public class DocumentService {
         ketoClient.createRelation("Document", String.valueOf(saved.getId()), "parents", "Project:" + projectId);
         ketoClient.createRelation("Document", String.valueOf(saved.getId()), "owners", oryId);
 
-        return documentMapper.toDto(saved);
+        String url = minioService.getPresignedUrl(saved.getFileName());
+        return documentMapper.toDto(saved, url);
     }
 }
