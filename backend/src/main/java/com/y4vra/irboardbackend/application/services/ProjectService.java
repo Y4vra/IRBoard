@@ -48,7 +48,7 @@ public class ProjectService {
 
     @Transactional
     public ProjectDTO createProject(ProjectDTO projectDTO, String oryId) {
-        Project project = projectMapper.toEntity(projectDTO);
+        Project project = new Project(projectDTO.name(),projectDTO.description(),projectDTO.priorityStyle());
         Project savedProject = projectRepository.save(project);
         ketoClient.createRelation("Project", String.valueOf(savedProject.getId()), "managers", oryId);
 

@@ -43,10 +43,12 @@ public class Project {
 
     public Project() {}
 
-    public Project(String name, String description, PriorityStyle priorityStyle) {
+    public Project(String name, String description, String priorityStyle) {
         this.name = name;
         this.description = description;
-        this.priorityStyle = priorityStyle;
+        this.priorityStyle = (priorityStyle != null) ?
+                PriorityStyle.valueOf(priorityStyle.toUpperCase()) :
+                PriorityStyle.TERNARY;
         this.state = ProjectState.ACTIVE;
         this.createdAt = LocalDateTime.now();
     }

@@ -2,7 +2,9 @@ package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +17,7 @@ public class ProjectMapper {
                 project.getId(),
                 project.getName(),
                 project.getDescription(),
+                project.getPriorityStyle() != null ? project.getPriorityStyle().toString() : null,
                 project.getState() != null ? project.getState().toString() : null,
                 0);
 
@@ -28,6 +31,7 @@ public class ProjectMapper {
         project.setId(dto.id());
         project.setName(dto.name());
         project.setDescription(dto.description());
+        project.setPriorityStyle(PriorityStyle.valueOf(dto.priorityStyle()));
         project.setState(ProjectState.valueOf(dto.state()));
 
         return project;

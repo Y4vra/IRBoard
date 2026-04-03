@@ -66,7 +66,7 @@ public class KetoClient {
     }
 
     public void createRelation(String namespace, String object, String relation, String subjectId) {
-        String url = ketoWriteUrl + "/relation-tuples";
+        String url = ketoWriteUrl + "/admin/relation-tuples";
 
         Map<String, String> body = Map.of(
                 "namespace", namespace,
