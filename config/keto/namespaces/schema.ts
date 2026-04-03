@@ -23,11 +23,11 @@ class Project implements Namespace {
   permits = {
     edit: (ctx: Context) =>
       this.related.managers.includes(ctx.subject) ||
-      this.related.parent_system.traverse((s) => s.permits.edit(ctx)),
+      this.related.parent_system.traverse((s) => s.permits.manageProjects(ctx)),
     
     view: (ctx: Context) => 
       this.related.managers.includes(ctx.subject) ||
-      this.related.parent_system.traverse((s) => s.permits.view(ctx)),
+      this.related.parent_system.traverse((s) => s.permits.viewAll(ctx)),
     
     linkManagers: (ctx: Context) => 
       this.related.parent_system.traverse((s) => s.permits.manageProjects(ctx)),
@@ -45,18 +45,16 @@ class Functionality implements Namespace {
   }
 
   permits = {
-    permits = {
-      editRequirements: (ctx: Context) =>
-        this.related.engineers.includes(ctx.subject) ||
-        this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
+    editRequirements: (ctx: Context) =>
+      this.related.engineers.includes(ctx.subject) ||
+      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
 
-      viewRequirements: (ctx: Context) =>
-        this.related.stakeholders.includes(ctx.subject) ||
-        this.related.engineers.includes(ctx.subject) ||
-        this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
+    viewRequirements: (ctx: Context) =>
+      this.related.stakeholders.includes(ctx.subject) ||
+      this.related.engineers.includes(ctx.subject) ||
+      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
 
-      approveAll: (ctx: Context) =>
-        this.related.project.traverse((p) => p.related.managers.includes(ctx.subject))
-    }
+    approveAll: (ctx: Context) =>
+      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject))
   }
 }
