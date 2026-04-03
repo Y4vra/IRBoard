@@ -250,11 +250,17 @@ services:
       - MINIO_ROOT_USER=${OBJ_STORAGE_USER}
       - MINIO_ROOT_PASSWORD=${OBJ_STORAGE_PASS}
     command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   object-storage-client:
     image: minio/mc
     depends_on:
-      - object-storage
+      object-storage:
+        condition: service_healthy
     networks:
       - internal
     entrypoint: >
@@ -269,6 +275,8 @@ services:
     depends_on:
       backend-db:
         condition: service_healthy
+      object-storage: 
+        condition: service_started
     volumes:
       - ./backend:/app
       - ~/.m2:/root/.m2

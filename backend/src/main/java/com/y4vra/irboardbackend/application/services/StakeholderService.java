@@ -53,8 +53,8 @@ public class StakeholderService {
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
         Stakeholder stakeholder = new Stakeholder();
-        stakeholder.setName(dto.getName());
-        stakeholder.setDescription(dto.getDescription());
+        stakeholder.setName(dto.name());
+        stakeholder.setDescription(dto.description());
         stakeholder.setProject(project);
 
         Stakeholder saved = stakeholderRepository.save(stakeholder);

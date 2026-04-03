@@ -44,7 +44,7 @@ public class NonFunctionalRequirementService {
         NonFunctionalRequirement nfr = nfrMapper.toEntity(dto);
         NonFunctionalRequirement saved = nfrRepository.save(nfr);
 
-        ketoClient.createRelation("Requirement", String.valueOf(saved.getId()), "parents", "Project:" + dto.getProjectId());
+        ketoClient.createRelation("Requirement", String.valueOf(saved.getId()), "parents", "Project:" + dto.id());
         ketoClient.createRelation("Requirement", String.valueOf(saved.getId()), "managers", oryId);
 
         return nfrMapper.toDto(saved);
