@@ -14,7 +14,7 @@ public class DocumentDTO implements Serializable {
     private String fileName;
     private String mimeType;
     private Long fileSize;
-    private long projectId;
+    private Long projectId;
 
     // This is populated by the Service using the MinIO SDK.
     private String accessUrl;

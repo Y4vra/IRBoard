@@ -15,7 +15,9 @@ public class DocumentMapper {
         dto.setFileName(entity.getFileName());
         dto.setMimeType(entity.getMimeType());
         dto.setFileSize(entity.getFileSize());
-        dto.setProjectId(entity.getProject().getId());
+        if (entity.getProject() != null) {
+            dto.setProjectId(entity.getProject().getId());
+        }
 
         return dto;
     }
