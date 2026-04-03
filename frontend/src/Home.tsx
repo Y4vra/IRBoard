@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { API_BASE_URL } from "./lib/globalVars";
 import { Button } from "./components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, Folder } from "lucide-react";
+import { ArrowRight, Folder, Plus } from "lucide-react";
 import { type Project } from "./types/project";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +73,14 @@ function Home() {
           </h1>
           <p className="text-slate-500 mt-1">Explore the projects you have access to.</p>
         </div>
+        {user?.isAdmin && projects && projects.length > 0 && (
+          <Button asChild className="shadow-md animate-in zoom-in-95 duration-500">
+            <Link to="/projects/new" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              New Project
+            </Link>
+          </Button>
+        )}
       </header>
 
       {!projects || projects.length === 0 ? (
@@ -97,13 +105,14 @@ function Home() {
           )}
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
           {projects.map((project, index) => (
             <Card 
               key={project.id} 
               className={cn(
-                "flex flex-col h-full hover:shadow-xl transition-all duration-300 border-slate-200 animate-in fade-in slide-in-from-bottom-6",
-                index === 0 ? "delay-0" : index === 1 ? "delay-75" : index === 2 ? "delay-100" : "delay-150"
+                "group flex flex-col h-full bg-card border-border/60 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-md",
+                "max-w-sm mx-auto w-full",
+                index === 0 ? "delay-0" : "delay-75"
               )}
             >
               <CardHeader>
@@ -128,9 +137,9 @@ function Home() {
               </CardContent>
 
               <CardFooter className="border-t bg-slate-50/50 p-4">
-                <Button asChild className="w-full shadow-sm bg-indigo-600 hover:bg-indigo-700 transition-colors">
+                <Button asChild className="w-full shadow-sm transition-colors">
                   <Link to={`/project/${project.id}`}>
-                    Manage Requirements
+                    More...
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

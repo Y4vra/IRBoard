@@ -15,6 +15,7 @@ package "Network: internal" #AliceBlue {
     [Ory Keto] as keto
     [RMS Backend] as backend
     [Mailpit] as mail
+    [Object Storage] as minio
     
     database "PostgreSQL (RMS)" as db_rms
     database "PostgreSQL (Identity)" as db_auth
@@ -32,6 +33,7 @@ proxy ---> keto
 
 ' Paso final al Backend
 proxy -down--> backend
+proxy -down--> minio : access files via url
 
 ' mailing provisional
 kratos --> mail : SMTP (1025)
@@ -39,6 +41,7 @@ kratos --> mail : SMTP (1025)
 ' Persistencia
 backend ..> keto : Write Tuples (GRPC)
 backend ..> kratos : Add user
+backend --> minio : Store or delete files  
 
 backend -down-> db_rms
 kratos -down-> db_auth

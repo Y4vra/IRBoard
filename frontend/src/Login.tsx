@@ -53,40 +53,42 @@ function Login() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Welcome to IR-Board!</CardTitle>
-        <CardDescription>
-          Enter your email below to login to the site
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} id="loginForm">
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                placeholder="mail@irboard.com"
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+    <div className="flex min-h-screen w-full items-center justify-center p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>Welcome to IR-Board!</CardTitle>
+          <CardDescription>
+            Enter your email below to login to the site
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} id="loginForm">
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  placeholder="mail@irboard.com"
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
-          </div>
-        </form>
-      </CardContent>
-        <CardFooter className="flex-col gap-2">
-          <Button type="submit" form="loginForm" className="w-full">
-            Login
-          </Button>
-        </CardFooter>
-    </Card>
+          </form>
+        </CardContent>
+          <CardFooter className="flex-col gap-2">
+            <Button type="submit" form="loginForm" className="w-full">
+              Login
+            </Button>
+          </CardFooter>
+      </Card>
+    </div>
   )
 }
 
