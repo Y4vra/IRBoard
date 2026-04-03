@@ -11,8 +11,8 @@ import {
   BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { API_BASE_URL } from "./lib/globalVars";
-import { Button } from "./components/ui/button";
+import { API_BASE_URL } from "../../lib/globalVars";
+import { Button } from "../../components/ui/button";
 
 export default function NewProject() {
   const navigate = useNavigate();

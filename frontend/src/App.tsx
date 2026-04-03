@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 
-import Login from './Login'
-import Home from './Home'
+import Login from './pages/Login'
+import Home from './pages/Home'
 import { AuthProvider } from './context/AuthProvider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { NavBar } from './components/Navbar'
-import NewProject from './newProject'
+import NewProject from './pages/Project/newProject'
+import ProjectView from './pages/Project/ProjectView'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -27,6 +28,7 @@ function App() {
               <Route path="/" element={<Home />}/>
               <Route path="/home" element={<Home />}/>
               <Route path="/projects/new" element={<NewProject />}/>
+              <Route path="/project/:id" element={<ProjectView/>}/>
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/home" replace />} />

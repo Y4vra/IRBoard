@@ -128,7 +128,7 @@ export function NavBar() {
             </div>
 
             <div className="px-1 flex flex-col gap-2">
-              <NavItem icon={<Folder className="h-4 w-4" />} label="Projects" to="/projects" active={isProjectView} disabled={!finishedOpening} />
+              <NavItem icon={<Folder className="h-4 w-4" />} label="Projects" to="/home" active={isProjectView} disabled={!finishedOpening} />
 
               {isProjectView && (
                 <div className="flex flex-col gap-1 pl-2 ml-3 border-l-2 border-indigo-100">
