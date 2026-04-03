@@ -1,6 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
-import com.y4vra.irboardbackend.application.dtos.ProjectDTO; // Asegúrate de que el paquete sea correcto
+import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.application.services.ProjectService;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;

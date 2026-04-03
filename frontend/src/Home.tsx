@@ -8,10 +8,14 @@ import { ArrowRight, Folder } from "lucide-react";
 import { type Project } from "./types/project";
 import { cn } from "@/lib/utils";
 
+import { useAuth } from "@/context/AuthContext"
+
 function Home() {
   const [projects, setProjects] = useState<Project[] | null>(null)
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,26 +28,26 @@ function Home() {
             'Content-Type': 'application/json'
           }
         });
-        if (!response.ok) throw new Error('Error al conectar con la API');
+        if (!response.ok) throw new Error('Error connecting with the API');
         
         const result = await response.json();
         setProjects(result);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
       }
     };
 
-    if (API_BASE_URL) {
+    if (API_BASE_URL && !authLoading && isAuthenticated) {
       fetchData();
     } else {
-      setError("La variable de entorno 'api_domain' no está configurada.");
+      setError("Enviroment variable 'api_domain' is not properly configured, or the authentication context failed.");
       setLoading(false);
     }
   }, []);
 
-  if (loading) return (
+  if (loading || authLoading) return (
     <div className="flex h-64 flex-col items-center justify-center gap-4 animate-in fade-in duration-500">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
       <p className="text-slate-500 font-medium">Loading...</p>
@@ -80,11 +84,17 @@ function Home() {
           <p className="text-slate-500 max-w-xs mx-auto mt-2">
             It looks like you don't have any projects assigned yet or the system is empty.
           </p>
-          <p className="mt-4">
-            <Link to="/projects/new" className="text-indigo-600 hover:underline font-medium">
-              Create your first project
-            </Link>
-          </p>
+          {user?.isAdmin ? (
+            <p className="mt-4">
+              <Link to="/projects/new" className="text-indigo-600 hover:underline font-medium">
+                Create your first project
+              </Link>
+            </p>
+          ) : (
+            <p className="mt-4 text-slate-400 text-sm">
+              Please contact an administrator to be assigned to a project.
+            </p>
+          )}
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

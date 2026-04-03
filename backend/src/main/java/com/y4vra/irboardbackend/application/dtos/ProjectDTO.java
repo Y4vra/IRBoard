@@ -7,5 +7,5 @@ public record ProjectDTO(
         String name,
         String description,
         String state,
-        int requirementCount
+        Integer requirementCount
 ) implements Serializable {}
