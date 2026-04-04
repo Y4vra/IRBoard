@@ -280,7 +280,7 @@ It's a complex state to ease development, as the pending review can be seen as a
   (
     [The system must require a Project name to generate a project correctly.],
     [The system must require a description to generate a project correctly.],
-    [The system must require a user to be project manager to generate a project correctly.],
+    [The system must require a user to be an admin of the system to generate a project correctly.],
     [The system must allow to optionally change the priority style set for the project, either:],
     (
       [Ternary (High, Medium, Low) Predefined.],

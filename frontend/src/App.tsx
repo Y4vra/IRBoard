@@ -5,7 +5,7 @@ import Home from './pages/Home'
 import { AuthProvider } from './context/AuthProvider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { NavBar } from './components/Navbar'
-import NewProject from './pages/Project/newProject'
+import NewProject from './pages/Project/NewProject'
 import ProjectView from './pages/Project/ProjectView'
 
 const WindowLayout = () => (

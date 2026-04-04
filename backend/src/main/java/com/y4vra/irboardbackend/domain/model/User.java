@@ -20,6 +20,8 @@ public class User {
     private String name;
     private String surname;
 
+    private Boolean active;
+
     public User() {}
 
     public Long getId() { return id; }
@@ -35,4 +37,7 @@ public class User {
 
     public String getSurname() { return surname; }
     public void setSurname(String surname) { this.surname = surname; }
+
+    public void setActive(Boolean active) { this.active = active; }
+    public Boolean getActive() { return active; }
 }
