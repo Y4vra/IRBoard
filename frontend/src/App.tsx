@@ -7,6 +7,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { NavBar } from './components/Navbar'
 import NewProject from './pages/Project/NewProject'
 import ProjectView from './pages/Project/ProjectView'
+import Registration from './pages/Registration'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -23,6 +24,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/registration" element={<Registration />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<WindowLayout />}>
               <Route path="/" element={<Home />}/>

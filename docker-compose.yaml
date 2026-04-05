@@ -283,6 +283,8 @@ services:
     environment:
       - KETO_READ_URL=http://keto:4466
       - KETO_WRITE_URL=http://keto:4467
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - KRATOS_ADMIN_API_KEY=dummy_value # unnecessary due to local deployment but added for future extension purposes.
       - OBJ_STORAGE_URL=http://object-storage:9000
       - OBJ_STORAGE_USER=${OBJ_STORAGE_USER}
       - OBJ_STORAGE_PASS=${OBJ_STORAGE_PASS}

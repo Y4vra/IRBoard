@@ -16,8 +16,8 @@ public class KratosClient {
     private final String kratosAdminUrl;
     private final String apiKey;
 
-    public KratosClient(@Value("${KRATOS_ADMIN_URL}") String kratosAdminUrl,
-                        @Value("${KRATOS_ADMIN_API_KEY}") String apiKey) {//TODO add the env vars
+    public KratosClient(@Value("${kratos.admin.url}") String kratosAdminUrl,
+                        @Value("${kratos.admin.api.key}") String apiKey) {
         this.restTemplate = new RestTemplate();
         this.kratosAdminUrl = kratosAdminUrl;
         this.apiKey = apiKey;

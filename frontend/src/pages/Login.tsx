@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import {Card,CardContent,CardDescription,CardFooter,CardHeader,CardTitle,} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 
 function Login() {
@@ -86,6 +86,12 @@ function Login() {
             <Button type="submit" form="loginForm" className="w-full">
               Login
             </Button>
+            <p className="text-sm text-muted-foreground mt-2">
+              Have a signup code?{" "}
+              <Link to="/registration" className="text-primary hover:underline">
+                Click here
+              </Link>
+            </p>
           </CardFooter>
       </Card>
     </div>

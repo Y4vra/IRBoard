@@ -15,13 +15,23 @@ selfservice:
         min_password_length: 15
     code:
       enabled: true
+      config:
+        lifespan: 24h
 
   flows:
     recovery: 
       enabled: true
       use: code 
     registration:
-      enabled: false 
+      enabled: true
+      ui_url: http://placeholder/registration
+      after:
+        password:
+          hooks:
+            - hook: session
+        code:
+          hooks:
+            - hook: session
     error:
       ui_url: http://placeholder/error
     settings:
