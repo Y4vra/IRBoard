@@ -7,9 +7,11 @@ import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import com.y4vra.irboardbackend.infrastructure.clients.KratosClient;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,5 +93,9 @@ public class UserService {
         userRepository.save(user);
 
         kratosClient.disableIdentity(user.getOryId());
+    }
+
+    public UserDTO getUserAuthenticatedDto(User user) {
+        return userMapper.toDto(user);
     }
 }

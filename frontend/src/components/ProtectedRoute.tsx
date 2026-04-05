@@ -1,23 +1,25 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import LoadingSpinner from "./ui/LoadingSpinner";
 
-export const ProtectedRoute = () => {
+interface ProtectedRouteProps {
+  adminOnly?: boolean;
+}
+
+export const ProtectedRoute = ({ adminOnly = false }: ProtectedRouteProps) => {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="text-lg animate-pulse">Checking session...</div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingSpinner />;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   if (!user) {
     return <div>Loading user profile...</div>;
+  }
+  if (adminOnly && !user?.isAdmin) {
+    return <Navigate to="/forbidden" replace />;
   }
 
   return <Outlet/>;

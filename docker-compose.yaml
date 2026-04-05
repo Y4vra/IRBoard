@@ -214,8 +214,8 @@ services:
           done
           echo "Tablas detectadas, procediendo con la inyección..."
 
-          psql "$$DB_CON_STR" -c "INSERT INTO app_user (ory_id, email, name, surname) \
-            VALUES ('$$USER_ID', '${INITIAL_ADMIN_EMAIL}', '${INITIAL_ADMIN_NAME}', '${INITIAL_ADMIN_SURNAME}') \
+          psql "$$DB_CON_STR" -c "INSERT INTO app_user (ory_id, email, name, surname, is_admin, active) \
+            VALUES ('$$USER_ID', '${INITIAL_ADMIN_EMAIL}', '${INITIAL_ADMIN_NAME}', '${INITIAL_ADMIN_SURNAME}', true, true) \
             ON CONFLICT (ory_id) DO NOTHING;"
           
           echo "Admin user correctly added to backend-db."

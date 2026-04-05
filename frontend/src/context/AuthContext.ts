@@ -2,9 +2,12 @@ import { createContext, useContext } from "react";
 import type { Session } from "@ory/client";
 
 export interface UserProfile {
+  id: number;
+  email: string;
   name: string;
   surname: string;
-  email: string;
+  active: boolean;
+  oryId: string;
   isAdmin: boolean;
 }
 export interface AuthContextType {
@@ -13,6 +16,7 @@ export interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   logout: () => void;
+  checkSession: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

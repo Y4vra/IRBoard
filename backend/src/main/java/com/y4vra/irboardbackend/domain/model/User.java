@@ -15,12 +15,15 @@ public class User {
     @Column(name = "ory_id", unique = true, nullable = false)
     private String oryId;
 
-
+    @Column(unique = true, nullable = false)
     private String email;
     private String name;
     private String surname;
 
-    private Boolean active;
+    @Column(nullable = false)
+    private Boolean active=true;
+    @Column(nullable = false)
+    private Boolean isAdmin=false;
 
     public User() {}
 
@@ -40,4 +43,7 @@ public class User {
 
     public void setActive(Boolean active) { this.active = active; }
     public Boolean getActive() { return active; }
+
+    public void setIsAdmin(Boolean isAdmin) { this.isAdmin = isAdmin; }
+    public Boolean getIsAdmin() { return isAdmin; }
 }

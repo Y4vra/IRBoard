@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { kratos } from "@/lib/kratos"
 import { Button } from "@/components/ui/button"
-import {Card,CardContent,CardDescription,CardFooter,CardHeader,CardTitle,} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useNavigate, Link } from "react-router-dom"
@@ -12,28 +12,28 @@ function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const { isAuthenticated, loading } = useAuth()
+  const { checkSession, isAuthenticated, loading } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!loading){
-      if(isAuthenticated) {
+    if (!loading) {
+      if (isAuthenticated) {
         navigate("/", { replace: true });
-      }else{
+      } else {
         kratos.createBrowserLoginFlow()
-        .then(({ data }) => setFlowData(data))
-        .catch((err) => console.error("Error setting up flow:", err))
+          .then(({ data }) => setFlowData(data))
+          .catch((err) => console.error(err))
       }
     }
   }, [isAuthenticated, loading, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!flowData) return
+    e.preventDefault();
+    if (!flowData) return;
 
     const csrfToken = flowData.ui.nodes.find(
-    (node: any) => node.attributes.name === "csrf_token"
-  )?.attributes.value
+      (node: any) => node.attributes.name === "csrf_token"
+    )?.attributes.value;
 
     try {
       await kratos.updateLoginFlow({
@@ -44,13 +44,18 @@ function Login() {
           password: password,
           csrf_token: csrfToken,
         },
-      })
-      window.location.href = "/"
+      });
+
+      await checkSession();
+      navigate("/"); 
+
     } catch (err) {
-      console.error("Error en el login:", err)
-      alert("Credenciales incorrectas")
+      console.error(err);
+      alert("Invalid credentials");
     }
-  }
+  };
+
+  if (loading) return null;
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-4">
@@ -77,22 +82,29 @@ function Login() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <Input 
+                  id="password" 
+                  placeholder="password" 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                />
               </div>
             </div>
           </form>
         </CardContent>
-          <CardFooter className="flex-col gap-2">
-            <Button type="submit" form="loginForm" className="w-full">
-              Login
-            </Button>
-            <p className="text-sm text-muted-foreground mt-2">
-              Have a signup code?{" "}
-              <Link to="/registration" className="text-primary hover:underline">
-                Click here
-              </Link>
-            </p>
-          </CardFooter>
+        <CardFooter className="flex-col gap-2">
+          <Button type="submit" form="loginForm" className="w-full">
+            Login
+          </Button>
+          <p className="text-sm text-muted-foreground mt-2">
+            Have a signup code?{" "}
+            <Link to="/registration" className="text-primary hover:underline">
+              Click here
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   )

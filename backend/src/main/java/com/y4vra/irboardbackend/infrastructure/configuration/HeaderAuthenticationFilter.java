@@ -33,6 +33,9 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        System.out.println("DEBUG: URI " + request.getRequestURI());
+        System.out.println("DEBUG: X-User Header -> " + request.getHeader("X-User"));
+
         String oryId = request.getHeader("X-User");
 
         if (oryId != null && !oryId.isEmpty()) {
