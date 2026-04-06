@@ -7,11 +7,9 @@ import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import com.y4vra.irboardbackend.infrastructure.clients.KratosClient;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +45,12 @@ public class UserService {
 
     @Transactional
     public UserDTO inviteUser(UserDTO userDTO, String adminOryId) {
-        String oryId = kratosClient.createInvitation(userDTO.email());
+        String oryId = kratosClient.createIdentity(
+                userDTO.email(),
+                userDTO.name(),
+                userDTO.surname(),
+                userDTO.isAdmin()
+        );
 
         User user = new User();
         user.setEmail(userDTO.email());
@@ -58,7 +61,11 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        ketoClient.createRelation("User", savedUser.getOryId(), "invitedBy", adminOryId);
+        if (userDTO.isAdmin()) {
+            ketoClient.createRelation("System", "main", "admins", oryId);
+        }
+
+        kratosClient.sendInvitationCode(userDTO.email());
 
         return userMapper.toDto(savedUser);
     }
@@ -79,7 +86,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        kratosClient.resendInvitation(user.getEmail());
+        kratosClient.sendInvitationCode(user.getEmail());
 
         return userMapper.toDto(user);
     }

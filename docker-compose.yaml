@@ -107,7 +107,36 @@ services:
       - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/kratos:/etc/config/kratos
-    command: serve -c /etc/config/kratos/kratos.yaml --dev --watch-courier
+    command: serve -c /etc/config/kratos/kratos.yaml --dev
+    networks:
+      - internal
+
+  kratos-courier:
+    image: oryd/kratos:v25.4.0
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+      kratos-db:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    environment:
+      - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
+      - SERVE_PUBLIC_BASE_URL=http://${AUTH_DOMAIN}/
+      - SERVE_ADMIN_BASE_URL=http://kratos:4434/
+      - SESSIONS_COOKIE_SECURE=false
+      - SESSIONS_COOKIE_DOMAIN=${DOMAIN_NAME}
+      - SELFSERVICE_ALLOWED_RETURN_URLS=http://${DOMAIN_NAME}
+      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/home
+      - SELFSERVICE_FLOWS_ERROR_UI_URL=http://${DOMAIN_NAME}/error
+      - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://${DOMAIN_NAME}/login
+      - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://${DOMAIN_NAME}/registration
+      - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://${DOMAIN_NAME}/settings
+      - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://${DOMAIN_NAME}/setup-password
+      - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/login
+    volumes:
+      - ./config/kratos:/etc/config/kratos
+    command: courier watch -c /etc/config/kratos/kratos.yaml
     networks:
       - internal
 
@@ -283,6 +312,7 @@ services:
     environment:
       - KETO_READ_URL=http://keto:4466
       - KETO_WRITE_URL=http://keto:4467
+      - KRATOS_PUBLIC_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_ADMIN_API_KEY=dummy_value # unnecessary due to local deployment but added for future extension purposes.
       - OBJ_STORAGE_URL=http://object-storage:9000

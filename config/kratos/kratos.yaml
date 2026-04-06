@@ -9,6 +9,8 @@ serve:
 
 selfservice:
   methods:
+    link:
+      enabled: false
     password:
       enabled: true
       config:
@@ -17,10 +19,15 @@ selfservice:
       enabled: true
       config:
         lifespan: 24h
+        max_submissions: 5
 
   flows:
+    verification:
+      enabled: true
+      use: code
     recovery: 
       enabled: true
+      ui_url: http://placeholder/recovery
       use: code 
     registration:
       enabled: true
@@ -65,7 +72,8 @@ hashers:
     key_length: 32
 
 courier:
+  delivery_strategy: smtp
   smtp:
-    connection_uri: smtp://mailpit:1025/?skip_ssl_verify=true
+    connection_uri: smtp://mailpit:1025/?skip_ssl_verify=true&disable_starttls=true
     from_name: IR-Board System
     from_address: no-reply@ir-board.com

@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import LoadingSpinner from "./ui/LoadingSpinner";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface ProtectedRouteProps {
   adminOnly?: boolean;

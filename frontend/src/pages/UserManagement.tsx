@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../lib/globalVars"
 import { Button } from "../components/ui/button"
-import { Link } from "react-router-dom"
-import { Plus, Loader2, Mail, AlertCircle } from "lucide-react"
+import { Loader2, Mail, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
@@ -14,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
+import { InviteUserDialog } from "@/components/InviteUserDialog"
 
 interface UserDTO {
   id: number;
@@ -105,12 +105,7 @@ function UserManagement() {
           <h1 className="text-3xl font-extrabold text-slate-900">User Management</h1>
           <p className="text-slate-500 mt-1">Manage system access, roles, and invitations.</p>
         </div>
-        <Button asChild className="shadow-md">
-          <Link to="/users/invite" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Invite New User
-          </Link>
-        </Button>
+        <InviteUserDialog onSuccess={fetchUsers}/>
       </header>
 
       <Card>
