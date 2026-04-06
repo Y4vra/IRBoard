@@ -92,6 +92,21 @@ public class UserService {
     }
 
     @Transactional
+    public UserDTO activateInvitedUser(String email, String code, String password) {
+        kratosClient.validateRecoveryCode(email, code);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND"));
+
+        kratosClient.setPasswordByAdmin(user.getOryId(), password, user);
+
+        user.setActive(true);
+        User savedUser = userRepository.save(user);
+
+        return userMapper.toDto(savedUser);
+    }
+
+    @Transactional
     public void deactivateUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));

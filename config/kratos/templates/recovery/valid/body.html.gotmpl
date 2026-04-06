@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 20px auto; padding: 30px; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { border-bottom: 3px solid #1a237e; padding-bottom: 15px; margin-bottom: 25px; }
+        .welcome { font-size: 18px; color: #1a237e; font-weight: bold; }
+        .code-container { background-color: #f8f9fa; border: 2px dashed #1a237e; padding: 25px; text-align: center; margin: 30px 0; border-radius: 8px; }
+        .recovery-code { font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1a237e; display: block; }
+        .info-text { font-size: 14px; color: #555; }
+        .highlight { color: #d32f2f; font-weight: bold; }
+        .footer { font-size: 12px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 style="margin:0;">IR-Board System</h2>
+        </div>
+        
+        <p class="welcome">¡Hola {{ .Identity.traits.name }}!</p>
+        
+        <p>Has sido invitado a unirte a nuestra plataforma. Para completar tu registro y establecer tu contraseña de acceso, utiliza el siguiente código de seguridad:</p>
+        
+        <div class="code-container">
+            <span class="recovery-code">{{ .RecoveryCode }}</span>
+        </div>
+
+        <p class="info-text">Este código es de un solo uso y caduca en <span class="highlight">24 horas</span>.</p>
+        
+        <p class="info-text">Si no esperabas esta invitación o crees que se trata de un error, simplemente ignora este correo electrónico.</p>
+        
+        <div class="footer">
+            <p>Este es un mensaje generado automáticamente por el sistema de identidades de IR-Board.<br>
+            Por seguridad, nunca compartas este código con nadie.</p>
+        </div>
+    </div>
+</body>
+</html>

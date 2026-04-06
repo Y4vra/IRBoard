@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
+import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -95,6 +96,51 @@ public class KratosClient {
         } catch (Exception e) {
             throw new RuntimeException("Failed to trigger recovery email for: " + email, e);
         }
+    }
+
+    public void validateRecoveryCode(String email, String code) {
+        try {
+            String initUrl = kratosPublicUrl + "/self-service/recovery/api";
+            Map<String, Object> flow = restTemplate.getForObject(initUrl, Map.class);
+            String flowId = (String) flow.get("id");
+
+            String submitUrl = kratosPublicUrl + "/self-service/recovery?flow=" + flowId;
+            Map<String, Object> body = Map.of(
+                    "method", "code",
+                    "email", email,
+                    "code", code
+            );
+
+            restTemplate.postForEntity(submitUrl, body, String.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("INVALID_OR_EXPIRED_CODE");
+        }
+    }
+
+    public void setPasswordByAdmin(String oryId, String password, User user) {
+        String url = kratosAdminUrl + "/admin/identities/" + oryId;
+
+        Map<String, Object> traits = new HashMap<>();
+        traits.put("email", user.getEmail());
+        traits.put("name", user.getName());
+        traits.put("surname", user.getSurname());
+        traits.put("is_admin", user.getIsAdmin());
+
+        Map<String, Object> passwordConfig = Map.of("password", password);
+        Map<String, Object> passwordCredential = Map.of(
+                "type", "password",
+                "config", passwordConfig
+        );
+
+        Map<String, Object> body = Map.of(
+                "schema_id", "default",
+                "state", "active",
+                "traits", traits,
+                "credentials", Map.of("password", passwordCredential)
+        );
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, createHeaders());
+        restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, request, Map.class);
     }
 
     public void disableIdentity(String oryId) {

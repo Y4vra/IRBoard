@@ -22,23 +22,10 @@ selfservice:
         max_submissions: 5
 
   flows:
-    verification:
-      enabled: true
-      use: code
     recovery: 
       enabled: true
       ui_url: http://placeholder/recovery
       use: code 
-    registration:
-      enabled: true
-      ui_url: http://placeholder/registration
-      after:
-        password:
-          hooks:
-            - hook: session
-        code:
-          hooks:
-            - hook: session
     error:
       ui_url: http://placeholder/error
     settings:
@@ -77,3 +64,11 @@ courier:
     connection_uri: smtp://mailpit:1025/?skip_ssl_verify=true&disable_starttls=true
     from_name: IR-Board System
     from_address: no-reply@ir-board.com
+  templates:
+    recovery_code:
+      valid:
+        email:
+          subject: file:///etc/config/kratos/templates/recovery/valid/subject.gotmpl
+          body:
+            html: file:///etc/config/kratos/templates/recovery/valid/body.html.gotmpl
+            plaintext: file:///etc/config/kratos/templates/recovery/valid/body.txt.gotmpl

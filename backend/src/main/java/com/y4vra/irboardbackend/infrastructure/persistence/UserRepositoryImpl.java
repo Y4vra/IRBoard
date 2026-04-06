@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 interface JpaUserRepository extends JpaRepository<User, Long> {
     Optional<User> findByOryId(String oryId);
+    Optional<User> findByEmail(String email);
 }
 
 @Component
@@ -35,6 +36,11 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findByOryId(String oryId) {
         return jpaRepository.findByOryId(oryId);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return jpaRepository.findByEmail(email);
     }
 
     @Override

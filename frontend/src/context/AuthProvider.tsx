@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(data);
 
       if (data){
-        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        const response = await fetch(`${API_BASE_URL}/whoami`, {
           method: 'GET',
           credentials: 'include',
           headers: { 'Accept': 'application/json' }
