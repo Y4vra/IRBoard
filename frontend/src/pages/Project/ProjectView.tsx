@@ -16,6 +16,7 @@ import {
   Activity
 } from "lucide-react";
 import { type Project } from "../../types/project";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 function ProjectView() {
   const { id } = useParams<{ id: string }>();
@@ -45,9 +46,7 @@ function ProjectView() {
   }, [id]);
 
   if (loading) return (
-    <div className="flex h-64 items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-    </div>
+    <LoadingSpinner/>
   );
 
   if (error || !project) return (

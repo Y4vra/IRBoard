@@ -16,7 +16,7 @@ export const ProtectedRoute = ({ adminOnly = false }: ProtectedRouteProps) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   if (!user) {
-    return <div>Loading user profile...</div>;
+    return <LoadingSpinner text="Loading user profile..."/>;
   }
   if (adminOnly && !user?.isAdmin) {
     return <Navigate to="/forbidden" replace />;

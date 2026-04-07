@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
 import { InviteUserDialog } from "@/components/InviteUserDialog"
+import LoadingSpinner from "@/components/LoadingSpinner"
 
 interface UserDTO {
   id: number;
@@ -81,10 +82,7 @@ function UserManagement() {
   const totalPages = Math.ceil(users.length / itemsPerPage);
 
   if (loading || authLoading) return (
-    <div className="flex h-64 flex-col items-center justify-center gap-4">
-      <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-      <p className="text-slate-500 font-medium">Loading User Directory...</p>
-    </div>
+    <LoadingSpinner text="Loading User Directory.."/>
   );
 
   if (error) return (

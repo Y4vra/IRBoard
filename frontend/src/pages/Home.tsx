@@ -9,6 +9,7 @@ import { type Project } from "../types/project";
 import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/context/AuthContext"
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 function Home() {
   const [projects, setProjects] = useState<Project[] | null>(null)
@@ -48,10 +49,7 @@ function Home() {
   }, []);
 
   if (loading || authLoading) return (
-    <div className="flex h-64 flex-col items-center justify-center gap-4 animate-in fade-in duration-500">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-      <p className="text-slate-500 font-medium">Loading...</p>
-    </div>
+    <LoadingSpinner/>
   );
 
   if (error) return (
