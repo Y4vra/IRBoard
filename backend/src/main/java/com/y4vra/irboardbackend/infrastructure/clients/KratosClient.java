@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
 import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.infrastructure.api.rest.errors.AccountRecoveryException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -75,7 +76,7 @@ public class KratosClient {
         }
     }
 
-    public void sendInvitationCode(String email) {
+    public String sendInvitationCode(String email) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -93,27 +94,24 @@ public class KratosClient {
 
             HttpEntity<Map<String, Object>> submitRequest = new HttpEntity<>(body, headers);
             restTemplate.postForObject(submitUrl, submitRequest, Map.class);
+
+            return flowId;
         } catch (Exception e) {
             throw new RuntimeException("Failed to trigger recovery email for: " + email, e);
         }
     }
 
-    public void validateRecoveryCode(String email, String code) {
+    public void validateRecoveryCode(String email, String code, String flowId) {
         try {
-            String initUrl = kratosPublicUrl + "/self-service/recovery/api";
-            Map<String, Object> flow = restTemplate.getForObject(initUrl, Map.class);
-            String flowId = (String) flow.get("id");
-
             String submitUrl = kratosPublicUrl + "/self-service/recovery?flow=" + flowId;
             Map<String, Object> body = Map.of(
                     "method", "code",
-                    "email", email,
                     "code", code
             );
 
             restTemplate.postForEntity(submitUrl, body, String.class);
         } catch (Exception e) {
-            throw new IllegalArgumentException("INVALID_OR_EXPIRED_CODE");
+            throw new AccountRecoveryException("INVALID_OR_EXPIRED_CODE",e);
         }
     }
 

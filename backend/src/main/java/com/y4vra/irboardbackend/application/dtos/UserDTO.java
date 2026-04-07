@@ -21,7 +21,6 @@ public record UserDTO(
         String surname,
 
         Boolean active,
-        Boolean isAdmin,
+        Boolean isAdmin
 
-        String oryId
 ) implements Serializable {}

@@ -25,6 +25,8 @@ public class User {
     @Column(nullable = false)
     private Boolean isAdmin=false;
 
+    private String pendingActivationToken;
+
     public User() {}
 
     public Long getId() { return id; }
@@ -46,4 +48,7 @@ public class User {
 
     public void setIsAdmin(Boolean isAdmin) { this.isAdmin = isAdmin; }
     public Boolean getIsAdmin() { return isAdmin; }
+
+    public String getPendingActivationToken() { return pendingActivationToken; }
+    public void setPendingActivationToken(String pendingActivationToken) { this.pendingActivationToken = pendingActivationToken; }
 }

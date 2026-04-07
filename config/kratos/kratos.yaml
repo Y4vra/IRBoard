@@ -22,6 +22,8 @@ selfservice:
         max_submissions: 5
 
   flows:
+    verification:
+      enabled: false
     recovery: 
       enabled: true
       ui_url: http://placeholder/recovery

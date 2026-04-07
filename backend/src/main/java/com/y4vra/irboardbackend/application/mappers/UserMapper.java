@@ -16,8 +16,7 @@ public class UserMapper {
                 user.getName(),
                 user.getSurname(),
                 user.getActive(),
-                user.getIsAdmin(),
-                user.getOryId()
+                user.getIsAdmin()
         );
     }
 
@@ -31,7 +30,6 @@ public class UserMapper {
         user.setSurname(dto.surname());
         user.setActive(dto.active());
         user.setIsAdmin(dto.isAdmin());
-        user.setOryId(dto.oryId());
 
         return user;
     }

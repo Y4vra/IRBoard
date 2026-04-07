@@ -51,23 +51,17 @@ public class UserService {
                 userDTO.surname(),
                 userDTO.isAdmin()
         );
-
-        User user = new User();
-        user.setEmail(userDTO.email());
-        user.setName(userDTO.name());
-        user.setSurname(userDTO.surname());
-        user.setOryId(oryId);
-        user.setActive(true);
-
-        User savedUser = userRepository.save(user);
-
         if (userDTO.isAdmin()) {
             ketoClient.createRelation("System", "main", "admins", oryId);
         }
+        String flowId=kratosClient.sendInvitationCode(userDTO.email());
 
-        kratosClient.sendInvitationCode(userDTO.email());
+        User user = userMapper.toEntity(userDTO);
+        user.setOryId(oryId);
+        user.setPendingActivationToken(flowId);
+        userRepository.save(user);
 
-        return userMapper.toDto(savedUser);
+        return userDTO;
     }
 
     @Transactional
@@ -86,21 +80,24 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        kratosClient.sendInvitationCode(user.getEmail());
+        String flowId = kratosClient.sendInvitationCode(user.getEmail());
+
+        user.setPendingActivationToken(flowId);
 
         return userMapper.toDto(user);
     }
 
     @Transactional
     public UserDTO activateInvitedUser(String email, String code, String password) {
-        kratosClient.validateRecoveryCode(email, code);
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND"));
+
+        kratosClient.validateRecoveryCode(email, code, user.getPendingActivationToken());
 
         kratosClient.setPasswordByAdmin(user.getOryId(), password, user);
 
         user.setActive(true);
+        user.setPendingActivationToken(null);
         User savedUser = userRepository.save(user);
 
         return userMapper.toDto(savedUser);
