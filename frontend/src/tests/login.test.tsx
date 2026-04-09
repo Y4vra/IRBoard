@@ -14,7 +14,7 @@ const {
   mockCreateBrowserLoginFlow: vi.fn(),
   mockUpdateLoginFlow: vi.fn(),
   mockNavigate: vi.fn(),
-  mockAuthContext: { isAuthenticated: false, loading: false },
+  mockAuthContext: { isAuthenticated: false, loading: false, checkSession: vi.fn().mockResolvedValue(undefined) },
 }))
 
 // ─── Mock: kratos ────────────────────────────────────────────────────────────
@@ -194,7 +194,7 @@ describe("Login component", () => {
     fireEvent.click(screen.getByRole("button", { name: /login/i }))
 
     await waitFor(() => {
-      expect(window.location.href).toBe("/")
+      expect(mockNavigate).toHaveBeenCalledWith("/")
     })
   })
 
@@ -212,7 +212,7 @@ describe("Login component", () => {
     fireEvent.click(screen.getByRole("button", { name: /login/i }))
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith("Credenciales incorrectas")
+      expect(alertSpy).toHaveBeenCalledWith("Invalid credentials")
     })
     alertSpy.mockRestore()
   })
@@ -231,7 +231,7 @@ describe("Login component", () => {
     fireEvent.click(screen.getByRole("button", { name: /login/i }))
 
     await waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith("Error en el login:", error)
+      expect(consoleSpy).toHaveBeenCalledWith("Error while logging in:", error)
     })
     consoleSpy.mockRestore()
   })

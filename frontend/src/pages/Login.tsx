@@ -22,7 +22,7 @@ function Login() {
       } else {
         kratos.createBrowserLoginFlow()
           .then(({ data }) => setFlowData(data))
-          .catch((err) => console.error(err))
+          .catch((err) => console.error("Error setting up flow:", err))
       }
     }
   }, [isAuthenticated, loading, navigate])
@@ -50,7 +50,7 @@ function Login() {
       navigate("/"); 
 
     } catch (err) {
-      console.error(err);
+      console.error("Error while logging in:", err);
       alert("Invalid credentials");
     }
   };

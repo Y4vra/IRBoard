@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../lib/globalVars"
 import { Button } from "../components/ui/button"
-import { Loader2, Mail, AlertCircle } from "lucide-react"
+import { Mail, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {

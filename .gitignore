@@ -14,6 +14,7 @@ docker-compose.override.yml
 # Temp folders of sonarcloud
 .sonar/
 .scannerwork/
+**/coverage/
 
 # --- IDEs and OS ---
 .idea/
