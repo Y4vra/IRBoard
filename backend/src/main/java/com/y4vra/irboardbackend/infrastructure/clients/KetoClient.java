@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.infrastructure.api.rest.errors.ReBACException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class KetoClient {
+public class KetoClient implements PermissionService {
 
     private final RestTemplate restTemplate;
     private final String ketoReadUrl;
@@ -23,7 +24,7 @@ public class KetoClient {
         this.ketoWriteUrl = ketoWriteUrl;
     }
 
-    public boolean check(String namespace, String object, String relation, String subjectId) {
+    public boolean checkPermission(String namespace, String object, String relation, String subjectId) {
         String url = UriComponentsBuilder.fromUriString(ketoReadUrl + "/relation-tuples/check")
                 .queryParam("namespace", namespace)
                 .queryParam("object", object)
@@ -65,7 +66,7 @@ public class KetoClient {
         }
     }
 
-    public void createRelation(String namespace, String object, String relation, String subjectId) {
+    public void grantPermission(String namespace, String object, String relation, String subjectId) {
         String url = ketoWriteUrl + "/admin/relation-tuples";
 
         Map<String, String> body = Map.of(

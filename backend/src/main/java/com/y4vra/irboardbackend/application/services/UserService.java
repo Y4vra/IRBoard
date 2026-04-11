@@ -2,10 +2,10 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.application.mappers.UserMapper;
+import com.y4vra.irboardbackend.application.ports.IdentityService;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.User;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
-import com.y4vra.irboardbackend.infrastructure.clients.KratosClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +18,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final KetoClient ketoClient;
-    private final KratosClient kratosClient;
+    private final PermissionService permService;
+    private final IdentityService identService;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, KetoClient ketoClient, KratosClient kratosClient) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PermissionService permService, IdentityService identService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-        this.ketoClient = ketoClient;
-        this.kratosClient = kratosClient;
+        this.permService = permService;
+        this.identService = identService;
     }
 
     @Transactional(readOnly = true)
@@ -45,16 +45,16 @@ public class UserService {
 
     @Transactional
     public UserDTO inviteUser(UserDTO userDTO, String adminOryId) {
-        String oryId = kratosClient.createIdentity(
+        String oryId = identService.createIdentity(
                 userDTO.email(),
                 userDTO.name(),
                 userDTO.surname(),
                 userDTO.isAdmin()
         );
         if (userDTO.isAdmin()) {
-            ketoClient.createRelation("System", "main", "admins", oryId);
+            permService.grantPermission("System", "main", "admins", oryId);
         }
-        String flowId=kratosClient.sendInvitationCode(userDTO.email());
+        String flowId=identService.sendInvitationCode(userDTO.email());
 
         User user = userMapper.toEntity(userDTO);
         user.setOryId(oryId);
@@ -80,7 +80,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        String flowId = kratosClient.sendInvitationCode(user.getEmail());
+        String flowId = identService.sendInvitationCode(user.getEmail());
 
         user.setPendingActivationToken(flowId);
 
@@ -92,9 +92,9 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("USER_NOT_FOUND"));
 
-        kratosClient.validateRecoveryCode(email, code, user.getPendingActivationToken());
+        identService.validateRecoveryCode(email, code, user.getPendingActivationToken());
 
-        kratosClient.setPasswordByAdmin(user.getOryId(), password, user);
+        identService.setPassword(user.getOryId(), password, user);
 
         user.setActive(true);
         user.setPendingActivationToken(null);
@@ -111,7 +111,7 @@ public class UserService {
         user.setActive(false);
         userRepository.save(user);
 
-        kratosClient.disableIdentity(user.getOryId());
+        identService.disableIdentity(user.getOryId());
     }
 
     public UserDTO getUserAuthenticatedDto(User user) {

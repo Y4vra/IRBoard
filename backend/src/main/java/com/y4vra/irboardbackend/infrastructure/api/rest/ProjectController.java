@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/projects")
@@ -42,9 +43,9 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}/functionalities")
-    public ResponseEntity<List<FunctionalityDTO>> getFunctionalities(Authentication authentication, @PathVariable Long id) {
+    public ResponseEntity<Map<String, List<FunctionalityDTO>>> getFunctionalities(Authentication authentication, @PathVariable Long id) {
         return ResponseEntity.ok(functionalityService.findFunctionalitiesOfProjectForUser(((User) authentication.getPrincipal()).getOryId(),id));
-    }//TODO add pagination to all these
+    }
 
     @GetMapping("/{id}/stakeholders")
     public ResponseEntity<List<StakeholderDTO>> getStakeholders(Authentication authentication, @PathVariable Long id) {

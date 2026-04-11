@@ -7,19 +7,20 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ adminOnly = false }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, serverError } = useAuth();
   const location = useLocation();
 
   if (loading) return <LoadingSpinner />;
 
+  if (serverError) {
+    return <Navigate to="/error" state={{ errorType: "server" }} replace />;
+  }
+
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  if (!user) {
-    return <LoadingSpinner text="Loading user profile..."/>;
-  }
   if (adminOnly && !user?.isAdmin) {
-    return <Navigate to="/forbidden" replace />;
+    return <Navigate to="/error" state={{ errorType: "permission" }} replace />;
   }
 
   return <Outlet/>;

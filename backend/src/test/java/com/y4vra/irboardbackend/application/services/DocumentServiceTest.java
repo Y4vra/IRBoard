@@ -2,11 +2,11 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
 import com.y4vra.irboardbackend.application.mappers.DocumentMapper;
+import com.y4vra.irboardbackend.application.ports.ObjectStorageService;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
-import com.y4vra.irboardbackend.infrastructure.clients.MinioService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,10 +34,10 @@ class DocumentServiceTest {
     private DocumentMapper documentMapper;
 
     @Mock
-    private KetoClient ketoClient;
+    private PermissionService permService;
 
     @Mock
-    private MinioService minioService;
+    private ObjectStorageService objStorageService;
 
     @InjectMocks
     private DocumentService documentService;
@@ -66,20 +66,20 @@ class DocumentServiceTest {
 
     @Test
     void findDocumentsOfProject_returnsDocumentsWithPresignedUrls() {
-        when(ketoClient.check("Project", "1", "view", OryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(true);
         when(documentRepository.findAllByProjectId(projectId)).thenReturn(List.of(document));
-        when(minioService.getPresignedUrl(document.getFileName())).thenReturn(presignedUrl);
+        when(objStorageService.getDownloadUrl(document.getFileName())).thenReturn(presignedUrl);
         when(documentMapper.toDto(document, presignedUrl)).thenReturn(documentDTO);
 
         List<DocumentDTO> result = documentService.findDocumentsOfProject(OryId, projectId);
 
         assertThat(result).hasSize(1).containsExactly(documentDTO);
-        verify(minioService).getPresignedUrl("spec.pdf");
+        verify(objStorageService).getDownloadUrl("spec.pdf");
     }
 
     @Test
     void findDocumentsOfProject_throwsAccessDeniedWhenNotAuthorized() {
-        when(ketoClient.check("Project", "1", "view", OryId)).thenReturn(false);
+        when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(false);
 
         assertThatThrownBy(() -> documentService.findDocumentsOfProject(OryId, projectId))
                 .isInstanceOf(AccessDeniedException.class);
@@ -89,9 +89,9 @@ class DocumentServiceTest {
 
     @Test
     void findById_returnsDocumentWithPresignedUrl() {
-        when(ketoClient.check("Project", "1", "view", OryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(true);
         when(documentRepository.findById(documentId)).thenReturn(Optional.of(document));
-        when(minioService.getPresignedUrl(document.getFileName())).thenReturn(presignedUrl);
+        when(objStorageService.getDownloadUrl(document.getFileName())).thenReturn(presignedUrl);
         when(documentMapper.toDto(document, presignedUrl)).thenReturn(documentDTO);
 
         DocumentDTO result = documentService.findById(OryId, projectId, documentId);
@@ -101,7 +101,7 @@ class DocumentServiceTest {
 
     @Test
     void findById_throwsAccessDeniedWhenNotAuthorized() {
-        when(ketoClient.check("Project", "1", "view", OryId)).thenReturn(false);
+        when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(false);
 
         assertThatThrownBy(() -> documentService.findById(OryId, projectId, documentId))
                 .isInstanceOf(AccessDeniedException.class);
@@ -111,7 +111,7 @@ class DocumentServiceTest {
 
     @Test
     void findById_throwsEntityNotFoundWhenDocumentDoesNotExist() {
-        when(ketoClient.check("Project", "1", "view", OryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(true);
         when(documentRepository.findById(documentId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> documentService.findById(OryId, projectId, documentId))
@@ -122,28 +122,28 @@ class DocumentServiceTest {
     @Test
     void uploadDocument_savesDocumentAndCreatesKetoRelations() {
         DocumentDTO inputDto = new DocumentDTO(null, "spec.pdf", "application/pdf", 1024L, projectId, null);
-        when(ketoClient.check("Project", "1", "write", OryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "write", OryId)).thenReturn(true);
         when(documentMapper.toEntity(inputDto)).thenReturn(document);
         when(documentRepository.save(document)).thenReturn(document);
-        when(minioService.getPresignedUrl(document.getFileName())).thenReturn(presignedUrl);
+        when(objStorageService.getDownloadUrl(document.getFileName())).thenReturn(presignedUrl);
         when(documentMapper.toDto(document, presignedUrl)).thenReturn(documentDTO);
 
         DocumentDTO result = documentService.uploadDocument(inputDto, projectId, OryId);
 
         assertThat(result).isEqualTo(documentDTO);
-        verify(ketoClient).createRelation("Document", "10", "parents", "Project:1");
-        verify(ketoClient).createRelation("Document", "10", "owners", OryId);
+        verify(permService).grantPermission("Document", "10", "parents", "Project:1");
+        verify(permService).grantPermission("Document", "10", "owners", OryId);
     }
 
     @Test
     void uploadDocument_throwsAccessDeniedWhenNotAuthorized() {
         DocumentDTO inputDto = new DocumentDTO(null, "spec.pdf", "application/pdf", 1024L, projectId, null);
-        when(ketoClient.check("Project", "1", "write", OryId)).thenReturn(false);
+        when(permService.checkPermission("Project", "1", "write", OryId)).thenReturn(false);
 
         assertThatThrownBy(() -> documentService.uploadDocument(inputDto, projectId, OryId))
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(documentRepository, never()).save(any());
-        verify(ketoClient, never()).createRelation(any(), any(), any(), any());
+        verify(permService, never()).grantPermission(any(), any(), any(), any());
     }
 }

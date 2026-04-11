@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
+import com.y4vra.irboardbackend.application.ports.IdentityService;
 import com.y4vra.irboardbackend.domain.model.User;
 import com.y4vra.irboardbackend.infrastructure.api.rest.errors.AccountRecoveryException;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class KratosClient {
+public class KratosClient implements IdentityService {
 
     private final RestTemplate restTemplate;
     private final String kratosAdminUrl;
@@ -115,7 +116,7 @@ public class KratosClient {
         }
     }
 
-    public void setPasswordByAdmin(String oryId, String password, User user) {
+    public void setPassword(String oryId, String password, User user) {
         String url = kratosAdminUrl + "/admin/identities/" + oryId;
 
         Map<String, Object> traits = new HashMap<>();

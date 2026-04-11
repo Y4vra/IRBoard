@@ -2,10 +2,10 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.application.mappers.UserMapper;
+import com.y4vra.irboardbackend.application.ports.IdentityService;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.User;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
-import com.y4vra.irboardbackend.infrastructure.clients.KratosClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,10 +32,10 @@ class UserServiceTest {
     private UserMapper userMapper;
 
     @Mock
-    private KetoClient ketoClient;
+    private PermissionService permService;
 
     @Mock
-    private KratosClient kratosClient;
+    private IdentityService identService;
 
     @InjectMocks
     private UserService userService;
@@ -104,16 +104,16 @@ class UserServiceTest {
         User mappedUser = new User();
         mappedUser.setEmail("new@example.com");
 
-        when(kratosClient.createIdentity("new@example.com", "New", "User", false)).thenReturn(oryId);
-        when(kratosClient.sendInvitationCode("new@example.com")).thenReturn("flow-abc");
+        when(identService.createIdentity("new@example.com", "New", "User", false)).thenReturn(oryId);
+        when(identService.sendInvitationCode("new@example.com")).thenReturn("flow-abc");
         when(userMapper.toEntity(dto)).thenReturn(mappedUser);
 
         UserDTO result = userService.inviteUser(dto, adminOryId);
 
         assertThat(result).isEqualTo(dto);
-        verify(kratosClient).createIdentity("new@example.com", "New", "User", false);
-        verify(kratosClient).sendInvitationCode("new@example.com");
-        verify(ketoClient, never()).createRelation(any(), any(), any(), any());
+        verify(identService).createIdentity("new@example.com", "New", "User", false);
+        verify(identService).sendInvitationCode("new@example.com");
+        verify(permService, never()).grantPermission(any(), any(), any(), any());
         verify(userRepository).save(argThat(u ->
                 u.getOryId().equals(oryId) &&
                 u.getPendingActivationToken().equals("flow-abc")
@@ -126,13 +126,13 @@ class UserServiceTest {
         User mappedUser = new User();
         mappedUser.setEmail("admin@example.com");
 
-        when(kratosClient.createIdentity("admin@example.com", "Admin", "User", true)).thenReturn(oryId);
-        when(kratosClient.sendInvitationCode("admin@example.com")).thenReturn("flow-xyz");
+        when(identService.createIdentity("admin@example.com", "Admin", "User", true)).thenReturn(oryId);
+        when(identService.sendInvitationCode("admin@example.com")).thenReturn("flow-xyz");
         when(userMapper.toEntity(dto)).thenReturn(mappedUser);
 
         userService.inviteUser(dto, adminOryId);
 
-        verify(ketoClient).createRelation("System", "main", "admins", oryId);
+        verify(permService).grantPermission("System", "main", "admins", oryId);
     }
 
     @Test
@@ -166,13 +166,13 @@ class UserServiceTest {
     void generateNewInvite_sendsNewCodeAndUpdatesToken() {
         user.setPendingActivationToken("old-flow");
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(kratosClient.sendInvitationCode(user.getEmail())).thenReturn("new-flow");
+        when(identService.sendInvitationCode(user.getEmail())).thenReturn("new-flow");
         when(userMapper.toDto(user)).thenReturn(userDTO);
 
         userService.generateNewInvite(userId);
 
         assertThat(user.getPendingActivationToken()).isEqualTo("new-flow");
-        verify(kratosClient).sendInvitationCode("javier@example.com");
+        verify(identService).sendInvitationCode("javier@example.com");
     }
 
     @Test
@@ -198,8 +198,8 @@ class UserServiceTest {
         UserDTO result = userService.activateInvitedUser(email, code, password);
 
         assertThat(result).isEqualTo(userDTO);
-        verify(kratosClient).validateRecoveryCode(email, code, "flow-token");
-        verify(kratosClient).setPasswordByAdmin(oryId, password, user);
+        verify(identService).validateRecoveryCode(email, code, "flow-token");
+        verify(identService).setPassword(oryId, password, user);
         assertThat(user.getActive()).isTrue();
         assertThat(user.getPendingActivationToken()).isNull();
         verify(userRepository).save(user);
@@ -222,7 +222,7 @@ class UserServiceTest {
 
         assertThat(user.getActive()).isFalse();
         verify(userRepository).save(user);
-        verify(kratosClient).disableIdentity(oryId);
+        verify(identService).disableIdentity(oryId);
     }
 
     @Test
@@ -233,7 +233,7 @@ class UserServiceTest {
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("User not found");
 
-        verify(kratosClient, never()).disableIdentity(any());
+        verify(identService, never()).disableIdentity(any());
     }
 
     @Test

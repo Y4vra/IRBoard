@@ -2,12 +2,12 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -33,7 +34,7 @@ class FunctionalityServiceTest {
     private FunctionalityMapper functionalityMapper;
 
     @Mock
-    private KetoClient ketoClient;
+    private PermissionService permService;
 
     @InjectMocks
     private FunctionalityService functionalityService;
@@ -58,56 +59,64 @@ class FunctionalityServiceTest {
     }
 
     @Test
-    void findFunctionalitiesOfProjectForUser_returnsOnlyAuthorizedFunctionalitiesForProject() {
+    void findFunctionalitiesOfProjectForUser_categorizesFunctionalitiesCorrectly() {
         String oryId = "user-ory-123";
-        when(ketoClient.getAuthorizedObjects(oryId, "Functionality", "viewRequirements"))
-                .thenReturn(List.of("10", "99"));
+        long projectId = 1L;
 
-        Functionality otherProjectFunctionality = new Functionality();
-        otherProjectFunctionality.setId(99L);
-        Project otherProject = new Project();
-        otherProject.setId(999L);
-        otherProjectFunctionality.setProject(otherProject);
+        // Mocking Keto response for Edit and View permissions
+        when(permService.getAuthorizedObjects(oryId, "Functionality", "editRequirements"))
+                .thenReturn(List.of("10")); // Can edit 10
+        when(permService.getAuthorizedObjects(oryId, "Functionality", "viewRequirements"))
+                .thenReturn(List.of("10", "11")); // Can view 10 and 11
 
-        when(functionalityRepository.findAllById(List.of(10L, 99L)))
-                .thenReturn(List.of(functionality, otherProjectFunctionality));
-        when(functionalityMapper.toDto(functionality)).thenReturn(functionalityDTO);
+        // Setup functionalities for this project
+        Functionality funcEdit = new Functionality(); funcEdit.setId(10L); funcEdit.setProject(project);
+        Functionality funcView = new Functionality(); funcView.setId(11L); funcView.setProject(project);
+        Functionality funcNone = new Functionality(); funcNone.setId(12L); funcNone.setProject(project);
 
-        List<FunctionalityDTO> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, 1L);
+        when(functionalityRepository.findAll()).thenReturn(List.of(funcEdit, funcView, funcNone));
 
-        assertThat(result).hasSize(1).containsExactly(functionalityDTO);
-        verify(functionalityMapper, never()).toDto(otherProjectFunctionality);
+        // Setup DTOs
+        FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit", "E", "ACTIVE", 1L);
+        FunctionalityDTO dtoView = new FunctionalityDTO(11L, "View", "V", "ACTIVE", 1L);
+        FunctionalityDTO dtoNone = new FunctionalityDTO(12L, "None", "N", "ACTIVE", 1L);
+
+        when(functionalityMapper.toDto(funcEdit)).thenReturn(dtoEdit);
+        when(functionalityMapper.toDto(funcView)).thenReturn(dtoView);
+        when(functionalityMapper.toDto(funcNone)).thenReturn(dtoNone);
+
+        // EXECUTE
+        Map<String, List<FunctionalityDTO>> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, projectId);
+
+        // ASSERT
+        assertThat(result).containsKeys("edit", "view", "none");
+        assertThat(result.get("edit")).containsExactly(dtoEdit);
+        assertThat(result.get("view")).containsExactly(dtoView);
+        assertThat(result.get("none")).containsExactly(dtoNone);
     }
 
     @Test
-    void findFunctionalitiesOfProjectForUser_returnsEmptyWhenNoAuthorizedFunctionalities() {
-        String oryId = "user-ory-456";
-        when(ketoClient.getAuthorizedObjects(oryId, "Functionality", "viewRequirements"))
-                .thenReturn(List.of());
-        when(functionalityRepository.findAllById(List.of())).thenReturn(List.of());
+    void findFunctionalitiesOfProjectForUser_filtersByProjectId() {
+        String oryId = "user-ory-123";
 
-        List<FunctionalityDTO> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, 1L);
-
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void findFunctionalitiesOfProjectForUser_returnsEmptyWhenNoneMatchProject() {
-        String oryId = "user-ory-789";
-        when(ketoClient.getAuthorizedObjects(oryId, "Functionality", "viewRequirements"))
-                .thenReturn(List.of("10"));
+        Functionality correctProject = new Functionality();
+        correctProject.setId(10L);
+        correctProject.setProject(project); // ID 1L
 
         Functionality wrongProject = new Functionality();
-        wrongProject.setId(10L);
-        Project other = new Project();
-        other.setId(42L);
-        wrongProject.setProject(other);
+        wrongProject.setId(20L);
+        Project otherP = new Project(); otherP.setId(999L);
+        wrongProject.setProject(otherP);
 
-        when(functionalityRepository.findAllById(List.of(10L))).thenReturn(List.of(wrongProject));
+        when(functionalityRepository.findAll()).thenReturn(List.of(correctProject, wrongProject));
+        when(permService.getAuthorizedObjects(anyString(), anyString(), anyString())).thenReturn(List.of("10", "20"));
+        when(functionalityMapper.toDto(correctProject)).thenReturn(functionalityDTO);
 
-        List<FunctionalityDTO> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, 1L);
+        Map<String, List<FunctionalityDTO>> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, 1L);
 
-        assertThat(result).isEmpty();
-        verify(functionalityMapper, never()).toDto(any());
+        // Should only contain the one from project 1
+        assertThat(result.get("edit")).hasSize(1);
+        assertThat(result.get("edit").get(0).id()).isEqualTo(10L);
+        verify(functionalityMapper, never()).toDto(wrongProject);
     }
 }

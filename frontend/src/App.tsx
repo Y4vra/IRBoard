@@ -8,9 +8,8 @@ import { NavBar } from './components/Navbar'
 import NewProject from './pages/Project/NewProject'
 import ProjectView from './pages/Project/ProjectView'
 import Registration from './pages/Registration'
-import Forbidden from './pages/ForbiddenPage'
+import ErrorPage from './pages/ErrorPage'
 import UserManagement from './pages/UserManagement'
-//import FunctionalitiesView from './pages/Project/FunctionalitiesView' <Route path="/project/:id/functionalities" element={<FunctionalitiesView/>}/>
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -28,7 +27,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/registration" element={<Registration />} />
-          <Route path="/forbidden" element={<Forbidden />}/>
+          <Route path="/error" element={<ErrorPage />}/>
           <Route element={<ProtectedRoute />}>
             <Route element={<WindowLayout />}>
               <Route path="/" element={<Home />}/>
@@ -43,7 +42,7 @@ function App() {
               <Route path="/admin/users" element={<UserManagement />} />
             </Route>
           </Route>
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="*" element={<ErrorPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

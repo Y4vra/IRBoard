@@ -60,7 +60,7 @@ describe("Registration", () => {
     mockAuthContext.isAuthenticated = false
     mockAuthContext.loading = false
     mockAuthContext.checkSession = mockCheckSession
-    global.fetch = mockFetch
+    vi.stubGlobal("fetch", mockFetch)
     mockCreateBrowserLoginFlow.mockResolvedValue({ data: mockFlowData })
     mockUpdateLoginFlow.mockResolvedValue({})
   })

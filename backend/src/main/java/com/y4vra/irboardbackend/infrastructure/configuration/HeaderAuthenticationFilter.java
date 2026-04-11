@@ -1,7 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.configuration;
 
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,11 +21,11 @@ import java.util.List;
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserRepository userRepository;
-    private final KetoClient ketoClient;
+    private final PermissionService permService;
 
-    public HeaderAuthenticationFilter(UserRepository userRepository, KetoClient ketoClient) {
+    public HeaderAuthenticationFilter(UserRepository userRepository, PermissionService permService) {
         this.userRepository = userRepository;
-        this.ketoClient = ketoClient;
+        this.permService = permService;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
             userRepository.findByOryId(oryId).ifPresent(user -> {
                 List<GrantedAuthority> authorities = new ArrayList<>();
                 authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-                boolean isAdmin = ketoClient.check("System", "main", "admins", oryId);
+                boolean isAdmin = permService.checkPermission("System", "main", "admins", oryId);
                 if (isAdmin) {
                     authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
                 }

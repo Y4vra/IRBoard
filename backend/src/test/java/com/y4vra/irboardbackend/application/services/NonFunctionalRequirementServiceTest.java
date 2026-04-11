@@ -2,11 +2,11 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapper;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,7 +32,7 @@ class NonFunctionalRequirementServiceTest {
     private NonFunctionalRequirementMapper nfrMapper;
 
     @Mock
-    private KetoClient ketoClient;
+    private PermissionService permService;
 
     @InjectMocks
     private NonFunctionalRequirementService nfrService;
@@ -66,7 +66,7 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void findNonFunctionalRequirementsOfProject_returnsListWhenAuthorized() {
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(nfrRepository.findAllByProjectId(projectId)).thenReturn(List.of(nfr));
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
 
@@ -77,7 +77,7 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void findNonFunctionalRequirementsOfProject_throwsAccessDeniedWhenNotAuthorized() {
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(false);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
 
         assertThatThrownBy(() -> nfrService.findNonFunctionalRequirementsOfProject(oryId, projectId))
                 .isInstanceOf(AccessDeniedException.class);
@@ -87,7 +87,7 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void findNonFunctionalRequirementsOfProject_returnsEmptyListWhenNoneExist() {
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(nfrRepository.findAllByProjectId(projectId)).thenReturn(List.of());
 
         List<NonFunctionalRequirementDTO> result = nfrService.findNonFunctionalRequirementsOfProject(oryId, projectId);
@@ -106,8 +106,8 @@ class NonFunctionalRequirementServiceTest {
 
         assertThat(result).isEqualTo(nfrDTO);
         verify(nfrRepository).save(nfr);
-        verify(ketoClient).createRelation("Requirement", "7", "parents", "Project:" + projectId);
-        verify(ketoClient).createRelation("Requirement", "7", "managers", oryId);
+        verify(permService).grantPermission("Requirement", "7", "parents", "Project:" + projectId);
+        verify(permService).grantPermission("Requirement", "7", "managers", oryId);
     }
 
     @Test
@@ -118,9 +118,9 @@ class NonFunctionalRequirementServiceTest {
 
         nfrService.createNonFunctionalRequirement(nfrDTO, oryId);
 
-        var inOrder = inOrder(nfrRepository, ketoClient);
+        var inOrder = inOrder(nfrRepository, permService);
         inOrder.verify(nfrRepository).save(nfr);
-        inOrder.verify(ketoClient).createRelation(eq("Requirement"), any(), eq("parents"), any());
-        inOrder.verify(ketoClient).createRelation(eq("Requirement"), any(), eq("managers"), any());
+        inOrder.verify(permService).grantPermission(eq("Requirement"), any(), eq("parents"), any());
+        inOrder.verify(permService).grantPermission(eq("Requirement"), any(), eq("managers"), any());
     }
 }

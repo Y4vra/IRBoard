@@ -1,18 +1,19 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
+import com.y4vra.irboardbackend.application.ports.ObjectStorageService;
 import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.Http.Method;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
-import io.minio.Http.Method;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
-@Service
-public class MinioService {
+@Component
+public class MinioService implements ObjectStorageService {
 
     private final MinioClient minioClient;
 
@@ -23,7 +24,8 @@ public class MinioService {
         this.minioClient = minioClient;
     }
 
-    public String getPresignedUrl(String objectName) {
+    @Override
+    public String getDownloadUrl(String objectName) {
         try {
             return minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
@@ -38,14 +40,15 @@ public class MinioService {
         }
     }
 
-    public void uploadFile(String objectName, MultipartFile file) {
+    @Override
+    public void uploadFile(String objectName, InputStream inputStream, long size, String contentType) {
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .object(objectName)
-                            .stream(file.getInputStream(), file.getSize(), (long) -1)
-                            .contentType(file.getContentType())
+                            .stream(inputStream, size, (long)-1)
+                            .contentType(contentType)
                             .build()
             );
         } catch (Exception e) {
@@ -53,6 +56,7 @@ public class MinioService {
         }
     }
 
+    @Override
     public void deleteFile(String objectName) {
         try {
             minioClient.removeObject(

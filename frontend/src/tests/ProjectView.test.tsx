@@ -24,6 +24,12 @@ const mockProject = {
   state: "ACTIVE",
 }
 
+const mockFunctionalities = {
+  edit: [{ id: 1, name: "Auth System", description: "Login logic" }],
+  view: [{ id: 2, name: "Reports" }],
+  none: [{ id: 3, name: "Admin Panel" }]
+}
+
 function renderProjectView(id = "42") {
   return render(
     <MemoryRouter initialEntries={[`/project/${id}`]}>
@@ -38,147 +44,116 @@ describe("ProjectView", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthContext.user = { isAdmin: false }
-    global.fetch = mockFetch
+    vi.stubGlobal("fetch", mockFetch)
+    
+    mockFetch.mockImplementation((url) => {
+      if (url.includes("/functionalities")) {
+        return Promise.resolve({ 
+          ok: true, 
+          json: async () => ({ edit: [], view: [], none: [] }) 
+        })
+      }
+      return Promise.resolve({ 
+        ok: true, 
+        json: async () => mockProject 
+      })
+    })
   })
 
-  // ── Loading ────────────────────────────────────────────────────────────────
-
-  it("shows the loading spinner while fetching", () => {
+  it("shows the loading spinner while fetching project", () => {
     mockFetch.mockReturnValue(new Promise(() => {}))
     renderProjectView()
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument()
   })
 
-  // ── Error state ────────────────────────────────────────────────────────────
-
-  it("shows error message when fetch fails", async () => {
-    mockFetch.mockResolvedValue({ ok: false })
-    renderProjectView()
-    await waitFor(() => {
-      expect(screen.getByText(/failed to fetch project details/i)).toBeInTheDocument()
+  it("renders project details and functionalities count", async () => {
+    mockFetch.mockImplementation((url) => {
+      if (url.includes("/functionalities")) {
+        return Promise.resolve({ ok: true, json: async () => mockFunctionalities })
+      }
+      return Promise.resolve({ ok: true, json: async () => mockProject })
     })
-  })
 
-  it("shows Back to Dashboard link on error", async () => {
-    mockFetch.mockResolvedValue({ ok: false })
     renderProjectView()
-    await waitFor(() => {
-      expect(screen.getByRole("link", { name: /back to dashboard/i })).toBeInTheDocument()
-    })
-  })
 
-  // ── Successful render ──────────────────────────────────────────────────────
-
-  it("renders the project name as heading", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView()
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /ir-board/i })).toBeInTheDocument()
+      expect(screen.getByText(/2 accessible · 1 restricted/i)).toBeInTheDocument()
     })
   })
 
-  it("renders the priority style badge", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
+  it("renders functionality cards with correct permission labels", async () => {
+    mockFetch.mockImplementation((url) => {
+      if (url.includes("/functionalities")) {
+        return Promise.resolve({ ok: true, json: async () => mockFunctionalities })
+      }
+      return Promise.resolve({ ok: true, json: async () => mockProject })
+    })
+
     renderProjectView()
+
     await waitFor(() => {
-      expect(screen.getByText("TERNARY")).toBeInTheDocument()
+      expect(screen.getByText("Auth System")).toBeInTheDocument()
+      expect(screen.getByText("Editable")).toBeInTheDocument()
+      expect(screen.getByText("View only")).toBeInTheDocument()
+      expect(screen.getByText("No access")).toBeInTheDocument()
     })
   })
 
-  it("renders the project description", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
+  it("shows Add Functionality button only for admins", async () => {
+    mockAuthContext.user = { isAdmin: true };
+    renderProjectView();
+
+    await waitFor(() => {
+      const addButtons = screen.getAllByRole("link", { name: /add functionality/i });
+      expect(addButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("renders restricted functionality card as non-clickable", async () => {
+    mockFetch.mockImplementation((url) => {
+      if (url.includes("/functionalities")) {
+        return Promise.resolve({ ok: true, json: async () => mockFunctionalities })
+      }
+      return Promise.resolve({ ok: true, json: async () => mockProject })
+    })
+
     renderProjectView()
+
     await waitFor(() => {
-      expect(screen.getByText("Requirements management platform")).toBeInTheDocument()
+      const restrictedText = screen.getByText("Admin Panel")
+      const link = restrictedText.closest("a")
+      expect(link).toBeNull()
     })
   })
 
-  it("renders the project state", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
+  it("shows empty state when no functionalities exist", async () => {
+    mockFetch.mockImplementation((url) => {
+      if (url.includes("/functionalities")) {
+        return Promise.resolve({ ok: true, json: async () => ({ edit: [], view: [], none: [] }) })
+      }
+      return Promise.resolve({ ok: true, json: async () => mockProject })
+    })
+
     renderProjectView()
+
     await waitFor(() => {
-      expect(screen.getByText("ACTIVE")).toBeInTheDocument()
+      expect(screen.getByText(/no functionalities yet/i)).toBeInTheDocument()
     })
   })
 
-  it("renders fallback description when none provided", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => ({ ...mockProject, description: "" }) })
+  it("handles error in project fetch", async () => {
+    mockFetch.mockImplementation((url) => {
+      if (!url.includes("/functionalities")) {
+        return Promise.resolve({ ok: false })
+      }
+      return Promise.resolve({ ok: true, json: async () => ({ edit: [], view: [], none: [] }) })
+    })
+
     renderProjectView()
+
     await waitFor(() => {
-      expect(screen.getByText(/no project description available/i)).toBeInTheDocument()
-    })
-  })
-
-  it("renders truncated reference ID", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView()
-    await waitFor(() => {
-      expect(screen.getByText(/ref: 42/i)).toBeInTheDocument()
-    })
-  })
-
-  // ── Navigation links ───────────────────────────────────────────────────────
-
-  it("renders all four navigation cards", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView()
-    await waitFor(() => {
-      expect(screen.getByText("Functionalities")).toBeInTheDocument()
-      expect(screen.getByText("Stakeholders")).toBeInTheDocument()
-      expect(screen.getByText("Non-Functional Requirements")).toBeInTheDocument()
-      expect(screen.getByText("Documents")).toBeInTheDocument()
-    })
-  })
-
-  it("navigation links point to correct project sub-routes", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView()
-    await waitFor(() => {
-      expect(screen.getByRole("link", { name: /functionalities/i })).toHaveAttribute(
-        "href", "/project/42/functionalities"
-      )
-      expect(screen.getByRole("link", { name: /stakeholders/i })).toHaveAttribute(
-        "href", "/project/42/stakeholders"
-      )
-    })
-  })
-
-  it("renders Back to Projects link", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView()
-    await waitFor(() => {
-      expect(screen.getByRole("link", { name: /back to projects/i })).toHaveAttribute("href", "/")
-    })
-  })
-
-  // ── Admin controls ─────────────────────────────────────────────────────────
-
-  it("shows Edit Project button for admins", async () => {
-    mockAuthContext.user = { isAdmin: true }
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView()
-    await waitFor(() => {
-      expect(screen.getByRole("link", { name: /edit project/i })).toBeInTheDocument()
-    })
-  })
-
-  it("does NOT show Edit Project button for non-admins", async () => {
-    mockAuthContext.user = { isAdmin: false }
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView()
-    await waitFor(() => {
-      expect(screen.queryByRole("link", { name: /edit project/i })).not.toBeInTheDocument()
-    })
-  })
-
-  it("fetches from /projects/:id endpoint", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProject })
-    renderProjectView("42")
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        "http://api.irboard.local/v1/projects/42",
-        expect.objectContaining({ method: "GET" })
-      )
+      expect(screen.getByText(/error: failed to fetch project details/i)).toBeInTheDocument()
     })
   })
 })

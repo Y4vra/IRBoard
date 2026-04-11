@@ -2,9 +2,9 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.application.mappers.ProjectMapper;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class ProjectServiceTest {
     private ProjectMapper projectMapper;
 
     @Mock
-    private KetoClient ketoClient;
+    private PermissionService permService;
 
     @InjectMocks
     private ProjectService projectService;
@@ -70,20 +70,20 @@ class ProjectServiceTest {
     @Test
     void findProjectsForUser_returnsOnlyAuthorizedProjects() {
         String oryId = "user-ory-123";
-        when(ketoClient.getAuthorizedObjects(oryId, "Project", "view")).thenReturn(List.of("1"));
+        when(permService.getAuthorizedObjects(oryId, "Project", "view")).thenReturn(List.of("1"));
         when(projectRepository.findAllById(List.of(1L))).thenReturn(List.of(project));
         when(projectMapper.toDto(project)).thenReturn(projectDTO);
 
         List<ProjectDTO> result = projectService.findProjectsForUser(oryId);
 
         assertThat(result).containsExactly(projectDTO);
-        verify(ketoClient).getAuthorizedObjects(oryId, "Project", "view");
+        verify(permService).getAuthorizedObjects(oryId, "Project", "view");
     }
 
     @Test
     void findProjectsForUser_returnsEmptyListWhenNoPermissions() {
         String oryId = "user-ory-456";
-        when(ketoClient.getAuthorizedObjects(oryId, "Project", "view")).thenReturn(List.of());
+        when(permService.getAuthorizedObjects(oryId, "Project", "view")).thenReturn(List.of());
         when(projectRepository.findAllById(List.of())).thenReturn(List.of());
 
         List<ProjectDTO> result = projectService.findProjectsForUser(oryId);
@@ -101,13 +101,13 @@ class ProjectServiceTest {
 
         assertThat(result).isEqualTo(projectDTO);
         verify(projectRepository).save(any(Project.class));
-        verify(ketoClient).createRelation("Project", "1", "managers", oryId);
+        verify(permService).grantPermission("Project", "1", "managers", oryId);
     }
 
     @Test
     void findById_returnsProjectWhenAuthorized() {
         String oryId = "user-ory-123";
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(projectMapper.toDto(project)).thenReturn(projectDTO);
 
@@ -119,7 +119,7 @@ class ProjectServiceTest {
     @Test
     void findById_throwsAccessDeniedWhenNotAuthorized() {
         String oryId = "user-ory-unauthorized";
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(false);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
 
         assertThatThrownBy(() -> projectService.findById(oryId, 1L))
                 .isInstanceOf(AccessDeniedException.class);
@@ -130,7 +130,7 @@ class ProjectServiceTest {
     @Test
     void findById_throwsEntityNotFoundWhenProjectDoesNotExist() {
         String oryId = "user-ory-123";
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(projectRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> projectService.findById(oryId, 1L))

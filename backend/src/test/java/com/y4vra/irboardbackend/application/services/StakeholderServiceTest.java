@@ -2,11 +2,11 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.mappers.StakeholderMapper;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ class StakeholderServiceTest {
     private StakeholderMapper stakeholderMapper;
 
     @Mock
-    private KetoClient ketoClient;
+    private PermissionService permService;
 
     @InjectMocks
     private StakeholderService stakeholderService;
@@ -64,7 +64,7 @@ class StakeholderServiceTest {
 
     @Test
     void findStakeholdersOfProject_returnsStakeholdersWhenAuthorized() {
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(stakeholderRepository.findByProjectId(projectId)).thenReturn(List.of(stakeholder));
         when(stakeholderMapper.toDto(stakeholder)).thenReturn(stakeholderDTO);
 
@@ -75,7 +75,7 @@ class StakeholderServiceTest {
 
     @Test
     void findStakeholdersOfProject_throwsAccessDeniedWhenNotAuthorized() {
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(false);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
 
         assertThatThrownBy(() -> stakeholderService.findStakeholdersOfProject(oryId, projectId))
                 .isInstanceOf(AccessDeniedException.class);
@@ -85,7 +85,7 @@ class StakeholderServiceTest {
 
     @Test
     void findStakeholdersOfProject_returnsEmptyListWhenNoneExist() {
-        when(ketoClient.check("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(stakeholderRepository.findByProjectId(projectId)).thenReturn(List.of());
 
         List<StakeholderDTO> result = stakeholderService.findStakeholdersOfProject(oryId, projectId);

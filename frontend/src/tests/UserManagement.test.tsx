@@ -43,7 +43,7 @@ describe("UserManagement", () => {
     vi.clearAllMocks()
     mockAuthContext.isAuthenticated = true
     mockAuthContext.loading = false
-    global.fetch = mockFetch
+    vi.stubGlobal("fetch", mockFetch)
   })
 
   // ── Loading state ──────────────────────────────────────────────────────────

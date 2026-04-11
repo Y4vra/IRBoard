@@ -15,6 +15,7 @@ export interface AuthContextType {
   session: Session | null;
   user: UserProfile | null;
   loading: boolean;
+  serverError: boolean;
   logout: () => void;
   checkSession: () => Promise<void>;
 }

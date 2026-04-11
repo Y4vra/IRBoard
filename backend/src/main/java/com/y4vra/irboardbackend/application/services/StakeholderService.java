@@ -2,18 +2,17 @@ package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.mappers.StakeholderMapper;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
-import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,21 +21,21 @@ public class StakeholderService {
     private final StakeholderRepository stakeholderRepository;
     private final ProjectRepository projectRepository;
     private final StakeholderMapper stakeholderMapper;
-    private final KetoClient ketoClient;
+    private final PermissionService permService;
 
     public StakeholderService(StakeholderRepository stakeholderRepository,
                               ProjectRepository projectRepository,
                               StakeholderMapper stakeholderMapper,
-                              KetoClient ketoClient) {
+                              PermissionService permService) {
         this.stakeholderRepository = stakeholderRepository;
         this.projectRepository = projectRepository;
         this.stakeholderMapper = stakeholderMapper;
-        this.ketoClient = ketoClient;
+        this.permService = permService;
     }
 
     @Transactional(readOnly = true)
     public List<StakeholderDTO> findStakeholdersOfProject(String oryId, long projectId) {
-        boolean hasProjectAccess = ketoClient.check("Project", String.valueOf(projectId), "view", oryId);
+        boolean hasProjectAccess = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
 
         if (!hasProjectAccess) {
             throw new AccessDeniedException("User not authorized to view stakeholders of this project");
@@ -61,15 +60,15 @@ public class StakeholderService {
         return stakeholderMapper.toDto(saved);
     }
 
-//    @Transactional
-//    public void linkStakeholderToFunctionality(long stakeholderId, long functionalityId, String oryIdOfStakeholder) {
-//        ketoClient.createRelation(
-//                "Functionality",
-//                String.valueOf(functionalityId),
-//                "stakeholders",
-//                oryIdOfStakeholder
-//        );
-//    }
+    @Transactional
+    public void linkStakeholderToFunctionality(long stakeholderId, long functionalityId, String oryIdOfStakeholder) {
+        permService.grantPermission(
+                "Functionality",
+                String.valueOf(functionalityId),
+                "stakeholders",
+                oryIdOfStakeholder
+        );
+    }
 
 //    @Transactional
 //    public StakeholderDTO deactivateStakeholder(long id) {

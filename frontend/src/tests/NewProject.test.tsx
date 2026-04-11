@@ -25,7 +25,7 @@ function renderNewProject() {
 describe("NewProject", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    global.fetch = mockFetch
+    vi.stubGlobal("fetch", mockFetch)
   })
 
   // ── Rendering ──────────────────────────────────────────────────────────────

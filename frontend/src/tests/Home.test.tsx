@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import Home from "../pages/Home"
@@ -51,7 +51,7 @@ describe("Home", () => {
     mockAuthContext.user = { isAdmin: false }
     mockAuthContext.isAuthenticated = true
     mockAuthContext.loading = false
-    global.fetch = mockFetch
+    vi.stubGlobal("fetch", mockFetch)
   })
 
   // ── Loading states ─────────────────────────────────────────────────────────

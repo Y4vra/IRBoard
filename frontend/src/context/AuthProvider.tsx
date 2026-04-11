@@ -8,8 +8,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [serverError, setServerError] = useState(false);
 
   const checkSession = async () => {
+    setServerError(false);
     try {
       const { data } = await kratos.toSession();
       setSession(data);
@@ -23,11 +25,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
+        } else if (response.status >= 500) {
+          setServerError(true);
+        } else {
+          setUser(null);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       setSession(null);
       setUser(null);
+      if (error.code === "ERR_NETWORK" || !error.response) {
+        setServerError(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -47,7 +56,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!session, session, user, loading, logout, checkSession }}>
+    <AuthContext.Provider value={{
+      isAuthenticated: !!session, 
+      session, 
+      user, 
+      loading,
+      serverError, 
+      logout, 
+      checkSession }}>
       {children}
     </AuthContext.Provider>
   );
