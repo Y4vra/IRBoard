@@ -13,13 +13,13 @@ import {
   ArrowLeft,
   ChevronRight,
   Activity,
-  Plus,
   Eye,
   Pencil,
   Lock,
 } from "lucide-react";
 import { type Project } from "../../types/project";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { CreateFunctionalityDialog } from "../../components/NewFunctionalityDialog";
 
 type Permission = "edit" | "view" | "none";
 
@@ -61,8 +61,7 @@ const permissionConfig: Record<
   none: {
     label: "No access",
     icon: <Lock className="h-3.5 w-3.5" />,
-    badgeClass:
-      "bg-muted/60 text-muted-foreground border-muted-foreground/10",
+    badgeClass: "bg-muted/60 text-muted-foreground border-muted-foreground/10",
     cardClass: "border-muted/40 opacity-50 cursor-not-allowed",
     iconClass: "bg-muted text-muted-foreground",
   },
@@ -88,9 +87,7 @@ function FunctionalityCard({
     >
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div
-            className={`p-1.5 rounded-md shrink-0 mt-0.5 ${config.iconClass}`}
-          >
+          <div className={`p-1.5 rounded-md shrink-0 mt-0.5 ${config.iconClass}`}>
             {config.icon}
           </div>
           <div className="min-w-0">
@@ -138,6 +135,27 @@ function ProjectView() {
   const [functionalitiesLoading, setFunctionalitiesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Lifted outside useEffect so it can be passed as onSuccess to the dialog
+  const fetchFunctionalities = async () => {
+    setFunctionalitiesLoading(true);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${id}/functionalities`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch functionalities");
+      const data: FunctionalitiesResponse = await response.json();
+      setFunctionalities(data);
+    } catch (err) {
+      console.error("Failed to load functionalities:", err);
+    } finally {
+      setFunctionalitiesLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -152,25 +170,6 @@ function ProjectView() {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
-      }
-    };
-
-    const fetchFunctionalities = async () => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/projects/${id}/functionalities`,
-          {
-            method: "GET",
-            credentials: "include",
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch functionalities");
-        const data: FunctionalitiesResponse = await response.json();
-        setFunctionalities(data);
-      } catch (err) {
-        console.error("Failed to load functionalities:", err);
-      } finally {
-        setFunctionalitiesLoading(false);
       }
     };
 
@@ -321,11 +320,10 @@ function ProjectView() {
             )}
           </div>
           {user?.isAdmin && (
-            <Button asChild size="sm">
-              <Link to={`/project/${id}/functionalities/new`}>
-                <Plus className="mr-2 h-4 w-4" /> Add Functionality
-              </Link>
-            </Button>
+            <CreateFunctionalityDialog
+              projectId={id!}
+              onSuccess={fetchFunctionalities}
+            />
           )}
         </div>
 
@@ -342,11 +340,12 @@ function ProjectView() {
               Add the first functionality to get started.
             </p>
             {user?.isAdmin && (
-              <Button asChild size="sm" className="mt-4">
-                <Link to={`/project/${id}/functionalities/new`}>
-                  <Plus className="mr-2 h-4 w-4" /> Add Functionality
-                </Link>
-              </Button>
+              <div className="mt-4">
+                <CreateFunctionalityDialog
+                  projectId={id!}
+                  onSuccess={fetchFunctionalities}
+                />
+              </div>
             )}
           </div>
         ) : (

@@ -105,9 +105,20 @@ describe("ProjectView", () => {
     renderProjectView();
 
     await waitFor(() => {
-      const addButtons = screen.getAllByRole("link", { name: /add functionality/i });
+      const addButtons = screen.getAllByRole("button", { name: /add functionality/i });
       expect(addButtons.length).toBeGreaterThan(0);
     });
+  });
+
+  it("hides Add Functionality button for non-admins", async () => {
+    mockAuthContext.user = { isAdmin: false };
+    renderProjectView();
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /ir-board/i })).toBeInTheDocument();
+    });
+
+    expect(screen.queryAllByRole("button", { name: /add functionality/i })).toHaveLength(0);
   });
 
   it("renders restricted functionality card as non-clickable", async () => {
