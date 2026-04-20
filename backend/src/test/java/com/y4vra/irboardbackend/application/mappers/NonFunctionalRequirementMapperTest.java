@@ -15,7 +15,7 @@ class NonFunctionalRequirementMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new NonFunctionalRequirementMapper();
+        mapper = new NonFunctionalRequirementMapper(new UserMapper());
     }
 
     @Test
@@ -61,7 +61,7 @@ class NonFunctionalRequirementMapperTest {
     void toEntity_mapsAllFields() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
                 9L, "Availability", "Must be highly available", "percent",
-                "GREATER_THAN", 99.0, 99.9, 99.5, 1L
+                "GREATER_THAN", 99.0, 99.9, 99.5, 1L,null,null,false
         );
 
         NonFunctionalRequirement entity = mapper.toEntity(dto);
@@ -80,7 +80,7 @@ class NonFunctionalRequirementMapperTest {
     void toEntity_throwsOnInvalidOperator() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
                 1L, "Name", "desc", "ms", "NOT_AN_OPERATOR",
-                1.0, 2.0, 1.5, 1L
+                1.0, 2.0, 1.5, 1L,null,null,false
         );
 
         org.junit.jupiter.api.Assertions.assertThrows(

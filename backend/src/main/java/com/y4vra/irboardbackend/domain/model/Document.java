@@ -2,8 +2,10 @@ package com.y4vra.irboardbackend.domain.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-public class Document {
+public class Document extends LockableImpl{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,4 +45,5 @@ public class Document {
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
+
 }

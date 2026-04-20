@@ -8,6 +8,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class NonFunctionalRequirementMapper {
 
+    private UserMapper userMapper = new UserMapper();
+
+    public NonFunctionalRequirementMapper(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
     public NonFunctionalRequirementDTO toDto(NonFunctionalRequirement entity) {
         if (entity == null) return null;
 
@@ -20,7 +26,11 @@ public class NonFunctionalRequirementMapper {
             entity.getThresholdValue(),
             entity.getTargetValue(),
             entity.getActualValue(),
-            entity.getProject().getId());
+            entity.getProject().getId(),
+            userMapper.toDto(entity.getModifyingUser()),
+            entity.getStartModificationDate(),
+            entity.isLocked()
+        );
     }
 
     public NonFunctionalRequirement toEntity(NonFunctionalRequirementDTO dto) {
@@ -35,6 +45,8 @@ public class NonFunctionalRequirementMapper {
         entity.setThresholdValue(dto.thresholdValue());
         entity.setTargetValue(dto.targetValue());
         entity.setActualValue(dto.actualValue());
+        entity.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
+        entity.setStartModificationDate(dto.startModificationDate());
 
         return entity;
     }

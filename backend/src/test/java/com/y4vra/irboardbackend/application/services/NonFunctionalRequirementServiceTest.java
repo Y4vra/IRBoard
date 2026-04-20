@@ -60,7 +60,7 @@ class NonFunctionalRequirementServiceTest {
 
         nfrDTO = new NonFunctionalRequirementDTO(
                 7L, "Response Time", "Must respond under threshold",
-                "ms", "LESS_THAN", 200.0, 100.0, 150.0, projectId
+                "ms", "LESS_THAN", 200.0, 100.0, 150.0, projectId,null,null,false
         );
     }
 
@@ -106,8 +106,6 @@ class NonFunctionalRequirementServiceTest {
 
         assertThat(result).isEqualTo(nfrDTO);
         verify(nfrRepository).save(nfr);
-        verify(permService).grantPermission("Requirement", "7", "parents", "Project:" + projectId);
-        verify(permService).grantPermission("Requirement", "7", "managers", oryId);
     }
 
     @Test
@@ -120,7 +118,5 @@ class NonFunctionalRequirementServiceTest {
 
         var inOrder = inOrder(nfrRepository, permService);
         inOrder.verify(nfrRepository).save(nfr);
-        inOrder.verify(permService).grantPermission(eq("Requirement"), any(), eq("parents"), any());
-        inOrder.verify(permService).grantPermission(eq("Requirement"), any(), eq("managers"), any());
     }
 }

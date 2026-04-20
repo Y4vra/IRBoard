@@ -10,6 +10,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProjectMapper {
 
+    private UserMapper userMapper = new UserMapper();
+
+    public ProjectMapper(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
     public ProjectDTO toDto(Project project) {
         if (project == null) return null;
 
@@ -19,7 +25,11 @@ public class ProjectMapper {
                 project.getDescription(),
                 project.getPriorityStyle() != null ? project.getPriorityStyle().toString() : null,
                 project.getState() != null ? project.getState().toString() : null,
-                0);
+                0,
+                userMapper.toDto(project.getModifyingUser()),
+                project.getStartModificationDate(),
+                project.isLocked()
+            );
 
         return dto;
     }
@@ -33,6 +43,8 @@ public class ProjectMapper {
         project.setDescription(dto.description());
         project.setPriorityStyle(PriorityStyle.valueOf(dto.priorityStyle()));
         project.setState(ProjectState.valueOf(dto.state()));
+        project.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
+        project.setStartModificationDate(dto.startModificationDate());
 
         return project;
     }

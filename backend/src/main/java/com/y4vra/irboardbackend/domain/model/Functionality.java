@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-public class Functionality {
+public class Functionality extends LockableImpl {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

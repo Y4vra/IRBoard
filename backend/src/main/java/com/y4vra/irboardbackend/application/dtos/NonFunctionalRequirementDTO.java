@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.application.dtos;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 public record NonFunctionalRequirementDTO(
          Long id,
@@ -11,5 +12,9 @@ public record NonFunctionalRequirementDTO(
          Double thresholdValue,
          Double targetValue,
          Double actualValue,
-         Long projectId
+         Long projectId,
+
+         UserDTO modificatingUser,
+         LocalDateTime startModificationDate,
+         boolean isLocked
 ) implements Serializable {}

@@ -59,7 +59,7 @@ class StakeholderServiceTest {
         stakeholder.setDescription("Primary system user");
         stakeholder.setProject(project);
 
-        stakeholderDTO = new StakeholderDTO(5L, "End User", "Primary system user", projectId);
+        stakeholderDTO = new StakeholderDTO(5L, "End User", "Primary system user", projectId, null,null,false);
     }
 
     @Test

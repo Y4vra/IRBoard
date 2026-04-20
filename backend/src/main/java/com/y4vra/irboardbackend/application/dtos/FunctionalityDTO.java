@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 public record FunctionalityDTO(
     Long id,
@@ -18,5 +19,9 @@ public record FunctionalityDTO(
     String label,
     String state,
     @NotNull(message = "El ID del proyecto es obligatorio")
-    Long projectId
+    Long projectId,
+
+    UserDTO modificatingUser,
+    LocalDateTime startModificationDate,
+    boolean isLocked
 ) implements Serializable{}

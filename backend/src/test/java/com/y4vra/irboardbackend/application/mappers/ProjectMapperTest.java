@@ -15,7 +15,7 @@ class ProjectMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new ProjectMapper();
+        mapper = new ProjectMapper(new UserMapper());
     }
 
     @Test
@@ -58,7 +58,7 @@ class ProjectMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        ProjectDTO dto = new ProjectDTO(5L, "My Project", "desc", "MOSCOW", "FINISHED", 0);
+        ProjectDTO dto = new ProjectDTO(5L, "My Project", "desc", "MOSCOW", "FINISHED", 0,null,null,false);
 
         Project project = mapper.toEntity(dto);
 

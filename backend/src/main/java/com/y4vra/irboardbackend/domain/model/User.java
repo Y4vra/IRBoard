@@ -2,12 +2,9 @@ package com.y4vra.irboardbackend.domain.model;
 
 import jakarta.persistence.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
 @Table(name = "app_user") // "user" is a reserved word in SQL
-public class User {
+public class User extends LockableImpl {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

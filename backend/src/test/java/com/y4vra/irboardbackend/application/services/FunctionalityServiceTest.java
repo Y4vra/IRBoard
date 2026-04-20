@@ -55,7 +55,7 @@ class FunctionalityServiceTest {
         functionality.setState(FunctionalityState.ACTIVE);
         functionality.setProject(project);
 
-        functionalityDTO = new FunctionalityDTO(10L, "User Management", "UM", "ACTIVE", 1L);
+        functionalityDTO = new FunctionalityDTO(10L, "User Management", "UM", "ACTIVE", 1L,null,null,false);
     }
 
     @Test
@@ -77,9 +77,9 @@ class FunctionalityServiceTest {
         when(functionalityRepository.findAll()).thenReturn(List.of(funcEdit, funcView, funcNone));
 
         // Setup DTOs
-        FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit", "E", "ACTIVE", 1L);
-        FunctionalityDTO dtoView = new FunctionalityDTO(11L, "View", "V", "ACTIVE", 1L);
-        FunctionalityDTO dtoNone = new FunctionalityDTO(12L, "None", "N", "ACTIVE", 1L);
+        FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit", "E", "ACTIVE", 1L,null,null,false);
+        FunctionalityDTO dtoView = new FunctionalityDTO(11L, "View", "V", "ACTIVE", 1L,null,null,false);
+        FunctionalityDTO dtoNone = new FunctionalityDTO(12L, "None", "N", "ACTIVE", 1L,null,null,false);
 
         when(functionalityMapper.toDto(funcEdit)).thenReturn(dtoEdit);
         when(functionalityMapper.toDto(funcView)).thenReturn(dtoView);

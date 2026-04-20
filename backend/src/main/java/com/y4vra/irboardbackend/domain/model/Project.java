@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "project")
-public class Project {
+public class Project extends LockableImpl {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

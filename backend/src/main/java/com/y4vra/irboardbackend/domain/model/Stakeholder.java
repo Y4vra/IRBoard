@@ -3,7 +3,7 @@ package com.y4vra.irboardbackend.domain.model;
 import jakarta.persistence.*;
 
 @Entity
-public class Stakeholder {
+public class Stakeholder extends LockableImpl {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

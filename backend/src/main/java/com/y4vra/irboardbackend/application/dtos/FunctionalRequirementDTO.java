@@ -3,15 +3,14 @@ package com.y4vra.irboardbackend.application.dtos;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public record DocumentDTO(
+public record FunctionalRequirementDTO(
         Long id,
-        String fileName,
-        String mimeType,
-        Long fileSize,
+        String name,
+        String description,
+        String priority,
+        String stability,
+        Long functionalityId,
         Long projectId,
-
-        // This is populated by the Service using the MinIO SDK.
-        String accessUrl,
 
         UserDTO modificatingUser,
         LocalDateTime startModificationDate,

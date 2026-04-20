@@ -44,9 +44,6 @@ public class NonFunctionalRequirementService {
         NonFunctionalRequirement nfr = nfrMapper.toEntity(dto);
         NonFunctionalRequirement saved = nfrRepository.save(nfr);
 
-        permService.grantPermission("Requirement", String.valueOf(saved.getId()), "parents", "Project:" + dto.projectId());
-        permService.grantPermission("Requirement", String.valueOf(saved.getId()), "managers", oryId);
-
         return nfrMapper.toDto(saved);
     }
 }
