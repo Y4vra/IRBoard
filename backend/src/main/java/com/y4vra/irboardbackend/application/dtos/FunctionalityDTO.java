@@ -12,13 +12,13 @@ import java.time.LocalDateTime;
 public record FunctionalityDTO(
     Long id,
 
-    @NotBlank(message = "El nombre de la funcionalidad es obligatorio")
-    @Size(max = 150, message = "El nombre es demasiado largo")
+    @NotBlank(message = "The functionality name is compulsory")
+    @Size(max = 150, message = "The name is too long")
     String name,
-    @Size(max = 10, message = "El label no puede tener más de 10 caracteres")
+    @Size(max = 10, message = "The label must not exceed 10 characters")
     String label,
     String state,
-    @NotNull(message = "El ID del proyecto es obligatorio")
+    @NotNull(message = "The project ID is mandatory")
     Long projectId,
 
     UserDTO modificatingUser,

@@ -10,6 +10,7 @@ import ProjectView from './pages/Project/ProjectView'
 import Registration from './pages/Registration'
 import ErrorPage from './pages/ErrorPage'
 import UserManagement from './pages/UserManagement'
+import StakeholdersView from './pages/Project/StakeholdersView'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -34,6 +35,7 @@ function App() {
               <Route path="/home" element={<Home />}/>
               <Route path="/projects/new" element={<NewProject />}/>
               <Route path="/project/:id" element={<ProjectView/>}/>
+              <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
               
             </Route>
           </Route>

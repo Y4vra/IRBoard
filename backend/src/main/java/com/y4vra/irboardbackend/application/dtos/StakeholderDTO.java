@@ -1,13 +1,20 @@
 package com.y4vra.irboardbackend.application.dtos;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 public record StakeholderDTO (
      Long id,
+     @NotBlank(message = "The stakeholder name is compulsory")
+     @Size(max = 150, message = "The name is too long")
      String name,
      String description,
-     long projectId,
+     @NotNull(message = "The project ID is mandatory")
+     Long projectId,
 
      UserDTO modificatingUser,
      LocalDateTime startModificationDate,

@@ -1,0 +1,132 @@
+import { useEffect, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { API_BASE_URL } from "../../lib/globalVars"
+import { Button } from "../../components/ui/button"
+import { AlertCircle, ChevronRight } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { useAuth } from "@/context/AuthContext"
+import LoadingSpinner from "@/components/LoadingSpinner"
+import { CreateStakeholderDialog } from "@/components/CreateStakeholderDialog"
+
+interface StakeholderDTO {
+  id: number;
+  name: string;
+  description: string;
+  pendingReview: boolean;
+  active: boolean;
+}
+
+function StakeholdersView() {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
+  const [stakeholders, setStakeholders] = useState<StakeholderDTO[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, user } = useAuth();
+
+  const fetchStakeholders = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}/stakeholders`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch stakeholders');
+      const data = await response.json();
+      setStakeholders(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchStakeholders();
+    }
+  }, [isAuthenticated, projectId]);
+
+  if (loading) return <LoadingSpinner text="Loading Stakeholders..."/>;
+
+  if (error) return (
+    <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center">
+      <AlertCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
+      <p className="text-red-600 font-semibold">Error</p>
+      <p className="text-red-500 text-sm mt-1">{error}</p>
+      <Button variant="outline" className="mt-4" onClick={() => fetchStakeholders()}>Try Again</Button>
+    </div>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900">Stakeholders</h1>
+          <p className="text-slate-500 mt-1">Manage project actors and interest groups.</p>
+        </div>
+        {user?.isAdmin && <CreateStakeholderDialog projectId={projectId!} onSuccess={fetchStakeholders}/>}
+      </header>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Project Stakeholders</CardTitle>
+          <CardDescription>Listed stakeholders for this project.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {stakeholders.map((s) => (
+                <TableRow 
+                  key={s.id} 
+                  className="cursor-pointer hover:bg-slate-50"
+                  onClick={() => navigate(`/project/${projectId}/stakeholders/${s.id}`)}
+                >
+                  <TableCell className="font-mono text-xs">{s.id}</TableCell>
+                  <TableCell className="font-medium">{s.name}</TableCell>
+                  <TableCell className="max-w-xs truncate text-slate-500">{s.description}</TableCell>
+                  <TableCell>
+                    {s.pendingReview && (
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 uppercase text-[10px] mr-2">
+                        Pending Review
+                      </Badge>
+                    )}
+                    {s.active ? (
+                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">Active</Badge>
+                    ) : (
+                      <Badge variant="destructive" className="uppercase text-[10px]">Deactivated</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <ChevronRight className="h-4 w-4 ml-auto text-slate-400" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default StakeholdersView;
