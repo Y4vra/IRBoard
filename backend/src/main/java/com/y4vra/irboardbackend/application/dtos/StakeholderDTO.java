@@ -11,5 +11,5 @@ public record StakeholderDTO (
 
      UserDTO modificatingUser,
      LocalDateTime startModificationDate,
-     boolean isLocked
+     Boolean isLocked
 ) implements Serializable {}

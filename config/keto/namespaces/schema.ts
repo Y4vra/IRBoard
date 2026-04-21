@@ -47,14 +47,14 @@ class Functionality implements Namespace {
   permits = {
     editRequirements: (ctx: Context) =>
       this.related.engineers.includes(ctx.subject) ||
-      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
+      this.related.project.traverse((p) => p.permits.edit(ctx)),
 
     viewRequirements: (ctx: Context) =>
       this.related.stakeholders.includes(ctx.subject) ||
       this.related.engineers.includes(ctx.subject) ||
-      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject)),
+      this.related.project.traverse((p) => p.permits.view(ctx)),
 
     approveAll: (ctx: Context) =>
-      this.related.project.traverse((p) => p.related.managers.includes(ctx.subject))
+      this.related.project.traverse((p) => p.permits.edit(ctx))
   }
 }

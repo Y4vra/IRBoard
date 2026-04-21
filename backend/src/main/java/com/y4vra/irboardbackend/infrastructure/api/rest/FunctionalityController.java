@@ -5,13 +5,9 @@ import com.y4vra.irboardbackend.application.services.*;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/projects/{projectId}/functionalities")
@@ -24,12 +20,12 @@ public class FunctionalityController {
     }
 
     @PostMapping("/new")
-    public ResponseEntity<FunctionalityDTO> createProject(@Validated @RequestBody FunctionalityDTO functionalityDTO,@PathVariable Long projectId, Authentication authentication) {
+    public ResponseEntity<FunctionalityDTO> createFunctionality(@Validated @RequestBody FunctionalityDTO functionalityDTO, @PathVariable Long projectId, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(functionalityService.createFunctionality(functionalityDTO,projectId,((User) authentication.getPrincipal()).getOryId()));
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ProjectDTO> getProjectById(Authentication authentication, @PathVariable Long id) {
-//        return ResponseEntity.ok(functionalityService.findById(((User) authentication.getPrincipal()).getOryId(), id));
-//    }
+    @GetMapping("/{functionalityId}")
+    public ResponseEntity<FunctionalityDTO> getFunctionalityById(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId) {
+        return ResponseEntity.ok(functionalityService.findFunctionalityById(((User) authentication.getPrincipal()).getOryId(),projectId, functionalityId));
+    }
 }

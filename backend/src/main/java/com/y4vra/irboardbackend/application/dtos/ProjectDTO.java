@@ -23,5 +23,5 @@ public record ProjectDTO(
 
         UserDTO modificatingUser,
         LocalDateTime startModificationDate,
-        boolean isLocked
+        Boolean isLocked
 ) implements Serializable {}

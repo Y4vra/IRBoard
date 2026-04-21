@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/globalVars";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, Box, AlignLeft } from "lucide-react";
+import { Loader2, Plus, Box, AlignLeft, Tag, Hash, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,25 +19,72 @@ interface CreateFunctionalityDialogProps {
   onSuccess: () => void;
 }
 
+/**
+ * Generates initials from a name string.
+ * e.g. "User Authentication" -> "UA"
+ *      "My Cool Feature" -> "MCF"
+ */
+function generateLabel(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase())
+    .join("");
+}
+
 export function CreateFunctionalityDialog({
   projectId,
   onSuccess,
 }: CreateFunctionalityDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [labelError, setLabelError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    label: "",
   });
+
+  // Auto-generate label from name initials, but only if the user hasn't manually edited it
+  const [labelManuallyEdited, setLabelManuallyEdited] = useState(false);
+
+  useEffect(() => {
+    if (!labelManuallyEdited) {
+      setFormData((prev) => ({ ...prev, label: generateLabel(prev.name) }));
+    }
+  }, [formData.name, labelManuallyEdited]);
+
+  const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLabelManuallyEdited(true);
+    setLabelError(null);
+    setFormData((prev) => ({ ...prev, label: e.target.value.toUpperCase() }));
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, name: e.target.value }));
+    // If user clears the name, reset manual edit flag so auto-gen kicks back in
+    if (!e.target.value.trim()) {
+      setLabelManuallyEdited(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setLabelError(null);
+
+    const payload = {
+      name: formData.name,
+      description: formData.description,
+      label: formData.label || undefined,
+      projectId,
+    };
 
     try {
       const response = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities`,
+        `${API_BASE_URL}/projects/${projectId}/functionalities/new`,
         {
           method: "POST",
           credentials: "include",
@@ -45,11 +92,27 @@ export function CreateFunctionalityDialog({
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(payload),
         }
       );
 
-      if (!response.ok) throw new Error("Failed to create functionality");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+
+        // Handle label-specific conflict errors (e.g. 409 Conflict or a label field error)
+        if (
+          response.status === 409 ||
+          errorData?.field === "label" ||
+          errorData?.message?.toLowerCase().includes("label")
+        ) {
+          setLabelError(
+            "Please make it different — a functionality with this label already exists for this project."
+          );
+          return;
+        }
+
+        throw new Error(errorData?.message || "Failed to create functionality");
+      }
 
       onSuccess();
       handleClose();
@@ -63,7 +126,9 @@ export function CreateFunctionalityDialog({
 
   const handleClose = () => {
     setOpen(false);
-    setFormData({ name: "", description: "" });
+    setFormData({ name: "", description: "", label: "" });
+    setLabelManuallyEdited(false);
+    setLabelError(null);
   };
 
   return (
@@ -82,6 +147,24 @@ export function CreateFunctionalityDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 pt-4">
+          {/* Read-only Project ID */}
+          <div className="grid gap-2">
+            <Label htmlFor="projectId" className="text-sm font-semibold">
+              Project ID
+            </Label>
+            <div className="relative">
+              <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="projectId"
+                value={projectId}
+                readOnly
+                disabled
+                className="pl-9 bg-muted text-muted-foreground cursor-not-allowed select-all font-mono text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Functionality Name */}
           <div className="grid gap-2">
             <Label htmlFor="name" className="text-sm font-semibold">
               Functionality Name
@@ -93,14 +176,66 @@ export function CreateFunctionalityDialog({
                 placeholder="e.g. User Authentication"
                 className="pl-9"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={handleNameChange}
                 required
               />
             </div>
           </div>
 
+          {/* Label (auto-generated, editable) */}
+          <div className="grid gap-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="label" className="text-sm font-semibold">
+                Label
+                <span className="ml-1 text-xs font-normal text-muted-foreground">
+                  (optional)
+                </span>
+              </Label>
+              {labelManuallyEdited && formData.name && (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+                  onClick={() => {
+                    setLabelManuallyEdited(false);
+                    setLabelError(null);
+                    setFormData((prev) => ({
+                      ...prev,
+                      label: generateLabel(prev.name),
+                    }));
+                  }}
+                >
+                  Reset to auto
+                </button>
+              )}
+            </div>
+            <div className="relative">
+              <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="label"
+                placeholder="e.g. UA"
+                className={`pl-9 font-mono tracking-widest uppercase ${
+                  labelError
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : ""
+                }`}
+                value={formData.label}
+                onChange={handleLabelChange}
+                maxLength={10}
+              />
+            </div>
+            {labelError ? (
+              <p className="flex items-center gap-1.5 text-xs text-destructive">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                {labelError}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Auto-generated from name initials. Must be unique within the project.
+              </p>
+            )}
+          </div>
+
+          {/* Description */}
           <div className="grid gap-2">
             <Label htmlFor="description" className="text-sm font-semibold">
               Description

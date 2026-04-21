@@ -82,4 +82,27 @@ public class KetoClient implements PermissionService {
             throw new ReBACException("Failed to create ReBAC tuple in Keto", e);
         }
     }
+    public void grantPermissionToSubjectSet(String namespace, String object, String relation,
+                                            String subjectNamespace, String subjectObject, String subjectRelation) {
+        String url = ketoWriteUrl + "/admin/relation-tuples";
+
+        Map<String, Object> subjectSet = Map.of(
+                "namespace", subjectNamespace,
+                "object", subjectObject,
+                "relation", subjectRelation
+        );
+
+        Map<String, Object> body = Map.of(
+                "namespace", namespace,
+                "object", object,
+                "relation", relation,
+                "subject_set", subjectSet
+        );
+
+        try {
+            restTemplate.put(url, body);
+        } catch (Exception e) {
+            throw new ReBACException("Failed to create ReBAC tuple in Keto", e);
+        }
+    }
 }

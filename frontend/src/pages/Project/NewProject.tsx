@@ -54,7 +54,7 @@ export default function NewProject() {
         throw new Error('An error occurred while creating the project');
       }
 
-      navigate("/projects");
+      navigate("/home");
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

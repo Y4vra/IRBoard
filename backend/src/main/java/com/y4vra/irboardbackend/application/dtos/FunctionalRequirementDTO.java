@@ -14,5 +14,5 @@ public record FunctionalRequirementDTO(
 
         UserDTO modificatingUser,
         LocalDateTime startModificationDate,
-        boolean isLocked
+        Boolean isLocked
 ) implements Serializable {}

@@ -3,12 +3,15 @@ package com.y4vra.irboardbackend.application.services;
 import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.infrastructure.api.rest.errors.ReBACException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,20 +40,8 @@ public class FunctionalityService {
                 .filter(f -> f.getProject().getId() == projectId)
                 .toList();
 
-        List<String> canEditIds = permService.getAuthorizedObjects(
-                oryId,
-                "Functionality",
-                "editRequirements"
-        );
-
-        List<String> canViewIds = permService.getAuthorizedObjects(
-                oryId,
-                "Functionality",
-                "viewRequirements"
-        );
-
-        Set<Long> editSet = canEditIds.stream().map(Long::valueOf).collect(Collectors.toSet());
-        Set<Long> viewSet = canViewIds.stream().map(Long::valueOf).collect(Collectors.toSet());
+        boolean canEditProject = permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId);
+        boolean canViewProject = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
 
         Map<String, List<FunctionalityDTO>> result = new HashMap<>();
         result.put("edit", new ArrayList<>());
@@ -59,11 +50,11 @@ public class FunctionalityService {
 
         for (Functionality f : allProjectFunctionalities) {
             FunctionalityDTO dto = functionalityMapper.toDto(f);
-            Long id = f.getId();
+            String fId = String.valueOf(f.getId());
 
-            if (editSet.contains(id)) {
+            if (canEditProject || permService.checkPermission("Functionality", fId, "editRequirements", oryId)) {
                 result.get("edit").add(dto);
-            } else if (viewSet.contains(id)) {
+            } else if (canViewProject || permService.checkPermission("Functionality", fId, "viewRequirements", oryId)) {
                 result.get("view").add(dto);
             } else {
                 result.get("none").add(dto);
@@ -72,8 +63,27 @@ public class FunctionalityService {
 
         return result;
     }
+    @Transactional(readOnly = true)
+    public FunctionalityDTO findFunctionalityById(String oryId, long projectId, long functionalityId) {
+        Optional<Functionality> functionality = functionalityRepository.findById(functionalityId);
+
+        if(functionality.isEmpty()) {
+            throw new EntityNotFoundException("Functionality with id " + functionalityId + " not found");
+        }
+        if(functionality.get().getProject().getId() != projectId){
+            throw new EntityNotFoundException("Functionality with id " + functionalityId + " not found");
+        }
+        if (permService.checkPermission("Functionality", String.valueOf(functionalityId),"viewRequirements",oryId)==false){
+            throw new AccessDeniedException("You do not have permission to view this Functionality");
+        }
+        return functionalityMapper.toDto(functionality.get());
+    }
     @Transactional
     public FunctionalityDTO createFunctionality(FunctionalityDTO dto, long projectId, String oryId) {
+        if(dto.projectId() != projectId){
+            throw new IllegalArgumentException("Attempt to add a functionality to different project than the one being edited.");
+        }
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
@@ -86,6 +96,7 @@ public class FunctionalityService {
         Functionality functionality = new Functionality();
         functionality.setName(dto.name());
         functionality.setProject(project);
+        functionality.setState(FunctionalityState.ACTIVE);
 
         if (dto.label() != null && !dto.label().isBlank()) {
             functionality.setLabel(dto.label());
@@ -93,10 +104,13 @@ public class FunctionalityService {
             functionality.setLabel(generateLabel(dto.name()));
         }
 
-        Functionality saved = functionalityRepository.save(functionality);
-
-        permService.grantPermission("Functionality", String.valueOf(saved.getId()), "project", "Project:" + projectId);
-
+        Functionality saved;
+        try{
+            saved= functionalityRepository.save(functionality);
+        } catch (DataIntegrityViolationException e) {
+            throw new LabelConflictException("A functionality with label '" + functionality.getLabel() + "' already exists in this project.",e);
+        }
+        permService.grantPermissionToSubjectSet("Functionality", String.valueOf(saved.getId()), "project", "Project", String.valueOf(projectId), "");
         return functionalityMapper.toDto(saved);
     }
 

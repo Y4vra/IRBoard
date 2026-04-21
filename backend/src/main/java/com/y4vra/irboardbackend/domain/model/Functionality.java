@@ -6,6 +6,11 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"label", "project_id"})
+        }
+)
 @Entity
 public class Functionality extends LockableImpl {
 
@@ -13,7 +18,6 @@ public class Functionality extends LockableImpl {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     private String name;
 
     private String label;
