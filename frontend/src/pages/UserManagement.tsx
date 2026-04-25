@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { API_BASE_URL } from "../lib/globalVars"
 import { Button } from "../components/ui/button"
 import { Mail, AlertCircle } from "lucide-react"
@@ -15,52 +15,26 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import { InviteUserDialog } from "@/components/InviteUserDialog"
 import LoadingSpinner from "@/components/LoadingSpinner"
-
-interface UserDTO {
-  id: number;
-  email: string;
-  name: string;
-  surname: string;
-  active: boolean;
-  isAdmin: boolean;
-}
+import type { User } from "@/types/User"
+import { useBackendResource } from "@/hooks/useBackendResource"
 
 function UserManagement() {
-  const [users, setUsers] = useState<UserDTO[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   const { isAuthenticated, loading: authLoading } = useAuth();
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/users`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch users from the server');
-      const data = await response.json();
-      setUsers(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchUsers = useCallback(() =>
+    fetch(`${API_BASE_URL}/users`, { credentials: 'include' })
+      .then(r => { if (!r.ok) throw new Error('Failed to fetch users'); return r.json(); }),
+    []
+  );
 
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      fetchUsers();
-    }
-  }, [authLoading, isAuthenticated]);
+  const { data, loading, error } = useBackendResource<User[]>({
+    fetcher: fetchUsers,
+    enabled: !authLoading && isAuthenticated,
+  });
+  const users = data ?? [];
 
   const handleReinvite = async (userId: number) => {
     try {

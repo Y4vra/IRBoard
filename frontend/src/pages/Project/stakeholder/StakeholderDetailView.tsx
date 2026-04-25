@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { API_BASE_URL } from "../../lib/globalVars";
+import { API_BASE_URL } from "../../../lib/globalVars";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Pencil, User, FileText, AlertTriangle } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -18,7 +18,7 @@ interface StakeholderDetail {
   identifier: string;
   name: string;
   description: string;
-  active: boolean;
+  state: string;
   pendingReview: boolean;
   linkedRequirements: Requirement[];
 }
@@ -77,8 +77,8 @@ function StakeholderDetailView() {
               <AlertTriangle className="h-3 w-3 mr-1" /> Pending Review
             </Badge>
           )}
-          <Badge className={stakeholder.active ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}>
-            {stakeholder.active ? "Active" : "Deactivated"}
+          <Badge className={stakeholder.state=="ACTIVE" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}>
+            {stakeholder.state=="ACTIVE" ? "Active" : "Deactivated"}
           </Badge>
         </div>
         <p className="text-xl text-muted-foreground leading-relaxed">{stakeholder.description}</p>
@@ -90,7 +90,7 @@ function StakeholderDetailView() {
           Linked Requirements
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {stakeholder.linkedRequirements.map((req) => (
+          {/* {stakeholder.linkedRequirements.map((req) => (
             <Card key={req.id} className="hover:border-indigo-300 transition-colors cursor-pointer">
               <CardHeader className="p-4">
                 <div className="flex items-center gap-3">
@@ -100,9 +100,9 @@ function StakeholderDetailView() {
               </CardHeader>
             </Card>
           ))}
-          {stakeholder.linkedRequirements.length === 0 && (
+          {stakeholder.linkedRequirements.length === 0 && ( */}
             <p className="text-sm text-slate-400 italic">No requirements linked to this stakeholder.</p>
-          )}
+          {/* )} */}
         </div>
       </section>
     </div>

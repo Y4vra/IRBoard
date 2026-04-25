@@ -1,6 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
-import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -23,7 +23,7 @@ public class Functionality extends LockableImpl {
     private String label;
 
     @Enumerated(EnumType.STRING)
-    private FunctionalityState state;
+    private EntityState state;
 
     @OneToMany(mappedBy = "functionality", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FunctionalRequirement> requirements = new HashSet<>();
@@ -43,8 +43,8 @@ public class Functionality extends LockableImpl {
     public String getLabel() { return label; }
     public void setLabel(String label) { this.label = label; }
 
-    public FunctionalityState getState() { return state; }
-    public void setState(FunctionalityState state) { this.state = state; }
+    public EntityState getState() { return state; }
+    public void setState(EntityState state) { this.state = state; }
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }

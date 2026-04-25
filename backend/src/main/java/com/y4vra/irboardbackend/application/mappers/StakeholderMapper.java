@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +21,7 @@ public class StakeholderMapper {
             stakeholder.getId(),
             stakeholder.getName(),
             stakeholder.getDescription(),
+            stakeholder.getState().name(),
             stakeholder.getProject().getId(),
             userMapper.toDto(stakeholder.getModifyingUser()),
             stakeholder.getStartModificationDate(),
@@ -34,6 +36,7 @@ public class StakeholderMapper {
         stakeholder.setId(dto.id());
         stakeholder.setName(dto.name());
         stakeholder.setDescription(dto.description());
+        stakeholder.setState(EntityState.valueOf(dto.state()));
         stakeholder.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
         stakeholder.setStartModificationDate(dto.startModificationDate());
 

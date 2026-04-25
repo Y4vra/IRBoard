@@ -3,7 +3,7 @@ package com.y4vra.irboardbackend.application.mappers;
 import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
-import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,7 @@ class FunctionalityMapperTest {
         functionality.setId(1L);
         functionality.setName("User Management");
         functionality.setLabel("UM");
-        functionality.setState(FunctionalityState.ACTIVE);
+        functionality.setState(EntityState.ACTIVE);
         functionality.setProject(project);
 
         FunctionalityDTO dto = mapper.toDto(functionality);
@@ -58,7 +58,7 @@ class FunctionalityMapperTest {
         assertThat(entity.getId()).isEqualTo(2L);
         assertThat(entity.getName()).isEqualTo("Authentication");
         assertThat(entity.getLabel()).isEqualTo("AU");
-        assertThat(entity.getState()).isEqualTo(FunctionalityState.DEACTIVATED);
+        assertThat(entity.getState()).isEqualTo(EntityState.DEACTIVATED);
     }
 
     @Test

@@ -4,6 +4,7 @@ import { ShieldAlert, ServerCrash, AlertCircle, Home } from "lucide-react";
 
 export default function ErrorPage() {
   const location = useLocation();
+  const from = location.state?.from || "/home";
   const errorType = location.state?.errorType || "generic";
 
   const content = {
@@ -18,6 +19,12 @@ export default function ErrorPage() {
       title: "Service Unavailable",
       description: "Our servers are currently unreachable (503). Please try again later.",
       color: "text-orange-500",
+    },
+    route: {
+      icon: <AlertCircle className="h-20 w-20" />,
+      title: "Invalid route",
+      description: "The page you were trying to reach does not exist (404).",
+      color: "text-slate-400",
     },
     generic: {
       icon: <AlertCircle className="h-20 w-20" />,
@@ -44,8 +51,8 @@ export default function ErrorPage() {
       </p>
 
       <div className="flex gap-4">
-        <Button variant="outline" onClick={() => window.location.reload()}>
-          Try Again
+        <Button variant="outline" asChild>
+          <Link to={from}>Try Again</Link>
         </Button>
         <Button asChild>
           <Link to="/home" className="flex items-center gap-2">

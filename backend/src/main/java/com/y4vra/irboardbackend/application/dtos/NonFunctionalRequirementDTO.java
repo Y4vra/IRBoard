@@ -7,6 +7,7 @@ public record NonFunctionalRequirementDTO(
          Long id,
          String name,
          String description,
+         String state,
          String measurementUnit,
          String operator,
          Double thresholdValue,

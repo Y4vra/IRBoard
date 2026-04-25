@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { API_BASE_URL } from "../../lib/globalVars";
 import { useAuth } from "@/context/AuthContext";
@@ -20,17 +20,8 @@ import {
 import { type Project } from "../../types/project";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { CreateFunctionalityDialog } from "../../components/NewFunctionalityDialog";
-
-type Permission = "edit" | "view" | "none";
-
-interface Functionality {
-  id: string | number;
-  name: string;
-  description?: string;
-  [key: string]: unknown;
-}
-
-type FunctionalitiesResponse = Record<Permission, Functionality[]>;
+import { useBackendResource } from "@/hooks/useBackendResource";
+import type { Permission, Functionality, FunctionalitiesResponse } from "@/types/functionality";
 
 const permissionConfig: Record<
   Permission,
@@ -128,54 +119,21 @@ function FunctionalityCard({
 function ProjectView() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const [project, setProject] = useState<Project | null>(null);
-  const [functionalities, setFunctionalities] =
-    useState<FunctionalitiesResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [functionalitiesLoading, setFunctionalitiesLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
+  const fetchProject = useCallback(
+  () => fetch(`${API_BASE_URL}/projects/${id}`, { credentials: "include" })
+    .then(r => { if (!r.ok) throw new Error("Failed to fetch project details"); return r.json(); }),
+  [id]
+);
 
-  // Lifted outside useEffect so it can be passed as onSuccess to the dialog
-  const fetchFunctionalities = async () => {
-    setFunctionalitiesLoading(true);
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/${id}/functionalities`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-      if (!response.ok) throw new Error("Failed to fetch functionalities");
-      const data: FunctionalitiesResponse = await response.json();
-      setFunctionalities(data);
-    } catch (err) {
-      console.error("Failed to load functionalities:", err);
-    } finally {
-      setFunctionalitiesLoading(false);
-    }
-  };
+const fetchFunctionalities = useCallback(
+  () => fetch(`${API_BASE_URL}/projects/${id}/functionalities`, { credentials: "include" })
+    .then(r => { if (!r.ok) throw new Error("Failed to fetch functionalities"); return r.json(); }),
+  [id]
+);
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
-          method: "GET",
-          credentials: "include",
-        });
-        if (!response.ok) throw new Error("Failed to fetch project details");
-        const data = await response.json();
-        setProject(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProject();
-    fetchFunctionalities();
-  }, [id]);
+const { data: project, loading, error } = useBackendResource<Project>({ fetcher: fetchProject });
+const { data: functionalities, loading: functionalitiesLoading} = useBackendResource<FunctionalitiesResponse>({ fetcher: fetchFunctionalities });
 
   if (loading) return <LoadingSpinner />;
 

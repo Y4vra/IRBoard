@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-interface JpaFunctionalityRepository extends JpaRepository<Functionality, Long> {}
+interface JpaFunctionalityRepository extends JpaRepository<Functionality, Long> {
+    List<Functionality> findByProjectId(Long projectId);
+}
 
 @Component
 public class FunctionalityRepositoryImpl implements FunctionalityRepository {
@@ -29,6 +31,11 @@ public class FunctionalityRepositoryImpl implements FunctionalityRepository {
     @Override
     public List<Functionality> findAllById(Iterable<Long> ids) {
         return jpaRepository.findAllById(ids);
+    }
+
+    @Override
+    public List<Functionality> findByProjectId(Long projectId) {
+        return jpaRepository.findByProjectId(projectId);
     }
 
     @Override

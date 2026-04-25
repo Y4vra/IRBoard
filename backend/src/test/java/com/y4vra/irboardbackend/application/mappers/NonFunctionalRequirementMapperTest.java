@@ -4,6 +4,7 @@ import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -60,7 +61,7 @@ class NonFunctionalRequirementMapperTest {
     @Test
     void toEntity_mapsAllFields() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
-                9L, "Availability", "Must be highly available", "percent",
+                9L, "Availability", "Must be highly available", RequirementState.PENDING_APPROVAL.name(),"percent",
                 "GREATER_THAN", 99.0, 99.9, 99.5, 1L,null,null,false
         );
 
@@ -79,7 +80,7 @@ class NonFunctionalRequirementMapperTest {
     @Test
     void toEntity_throwsOnInvalidOperator() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
-                1L, "Name", "desc", "ms", "NOT_AN_OPERATOR",
+                1L, "Name", "desc", RequirementState.PENDING_APPROVAL.name(), "ms", "NOT_AN_OPERATOR",
                 1.0, 2.0, 1.5, 1L,null,null,false
         );
 

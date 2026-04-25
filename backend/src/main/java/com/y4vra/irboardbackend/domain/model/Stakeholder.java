@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import jakarta.persistence.*;
 
 @Entity
@@ -16,6 +17,9 @@ public class Stakeholder extends LockableImpl {
     @JoinColumn(name = "project_id")
     private Project project;
 
+    @Enumerated(EnumType.STRING)
+    private EntityState state;
+
     public Stakeholder() {}
 
     public Long getId() { return id; }
@@ -29,4 +33,7 @@ public class Stakeholder extends LockableImpl {
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
+
+    public EntityState getState() { return state; }
+    public void setState(EntityState state) { this.state = state; }
 }

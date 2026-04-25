@@ -134,7 +134,7 @@ export function NavBar() {
                 <div className="flex flex-col gap-1 pl-2 ml-3 border-l-2 border-indigo-100">
                   <NavItem icon={<LayoutList className="h-4 w-4" />} label="Dashboard" to={`${projectBasePath}`} disabled={!finishedOpening} />
                   <NavItem icon={<UsersRound className="h-4 w-4" />} label="Stakeholders" to={`${projectBasePath}/stakeholders`} disabled={!finishedOpening} />
-                  <NavItem icon={<ShieldAlert className="h-4 w-4" />} label="Non-Functional" to={`${projectBasePath}/non-functional-requirements`} disabled={!finishedOpening} />
+                  <NavItem icon={<ShieldAlert className="h-4 w-4" />} label="Non-Functional" to={`${projectBasePath}/nfr`} disabled={!finishedOpening} />
                   <NavItem icon={<FileText className="h-4 w-4" />} label="Documents" to={`${projectBasePath}/documents`} disabled={!finishedOpening} />
                 </div>
               )}

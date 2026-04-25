@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.mappers.StakeholderMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -59,7 +60,7 @@ class StakeholderServiceTest {
         stakeholder.setDescription("Primary system user");
         stakeholder.setProject(project);
 
-        stakeholderDTO = new StakeholderDTO(5L, "End User", "Primary system user", projectId, null,null,false);
+        stakeholderDTO = new StakeholderDTO(5L, "End User", "Primary system user", EntityState.ACTIVE.name(), projectId, null,null,false);
     }
 
     @Test

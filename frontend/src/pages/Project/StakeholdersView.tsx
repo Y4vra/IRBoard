@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../lib/globalVars"
 import { Button } from "../../components/ui/button"
@@ -16,46 +16,26 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { CreateStakeholderDialog } from "@/components/CreateStakeholderDialog"
+import { useBackendResource } from "@/hooks/useBackendResource"
+import type { Stakeholder } from "@/types/Stakeholder"
 
-interface StakeholderDTO {
-  id: number;
-  name: string;
-  description: string;
-  pendingReview: boolean;
-  active: boolean;
-}
 
 function StakeholdersView() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const [stakeholders, setStakeholders] = useState<StakeholderDTO[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, user } = useAuth();
 
-  const fetchStakeholders = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/projects/${projectId}/stakeholders`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Failed to fetch stakeholders');
-      const data = await response.json();
-      setStakeholders(data);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchStakeholders = useCallback(() =>
+  fetch(`${API_BASE_URL}/projects/${projectId}/stakeholders`, { credentials: 'include' })
+    .then(r => { if (!r.ok) throw new Error('Failed to fetch stakeholders'); return r.json(); }),
+  [projectId]
+);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchStakeholders();
-    }
-  }, [isAuthenticated, projectId]);
+const { data, loading, error } = useBackendResource<Stakeholder[]>({
+  fetcher: fetchStakeholders,
+  enabled: isAuthenticated,
+});
+const stakeholders = data ?? [];
 
   if (loading) return <LoadingSpinner text="Loading Stakeholders..."/>;
 
@@ -110,7 +90,7 @@ function StakeholdersView() {
                         Pending Review
                       </Badge>
                     )}
-                    {s.active ? (
+                    {s.state=="ACTIVE" ? (
                       <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">Active</Badge>
                     ) : (
                       <Badge variant="destructive" className="uppercase text-[10px]">Deactivated</Badge>

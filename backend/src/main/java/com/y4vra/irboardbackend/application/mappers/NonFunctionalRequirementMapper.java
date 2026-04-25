@@ -3,6 +3,7 @@ package com.y4vra.irboardbackend.application.mappers;
 import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,6 +22,7 @@ public class NonFunctionalRequirementMapper {
             entity.getId(),
             entity.getName(),
             entity.getDescription(),
+            entity.getState().name(),
             entity.getMeasurementUnit(),
             entity.getOperator().toString(),
             entity.getThresholdValue(),
@@ -40,6 +42,7 @@ public class NonFunctionalRequirementMapper {
         entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setDescription(dto.description());
+        entity.setState(RequirementState.valueOf(dto.state()));
         entity.setMeasurementUnit(dto.measurementUnit());
         entity.setOperator(ComparisonOperator.valueOf(dto.operator()));
         entity.setThresholdValue(dto.thresholdValue());

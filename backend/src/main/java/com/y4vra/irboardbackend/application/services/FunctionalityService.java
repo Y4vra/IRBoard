@@ -6,10 +6,9 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
-import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
-import com.y4vra.irboardbackend.infrastructure.api.rest.errors.ReBACException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class FunctionalityService {
@@ -36,9 +34,7 @@ public class FunctionalityService {
 
     @Transactional(readOnly = true)
     public Map<String, List<FunctionalityDTO>> findFunctionalitiesOfProjectForUser(String oryId, long projectId) {
-        List<Functionality> allProjectFunctionalities = functionalityRepository.findAll().stream()
-                .filter(f -> f.getProject().getId() == projectId)
-                .toList();
+        List<Functionality> allProjectFunctionalities = functionalityRepository.findByProjectId(projectId);
 
         boolean canEditProject = permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId);
         boolean canViewProject = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
@@ -96,7 +92,7 @@ public class FunctionalityService {
         Functionality functionality = new Functionality();
         functionality.setName(dto.name());
         functionality.setProject(project);
-        functionality.setState(FunctionalityState.ACTIVE);
+        functionality.setState(EntityState.ACTIVE);
 
         if (dto.label() != null && !dto.label().isBlank()) {
             functionality.setLabel(dto.label());

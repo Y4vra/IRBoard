@@ -52,7 +52,7 @@ public class ProjectController {
         return ResponseEntity.ok(stakeholderService.findStakeholdersOfProject(((User) authentication.getPrincipal()).getOryId(),id));
     }
 
-    @GetMapping("/{id}/non-functional-requirements")
+    @GetMapping("/{id}/nonFunctionalRequirements")
     public List<NonFunctionalRequirementDTO> getNonFunctionalRequirements(Authentication authentication,@PathVariable Long id) {
         return nonFunctionalRequirementService.findNonFunctionalRequirementsOfProject(((User) authentication.getPrincipal()).getOryId(),id);
     }

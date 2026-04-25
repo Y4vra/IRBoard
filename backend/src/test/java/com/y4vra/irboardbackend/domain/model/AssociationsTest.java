@@ -1,6 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
-import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -176,7 +176,7 @@ class AssociationsTest {
         @DisplayName("link sets functionality on FR and adds it to functionality")
         void link_frBelongsToFunctionality() {
             Functionality f = new Functionality();
-            f.setState(FunctionalityState.ACTIVE);
+            f.setState(EntityState.ACTIVE);
             FunctionalRequirement fr = new FunctionalRequirement();
             fr.setName("User can login");
 

@@ -13,6 +13,7 @@ public record StakeholderDTO (
      @Size(max = 150, message = "The name is too long")
      String name,
      String description,
+     String state,
      @NotNull(message = "The project ID is mandatory")
      Long projectId,
 

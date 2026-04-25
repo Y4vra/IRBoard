@@ -5,7 +5,7 @@ import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
-import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +52,7 @@ class FunctionalityServiceTest {
         functionality.setId(10L);
         functionality.setName("User Management");
         functionality.setLabel("UM");
-        functionality.setState(FunctionalityState.ACTIVE);
+        functionality.setState(EntityState.ACTIVE);
         functionality.setProject(project);
 
         functionalityDTO = new FunctionalityDTO(10L, "User Management", "UM", "ACTIVE", 1L,null,null,false);
@@ -64,17 +64,20 @@ class FunctionalityServiceTest {
         long projectId = 1L;
 
         // Mocking Keto response for Edit and View permissions
-        when(permService.getAuthorizedObjects(oryId, "Functionality", "editRequirements"))
-                .thenReturn(List.of("10")); // Can edit 10
-        when(permService.getAuthorizedObjects(oryId, "Functionality", "viewRequirements"))
-                .thenReturn(List.of("10", "11")); // Can view 10 and 11
+        when(permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)).thenReturn(false);
+        when(permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)).thenReturn(false);
+        when(permService.checkPermission("Functionality", "10", "editRequirements", oryId)).thenReturn(true); // Can edit 10
+        when(permService.checkPermission("Functionality", "11", "editRequirements", oryId)).thenReturn(false); // Cannot edit 11
+        when(permService.checkPermission("Functionality", "11", "viewRequirements", oryId)).thenReturn(true); // Can view 11
+        when(permService.checkPermission("Functionality", "12", "editRequirements", oryId)).thenReturn(false); // Cannot edit 12
+        when(permService.checkPermission("Functionality", "12", "viewRequirements", oryId)).thenReturn(false); // Cannot view 12
 
         // Setup functionalities for this project
         Functionality funcEdit = new Functionality(); funcEdit.setId(10L); funcEdit.setProject(project);
         Functionality funcView = new Functionality(); funcView.setId(11L); funcView.setProject(project);
         Functionality funcNone = new Functionality(); funcNone.setId(12L); funcNone.setProject(project);
 
-        when(functionalityRepository.findAll()).thenReturn(List.of(funcEdit, funcView, funcNone));
+        when(functionalityRepository.findByProjectId(projectId)).thenReturn(List.of(funcEdit, funcView, funcNone));
 
         // Setup DTOs
         FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit", "E", "ACTIVE", 1L,null,null,false);
@@ -108,8 +111,12 @@ class FunctionalityServiceTest {
         Project otherP = new Project(); otherP.setId(999L);
         wrongProject.setProject(otherP);
 
-        when(functionalityRepository.findAll()).thenReturn(List.of(correctProject, wrongProject));
-        when(permService.getAuthorizedObjects(anyString(), anyString(), anyString())).thenReturn(List.of("10", "20"));
+        when(permService.checkPermission("Project", String.valueOf(1L), "edit", oryId)).thenReturn(false);
+        when(permService.checkPermission("Project", String.valueOf(1L), "view", oryId)).thenReturn(false);
+        when(permService.checkPermission("Functionality", "10", "editRequirements", oryId)).thenReturn(true);
+
+
+        when(functionalityRepository.findByProjectId(1L)).thenReturn(List.of(correctProject));
         when(functionalityMapper.toDto(correctProject)).thenReturn(functionalityDTO);
 
         Map<String, List<FunctionalityDTO>> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, 1L);

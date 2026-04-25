@@ -3,6 +3,7 @@ package com.y4vra.irboardbackend.application.mappers;
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +32,7 @@ class StakeholderMapperTest {
         stakeholder.setId(5L);
         stakeholder.setName("End User");
         stakeholder.setDescription("Primary system user");
+        stakeholder.setState(EntityState.ACTIVE);
         stakeholder.setProject(project);
 
         StakeholderDTO dto = mapper.toDto(stakeholder);
@@ -48,7 +50,7 @@ class StakeholderMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", 2L,null,null,false);
+        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.ACTIVE.name(), 2L,null,null,false);
 
         Stakeholder entity = mapper.toEntity(dto);
 

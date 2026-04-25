@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
 
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -11,6 +11,9 @@ import Registration from './pages/Registration'
 import ErrorPage from './pages/ErrorPage'
 import UserManagement from './pages/UserManagement'
 import StakeholdersView from './pages/Project/StakeholdersView'
+import StakeholderDetailView from './pages/Project/stakeholder/StakeholderDetailView'
+import NonFunctionalRequirementsView from './pages/Project/NonFunctionalRequirementsView'
+import NonFunctionalRequirementDetailView from './pages/Project/nfr/NonFunctionalRequirementDetailView'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -36,6 +39,9 @@ function App() {
               <Route path="/projects/new" element={<NewProject />}/>
               <Route path="/project/:id" element={<ProjectView/>}/>
               <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
+              <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>
+              <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
+              <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>
               
             </Route>
           </Route>
@@ -44,7 +50,7 @@ function App() {
               <Route path="/admin/users" element={<UserManagement />} />
             </Route>
           </Route>
-          <Route path="*" element={<ErrorPage />} />
+          <Route path="*" element={<Navigate to="/error" state={{ from: location.pathname, errorType: "route" }} replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

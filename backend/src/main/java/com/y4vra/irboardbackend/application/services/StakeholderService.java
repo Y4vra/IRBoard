@@ -7,6 +7,7 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -58,7 +59,7 @@ public class StakeholderService {
         stakeholder.setName(dto.name());
         stakeholder.setDescription(dto.description());
         stakeholder.setProject(project);
-
+        stakeholder.setState(EntityState.ACTIVE);
 
         Stakeholder saved = stakeholderRepository.save(stakeholder);
         return stakeholderMapper.toDto(saved);

@@ -6,7 +6,9 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
+import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,6 +32,9 @@ class NonFunctionalRequirementServiceTest {
     private NonFunctionalRequirementRepository nfrRepository;
 
     @Mock
+    private ProjectRepository projectRepository;
+
+    @Mock
     private NonFunctionalRequirementMapper nfrMapper;
 
     @Mock
@@ -37,6 +43,7 @@ class NonFunctionalRequirementServiceTest {
     @InjectMocks
     private NonFunctionalRequirementService nfrService;
 
+    private Project project;
     private NonFunctionalRequirement nfr;
     private NonFunctionalRequirementDTO nfrDTO;
     private final String oryId = "user-ory-123";
@@ -44,7 +51,7 @@ class NonFunctionalRequirementServiceTest {
 
     @BeforeEach
     void setUp() {
-        Project project = new Project();
+        project = new Project();
         project.setId(projectId);
 
         nfr = new NonFunctionalRequirement();
@@ -59,7 +66,7 @@ class NonFunctionalRequirementServiceTest {
         nfr.setProject(project);
 
         nfrDTO = new NonFunctionalRequirementDTO(
-                7L, "Response Time", "Must respond under threshold",
+                7L, "Response Time", "Must respond under threshold", RequirementState.PENDING_APPROVAL.name(),
                 "ms", "LESS_THAN", 200.0, 100.0, 150.0, projectId,null,null,false
         );
     }
@@ -87,6 +94,7 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void findNonFunctionalRequirementsOfProject_returnsEmptyListWhenNoneExist() {
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(nfrRepository.findAllByProjectId(projectId)).thenReturn(List.of());
 
@@ -98,11 +106,12 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void createNonFunctionalRequirement_savesAndCreatesKetoRelations() {
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(nfrMapper.toEntity(nfrDTO)).thenReturn(nfr);
         when(nfrRepository.save(nfr)).thenReturn(nfr);
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
 
-        NonFunctionalRequirementDTO result = nfrService.createNonFunctionalRequirement(nfrDTO, oryId);
+        NonFunctionalRequirementDTO result = nfrService.createNonFunctionalRequirement(nfrDTO, projectId);
 
         assertThat(result).isEqualTo(nfrDTO);
         verify(nfrRepository).save(nfr);
@@ -110,11 +119,12 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void createNonFunctionalRequirement_createsBothKetoRelationsInOrder() {
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(nfrMapper.toEntity(nfrDTO)).thenReturn(nfr);
         when(nfrRepository.save(nfr)).thenReturn(nfr);
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
 
-        nfrService.createNonFunctionalRequirement(nfrDTO, oryId);
+        nfrService.createNonFunctionalRequirement(nfrDTO, projectId);
 
         var inOrder = inOrder(nfrRepository, permService);
         inOrder.verify(nfrRepository).save(nfr);

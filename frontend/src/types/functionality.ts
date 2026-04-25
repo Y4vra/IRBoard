@@ -7,3 +7,7 @@ export interface Functionality {
   description?: string;
   state: FunctionalityState;
 }
+
+export type Permission = "edit" | "view" | "none";
+
+export type FunctionalitiesResponse = Record<Permission, Functionality[]>;

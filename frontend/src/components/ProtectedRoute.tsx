@@ -13,14 +13,14 @@ export const ProtectedRoute = ({ adminOnly = false }: ProtectedRouteProps) => {
   if (loading) return <LoadingSpinner />;
 
   if (serverError) {
-    return <Navigate to="/error" state={{ errorType: "server" }} replace />;
+    return <Navigate to="/error" state={{ from: location.pathname, errorType: "server" }} replace />;
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   if (adminOnly && !user?.isAdmin) {
-    return <Navigate to="/error" state={{ errorType: "permission" }} replace />;
+    return <Navigate to="/error" state={{ from: location.pathname, errorType: "permission" }} replace />;
   }
 
   return <Outlet/>;
