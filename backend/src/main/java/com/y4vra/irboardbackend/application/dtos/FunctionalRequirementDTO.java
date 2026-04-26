@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.application.dtos;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record FunctionalRequirementDTO(
         Long id,
@@ -10,7 +11,10 @@ public record FunctionalRequirementDTO(
         String priority,
         String stability,
         Long functionalityId,
-        Long projectId,
+        Long parentId,
+        Float orderValue,
+        String state,
+        List<FunctionalRequirementDTO> children,
 
         UserDTO modificatingUser,
         LocalDateTime startModificationDate,

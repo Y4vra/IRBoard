@@ -65,7 +65,11 @@ public class NonFunctionalRequirementService {
     }
 
     @Transactional
-    public NonFunctionalRequirementDTO createNonFunctionalRequirement(NonFunctionalRequirementDTO dto, Long projectId) {
+    public NonFunctionalRequirementDTO createNonFunctionalRequirement(String oryId, NonFunctionalRequirementDTO dto, Long projectId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
+            throw new AccessDeniedException("User not authorized to add a nonFunctionalRequirements to this project");
+        }
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 

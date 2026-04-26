@@ -110,8 +110,9 @@ class NonFunctionalRequirementServiceTest {
         when(nfrMapper.toEntity(nfrDTO)).thenReturn(nfr);
         when(nfrRepository.save(nfr)).thenReturn(nfr);
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
 
-        NonFunctionalRequirementDTO result = nfrService.createNonFunctionalRequirement(nfrDTO, projectId);
+        NonFunctionalRequirementDTO result = nfrService.createNonFunctionalRequirement(oryId,nfrDTO, projectId);
 
         assertThat(result).isEqualTo(nfrDTO);
         verify(nfrRepository).save(nfr);
@@ -123,8 +124,9 @@ class NonFunctionalRequirementServiceTest {
         when(nfrMapper.toEntity(nfrDTO)).thenReturn(nfr);
         when(nfrRepository.save(nfr)).thenReturn(nfr);
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
 
-        nfrService.createNonFunctionalRequirement(nfrDTO, projectId);
+        nfrService.createNonFunctionalRequirement(oryId,nfrDTO, projectId);
 
         var inOrder = inOrder(nfrRepository, permService);
         inOrder.verify(nfrRepository).save(nfr);

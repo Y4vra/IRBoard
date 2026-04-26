@@ -3,6 +3,8 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +13,21 @@ import java.util.Optional;
 
 @Repository
 interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalRequirement, Long> {
-    List<FunctionalRequirement> findAllByFunctionalityId(Long functionalityId);
+    @Query("""
+        SELECT r FROM Requirement r
+        LEFT JOIN FETCH r.children
+        WHERE r.id IN (
+            SELECT r2.id FROM FunctionalRequirement r2
+            WHERE r2.functionality.id = :functionalityId
+            AND r2.parent IS NULL
+        )
+        OR r.parent.id IN (
+            SELECT r3.id FROM FunctionalRequirement r3
+            WHERE r3.functionality.id = :functionalityId
+        )
+        ORDER BY r.orderValue ASC
+    """)
+    List<FunctionalRequirement> findAllByFunctionalityId(@Param("functionalityId") Long functionalityId);
 }
 
 @Component

@@ -2,7 +2,11 @@ package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.Functionality;
 import org.springframework.stereotype.Component;
+
+import java.util.Comparator;
+import java.util.List;
 
 @Component
 public class FunctionalRequirementMapper {
@@ -17,14 +21,19 @@ public class FunctionalRequirementMapper {
         if (entity == null) return null;
 
         Long functionalityId = null;
-        Long projectId = null;
 
         if (entity.getFunctionality() != null) {
             functionalityId = entity.getFunctionality().getId();
-            if (entity.getFunctionality().getProject() != null) {
-                projectId = entity.getFunctionality().getProject().getId();
-            }
         }
+
+        List<FunctionalRequirementDTO> childDtos = entity.getChildren().stream()
+                .filter(child -> child instanceof FunctionalRequirement)
+                .map(child -> toDto((FunctionalRequirement) child))
+                .sorted(Comparator.comparing(
+                        FunctionalRequirementDTO::orderValue,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ))
+                .toList();
 
         return new FunctionalRequirementDTO(
                 entity.getId(),
@@ -33,25 +42,39 @@ public class FunctionalRequirementMapper {
                 entity.getPriority(),
                 entity.getStability(),
                 functionalityId,
-                projectId,
+                entity.getParent() != null ? entity.getParent().getId() : null,
+                entity.getOrderValue(),
+                entity.getState().name(),
+                childDtos,
                 userMapper.toDto(entity.getModifyingUser()),
                 entity.getStartModificationDate(),
                 entity.isLocked()
         );
     }
 
-    public FunctionalRequirement toEntity(FunctionalRequirementDTO dto) {
+    public FunctionalRequirement toEntity(FunctionalRequirementDTO dto, Functionality functionality) {
         if (dto == null) return null;
 
         FunctionalRequirement entity = new FunctionalRequirement();
         entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setDescription(dto.description());
+        entity.setFunctionality(functionality);
         entity.setPriority(dto.priority());
         entity.setStability(dto.stability());
         entity.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
         entity.setStartModificationDate(dto.startModificationDate());
 
         return entity;
+    }
+
+    public List<FunctionalRequirementDTO> toDtoList(List<FunctionalRequirement> roots) {
+        return roots.stream()
+                .sorted(Comparator.comparing(
+                        FunctionalRequirement::getOrderValue,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ))
+                .map(this::toDto)
+                .toList();
     }
 }
