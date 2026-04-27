@@ -4,6 +4,7 @@ import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,7 +52,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        FunctionalityDTO dto = new FunctionalityDTO(2L, "Authentication", "AU", "DEACTIVATED", 5L,null,null,false);
+        FunctionalityDTO dto = new FunctionalityDTO(2L, "Authentication", "description", "AU", "DEACTIVATED", 5L, "TERNARY",null,null,false);
 
         Functionality entity = mapper.toEntity(dto);
 
@@ -63,7 +64,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_throwsWhenStateIsInvalid() {
-        FunctionalityDTO dto = new FunctionalityDTO(1L, "Name", "NM", "INVALID_STATE", 1L,null,null,false);
+        FunctionalityDTO dto = new FunctionalityDTO(1L, "Name","description", "NM", "INVALID_STATE", 1L,"TERNARY",null,null,false);
 
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalArgumentException.class,

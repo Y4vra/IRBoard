@@ -43,7 +43,7 @@ public class FunctionalRequirementService {
 
     @Transactional(readOnly = true)
     public List<FunctionalRequirementDTO> findFunctionalRequirementsOfFunctionality(String oryId, Long functionalityId) {
-        boolean hasAccess = permService.checkPermission("Functionality", String.valueOf(functionalityId), "view", oryId);
+        boolean hasAccess = permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId);
 
         if (!hasAccess) {
             throw new AccessDeniedException("User not authorized to view functional requirements of this functionality");
@@ -56,7 +56,7 @@ public class FunctionalRequirementService {
 
     @Transactional
     public FunctionalRequirementDTO createFunctionalRequirement(String oryId,FunctionalRequirementDTO dto, Long functionalityId) {
-        if (permService.checkPermission("Functionality", String.valueOf(functionalityId), "edit", oryId)){
+        if (permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to create requirements in this functionality");
         }
         Optional<Functionality> functionality = fRepo.findById(functionalityId);
@@ -72,7 +72,7 @@ public class FunctionalRequirementService {
     }
     @Transactional(readOnly = true)
     public FunctionalRequirementDTO findFunctionalRequirementById(String oryId, long functionalityId, long functionalRequirementId) {
-        if (permService.checkPermission("Functionality", String.valueOf(functionalityId), "view", oryId)){
+        if (permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to view requirements in this functionality");
         }
 

@@ -14,6 +14,7 @@ import StakeholdersView from './pages/Project/StakeholdersView'
 import StakeholderDetailView from './pages/Project/stakeholder/StakeholderDetailView'
 import NonFunctionalRequirementsView from './pages/Project/NonFunctionalRequirementsView'
 import NonFunctionalRequirementDetailView from './pages/Project/nfr/NonFunctionalRequirementDetailView'
+import FunctionalityView from './pages/Project/FunctionalityView'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -38,6 +39,7 @@ function App() {
               <Route path="/home" element={<Home />}/>
               <Route path="/projects/new" element={<NewProject />}/>
               <Route path="/project/:id" element={<ProjectView/>}/>
+              <Route path="/project/:projectId/functionalities/:functionalityId" element={<FunctionalityView/>}/>
               <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
               <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>
               <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>

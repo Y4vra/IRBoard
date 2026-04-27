@@ -23,7 +23,6 @@ import {
   AlertCircle,
   ArrowLeft,
   Circle,
-  ChevronRight,
   Pencil,
   Plus,
   Eye,
@@ -31,8 +30,9 @@ import {
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/RequirementStateBadge"
 import { useBackendResource } from "@/hooks/useBackendResource"
-import type { FunctionalRequirementDTO } from "@/types/FunctionalRequirement"
-import type { Functionality } from "@/types/functionality"
+import type { FunctionalRequirement } from "../../types/FunctionalRequirement"
+import type { Functionality } from "@/types/Functionality"
+import { RequirementState } from "@/types/enum/RequirementState"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -78,10 +78,10 @@ function RequirementRows({
   priorityStyle,
   onView,
 }: {
-  requirements: FunctionalRequirementDTO[]
+  requirements: FunctionalRequirement[]
   depth?: number
   priorityStyle: PriorityStyle
-  onView: (req: FunctionalRequirementDTO) => void
+  onView: (req: FunctionalRequirement) => void
 }) {
   return (
     <>
@@ -105,7 +105,7 @@ function RequirementRows({
                     <span className="text-slate-300 text-xs select-none">└─</span>
                   )}
                   <span className="font-medium text-sm flex items-center gap-1.5">
-                    {req.isPendingReview && (
+                    {req.state==RequirementState.PENDING_APPROVAL && (
                       <Circle className="h-2 w-2 fill-amber-400 text-amber-400 shrink-0" />
                     )}
                     {req.name}
@@ -184,7 +184,7 @@ function FunctionalityView() {
   const fetchRequirements = useCallback(
     () =>
       fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/requirements`,
+        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/`,
         { credentials: "include" }
       ).then((r) => {
         if (!r.ok) throw new Error("Failed to fetch requirements")
@@ -203,16 +203,15 @@ function FunctionalityView() {
     data,
     loading: reqLoading,
     error: reqError,
-    refetch: refetchRequirements,
-  } = useBackendResource<FunctionalRequirementDTO[]>({ fetcher: fetchRequirements })
+  } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
 
   const requirements = data ?? []
 
-  const countAll = (reqs: FunctionalRequirementDTO[]): number =>
+  const countAll = (reqs: FunctionalRequirement[]): number =>
     reqs.reduce((acc, r) => acc + 1 + countAll(r.children ?? []), 0)
 
-  const pendingCount = requirements.filter((r) => r.isPendingReview).length
-  const priorityStyle = (functionality?.project?.priorityStyle ?? "TERNARY") as PriorityStyle
+  const pendingCount = requirements.filter((r) => r.state==RequirementState.PENDING_APPROVAL).length
+  const priorityStyle = (functionality?.priorityStyle ?? "TERNARY") as PriorityStyle
 
   // ── Dialog handlers (stubs — replace with your dialog opens) ──────────────
 
@@ -220,7 +219,7 @@ function FunctionalityView() {
     // TODO: open CreateFunctionalRequirementDialog
   }
 
-  const handleViewRequirement = (req: FunctionalRequirementDTO) => {
+  const handleViewRequirement = (req: FunctionalRequirement) => {
     // TODO: open FunctionalRequirementDetailDialog with req
     console.log("View requirement", req)
   }

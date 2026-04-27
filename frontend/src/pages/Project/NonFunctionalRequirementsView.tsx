@@ -17,7 +17,7 @@ import LoadingSpinner from "@/components/LoadingSpinner"
 import { CreateNonFunctionalRequirementDialog } from "../../components/CreateNonFunctionalRequirementDialog"
 import { RequirementStateBadge } from "@/components/RequirementStateBadge"
 import { useBackendResource } from "@/hooks/useBackendResource"
-import type { NonFunctionalRequirementDTO } from "@/types/NonFunctionalRequirement"
+import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement"
 
 function NonFunctionalRequirementsView() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -30,7 +30,7 @@ function NonFunctionalRequirementsView() {
     [projectId]
   );
 
-  const { data, loading, error } = useBackendResource<NonFunctionalRequirementDTO[]>({
+  const { data, loading, error } = useBackendResource<NonFunctionalRequirement[]>({
     fetcher: fetchRequirements,
     enabled: isAuthenticated,
   });

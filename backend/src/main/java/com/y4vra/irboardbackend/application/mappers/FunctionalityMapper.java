@@ -20,9 +20,11 @@ public class FunctionalityMapper {
         return new FunctionalityDTO(
         functionality.getId(),
         functionality.getName(),
+        functionality.getDescription(),
         functionality.getLabel(),
         functionality.getState().toString(),
         functionality.getProject().getId(),
+        functionality.getProject().getPriorityStyle().toString(),
         userMapper.toDto(functionality.getModifyingUser()),
         functionality.getStartModificationDate(),
         functionality.isLocked()
@@ -36,6 +38,7 @@ public class FunctionalityMapper {
         Functionality functionality = new Functionality();
         functionality.setId(dto.id());
         functionality.setName(dto.name());
+        functionality.setDescription(dto.description());
         functionality.setLabel(dto.label());
         functionality.setState(EntityState.valueOf(dto.state()));
         functionality.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));

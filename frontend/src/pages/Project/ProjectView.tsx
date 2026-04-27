@@ -17,11 +17,11 @@ import {
   Pencil,
   Lock,
 } from "lucide-react";
-import { type Project } from "../../types/project";
+import { type Project } from "../../types/Project";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { CreateFunctionalityDialog } from "../../components/NewFunctionalityDialog";
 import { useBackendResource } from "@/hooks/useBackendResource";
-import type { Permission, Functionality, FunctionalitiesResponse } from "@/types/functionality";
+import type { Permission, Functionality, FunctionalitiesResponse } from "@/types/Functionality";
 
 const permissionConfig: Record<
   Permission,

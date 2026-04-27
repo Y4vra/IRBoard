@@ -1,4 +1,4 @@
-export interface NonFunctionalRequirementDTO {
+export interface NonFunctionalRequirement {
   id: number;
   identifier: string;
   name: string;

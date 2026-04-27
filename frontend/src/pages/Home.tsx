@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../lib/globalVars";
 import { Button } from "../components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Folder, Plus } from "lucide-react";
-import { type Project } from "../types/project";
+import { type Project } from "../types/Project";
 import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/context/AuthContext"

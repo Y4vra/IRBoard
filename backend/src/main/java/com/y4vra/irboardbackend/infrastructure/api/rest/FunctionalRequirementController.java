@@ -9,8 +9,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/projects/{projectId}/functionalities/{functionalityId}/functionalRequirements/")
+@RequestMapping("/projects/{projectId}/functionalities/{functionalityId}/functionalRequirements")
 public class FunctionalRequirementController {
 
     private final FunctionalRequirementService functionalRequirementService;
@@ -27,5 +29,9 @@ public class FunctionalRequirementController {
     @GetMapping("/{functionalRequirementId}")
     public ResponseEntity<FunctionalRequirementDTO> getFunctionalRequirementById(Authentication authentication,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
         return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementById(((User) authentication.getPrincipal()).getOryId(),functionalityId, functionalRequirementId));
+    }
+    @GetMapping("/")
+    public ResponseEntity<List<FunctionalRequirementDTO>> getFunctionalRequirementOfFunctionality(Authentication authentication, @PathVariable Long functionalityId) {
+        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementsOfFunctionality(((User) authentication.getPrincipal()).getOryId(),functionalityId));
     }
 }
