@@ -176,6 +176,19 @@ services:
       - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
       - "traefik.docker.network=irboard_public"
 
+      # rate limiting on traefik to prevent dictionary attacks
+      - "traefik.http.middlewares.kratos-ratelimit.ratelimit.average=3"
+      - "traefik.http.middlewares.kratos-ratelimit.ratelimit.period=1m"
+      - "traefik.http.middlewares.kratos-ratelimit.ratelimit.burst=3"
+      
+      - "traefik.http.routers.kratos-login.rule=Host(`${AUTH_DOMAIN}`) && PathPrefix(`/self-service/login`)"
+      - "traefik.http.routers.kratos-login.entrypoints=web"
+      - "traefik.http.routers.kratos-login.middlewares=kratos-ratelimit"
+      - "traefik.http.routers.kratos-login.service=oathkeeper"
+      - "traefik.http.middlewares.keep-host.headers.customrequestheaders.X-Forwarded-Host=grafana.irboard.local"
+      - "traefik.http.routers.oathkeeper.middlewares=keep-host"
+      - "traefik.http.routers.kratos-login.middlewares=kratos-ratelimit,keep-host"
+
   # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ON KRATOS, KETO, AND BACKEND ---
   initial-setup-admin:
     image: alpine:3.23.3
@@ -362,6 +375,9 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_SECURITY_CSRF_ALWAYS_CHECK=false
+      - GF_SERVER_ROOT_URL=http://grafana.irboard.local
+      - GF_LIVE_ALLOWED_ORIGINS=http://grafana.irboard.local,http://irboard.local
     volumes:
       - ./config/grafana/provisioning:/etc/grafana/provisioning
     networks:
