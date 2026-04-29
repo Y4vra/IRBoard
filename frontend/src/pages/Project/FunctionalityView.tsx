@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../lib/globalVars"
 import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
@@ -12,19 +12,11 @@ import {
   CardDescription,
 } from "@/components/ui/card"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
   AlertCircle,
   ArrowLeft,
   Circle,
   Pencil,
-  Eye,
+  ChevronRight,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/RequirementStateBadge"
@@ -34,23 +26,19 @@ import type { Functionality } from "@/types/Functionality"
 import { RequirementState } from "@/types/enum/RequirementState"
 import { CreateFunctionalRequirementDialog } from "@/components/CreateFunctionalRequirementDialog"
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 type PriorityStyle = "MOSCOW" | "TERNARY"
 
-// ── Priority badge ────────────────────────────────────────────────────────────
-
 const MOSCOW_STYLES: Record<string, string> = {
-  MUST:   "bg-amber-50 text-amber-700 border-amber-200",
+  MUST: "bg-amber-50 text-amber-700 border-amber-200",
   SHOULD: "bg-blue-50 text-blue-700 border-blue-200",
-  COULD:  "bg-slate-100 text-slate-600 border-slate-200",
-  WONT:   "bg-red-50 text-red-400 border-red-100",
+  COULD: "bg-slate-100 text-slate-600 border-slate-200",
+  WONT: "bg-red-50 text-red-400 border-red-100",
 }
 
 const TERNARY_STYLES: Record<string, string> = {
-  HIGH:   "bg-amber-50 text-amber-700 border-amber-200",
+  HIGH: "bg-amber-50 text-amber-700 border-amber-200",
   NORMAL: "bg-blue-50 text-blue-700 border-blue-200",
-  LOW:    "bg-slate-100 text-slate-600 border-slate-200",
+  LOW: "bg-slate-100 text-slate-600 border-slate-200",
 }
 
 function PriorityBadge({
@@ -70,97 +58,94 @@ function PriorityBadge({
   )
 }
 
-// ── Recursive rows ────────────────────────────────────────────────────────────
-
-function RequirementRows({
-  requirements,
-  depth = 0,
-  priorityStyle,
-  onView,
-}: {
-  requirements: FunctionalRequirement[]
-  depth?: number
+interface FunctionalRequirementCardProps {
+  requirement: FunctionalRequirement
+  projectId: string
+  functionalityId: string
   priorityStyle: PriorityStyle
-  onView: (req: FunctionalRequirement) => void
-}) {
-  return (
-    <>
-      {requirements.map((req) => {
-        const isChild = depth > 0
-        const paddingLeft = depth * 24 + 16
-
-        return (
-          <>
-            <TableRow
-              key={req.id}
-              className={isChild ? "bg-slate-50/60" : ""}
-            >
-              <TableCell className="font-mono text-xs text-slate-400">
-                {req.id}
-              </TableCell>
-
-              <TableCell style={{ paddingLeft }}>
-                <div className="flex items-center gap-2">
-                  {isChild && (
-                    <span className="text-slate-300 text-xs select-none">└─</span>
-                  )}
-                  <span className="font-medium text-sm flex items-center gap-1.5">
-                    {req.state==RequirementState.PENDING_APPROVAL && (
-                      <Circle className="h-2 w-2 fill-amber-400 text-amber-400 shrink-0" />
-                    )}
-                    {req.name}
-                  </span>
-                </div>
-              </TableCell>
-
-              <TableCell className="max-w-xs truncate text-slate-500 text-sm">
-                {req.description}
-              </TableCell>
-
-              <TableCell>
-                <PriorityBadge priority={req.priority} priorityStyle={priorityStyle} />
-              </TableCell>
-
-              <TableCell>
-                {req.stability && (
-                  <Badge variant="outline" className="text-xs font-normal text-slate-500">
-                    {req.stability}
-                  </Badge>
-                )}
-              </TableCell>
-
-              <TableCell>
-                <RequirementStateBadge state={req.state} />
-              </TableCell>
-
-              <TableCell className="text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onView(req)}
-                  className="h-7 w-7 p-0 text-slate-400 hover:text-slate-700"
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-
-            {req.children && req.children.length > 0 && (
-              <RequirementRows
-                requirements={req.children}
-                depth={depth + 1}
-                priorityStyle={priorityStyle}
-                onView={onView}
-              />
-            )}
-          </>
-        )
-      })}
-    </>
-  )
+  depth?: number
+  isAdmin: boolean
+  onRefetch: () => void
 }
 
-// ── Main view ─────────────────────────────────────────────────────────────────
+function FunctionalRequirementCard({
+  requirement: r,
+  projectId,
+  functionalityId,
+  priorityStyle,
+  depth = 0,
+  isAdmin,
+  onRefetch,
+}: FunctionalRequirementCardProps) {
+  const navigate = useNavigate()
+
+  return (
+    <div
+      className={`rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md ${
+        depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : ""
+      }`}
+    >
+      <div
+        className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+        onClick={() => navigate(`/project/${projectId}/functionality/${functionalityId}/requirement/${r.id}`)}
+      >
+        <span className="font-mono text-xs text-slate-400 w-10 shrink-0">
+          #{r.id}
+        </span>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            {r.state === RequirementState.PENDING_APPROVAL && (
+              <Circle className="h-2 w-2 fill-amber-400 text-amber-400 shrink-0" />
+            )}
+            <p className="font-semibold text-slate-800 truncate">{r.name}</p>
+          </div>
+          {r.description && (
+            <p className="text-sm text-slate-500 truncate mt-0.5">
+              {r.description}
+            </p>
+          )}
+        </div>
+
+        <div className="shrink-0 flex items-center gap-3">
+          <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
+          <RequirementStateBadge state={r.state} />
+        </div>
+
+        {isAdmin && (
+          <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+            <CreateFunctionalRequirementDialog
+              projectId={projectId}
+              functionalityId={functionalityId}
+              parentId={r.id}
+              priorityStyle={priorityStyle}
+              onSuccess={onRefetch}
+            />
+          </div>
+        )}
+
+        <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
+      </div>
+
+      {r.children && r.children.length > 0 && (
+        <div className="px-5 pb-4 space-y-3">
+          {r.children.map((child) => (
+            <FunctionalRequirementCard
+              key={child.id}
+              requirement={child}
+              projectId={projectId}
+              functionalityId={functionalityId}
+              priorityStyle={priorityStyle}
+              depth={depth + 1}
+              isAdmin={isAdmin}
+              onRefetch={onRefetch}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function FunctionalityView() {
   const { projectId, functionalityId } = useParams<{
@@ -200,32 +185,28 @@ function FunctionalityView() {
   } = useBackendResource<Functionality>({ fetcher: fetchFunctionality })
 
   const {
-    data,
+    data: requirementsData,
     loading: reqLoading,
     error: reqError,
-    refresh: refreshRequirements
+    refresh: refreshRequirements,
   } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
 
-  const requirements = data ?? []
+  const requirements = requirementsData ?? []
 
   const countAll = (reqs: FunctionalRequirement[]): number =>
     reqs.reduce((acc, r) => acc + 1 + countAll(r.children ?? []), 0)
 
-  const pendingCount = requirements.filter((r) => r.state==RequirementState.PENDING_APPROVAL).length
+  const countPending = (reqs: FunctionalRequirement[]): number =>
+    reqs.reduce((acc, r) => {
+      const isPending = r.state === RequirementState.PENDING_APPROVAL ? 1 : 0
+      return acc + isPending + countPending(r.children ?? [])
+    }, 0)
+
+  const pendingCount = countPending(requirements)
   const priorityStyle = (functionality?.priorityStyle ?? "TERNARY") as PriorityStyle
 
-  // ── Dialog handlers (stubs — replace with your dialog opens) ──────────────
-
-  const handleViewRequirement = (req: FunctionalRequirement) => {
-    // TODO: open FunctionalRequirementDetailDialog with req
-    console.log("View requirement", req)
-  }
-
   const handleEditFunctionality = () => {
-    // TODO: open EditFunctionalityDialog with functionality
   }
-
-  // ── Loading / error ────────────────────────────────────────────────────────
 
   if (funcLoading) return <LoadingSpinner text="Loading functionality..." />
 
@@ -241,12 +222,8 @@ function FunctionalityView() {
       </div>
     )
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
-
-      {/* Nav */}
       <nav className="flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link to={`/project/${projectId}`}>
@@ -260,7 +237,6 @@ function FunctionalityView() {
         )}
       </nav>
 
-      {/* Functionality header */}
       <header className="flex items-start justify-between gap-6">
         <div className="space-y-3 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
@@ -300,15 +276,14 @@ function FunctionalityView() {
         </div>
       </header>
 
-      {/* Requirements section */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">
               Functional Requirements
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
-              Children are indented under their parent requirement
+              Manage hierarchical functional requirements.
             </p>
           </div>
           {user?.isAdmin && (
@@ -322,15 +297,13 @@ function FunctionalityView() {
         </div>
 
         <Card>
-          <CardHeader className="pb-0">
-            <CardTitle className="text-base">
-              Requirements for {functionality.name}
-            </CardTitle>
+          <CardHeader>
+            <CardTitle>Functional Requirements</CardTitle>
             <CardDescription>
-              Showing all functional requirements and their sub-requirements.
+              Listed functional requirements for this functionality.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-0 pt-4">
+          <CardContent className="space-y-3">
             {reqLoading ? (
               <div className="py-16 flex justify-center">
                 <LoadingSpinner text="Loading requirements..." />
@@ -340,46 +313,22 @@ function FunctionalityView() {
                 <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
                 <p className="text-red-500 text-sm">{reqError}</p>
               </div>
+            ) : requirements.length === 0 ? (
+              <p className="text-center text-slate-400 italic py-8">
+                No functional requirements found.
+              </p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="w-28">Priority</TableHead>
-                    <TableHead className="w-28">Stability</TableHead>
-                    <TableHead className="w-28">Status</TableHead>
-                    <TableHead className="text-right w-16">View</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {requirements.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="text-center text-slate-400 italic py-12"
-                      >
-                        No functional requirements yet.{" "}
-                        {user?.isAdmin && (
-                          <CreateFunctionalRequirementDialog
-                            projectId={projectId!}
-                            functionalityId={functionalityId!}
-                            onSuccess={refreshRequirements}
-                            priorityStyle={priorityStyle}
-                          />
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    <RequirementRows
-                      requirements={requirements}
-                      priorityStyle={priorityStyle}
-                      onView={handleViewRequirement}
-                    />
-                  )}
-                </TableBody>
-              </Table>
+              requirements.map((r) => (
+                <FunctionalRequirementCard
+                  key={r.id}
+                  requirement={r}
+                  projectId={projectId!}
+                  functionalityId={functionalityId!}
+                  priorityStyle={priorityStyle}
+                  isAdmin={!!user?.isAdmin}
+                  onRefetch={refreshRequirements}
+                />
+              ))
             )}
           </CardContent>
         </Card>
@@ -388,4 +337,4 @@ function FunctionalityView() {
   )
 }
 
-export default FunctionalityView
+export default FunctionalityView;
