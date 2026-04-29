@@ -5,9 +5,11 @@ import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalRequirementMapper;
 import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.model.Associations;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,8 +59,8 @@ public class FunctionalRequirementService {
 
     @Transactional
     public FunctionalRequirementDTO createFunctionalRequirement(String oryId,FunctionalRequirementDTO dto, Long functionalityId) {
-        if (permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
-            throw new AccessDeniedException("User not authorized to create requirements in this functionality");
+        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
+            throw new AccessDeniedException("User not authorized to create requirements in functionality");
         }
         Optional<Functionality> functionality = fRepo.findById(functionalityId);
         if (functionality.isEmpty()) {
@@ -66,6 +69,21 @@ public class FunctionalRequirementService {
 
         FunctionalRequirement fr = frMapper.toEntity(dto,functionality.get());
         fr.setState(RequirementState.PENDING_APPROVAL);
+        if (dto.parentId() != null) {
+            FunctionalRequirement frParent = frRepository.findById(dto.parentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Parent not found"));
+
+            Long parentFunctionalityId = frRepository.findRootFunctionalityIdById(dto.parentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Parent functionality not found"));
+
+            if (!parentFunctionalityId.equals(functionalityId)) {
+                throw new IllegalArgumentException("Parent does not belong to this functionality");
+            }
+
+            Associations.link(frParent, fr);
+        } else {
+            Associations.link(functionality.get(), fr);
+        }
         FunctionalRequirement saved = frRepository.save(fr);
 
         return frMapper.toDto(saved);
@@ -84,5 +102,32 @@ public class FunctionalRequirementService {
             throw new EntityNotFoundException("FunctionalRequirement with id " + functionalRequirementId + " not found");
         }
         return frMapper.toDto(functionalRequirement.get());
+    }
+
+    @Transactional
+    public void updatePriority(Long frId, String priority) {
+        FunctionalRequirement fr = frRepository.findById(frId)
+                .orElseThrow(() -> new EntityNotFoundException("FR not found"));
+
+        Long rootFunctionalityId = frRepository.findRootFunctionalityIdById(frId)
+                .orElseThrow(() -> new EntityNotFoundException("Root functionality not found"));
+
+        Functionality functionality = fRepo.findById(rootFunctionalityId)
+                .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));
+
+        if (!isValidPriority(priority, functionality.getProject().getPriorityStyle())) {
+            throw new IllegalArgumentException("Invalid priority: " + priority);
+        }
+
+        fr.setPriority(priority);
+    }
+
+    private boolean isValidPriority(String priority, PriorityStyle style) {
+        if (priority == null || priority.isBlank()) return false;
+        return switch (style) {
+            case TERNARY -> Set.of("HIGH", "NORMAL", "LOW").contains(priority);
+            case MOSCOW -> Set.of("MUST", "SHOULD", "COULD", "WONT").contains(priority);
+            default -> false;
+        };
     }
 }

@@ -4,6 +4,7 @@ import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.model.Associations;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
@@ -55,7 +56,8 @@ public class NonFunctionalRequirementService {
         if(nonFunctionalRequirement.isEmpty()) {
             throw new EntityNotFoundException("NonFunctionalRequirement with id " + nonFunctionalRequirementId + " not found");
         }
-        if(nonFunctionalRequirement.get().getProject().getId() != projectId){
+        if(nfrRepository.findRootProjectIdById(nonFunctionalRequirement.get().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Project linked to root nfr parent not found")) != projectId){
             throw new EntityNotFoundException("NonFunctionalRequirement with id " + nonFunctionalRequirementId + " not found");
         }
         if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
@@ -69,13 +71,23 @@ public class NonFunctionalRequirementService {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to add a nonFunctionalRequirements to this project");
         }
-
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
         NonFunctionalRequirement nfr = nfrMapper.toEntity(dto);
-        nfr.setProject(project);
         nfr.setState(RequirementState.PENDING_APPROVAL);
+        if (dto.parentId() != null) {
+            NonFunctionalRequirement nfrParent = nfrRepository.findById(dto.parentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Parent not found"));
+            Long parentProjectId = nfrRepository.findRootProjectIdById(dto.parentId())
+                    .orElseThrow(() -> new EntityNotFoundException("Project linked to root nfr parent not found"));
+            if (parentProjectId != project.getId()) {
+                throw new EntityNotFoundException("Parent is not the same as this project");
+            }
+            Associations.link(nfrParent, nfr);
+        }else{
+            Associations.link(project, nfr);
+        }
         NonFunctionalRequirement saved = nfrRepository.save(nfr);
 
         return nfrMapper.toDto(saved);

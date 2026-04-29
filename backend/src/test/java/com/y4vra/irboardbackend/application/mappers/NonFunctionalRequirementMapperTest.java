@@ -34,6 +34,7 @@ class NonFunctionalRequirementMapperTest {
         nfr.setName("Response Time");
         nfr.setDescription("API must respond within threshold");
         nfr.setMeasurementUnit("ms");
+        nfr.setState(RequirementState.PENDING_APPROVAL);
         nfr.setOperator(ComparisonOperator.LESS_THAN);
         nfr.setThresholdValue(200.0);
         nfr.setTargetValue(100.0);
@@ -62,7 +63,7 @@ class NonFunctionalRequirementMapperTest {
     void toEntity_mapsAllFields() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
                 9L, "Availability", "Must be highly available", RequirementState.PENDING_APPROVAL.name(),"percent",
-                "GREATER_THAN", 99.0, 99.9, 99.5, 1L,null,null,false
+                "GREATER_THAN", 99.0, 99.9, 99.5, 1L, null, null, null,null,false
         );
 
         NonFunctionalRequirement entity = mapper.toEntity(dto);
@@ -81,7 +82,7 @@ class NonFunctionalRequirementMapperTest {
     void toEntity_throwsOnInvalidOperator() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
                 1L, "Name", "desc", RequirementState.PENDING_APPROVAL.name(), "ms", "NOT_AN_OPERATOR",
-                1.0, 2.0, 1.5, 1L,null,null,false
+                1.0, 2.0, 1.5, 1L,null, null,null,null,false
         );
 
         org.junit.jupiter.api.Assertions.assertThrows(

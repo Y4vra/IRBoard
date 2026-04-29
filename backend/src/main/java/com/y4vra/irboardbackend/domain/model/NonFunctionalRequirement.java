@@ -39,5 +39,4 @@ public class NonFunctionalRequirement extends Requirement {
 
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
-
 }

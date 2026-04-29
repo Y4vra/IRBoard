@@ -58,4 +58,16 @@ public abstract class Requirement extends LockableImpl {
 
     public Requirement getParent() { return parent; }
     public void setParent(Requirement parent) { this.parent = parent; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Requirement other)) return false;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : System.identityHashCode(this);
+    }
 }

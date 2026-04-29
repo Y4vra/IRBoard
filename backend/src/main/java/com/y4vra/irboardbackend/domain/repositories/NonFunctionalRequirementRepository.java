@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface NonFunctionalRequirementRepository {
+    Optional<Long> findRootProjectIdById(Long id);
     List<NonFunctionalRequirement> findAll();
     List<NonFunctionalRequirement> findAllById(Iterable<Long> ids);
     List<NonFunctionalRequirement> findAllByProjectId(Long projectId);

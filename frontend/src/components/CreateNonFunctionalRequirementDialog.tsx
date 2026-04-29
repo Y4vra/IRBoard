@@ -29,6 +29,7 @@ import {
   TrendingUp,
   Activity,
   GitCompare,
+  GitMerge,
 } from "lucide-react";
 
 // Must match the ComparisonOperator enum on the backend
@@ -43,6 +44,8 @@ const COMPARISON_OPERATORS = [
 
 interface CreateNonFunctionalRequirementDialogProps {
   projectId: string;
+  /** When provided, the new NFR will be created as a child of this requirement. */
+  parentId?: number | string;
   onSuccess: () => void;
 }
 
@@ -51,23 +54,24 @@ interface FormData {
   description: string;
   measurementUnit: string;
   operator: string;
-  thresholdValue: string;
-  targetValue: string;
-  actualValue: string;
+  thresholdValue: number;
+  targetValue: number;
+  actualValue: number;
 }
 
 const EMPTY_FORM: FormData = {
   name: "",
   description: "",
   measurementUnit: "",
-  operator: "",
-  thresholdValue: "",
-  targetValue: "",
-  actualValue: "",
+  operator: "EQUAL_TO",
+  thresholdValue: 1,
+  targetValue: 1,
+  actualValue: 0,
 };
 
 export function CreateNonFunctionalRequirementDialog({
   projectId,
+  parentId,
   onSuccess,
 }: CreateNonFunctionalRequirementDialogProps) {
   const [open, setOpen] = useState(false);
@@ -75,10 +79,22 @@ export function CreateNonFunctionalRequirementDialog({
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
+  const isChild = parentId !== undefined && parentId !== null;
+
   const handleField =
     (field: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const handleNumericField =
+    (field: "thresholdValue" | "targetValue" | "actualValue") =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      setFormData((prev) => ({
+        ...prev,
+        [field]: raw === "" ? "" : Number(raw),
+      }));
     };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,6 +111,7 @@ export function CreateNonFunctionalRequirementDialog({
       targetValue: formData.targetValue ? Number(formData.targetValue) : undefined,
       actualValue: formData.actualValue ? Number(formData.actualValue) : undefined,
       projectId: Number(projectId),
+      ...(isChild ? { parentId: Number(parentId) } : {}),
     };
 
     try {
@@ -135,14 +152,19 @@ export function CreateNonFunctionalRequirementDialog({
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
       <DialogTrigger asChild>
         <Button size="sm" className="shadow-md">
-          <ShieldAlert className="mr-2 h-4 w-4" /> Add NFR
+          <ShieldAlert className="mr-2 h-4 w-4" />
+          {isChild ? "Add child NFR" : "Add NFR"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Non-Functional Requirement</DialogTitle>
+          <DialogTitle>
+            {isChild ? "New Child Non-Functional Requirement" : "New Non-Functional Requirement"}
+          </DialogTitle>
           <DialogDescription>
-            Define a quality attribute or system constraint with measurable thresholds.
+            {isChild
+              ? "Define a child quality attribute or constraint nested under the selected requirement."
+              : "Define a quality attribute or system constraint with measurable thresholds."}
           </DialogDescription>
         </DialogHeader>
 
@@ -163,6 +185,28 @@ export function CreateNonFunctionalRequirementDialog({
               />
             </div>
           </div>
+
+          {/* Parent Requirement — only shown when creating a child */}
+          {isChild && (
+            <div className="grid gap-2">
+              <Label htmlFor="parentId" className="text-sm font-semibold">
+                Parent Requirement
+              </Label>
+              <div className="relative">
+                <GitMerge className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="parentId"
+                  value={parentId}
+                  readOnly
+                  disabled
+                  className="pl-9 bg-muted text-muted-foreground cursor-not-allowed font-mono text-sm"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This requirement will be nested under requirement #{parentId}.
+              </p>
+            </div>
+          )}
 
           {/* Name */}
           <div className="grid gap-2">
@@ -257,7 +301,7 @@ export function CreateNonFunctionalRequirementDialog({
                   placeholder="0"
                   className="pl-8"
                   value={formData.thresholdValue}
-                  onChange={handleField("thresholdValue")}
+                  onChange={handleNumericField("thresholdValue")}
                 />
               </div>
             </div>
@@ -275,7 +319,7 @@ export function CreateNonFunctionalRequirementDialog({
                   placeholder="0"
                   className="pl-8"
                   value={formData.targetValue}
-                  onChange={handleField("targetValue")}
+                  onChange={handleNumericField("targetValue")}
                 />
               </div>
             </div>
@@ -293,7 +337,7 @@ export function CreateNonFunctionalRequirementDialog({
                   placeholder="0"
                   className="pl-8"
                   value={formData.actualValue}
-                  onChange={handleField("actualValue")}
+                  onChange={handleNumericField("actualValue")}
                 />
               </div>
             </div>

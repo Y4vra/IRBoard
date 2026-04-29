@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,21 +14,23 @@ import java.util.Optional;
 
 @Repository
 interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalRequirement, Long> {
-    @Query("""
-        SELECT r FROM Requirement r
-        LEFT JOIN FETCH r.children
-        WHERE r.id IN (
-            SELECT r2.id FROM FunctionalRequirement r2
-            WHERE r2.functionality.id = :functionalityId
-            AND r2.parent IS NULL
-        )
-        OR r.parent.id IN (
-            SELECT r3.id FROM FunctionalRequirement r3
-            WHERE r3.functionality.id = :functionalityId
-        )
-        ORDER BY r.orderValue ASC
-    """)
+    @EntityGraph(attributePaths = {"children", "children.children"})
+    @Query("SELECT n FROM FunctionalRequirement n WHERE n.functionality.id = :functionalityId AND n.parent IS NULL")
     List<FunctionalRequirement> findAllByFunctionalityId(@Param("functionalityId") Long functionalityId);
+
+    @Query(value = """
+        WITH RECURSIVE root_finder AS (
+            SELECT id, parent_id, functionality_id
+            FROM requirement
+            WHERE id = :id
+            UNION ALL
+            SELECT r.id, r.parent_id, r.functionality_id
+            FROM requirement r
+            INNER JOIN root_finder rf ON r.id = rf.parent_id
+        )
+        SELECT functionality_id FROM root_finder WHERE parent_id IS NULL LIMIT 1
+        """, nativeQuery = true)
+    Optional<Long> findRootFunctionalityIdById(@Param("id") Long id);
 }
 
 @Component
@@ -67,5 +70,9 @@ public class FunctionalRequirementRepositoryImpl implements FunctionalRequiremen
     @Override
     public List<FunctionalRequirement> findAllByFunctionalityId(Long functionalityId) {
         return jpaRepository.findAllByFunctionalityId(functionalityId);
+    }
+    @Override
+    public Optional<Long> findRootFunctionalityIdById(Long id) {
+        return jpaRepository.findRootFunctionalityIdById(id);
     }
 }

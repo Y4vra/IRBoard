@@ -24,7 +24,6 @@ import {
   ArrowLeft,
   Circle,
   Pencil,
-  Plus,
   Eye,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
@@ -33,6 +32,7 @@ import { useBackendResource } from "@/hooks/useBackendResource"
 import type { FunctionalRequirement } from "../../types/FunctionalRequirement"
 import type { Functionality } from "@/types/Functionality"
 import { RequirementState } from "@/types/enum/RequirementState"
+import { CreateFunctionalRequirementDialog } from "@/components/CreateFunctionalRequirementDialog"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -203,6 +203,7 @@ function FunctionalityView() {
     data,
     loading: reqLoading,
     error: reqError,
+    refresh: refreshRequirements
   } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
 
   const requirements = data ?? []
@@ -214,10 +215,6 @@ function FunctionalityView() {
   const priorityStyle = (functionality?.priorityStyle ?? "TERNARY") as PriorityStyle
 
   // ── Dialog handlers (stubs — replace with your dialog opens) ──────────────
-
-  const handleAddRequirement = () => {
-    // TODO: open CreateFunctionalRequirementDialog
-  }
 
   const handleViewRequirement = (req: FunctionalRequirement) => {
     // TODO: open FunctionalRequirementDetailDialog with req
@@ -315,9 +312,12 @@ function FunctionalityView() {
             </p>
           </div>
           {user?.isAdmin && (
-            <Button size="sm" onClick={handleAddRequirement}>
-              <Plus className="mr-2 h-4 w-4" /> Add Requirement
-            </Button>
+            <CreateFunctionalRequirementDialog
+              projectId={projectId!}
+              functionalityId={functionalityId!}
+              onSuccess={refreshRequirements}
+              priorityStyle={priorityStyle}
+            />
           )}
         </div>
 
@@ -362,12 +362,12 @@ function FunctionalityView() {
                       >
                         No functional requirements yet.{" "}
                         {user?.isAdmin && (
-                          <button
-                            onClick={handleAddRequirement}
-                            className="text-slate-500 underline underline-offset-2 hover:text-slate-700"
-                          >
-                            Add the first one.
-                          </button>
+                          <CreateFunctionalRequirementDialog
+                            projectId={projectId!}
+                            functionalityId={functionalityId!}
+                            onSuccess={refreshRequirements}
+                            priorityStyle={priorityStyle}
+                          />
                         )}
                       </TableCell>
                     </TableRow>
