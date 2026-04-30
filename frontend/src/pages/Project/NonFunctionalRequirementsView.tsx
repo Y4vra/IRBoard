@@ -1,8 +1,8 @@
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../lib/globalVars"
 import { Button } from "../../components/ui/button"
-import { AlertCircle, ChevronRight } from "lucide-react"
+import { AlertCircle, ChevronRight, ChevronDown } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui/card"
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
@@ -16,13 +16,16 @@ import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement"
 interface NFRCardProps {
   requirement: NonFunctionalRequirement
   projectId: string
+  label: string
   depth?: number
   isAdmin: boolean
   onRefetch: () => void
 }
 
-function NFRCard({ requirement: r, projectId, depth = 0, isAdmin, onRefetch }: NFRCardProps) {
+function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefetch }: NFRCardProps) {
   const navigate = useNavigate()
+  const hasChildren = r.children && r.children.length > 0
+  const [collapsed, setCollapsed] = useState(false)
 
   return (
     <div
@@ -35,8 +38,28 @@ function NFRCard({ requirement: r, projectId, depth = 0, isAdmin, onRefetch }: N
         className="flex items-center gap-4 px-5 py-4 cursor-pointer"
         onClick={() => navigate(`/project/${projectId}/nfr/${r.id}`)}
       >
-        {/* Identifiers */}
-        <span className="font-mono text-xs text-slate-400 w-10 shrink-0">{r.identifier ?? `#${r.id}`}</span>
+        {/* Collapse toggle */}
+        {hasChildren ? (
+          <button
+            className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              setCollapsed((c) => !c)
+            }}
+            aria-label={collapsed ? "Expand" : "Collapse"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+        ) : (
+          <span className="w-4 shrink-0" />
+        )}
+
+        {/* Computed label */}
+        <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
 
         {/* Name + description */}
         <div className="flex-1 min-w-0">
@@ -66,13 +89,14 @@ function NFRCard({ requirement: r, projectId, depth = 0, isAdmin, onRefetch }: N
       </div>
 
       {/* Children */}
-      {r.children && r.children.length > 0 && (
+      {hasChildren && !collapsed && (
         <div className="px-5 pb-4 space-y-3">
-          {r.children.map((child) => (
+          {r.children.map((child, index) => (
             <NFRCard
               key={child.id}
               requirement={child}
               projectId={projectId}
+              label={`${label}.${index + 1}`}
               depth={depth + 1}
               isAdmin={isAdmin}
               onRefetch={onRefetch}
@@ -101,7 +125,6 @@ function NonFunctionalRequirementsView() {
     [projectId]
   )
 
-  // refresh is the stable callback that re-runs the fetcher and updates state
   const { data, loading, error, refresh } = useBackendResource<NonFunctionalRequirement[]>({
     fetcher: fetchRequirements,
     enabled: isAuthenticated,
@@ -148,11 +171,12 @@ function NonFunctionalRequirementsView() {
               No non-functional requirements found for this project.
             </p>
           ) : (
-            requirements.map((r) => (
+            requirements.map((r, index) => (
               <NFRCard
                 key={r.id}
                 requirement={r}
                 projectId={projectId!}
+                label={`NFR.${index + 1}`}
                 isAdmin={!!user?.isAdmin}
                 onRefetch={refresh}
               />

@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../lib/globalVars"
 import { useAuth } from "@/context/AuthContext"
@@ -17,6 +17,7 @@ import {
   Circle,
   Pencil,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/RequirementStateBadge"
@@ -63,6 +64,7 @@ interface FunctionalRequirementCardProps {
   projectId: string
   functionalityId: string
   priorityStyle: PriorityStyle
+  label: string
   depth?: number
   isAdmin: boolean
   onRefetch: () => void
@@ -73,11 +75,14 @@ function FunctionalRequirementCard({
   projectId,
   functionalityId,
   priorityStyle,
+  label,
   depth = 0,
   isAdmin,
   onRefetch,
 }: FunctionalRequirementCardProps) {
   const navigate = useNavigate()
+  const hasChildren = r.children && r.children.length > 0
+  const [collapsed, setCollapsed] = useState(false)
 
   return (
     <div
@@ -89,9 +94,28 @@ function FunctionalRequirementCard({
         className="flex items-center gap-4 px-5 py-4 cursor-pointer"
         onClick={() => navigate(`/project/${projectId}/functionality/${functionalityId}/requirement/${r.id}`)}
       >
-        <span className="font-mono text-xs text-slate-400 w-10 shrink-0">
-          #{r.id}
-        </span>
+        {/* Collapse toggle */}
+        {hasChildren ? (
+          <button
+            className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              setCollapsed((c) => !c)
+            }}
+            aria-label={collapsed ? "Expand" : "Collapse"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+        ) : (
+          <span className="w-4 shrink-0" />
+        )}
+
+        {/* Computed label */}
+        <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -127,15 +151,16 @@ function FunctionalRequirementCard({
         <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
       </div>
 
-      {r.children && r.children.length > 0 && (
+      {hasChildren && !collapsed && (
         <div className="px-5 pb-4 space-y-3">
-          {r.children.map((child) => (
+          {r.children.map((child, index) => (
             <FunctionalRequirementCard
               key={child.id}
               requirement={child}
               projectId={projectId}
               functionalityId={functionalityId}
               priorityStyle={priorityStyle}
+              label={`${label}.${index + 1}`}
               depth={depth + 1}
               isAdmin={isAdmin}
               onRefetch={onRefetch}
@@ -204,6 +229,9 @@ function FunctionalityView() {
 
   const pendingCount = countPending(requirements)
   const priorityStyle = (functionality?.priorityStyle ?? "TERNARY") as PriorityStyle
+
+  // Derive the prefix from the functionality label (e.g. "User Management" → "UM", or use label directly if already short)
+  const functionalityPrefix = functionality?.label ?? "FR"
 
   const handleEditFunctionality = () => {
   }
@@ -318,13 +346,14 @@ function FunctionalityView() {
                 No functional requirements found.
               </p>
             ) : (
-              requirements.map((r) => (
+              requirements.map((r, index) => (
                 <FunctionalRequirementCard
                   key={r.id}
                   requirement={r}
                   projectId={projectId!}
                   functionalityId={functionalityId!}
                   priorityStyle={priorityStyle}
+                  label={`${functionalityPrefix}.${index + 1}`}
                   isAdmin={!!user?.isAdmin}
                   onRefetch={refreshRequirements}
                 />
