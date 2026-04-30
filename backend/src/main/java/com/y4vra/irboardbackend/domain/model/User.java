@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "app_user") // "user" is a reserved word in SQL
-public class User extends LockableImpl {
+public class User implements Lockable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,4 +48,5 @@ public class User extends LockableImpl {
 
     public String getPendingActivationToken() { return pendingActivationToken; }
     public void setPendingActivationToken(String pendingActivationToken) { this.pendingActivationToken = pendingActivationToken; }
+
 }

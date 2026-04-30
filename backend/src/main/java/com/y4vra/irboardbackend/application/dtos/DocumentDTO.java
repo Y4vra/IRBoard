@@ -11,9 +11,5 @@ public record DocumentDTO(
         Long projectId,
 
         // This is populated by the Service using the MinIO SDK.
-        String accessUrl,
-
-        UserDTO modificatingUser,
-        LocalDateTime startModificationDate,
-        Boolean isLocked
+        String accessUrl
 ) implements Serializable {}

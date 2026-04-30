@@ -15,9 +15,5 @@ public record StakeholderDTO (
      String description,
      String state,
      @NotNull(message = "The project ID is mandatory")
-     Long projectId,
-
-     UserDTO modificatingUser,
-     LocalDateTime startModificationDate,
-     Boolean isLocked
+     Long projectId
 ) implements Serializable {}

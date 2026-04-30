@@ -4,7 +4,7 @@ import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import jakarta.persistence.*;
 
 @Entity
-public class Stakeholder extends LockableImpl {
+public class Stakeholder implements Lockable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

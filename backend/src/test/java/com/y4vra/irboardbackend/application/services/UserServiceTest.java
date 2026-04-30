@@ -56,10 +56,8 @@ class UserServiceTest {
         user.setSurname("Carrasco");
         user.setActive(true);
         user.setIsAdmin(false);
-        user.setModifyingUser(null);
-        user.setStartModificationDate(null);
 
-        userDTO = new UserDTO(userId, "javier@example.com", "Javier", "Carrasco", true, false,null,null,false);
+        userDTO = new UserDTO(userId, "javier@example.com", "Javier", "Carrasco", true, false);
     }
 
     @Test
@@ -102,7 +100,7 @@ class UserServiceTest {
 
     @Test
     void inviteUser_basicUser_createsIdentitySendsCodeAndPersists() {
-        UserDTO dto = new UserDTO(null, "new@example.com", "New", "User", null, false,null,null,false);
+        UserDTO dto = new UserDTO(null, "new@example.com", "New", "User", null, false);
         User mappedUser = new User();
         mappedUser.setEmail("new@example.com");
 
@@ -124,7 +122,7 @@ class UserServiceTest {
 
     @Test
     void inviteUser_adminUser_createsKetoAdminRelation() {
-        UserDTO dto = new UserDTO(null, "admin@example.com", "Admin", "User", null, true,null,null,false);
+        UserDTO dto = new UserDTO(null, "admin@example.com", "Admin", "User", null, true);
         User mappedUser = new User();
         mappedUser.setEmail("admin@example.com");
 
@@ -139,8 +137,8 @@ class UserServiceTest {
 
     @Test
     void updateUser_updatesNameAndSurnameAndPersists() {
-        UserDTO updateDTO = new UserDTO(userId, "javier@example.com", "Javi", "Updated", true, false,null,null,false);
-        UserDTO updatedResult = new UserDTO(userId, "javier@example.com", "Javi", "Updated", true, false,null,null,false);
+        UserDTO updateDTO = new UserDTO(userId, "javier@example.com", "Javi", "Updated", true, false);
+        UserDTO updatedResult = new UserDTO(userId, "javier@example.com", "Javi", "Updated", true, false);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);

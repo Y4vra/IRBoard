@@ -14,9 +14,5 @@ public record FunctionalRequirementDTO(
         Long parentId,
         Float orderValue,
         String state,
-        List<FunctionalRequirementDTO> children,
-
-        UserDTO modificatingUser,
-        LocalDateTime startModificationDate,
-        Boolean isLocked
+        List<FunctionalRequirementDTO> children
 ) implements Serializable {}

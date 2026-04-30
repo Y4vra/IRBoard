@@ -9,7 +9,7 @@ import java.util.Set;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "requirement_type")
-public abstract class Requirement extends LockableImpl {
+public abstract class Requirement implements Lockable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

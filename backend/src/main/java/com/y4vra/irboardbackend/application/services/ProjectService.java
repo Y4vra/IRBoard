@@ -4,7 +4,10 @@ import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.application.mappers.ProjectMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -19,11 +22,13 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectMapper projectMapper;
     private final PermissionService permService;
+    private final EntityLockService entityLockService;
 
-    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper,PermissionService permService) {
+    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper,PermissionService permService, EntityLockService entityLockService) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.permService = permService;
+        this.entityLockService = entityLockService;
     }
 
     @Transactional(readOnly = true)
@@ -64,5 +69,28 @@ public class ProjectService {
         return projectRepository.findById(id)
                 .map(projectMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+    }
+
+    @Transactional
+    public void requestEdit(Long id, User user) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        entityLockService.lock(project, user); // throws LockableEntityException if locked by another
+    }
+
+    @Transactional
+    public ProjectDTO patch(Long id, ProjectDTO patch, User user) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+
+        if (!entityLockService.isLockedByUser(project, user)) {
+            throw new LockableEntityException("You do not hold the lock for this project");
+        }
+
+        if (patch.name() != null) project.setName(patch.name());
+        if (patch.description() != null) project.setDescription(patch.description());
+        if (patch.priorityStyle() != null) project.setPriorityStyle(PriorityStyle.valueOf(patch.priorityStyle()));
+
+        return projectMapper.toDto(projectRepository.save(project));
     }
 }

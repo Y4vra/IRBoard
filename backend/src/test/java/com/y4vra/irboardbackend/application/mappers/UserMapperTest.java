@@ -48,7 +48,7 @@ class UserMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        UserDTO dto = new UserDTO(2L, "admin@example.com", "Admin", "User", true, true,null,null,false);
+        UserDTO dto = new UserDTO(2L, "admin@example.com", "Admin", "User", true, true);
 
         User entity = mapper.toEntity(dto);
 

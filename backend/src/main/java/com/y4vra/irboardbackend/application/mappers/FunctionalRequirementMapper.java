@@ -11,12 +11,6 @@ import java.util.List;
 @Component
 public class FunctionalRequirementMapper {
 
-    private final UserMapper userMapper;
-
-    public FunctionalRequirementMapper(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
-
     public FunctionalRequirementDTO toDto(FunctionalRequirement entity) {
         if (entity == null) return null;
 
@@ -45,10 +39,7 @@ public class FunctionalRequirementMapper {
                 entity.getParent() != null ? entity.getParent().getId() : null,
                 entity.getOrderValue(),
                 entity.getState().name(),
-                childDtos,
-                userMapper.toDto(entity.getModifyingUser()),
-                entity.getStartModificationDate(),
-                entity.isLocked()
+                childDtos
         );
     }
 
@@ -62,8 +53,6 @@ public class FunctionalRequirementMapper {
         entity.setFunctionality(functionality);
         entity.setPriority(dto.priority());
         entity.setStability(dto.stability());
-        entity.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
-        entity.setStartModificationDate(dto.startModificationDate());
 
         return entity;
     }

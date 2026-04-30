@@ -12,7 +12,7 @@ import java.util.Set;
         }
 )
 @Entity
-public class Functionality extends LockableImpl {
+public class Functionality implements Lockable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

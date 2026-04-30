@@ -19,9 +19,5 @@ public record ProjectDTO(
         @Pattern(regexp = "TERNARY|MOSCOW", message = "Priority style must be TERNARY or MOSCOW")
         String priorityStyle,
         String state,
-        Integer requirementCount,
-
-        UserDTO modificatingUser,
-        LocalDateTime startModificationDate,
-        Boolean isLocked
+        Integer requirementCount
 ) implements Serializable {}

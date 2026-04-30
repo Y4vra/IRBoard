@@ -16,9 +16,5 @@ public record NonFunctionalRequirementDTO(
         Double actualValue,
         Long projectId,
         Long parentId,
-        List<NonFunctionalRequirementDTO> children,
-
-         UserDTO modificatingUser,
-        LocalDateTime startModificationDate,
-        Boolean isLocked
+        List<NonFunctionalRequirementDTO> children
 ) implements Serializable {}

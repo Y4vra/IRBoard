@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-public class Document extends LockableImpl{
+public class Document implements Lockable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

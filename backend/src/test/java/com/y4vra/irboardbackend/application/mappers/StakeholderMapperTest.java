@@ -15,7 +15,7 @@ class StakeholderMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new StakeholderMapper(new UserMapper());
+        mapper = new StakeholderMapper();
     }
 
     @Test
@@ -50,7 +50,7 @@ class StakeholderMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.ACTIVE.name(), 2L,null,null,false);
+        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.ACTIVE.name(), 2L);
 
         Stakeholder entity = mapper.toEntity(dto);
 

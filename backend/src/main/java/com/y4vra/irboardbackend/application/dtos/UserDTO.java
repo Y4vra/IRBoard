@@ -22,10 +22,6 @@ public record UserDTO(
         String surname,
 
         Boolean active,
-        Boolean isAdmin,
-
-        UserDTO modificatingUser,
-        LocalDateTime startModificationDate,
-        Boolean isLocked
+        Boolean isAdmin
 
 ) implements Serializable {}

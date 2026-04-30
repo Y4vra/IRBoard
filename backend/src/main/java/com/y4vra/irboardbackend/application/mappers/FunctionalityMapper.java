@@ -8,12 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class FunctionalityMapper {
 
-    private UserMapper userMapper = new UserMapper();
-
-    public FunctionalityMapper(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
-
     public FunctionalityDTO toDto(Functionality functionality) {
         if (functionality == null) return null;
 
@@ -24,10 +18,7 @@ public class FunctionalityMapper {
         functionality.getLabel(),
         functionality.getState().toString(),
         functionality.getProject().getId(),
-        functionality.getProject().getPriorityStyle().toString(),
-        userMapper.toDto(functionality.getModifyingUser()),
-        functionality.getStartModificationDate(),
-        functionality.isLocked()
+        functionality.getProject().getPriorityStyle().toString()
         );
 
     }
@@ -41,8 +32,6 @@ public class FunctionalityMapper {
         functionality.setDescription(dto.description());
         functionality.setLabel(dto.label());
         functionality.setState(EntityState.valueOf(dto.state()));
-        functionality.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
-        functionality.setStartModificationDate(dto.startModificationDate());
 
         return functionality;
     }

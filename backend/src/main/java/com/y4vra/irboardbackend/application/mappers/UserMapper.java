@@ -9,7 +9,6 @@ public class UserMapper {
 
     public UserDTO toDto(User user) {
         if (user == null) return null;
-        UserDTO modifyingUser = toDto(user.getModifyingUser());
 
         return new UserDTO(
                 user.getId(),
@@ -17,10 +16,7 @@ public class UserMapper {
                 user.getName(),
                 user.getSurname(),
                 user.getActive(),
-                user.getIsAdmin(),
-                modifyingUser,
-                user.getStartModificationDate(),
-                user.isLocked()
+                user.getIsAdmin()
         );
     }
 
@@ -34,8 +30,6 @@ public class UserMapper {
         user.setSurname(dto.surname());
         user.setActive(dto.active());
         user.setIsAdmin(dto.isAdmin());
-        user.setStartModificationDate(dto.startModificationDate());
-        user.setModifyingUser(toEntity(dto.modificatingUser()));
 
         return user;
     }

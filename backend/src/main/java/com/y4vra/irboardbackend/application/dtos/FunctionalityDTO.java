@@ -21,9 +21,5 @@ public record FunctionalityDTO(
     String state,
     @NotNull(message = "The project ID is mandatory")
     Long projectId,
-    String priorityStyle,
-
-    UserDTO modificatingUser,
-    LocalDateTime startModificationDate,
-    Boolean isLocked
+    String priorityStyle
 ) implements Serializable{}

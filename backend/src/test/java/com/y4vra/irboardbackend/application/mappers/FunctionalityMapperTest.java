@@ -16,7 +16,7 @@ class FunctionalityMapperTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new FunctionalityMapper(new UserMapper());
+        mapper = new FunctionalityMapper();
     }
 
     @Test
@@ -52,7 +52,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        FunctionalityDTO dto = new FunctionalityDTO(2L, "Authentication", "description", "AU", "DEACTIVATED", 5L, "TERNARY",null,null,false);
+        FunctionalityDTO dto = new FunctionalityDTO(2L, "Authentication", "description", "AU", "DEACTIVATED", 5L, "TERNARY");
 
         Functionality entity = mapper.toEntity(dto);
 
@@ -64,7 +64,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_throwsWhenStateIsInvalid() {
-        FunctionalityDTO dto = new FunctionalityDTO(1L, "Name","description", "NM", "INVALID_STATE", 1L,"TERNARY",null,null,false);
+        FunctionalityDTO dto = new FunctionalityDTO(1L, "Name","description", "NM", "INVALID_STATE", 1L,"TERNARY");
 
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalArgumentException.class,

@@ -61,7 +61,7 @@ class DocumentServiceTest {
         document.setFileSize(1024L);
         document.setProject(project);
 
-        documentDTO = new DocumentDTO(documentId, "spec.pdf", "application/pdf", 1024L, projectId, presignedUrl,null,null,false);
+        documentDTO = new DocumentDTO(documentId, "spec.pdf", "application/pdf", 1024L, projectId, presignedUrl);
     }
 
     @Test
@@ -121,7 +121,7 @@ class DocumentServiceTest {
 
     @Test
     void uploadDocument_savesDocumentAndCreatesKetoRelations() {
-        DocumentDTO inputDto = new DocumentDTO(null, "spec.pdf", "application/pdf", 1024L, projectId, null,null,null,false);
+        DocumentDTO inputDto = new DocumentDTO(null, "spec.pdf", "application/pdf", 1024L, projectId, null);
         when(permService.checkPermission("Project", "1", "write", OryId)).thenReturn(true);
         when(documentMapper.toEntity(inputDto)).thenReturn(document);
         when(documentRepository.save(document)).thenReturn(document);
@@ -137,7 +137,7 @@ class DocumentServiceTest {
 
     @Test
     void uploadDocument_throwsAccessDeniedWhenNotAuthorized() {
-        DocumentDTO inputDto = new DocumentDTO(null, "spec.pdf", "application/pdf", 1024L, projectId, null,null,null,false);
+        DocumentDTO inputDto = new DocumentDTO(null, "spec.pdf", "application/pdf", 1024L, projectId, null);
         when(permService.checkPermission("Project", "1", "write", OryId)).thenReturn(false);
 
         assertThatThrownBy(() -> documentService.uploadDocument(inputDto, projectId, OryId))

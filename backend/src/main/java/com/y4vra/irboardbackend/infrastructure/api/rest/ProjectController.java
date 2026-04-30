@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.*;
 import com.y4vra.irboardbackend.application.services.*;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +24,15 @@ public class ProjectController {
     private final NonFunctionalRequirementService nonFunctionalRequirementService;
     private final DocumentService documentService;
 
-    public ProjectController(ProjectService projectService, FunctionalityService functionalityService, StakeholderService stakeholderService, NonFunctionalRequirementService nonFunctionalRequirementService, DocumentService documentService) {
+    private final EntityLockService entityLockService;
+
+    public ProjectController(ProjectService projectService, FunctionalityService functionalityService, StakeholderService stakeholderService, NonFunctionalRequirementService nonFunctionalRequirementService, DocumentService documentService, EntityLockService entityLockService) {
         this.projectService = projectService;
         this.functionalityService = functionalityService;
         this.stakeholderService = stakeholderService;
         this.nonFunctionalRequirementService = nonFunctionalRequirementService;
         this.documentService = documentService;
+        this.entityLockService = entityLockService;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -53,12 +57,31 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}/nonFunctionalRequirements")
-    public List<NonFunctionalRequirementDTO> getNonFunctionalRequirements(Authentication authentication,@PathVariable Long id) {
-        return nonFunctionalRequirementService.findNonFunctionalRequirementsOfProject(((User) authentication.getPrincipal()).getOryId(),id);
+    public ResponseEntity<List<NonFunctionalRequirementDTO>> getNonFunctionalRequirements(Authentication authentication,@PathVariable Long id) {
+        return ResponseEntity.ok(nonFunctionalRequirementService.findNonFunctionalRequirementsOfProject(((User) authentication.getPrincipal()).getOryId(),id));
     }
 
     @GetMapping("/{id}/documents")
-    public List<DocumentDTO> getDocuments(Authentication authentication,@PathVariable Long id) {
-        return documentService.findDocumentsOfProject(((User) authentication.getPrincipal()).getOryId(),id);
+    public ResponseEntity<List<DocumentDTO>> getDocuments(Authentication authentication,@PathVariable Long id) {
+        return ResponseEntity.ok(documentService.findDocumentsOfProject(((User) authentication.getPrincipal()).getOryId(),id));
+    }
+
+    @GetMapping("/{id}/requestEdit")
+    public ResponseEntity<Boolean> requestEdit(Authentication authentication, @PathVariable Long id) {
+        User user = (User) authentication.getPrincipal();
+        try {
+            projectService.requestEdit(id, user);
+            return ResponseEntity.ok(true);
+        } catch (LockableEntityException e) {
+            return ResponseEntity.ok(false);
+        }
+    }
+
+    @PatchMapping("/{id}/modify")
+    public ResponseEntity<ProjectDTO> modify(Authentication authentication,
+                                             @PathVariable Long id,
+                                             @RequestBody ProjectDTO patch) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(projectService.patch(id, patch, user));
     }
 }

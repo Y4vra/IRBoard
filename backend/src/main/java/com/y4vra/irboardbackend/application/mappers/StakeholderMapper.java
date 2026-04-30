@@ -8,12 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class StakeholderMapper {
 
-    private UserMapper userMapper = new UserMapper();
-
-    public StakeholderMapper(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
-
     public StakeholderDTO toDto(Stakeholder stakeholder) {
         if (stakeholder == null) return null;
 
@@ -22,10 +16,7 @@ public class StakeholderMapper {
             stakeholder.getName(),
             stakeholder.getDescription(),
             stakeholder.getState().name(),
-            stakeholder.getProject().getId(),
-            userMapper.toDto(stakeholder.getModifyingUser()),
-            stakeholder.getStartModificationDate(),
-            stakeholder.isLocked()
+            stakeholder.getProject().getId()
         );
     }
 
@@ -37,8 +28,6 @@ public class StakeholderMapper {
         stakeholder.setName(dto.name());
         stakeholder.setDescription(dto.description());
         stakeholder.setState(EntityState.valueOf(dto.state()));
-        stakeholder.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
-        stakeholder.setStartModificationDate(dto.startModificationDate());
 
         return stakeholder;
     }

@@ -8,15 +8,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DocumentMapper {
 
-    private UserMapper userMapper = new UserMapper();
-
-    public DocumentMapper(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
-
     public DocumentDTO toDto(Document entity, String accessUrl) {
         if (entity == null) return null;
-        UserDTO modifyingUser = userMapper.toDto(entity.getModifyingUser());
 
         return new DocumentDTO(
             entity.getId(),
@@ -24,10 +17,7 @@ public class DocumentMapper {
             entity.getMimeType(),
             entity.getFileSize(),
             entity.getProject() != null? entity.getProject().getId():null,
-            accessUrl,
-            modifyingUser,
-            entity.getStartModificationDate(),
-            entity.isLocked()
+            accessUrl
         );
     }
 
@@ -39,8 +29,6 @@ public class DocumentMapper {
         entity.setFileName(dto.fileName());
         entity.setMimeType(dto.mimeType());
         entity.setFileSize(dto.fileSize());
-        entity.setModifyingUser(userMapper.toEntity(dto.modificatingUser()));
-        entity.setStartModificationDate(dto.startModificationDate());
 
         return entity;
     }
