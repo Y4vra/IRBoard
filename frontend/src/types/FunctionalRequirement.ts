@@ -1,5 +1,3 @@
-import type { User } from "./User";
-
 export interface FunctionalRequirement {
   id: number;
   identifier: string;
@@ -12,8 +10,4 @@ export interface FunctionalRequirement {
   orderValue: number;
   state: string;
   children: FunctionalRequirement[];
-
-  modificatingUser: User;
-  startModificationDate: Date;
-  isLocked: boolean;
 }

@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useLocks } from "@/hooks/useLocks";
+import { LockIndicator } from "@/components/LockIndicator";
+import { EntityType } from "@/lib/lockUtils";
 
 function Home() {
   const [projects, setProjects] = useState<Project[] | null>(null)
@@ -17,6 +20,7 @@ function Home() {
   const [error, setError] = useState<string | null>(null);
 
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { getLock } = useLocks();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -118,9 +122,12 @@ function Home() {
                   <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">
                     {project.priorityStyle}
                   </Badge>
-                  <Badge variant="outline" className="capitalize">
-                    {project.state.toLowerCase()}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <LockIndicator lock={getLock(EntityType.PROJECT, Number(project.id))} />
+                    <Badge variant="outline" className="capitalize">
+                      {project.state.toLowerCase()}
+                    </Badge>
+                  </div>
                 </div>
                 <CardTitle className="text-xl line-clamp-1">{project.name}</CardTitle>
                 <CardDescription className="line-clamp-3 min-h-[4.5rem]">

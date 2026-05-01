@@ -1,5 +1,3 @@
-import type { User } from "./User";
-
 export type FunctionalityState = "ACTIVE" | "DEACTIVATED";
 
 export interface Functionality {
@@ -10,10 +8,6 @@ export interface Functionality {
   state: FunctionalityState;
   projectId: number;
   priorityStyle: string;
-  
-  modificatingUser: User;
-  startModificationDate: Date;
-  isLocked: boolean;
 }
 
 export type Permission = "edit" | "view" | "none";

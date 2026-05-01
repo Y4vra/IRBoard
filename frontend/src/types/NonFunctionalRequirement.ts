@@ -1,5 +1,3 @@
-import type { User } from "./User";
-
 export interface NonFunctionalRequirement {
   id: number;
   identifier: string;
@@ -14,8 +12,4 @@ export interface NonFunctionalRequirement {
   projectId: number,
   parentId: number,
   children: NonFunctionalRequirement[],
-
-  modificatingUser: User,
-  startModificationDate: Date,
-  isLocked: boolean
 }

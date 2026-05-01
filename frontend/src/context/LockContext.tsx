@@ -19,8 +19,8 @@ export function LockProvider({ children, projectId }: LockProviderProps) {
     const run = async () => {
       try {
         const url = projectId
-          ? `${API_BASE_URL}/projectLocks/${projectId}`
-          : `${API_BASE_URL}/systemLocks`;
+          ? `${API_BASE_URL}/locks/projectLocks/${projectId}`
+          : `${API_BASE_URL}/locks/systemLocks`;
 
         const res = await fetch(url, {
           credentials: "include",
