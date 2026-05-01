@@ -16,6 +16,8 @@ import NonFunctionalRequirementsView from './pages/Project/NonFunctionalRequirem
 import NonFunctionalRequirementDetailView from './pages/Project/nfr/NonFunctionalRequirementDetailView'
 import FunctionalityView from './pages/Project/FunctionalityView'
 import { LockProvider } from './context/LockContext'
+import EditProject from './pages/Project/EditProject'
+import { TooltipProvider } from './components/ui/tooltip'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -37,6 +39,7 @@ const ProjectLockWrapper = () => {
 
 function App() {
   return (
+    <TooltipProvider>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
@@ -52,6 +55,7 @@ function App() {
               </Route>
               <Route element={<ProjectLockWrapper />}>
                 <Route path="/project/:id" element={<ProjectView/>}/>
+                <Route path="/project/:id/edit" element={<EditProject/>}/>
                 <Route path="/project/:projectId/functionalities/:functionalityId" element={<FunctionalityView/>}/>
                 <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
                 <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>
@@ -71,6 +75,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </AuthProvider>
+    </TooltipProvider>
   )
 }
 

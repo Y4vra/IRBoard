@@ -29,7 +29,7 @@
 
 - id: "api-backend-protected"
   match:
-    methods: ["GET", "POST", "PUT", "DELETE"]
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
     url: "http://api.irboard.local/v1/<(users|home|projects|whoami|locks).*>"
   authenticators:
     - handler: "cookie_session"

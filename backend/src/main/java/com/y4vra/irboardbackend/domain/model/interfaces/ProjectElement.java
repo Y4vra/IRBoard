@@ -1,9 +1,13 @@
 package com.y4vra.irboardbackend.domain.model.interfaces;
 
 import com.y4vra.irboardbackend.domain.model.EntityLock;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 
+@MappedSuperclass
 public abstract class ProjectElement implements Lockable {
 
+    @Column(name="projectElementProjectId")
     private Long projectId;
 
     @Override

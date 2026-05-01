@@ -73,6 +73,7 @@ public class ProjectController {
             projectService.requestEdit(id, user);
             return ResponseEntity.ok(true);
         } catch (LockableEntityException e) {
+            System.err.println(e.getMessage());
             return ResponseEntity.ok(false);
         }
     }

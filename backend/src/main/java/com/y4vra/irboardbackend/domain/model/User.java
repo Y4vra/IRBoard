@@ -4,6 +4,8 @@ import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectIndependentElement;
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "app_user") // "user" is a reserved word in SQL
 public class User extends ProjectIndependentElement {
@@ -51,4 +53,15 @@ public class User extends ProjectIndependentElement {
     public String getPendingActivationToken() { return pendingActivationToken; }
     public void setPendingActivationToken(String pendingActivationToken) { this.pendingActivationToken = pendingActivationToken; }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id) && Objects.equals(oryId, user.oryId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, oryId);
+    }
 }
