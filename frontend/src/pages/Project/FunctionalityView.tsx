@@ -26,6 +26,9 @@ import type { FunctionalRequirement } from "../../types/FunctionalRequirement"
 import type { Functionality } from "@/types/Functionality"
 import { RequirementState } from "@/types/enum/RequirementState"
 import { CreateFunctionalRequirementDialog } from "@/components/CreateFunctionalRequirementDialog"
+import { useLocks } from "@/hooks/useLocks"
+import { LockIndicator } from "@/components/LockIndicator"
+import { EntityType } from "@/lib/lockUtils"
 
 type PriorityStyle = "MOSCOW" | "TERNARY"
 
@@ -80,6 +83,7 @@ function FunctionalRequirementCard({
   isAdmin,
   onRefetch,
 }: FunctionalRequirementCardProps) {
+  const {getLock} = useLocks();
   const navigate = useNavigate()
   const hasChildren = r.children && r.children.length > 0
   const [collapsed, setCollapsed] = useState(false)
@@ -132,6 +136,7 @@ function FunctionalRequirementCard({
         </div>
 
         <div className="shrink-0 flex items-center gap-3">
+          <LockIndicator lock={getLock(EntityType.FUNCTIONAL_REQUIREMENT, r.id)} />
           <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
           <RequirementStateBadge state={r.state} />
         </div>

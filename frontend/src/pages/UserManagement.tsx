@@ -17,8 +17,12 @@ import { InviteUserDialog } from "@/components/InviteUserDialog"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import type { User } from "@/types/User"
 import { useBackendResource } from "@/hooks/useBackendResource"
+import { useLocks } from "@/hooks/useLocks"
+import { LockIndicator } from "@/components/LockIndicator"
+import { EntityType } from "@/lib/lockUtils"
 
 function UserManagement() {
+  const { getLock } = useLocks();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -115,11 +119,14 @@ function UserManagement() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {user.isAdmin && (
-                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                        System Admin
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <LockIndicator lock={getLock(EntityType.USER, user.id)} />
+                      {user.isAdmin && (
+                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                          System Admin
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button 

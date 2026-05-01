@@ -18,9 +18,13 @@ import LoadingSpinner from "@/components/LoadingSpinner"
 import { CreateStakeholderDialog } from "@/components/CreateStakeholderDialog"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { Stakeholder } from "@/types/Stakeholder"
+import { useLocks } from "@/hooks/useLocks"
+import { LockIndicator } from "@/components/LockIndicator"
+import { EntityType } from "@/lib/lockUtils"
 
 
 function StakeholdersView() {
+  const { getLock } = useLocks()
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -85,16 +89,19 @@ const stakeholders = data ?? [];
                   <TableCell className="font-medium">{s.name}</TableCell>
                   <TableCell className="max-w-xs truncate text-slate-500">{s.description}</TableCell>
                   <TableCell>
-                    {s.pendingReview && (
-                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 uppercase text-[10px] mr-2">
-                        Pending Review
-                      </Badge>
-                    )}
-                    {s.state=="ACTIVE" ? (
-                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">Active</Badge>
-                    ) : (
-                      <Badge variant="destructive" className="uppercase text-[10px]">Deactivated</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <LockIndicator lock={getLock(EntityType.STAKEHOLDER, s.id)} />
+                      {s.pendingReview && (
+                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 uppercase text-[10px]">
+                          Pending Review
+                        </Badge>
+                      )}
+                      {s.state === "ACTIVE" ? (
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">Active</Badge>
+                      ) : (
+                        <Badge variant="destructive" className="uppercase text-[10px]">Deactivated</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <ChevronRight className="h-4 w-4 ml-auto text-slate-400" />

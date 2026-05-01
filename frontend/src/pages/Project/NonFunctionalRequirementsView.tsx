@@ -10,6 +10,9 @@ import { CreateNonFunctionalRequirementDialog } from "../../components/CreateNon
 import { RequirementStateBadge } from "@/components/RequirementStateBadge"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement"
+import { useLocks } from "@/hooks/useLocks"
+import { LockIndicator } from "@/components/LockIndicator"
+import { EntityType } from "@/lib/lockUtils"
 
 // ─── Recursive card ──────────────────────────────────────────────────────────
 
@@ -23,6 +26,7 @@ interface NFRCardProps {
 }
 
 function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefetch }: NFRCardProps) {
+  const { getLock } = useLocks()
   const navigate = useNavigate()
   const hasChildren = r.children && r.children.length > 0
   const [collapsed, setCollapsed] = useState(false)
@@ -70,7 +74,8 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
         </div>
 
         {/* Status */}
-        <div className="shrink-0">
+        <div className="shrink-0 flex items-center gap-2">
+          <LockIndicator lock={getLock(EntityType.NON_FUNCTIONAL_REQUIREMENT, r.id)} />
           <RequirementStateBadge state={r.state} />
         </div>
 

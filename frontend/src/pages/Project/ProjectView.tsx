@@ -22,6 +22,9 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { CreateFunctionalityDialog } from "../../components/NewFunctionalityDialog";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import type { Permission, Functionality, FunctionalitiesResponse } from "@/types/Functionality";
+import { useLocks } from "@/hooks/useLocks";
+import { LockIndicator } from "@/components/LockIndicator";
+import { EntityType } from "@/lib/lockUtils";
 
 const permissionConfig: Record<
   Permission,
@@ -67,6 +70,7 @@ function FunctionalityCard({
   permission: Permission;
   projectId: string;
 }) {
+  const { getLock } = useLocks();
   const config = permissionConfig[permission];
   const isDisabled = permission === "none";
 
@@ -92,12 +96,13 @@ function FunctionalityCard({
             )}
           </div>
         </div>
-        <Badge
-          className={`ml-2 shrink-0 text-xs border font-medium flex items-center gap-1 ${config.badgeClass}`}
-        >
-          {config.icon}
-          {config.label}
-        </Badge>
+        <div className="flex items-center gap-2 ml-2 shrink-0">
+          <LockIndicator lock={getLock(EntityType.FUNCTIONALITY, Number(functionality.id))} />
+          <Badge className={`text-xs border font-medium flex items-center gap-1 ${config.badgeClass}`}>
+            {config.icon}
+            {config.label}
+          </Badge>
+        </div>
       </CardHeader>
     </Card>
   );
