@@ -1,10 +1,12 @@
 package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
+import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
 
 @Entity
-public class Stakeholder implements Lockable {
+public class Stakeholder extends ProjectElement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

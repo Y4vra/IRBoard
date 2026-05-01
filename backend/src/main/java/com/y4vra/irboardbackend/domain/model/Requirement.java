@@ -1,6 +1,8 @@
 package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
+import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
+import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -9,7 +11,7 @@ import java.util.Set;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "requirement_type")
-public abstract class Requirement implements Lockable {
+public abstract class Requirement extends ProjectElement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

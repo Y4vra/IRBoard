@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useParams } from 'react-router-dom'
 
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -15,6 +15,7 @@ import StakeholderDetailView from './pages/Project/stakeholder/StakeholderDetail
 import NonFunctionalRequirementsView from './pages/Project/NonFunctionalRequirementsView'
 import NonFunctionalRequirementDetailView from './pages/Project/nfr/NonFunctionalRequirementDetailView'
 import FunctionalityView from './pages/Project/FunctionalityView'
+import { LockProvider } from './context/LockContext'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -24,6 +25,15 @@ const WindowLayout = () => (
     </main>
   </div>
 );
+
+const ProjectLockWrapper = () => {
+  const { projectId } = useParams();
+  return (
+    <LockProvider projectId={projectId ? Number(projectId) : undefined}>
+      <Outlet />
+    </LockProvider>
+  );
+};
 
 function App() {
   return (
@@ -35,21 +45,26 @@ function App() {
           <Route path="/error" element={<ErrorPage />}/>
           <Route element={<ProtectedRoute />}>
             <Route element={<WindowLayout />}>
-              <Route path="/" element={<Home />}/>
-              <Route path="/home" element={<Home />}/>
-              <Route path="/projects/new" element={<NewProject />}/>
-              <Route path="/project/:id" element={<ProjectView/>}/>
-              <Route path="/project/:projectId/functionalities/:functionalityId" element={<FunctionalityView/>}/>
-              <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
-              <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>
-              <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
-              <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>
-              
+              <Route element={<LockProvider><Outlet /></LockProvider>}>
+                <Route path="/" element={<Home />}/>
+                <Route path="/home" element={<Home />}/>
+                <Route path="/projects/new" element={<NewProject />}/>
+              </Route>
+              <Route element={<ProjectLockWrapper />}>
+                <Route path="/project/:id" element={<ProjectView/>}/>
+                <Route path="/project/:projectId/functionalities/:functionalityId" element={<FunctionalityView/>}/>
+                <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
+                <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>
+                <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
+                <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>
+              </Route>
             </Route>
           </Route>
           <Route element={<ProtectedRoute adminOnly={true}/>}>
             <Route element={<WindowLayout />}>
-              <Route path="/admin/users" element={<UserManagement />} />
+              <Route element={<LockProvider><Outlet /></LockProvider>}>
+                <Route path="/admin/users" element={<UserManagement />} />
+              </Route>
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/error" state={{ from: location.pathname, errorType: "route" }} replace />} />

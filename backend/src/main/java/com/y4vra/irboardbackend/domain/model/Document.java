@@ -1,11 +1,11 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
+import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
-
 @Entity
-public class Document implements Lockable {
+public class Document extends ProjectElement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,10 +1,12 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
+import com.y4vra.irboardbackend.domain.model.interfaces.ProjectIndependentElement;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "app_user") // "user" is a reserved word in SQL
-public class User implements Lockable {
+public class User extends ProjectIndependentElement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

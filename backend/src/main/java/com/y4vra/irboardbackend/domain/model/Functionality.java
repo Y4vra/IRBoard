@@ -1,6 +1,8 @@
 package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
+import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -12,7 +14,7 @@ import java.util.Set;
         }
 )
 @Entity
-public class Functionality implements Lockable {
+public class Functionality extends ProjectElement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

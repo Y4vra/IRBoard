@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
+import com.y4vra.irboardbackend.domain.model.interfaces.ProjectIndependentElement;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "project")
-public class Project implements Lockable {
+public class Project extends ProjectIndependentElement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
