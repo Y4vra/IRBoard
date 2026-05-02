@@ -10,6 +10,7 @@ import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
+import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ public class FunctionalRequirementService extends RequirementService {
         Functionality f = functionality.get();
         FunctionalRequirement fr = frMapper.toEntity(dto,f);
         fr.setProjectId(f.getProjectId());
-        fr.setEntityIdentifier(f.getProjectId()+"-FR-"+ UUID.randomUUID().toString());
+        EntitySlugGenerator.setSlug(fr,f.getProjectId());
         fr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
             FunctionalRequirement frParent = frRepository.findById(dto.parentId())

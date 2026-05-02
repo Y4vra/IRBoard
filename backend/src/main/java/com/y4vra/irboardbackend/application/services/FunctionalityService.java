@@ -9,6 +9,7 @@ import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
+import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
@@ -91,7 +92,7 @@ public class FunctionalityService {
 
         Functionality functionality = new Functionality();
         functionality.setProjectId(projectId);
-        functionality.setEntityIdentifier(projectId+"-FUNC-"+ UUID.randomUUID().toString());
+        EntitySlugGenerator.setSlug(functionality,projectId);
         functionality.setName(dto.name());
         functionality.setProject(project);
         functionality.setState(EntityState.ACTIVE);

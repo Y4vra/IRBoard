@@ -6,6 +6,7 @@ import com.y4vra.irboardbackend.application.ports.ObjectStorageService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
+import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -69,7 +70,7 @@ public class DocumentService {
         }
         Document document = documentMapper.toEntity(dto);
         document.setProjectId(projectId);
-        document.setEntityIdentifier(projectId+"-DOC-"+ UUID.randomUUID().toString());
+        EntitySlugGenerator.setSlug(document,projectId);
         Document saved = documentRepository.save(document);
 
         permService.grantPermission("Document", String.valueOf(saved.getId()), "parents", "Project:" + projectId);

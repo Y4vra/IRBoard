@@ -9,6 +9,7 @@ import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
+import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,7 @@ public class NonFunctionalRequirementService extends RequirementService {
 
         NonFunctionalRequirement nfr = nfrMapper.toEntity(dto);
         nfr.setProjectId(projectId);
-        nfr.setEntityIdentifier(projectId+"-NFR-"+ UUID.randomUUID().toString());
+        EntitySlugGenerator.setSlug(nfr,projectId);
         nfr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
             NonFunctionalRequirement nfrParent = nfrRepository.findById(dto.parentId())

@@ -10,6 +10,7 @@ import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
+import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,7 @@ public class StakeholderService {
         stakeholder.setDescription(dto.description());
         stakeholder.setProject(project);
         stakeholder.setProjectId(project.getId());
-        stakeholder.setEntityIdentifier(project.getId()+"-STKH-"+ UUID.randomUUID().toString());
+        EntitySlugGenerator.setSlug(stakeholder,project.getId());
         stakeholder.setState(EntityState.ACTIVE);
 
         Stakeholder saved = stakeholderRepository.save(stakeholder);
