@@ -1,11 +1,12 @@
 package com.y4vra.irboardbackend.application.dtos;
 
+import com.y4vra.irboardbackend.application.dtos.summaries.RequirementSummary;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.List;
 
 public record StakeholderDTO (
      Long id,
@@ -15,5 +16,6 @@ public record StakeholderDTO (
      String description,
      String state,
      @NotNull(message = "The project ID is mandatory")
-     Long projectId
+     Long projectId,
+     List<RequirementSummary> observers
 ) implements Serializable {}

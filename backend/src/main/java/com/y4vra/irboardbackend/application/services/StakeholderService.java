@@ -6,6 +6,7 @@ import com.y4vra.irboardbackend.application.mappers.StakeholderMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,15 +30,17 @@ public class StakeholderService {
     private final ProjectRepository projectRepository;
     private final StakeholderMapper stakeholderMapper;
     private final PermissionService permService;
+    private final FunctionalityService functionalityService;
 
     public StakeholderService(StakeholderRepository stakeholderRepository,
                               ProjectRepository projectRepository,
                               StakeholderMapper stakeholderMapper,
-                              PermissionService permService) {
+                              PermissionService permService, FunctionalityService functionalityService) {
         this.stakeholderRepository = stakeholderRepository;
         this.projectRepository = projectRepository;
         this.stakeholderMapper = stakeholderMapper;
         this.permService = permService;
+        this.functionalityService = functionalityService;
     }
 
     @Transactional(readOnly = true)
@@ -70,17 +74,18 @@ public class StakeholderService {
     }
     @Transactional(readOnly = true)
     public StakeholderDTO findStakeholderById(String oryId, long projectId, long stakeholderId) {
-        Optional<Stakeholder> stakeholder = stakeholderRepository.findById(stakeholderId);
+        Set<Long> viewableFunctionalities = functionalityService.getViewableFunctionalityIds(oryId, projectId);
+        Stakeholder stakeholder = stakeholderRepository.findById(stakeholderId)
+                .orElseThrow(()-> new EntityNotFoundException("Stakeholder with id " + stakeholderId + " not found"));
 
-        if(stakeholder.isEmpty()) {
-            throw new EntityNotFoundException("Stakeholder with id " + stakeholderId + " not found");
-        }
-        if(stakeholder.get().getProject().getId() != projectId){
+        if(stakeholder.getProject().getId() != projectId){
             throw new EntityNotFoundException("Stakeholder with id " + stakeholderId + " not found");
         }
         if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
             throw new AccessDeniedException("User not authorized to view stakeholders of this project");
         }
-        return stakeholderMapper.toDto(stakeholder.get());
+        List<Requirement> observers = stakeholderRepository
+                .findFilteredRequirementsForStakeholder(stakeholderId, viewableFunctionalities);
+        return stakeholderMapper.toDtoWithObservers(stakeholder, observers);
     }
 }

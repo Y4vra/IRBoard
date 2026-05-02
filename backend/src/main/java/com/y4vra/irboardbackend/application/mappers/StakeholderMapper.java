@@ -1,9 +1,13 @@
 package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
+import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
 
 @Component
 public class StakeholderMapper {
@@ -16,7 +20,20 @@ public class StakeholderMapper {
             stakeholder.getName(),
             stakeholder.getDescription(),
             stakeholder.getState().name(),
-            stakeholder.getProject().getId()
+            stakeholder.getProject().getId(),
+            List.of()
+        );
+    }
+    public StakeholderDTO toDtoWithObservers(Stakeholder stakeholder, List<Requirement> observers) {
+        if (stakeholder == null) return null;
+
+        return new StakeholderDTO(
+            stakeholder.getId(),
+            stakeholder.getName(),
+            stakeholder.getDescription(),
+            stakeholder.getState().name(),
+            stakeholder.getProject().getId(),
+            SummaryMapper.toRequirementSummaries(observers)
         );
     }
 

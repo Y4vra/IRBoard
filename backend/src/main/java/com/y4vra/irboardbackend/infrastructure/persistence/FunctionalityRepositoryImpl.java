@@ -8,10 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 interface JpaFunctionalityRepository extends JpaRepository<Functionality, Long> {
     List<Functionality> findByProjectId(Long projectId);
+    Set<Long> findIdsByProjectId(long projectId);
 }
 
 @Component
@@ -51,5 +53,10 @@ public class FunctionalityRepositoryImpl implements FunctionalityRepository {
     @Override
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public Set<Long> findIdsByProjectId(long projectId){
+        return jpaRepository.findIdsByProjectId(projectId);
     }
 }

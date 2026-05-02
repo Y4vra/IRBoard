@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class FunctionalityService {
@@ -75,6 +77,27 @@ public class FunctionalityService {
         }
         return functionalityMapper.toDto(functionality.get());
     }
+    @Transactional(readOnly = true)
+    public Set<Long> getViewableFunctionalityIds(String oryId, long projectId) {
+        // direct relations on Functionality
+        Set<Long> ids = Stream.concat(
+                permService.getAuthorizedObjects(oryId, "Functionality", "stakeholders").stream(),
+                permService.getAuthorizedObjects(oryId, "Functionality", "engineers").stream()
+        ).map(Long::parseLong).collect(Collectors.toSet());
+
+        // project-inherited: if user manages the project or is system admin,
+        // they can view all functionalities in it
+        boolean hasProjectAccess =
+                !permService.getAuthorizedObjects(oryId, "Project", "managers").isEmpty() ||
+                        !permService.getAuthorizedObjects(oryId, "System", "admins").isEmpty();
+
+        if (hasProjectAccess) {
+            ids.addAll(functionalityRepository.findIdsByProjectId(projectId));
+        }
+
+        return ids;
+    }
+
     @Transactional
     public FunctionalityDTO createFunctionality(FunctionalityDTO dto, long projectId, String oryId) {
         if(dto.projectId() != projectId){
