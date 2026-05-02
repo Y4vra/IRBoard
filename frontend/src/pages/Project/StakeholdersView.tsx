@@ -35,7 +35,7 @@ function StakeholdersView() {
   [projectId]
 );
 
-const { data, loading, error } = useBackendResource<Stakeholder[]>({
+const { data, loading, error, refresh } = useBackendResource<Stakeholder[]>({
   fetcher: fetchStakeholders,
   enabled: isAuthenticated,
 });
@@ -59,7 +59,7 @@ const stakeholders = data ?? [];
           <h1 className="text-3xl font-extrabold text-slate-900">Stakeholders</h1>
           <p className="text-slate-500 mt-1">Manage project actors and interest groups.</p>
         </div>
-        {user?.isAdmin && <CreateStakeholderDialog projectId={projectId!} onSuccess={fetchStakeholders}/>}
+        {user?.isAdmin && <CreateStakeholderDialog projectId={projectId!} onSuccess={refresh}/>}
       </header>
 
       <Card>
