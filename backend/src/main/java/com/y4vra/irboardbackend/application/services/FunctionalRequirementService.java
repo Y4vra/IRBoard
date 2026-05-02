@@ -1,14 +1,11 @@
 package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
-import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalRequirementMapper;
-import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Associations;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Functionality;
-import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
@@ -21,26 +18,24 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class FunctionalRequirementService {
+public class FunctionalRequirementService extends RequirementService {
 
     private final FunctionalRequirementRepository frRepository;
     private final FunctionalRequirementMapper frMapper;
     private final FunctionalityRepository fRepo;
-    private final FunctionalityMapper fMapper;
     private final PermissionService permService;
 
     public FunctionalRequirementService(FunctionalRequirementRepository frRepository,
                                         FunctionalRequirementMapper frMapper,
                                         FunctionalityRepository fRepo,
-                                        FunctionalityMapper fMapper,
                                         PermissionService permService) {
         this.frRepository = frRepository;
         this.frMapper = frMapper;
         this.fRepo = fRepo;
-        this.fMapper = fMapper;
         this.permService = permService;
     }
 
@@ -67,7 +62,10 @@ public class FunctionalRequirementService {
             throw new IllegalArgumentException("Functionality does not exist");
         }
 
-        FunctionalRequirement fr = frMapper.toEntity(dto,functionality.get());
+        Functionality f = functionality.get();
+        FunctionalRequirement fr = frMapper.toEntity(dto,f);
+        fr.setProjectId(f.getProjectId());
+        fr.setEntityIdentifier(f.getProjectId()+"-FR-"+ UUID.randomUUID().toString());
         fr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
             FunctionalRequirement frParent = frRepository.findById(dto.parentId())

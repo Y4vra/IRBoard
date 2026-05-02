@@ -90,6 +90,8 @@ public class FunctionalityService {
         }
 
         Functionality functionality = new Functionality();
+        functionality.setProjectId(projectId);
+        functionality.setEntityIdentifier(projectId+"-FUNC-"+ UUID.randomUUID().toString());
         functionality.setName(dto.name());
         functionality.setProject(project);
         functionality.setState(EntityState.ACTIVE);

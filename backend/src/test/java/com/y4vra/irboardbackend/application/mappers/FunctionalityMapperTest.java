@@ -28,6 +28,7 @@ class FunctionalityMapperTest {
     void toDto_mapsAllFields() {
         Project project = new Project();
         project.setId(10L);
+        project.setPriorityStyle(PriorityStyle.TERNARY);
 
         Functionality functionality = new Functionality();
         functionality.setId(1L);

@@ -94,7 +94,6 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void findNonFunctionalRequirementsOfProject_returnsEmptyListWhenNoneExist() {
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(nfrRepository.findAllByProjectId(projectId)).thenReturn(List.of());
 

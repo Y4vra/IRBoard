@@ -1,0 +1,22 @@
+@startuml ObservationFlows
+title Observations between entities
+
+abstract class Requirement {}
+
+class NonFunctionalRequirement {}
+
+class FunctionalRequirement {}
+
+class Stakeholder {}
+
+class Document {}
+
+
+Requirement <|-down- NonFunctionalRequirement
+Requirement <|-- FunctionalRequirement
+
+Stakeholder "*" --> "*"  Requirement
+Document "*" --> "*"  Requirement
+Requirement "*" --> "*"  FunctionalRequirement
+
+@enduml

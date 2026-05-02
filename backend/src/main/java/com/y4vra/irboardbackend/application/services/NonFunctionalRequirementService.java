@@ -1,14 +1,11 @@
 package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
-import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Associations;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Project;
-import com.y4vra.irboardbackend.domain.model.Stakeholder;
-import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
@@ -18,11 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class NonFunctionalRequirementService {
+public class NonFunctionalRequirementService extends RequirementService {
 
     private final NonFunctionalRequirementRepository nfrRepository;
     private final ProjectRepository projectRepository;
@@ -75,13 +74,15 @@ public class NonFunctionalRequirementService {
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
         NonFunctionalRequirement nfr = nfrMapper.toEntity(dto);
+        nfr.setProjectId(projectId);
+        nfr.setEntityIdentifier(projectId+"-NFR-"+ UUID.randomUUID().toString());
         nfr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
             NonFunctionalRequirement nfrParent = nfrRepository.findById(dto.parentId())
                     .orElseThrow(() -> new EntityNotFoundException("Parent not found"));
             Long parentProjectId = nfrRepository.findRootProjectIdById(dto.parentId())
                     .orElseThrow(() -> new EntityNotFoundException("Project linked to root nfr parent not found"));
-            if (parentProjectId != project.getId()) {
+            if (!Objects.equals(parentProjectId, project.getId())) {
                 throw new EntityNotFoundException("Parent is not the same as this project");
             }
             Associations.link(nfrParent, nfr);

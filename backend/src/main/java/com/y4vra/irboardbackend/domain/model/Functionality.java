@@ -57,5 +57,4 @@ public class Functionality extends ProjectElement {
 
     public Set<FunctionalRequirement> getRequirements() { return new HashSet<>(requirements); }
     protected Set<FunctionalRequirement> _getRequirements() { return requirements; }
-
 }

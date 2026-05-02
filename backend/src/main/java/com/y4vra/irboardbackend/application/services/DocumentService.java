@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DocumentService {
@@ -67,6 +68,8 @@ public class DocumentService {
             throw new AccessDeniedException("User not authorized to upload documents for this project");
         }
         Document document = documentMapper.toEntity(dto);
+        document.setProjectId(projectId);
+        document.setEntityIdentifier(projectId+"-DOC-"+ UUID.randomUUID().toString());
         Document saved = documentRepository.save(document);
 
         permService.grantPermission("Document", String.valueOf(saved.getId()), "parents", "Project:" + projectId);

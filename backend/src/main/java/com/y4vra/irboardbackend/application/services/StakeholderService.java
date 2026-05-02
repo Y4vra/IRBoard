@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +60,8 @@ public class StakeholderService {
         stakeholder.setName(dto.name());
         stakeholder.setDescription(dto.description());
         stakeholder.setProject(project);
+        stakeholder.setProjectId(project.getId());
+        stakeholder.setEntityIdentifier(project.getId()+"-STKH-"+ UUID.randomUUID().toString());
         stakeholder.setState(EntityState.ACTIVE);
 
         Stakeholder saved = stakeholderRepository.save(stakeholder);

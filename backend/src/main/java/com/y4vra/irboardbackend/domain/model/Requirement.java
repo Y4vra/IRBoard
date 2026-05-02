@@ -1,7 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
-import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
 
@@ -33,7 +32,28 @@ public abstract class Requirement extends ProjectElement {
     @JoinColumn(name = "parent_id")
     private Requirement parent;
 
+    @ManyToMany(mappedBy = "observerRequirements")
+    private Set<Document> observedDocuments = new HashSet<>();
+    @ManyToMany(mappedBy = "observerRequirements")
+    private Set<Stakeholder> observedStakeholders = new HashSet<>();
+
+    @ManyToMany()
+    @JoinTable(
+            name = "requirement_observing",
+            joinColumns = @JoinColumn(name = "observer_id"),
+            inverseJoinColumns = @JoinColumn(name = "observed_id")
+    )
+    private Set<Requirement> observerRequirements = new HashSet<>();
+    @ManyToMany(mappedBy = "observerRequirements")
+    private Set<Requirement> observedRequirements = new HashSet<>();
+
     public Requirement() {}
+
+    public void update(){
+        if(!state.equals(RequirementState.PENDING_APPROVAL)){
+            setState(RequirementState.PENDING_APPROVAL);
+        }
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -60,6 +80,15 @@ public abstract class Requirement extends ProjectElement {
 
     public Requirement getParent() { return parent; }
     public void setParent(Requirement parent) { this.parent = parent; }
+
+    public Set<Document> getObservedDocuments() { return Set.copyOf(observedDocuments); }
+    protected Set<Document> _getObservedDocuments() { return observedDocuments; }
+    public Set<Stakeholder> getObservedStakeholders() { return Set.copyOf(observedStakeholders); }
+    protected Set<Stakeholder> _getObservedStakeholders() { return observedStakeholders; }
+    public Set<Requirement> getObserverRequirements() { return Set.copyOf(observerRequirements); }
+    protected Set<Requirement> _getObserverRequirements() { return observerRequirements; }
+    public Set<Requirement> getObservedRequirements() { return Set.copyOf(observedRequirements); }
+    protected Set<Requirement> _getObservedRequirements() { return observedRequirements; }
 
     @Override
     public boolean equals(Object o) {

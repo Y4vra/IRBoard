@@ -1,8 +1,11 @@
 package com.y4vra.irboardbackend.domain.model;
 
-import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class Document extends ProjectElement {
@@ -26,6 +29,14 @@ public class Document extends ProjectElement {
     @JoinColumn(name = "project_id")
     private Project project;
 
+    @ManyToMany()
+    @JoinTable(
+            name = "document_observer_requirement",
+            joinColumns = @JoinColumn(name = "document_id"),
+            inverseJoinColumns = @JoinColumn(name = "requirement_id")
+    )
+    private Set<Requirement> observerRequirements = new HashSet<>();
+
     public Document() {}
 
     public Long getId() { return id; }
@@ -46,4 +57,18 @@ public class Document extends ProjectElement {
     public Project getProject() { return project; }
     public void setProject(Project project) { this.project = project; }
 
+    public Set<Requirement> getObserverRequirements() { return Set.copyOf(observerRequirements); }
+    protected Set<Requirement> _getObserverRequirements() { return observerRequirements; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Document document = (Document) o;
+        return Objects.equals(id, document.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, project);
+    }
 }

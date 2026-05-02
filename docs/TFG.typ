@@ -234,6 +234,10 @@ It's a complex state to ease development, as the pending review can be seen as a
 === Data Modeling
 
 === Process Modeling
+A crucial process for the system is the updates triggered by modifications between observed and observer entities. To illustrate the flows depicted on the system, the following diagram is provided:
+#figure(image("./assets/diagrams/ObservationFlows.svg"), caption: "Possible observation processes between entities")
+
+#strong[Linking Arrows] - The arrows in this diagram refer to linked entities in a modified observer pattern, to allow to search for linked elements from both sides of the relation. The direction of the arrow expresses the flow from a observed element to the observer element, for example, a modification on a Stakeholder element would trigger an update() call to all requirements observing it.
 
 === User Interface Definition
 

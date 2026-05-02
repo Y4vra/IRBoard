@@ -49,4 +49,29 @@ public class Associations {
         parent._getChildren().remove(child);
         child.setParent(null);
     }
+
+    public static void observe(Requirement observer, Stakeholder observed){
+        observer._getObservedStakeholders().add(observed);
+        observed._getObserverRequirements().add(observer);
+    }
+    public static void unobserve(Requirement observer, Stakeholder observed){
+        observed._getObserverRequirements().remove(observer);
+        observer._getObservedStakeholders().remove(observed);
+    }
+    public static void observe(Requirement observer, Document observed){
+        observer._getObservedDocuments().add(observed);
+        observed._getObserverRequirements().add(observer);
+    }
+    public static void unobserve(Requirement observer, Document observed){
+        observed._getObserverRequirements().remove(observer);
+        observer._getObservedDocuments().remove(observed);
+    }
+    public static void observe(Requirement observer, Requirement observed){
+        observer._getObservedRequirements().add(observed);
+        observed._getObserverRequirements().add(observer);
+    }
+    public static void unobserve(Requirement observer, Requirement observed){
+        observed._getObserverRequirements().remove(observer);
+        observer._getObservedRequirements().remove(observed);
+    }
 }
