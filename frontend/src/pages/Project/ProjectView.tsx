@@ -138,7 +138,7 @@ const fetchFunctionalities = useCallback(
 );
 
 const { data: project, loading, error } = useBackendResource<Project>({ fetcher: fetchProject });
-const { data: functionalities, loading: functionalitiesLoading} = useBackendResource<FunctionalitiesResponse>({ fetcher: fetchFunctionalities });
+const { data: functionalities, loading: functionalitiesLoading, refresh } = useBackendResource<FunctionalitiesResponse>({ fetcher: fetchFunctionalities });
 
   if (loading) return <LoadingSpinner />;
 
@@ -285,7 +285,7 @@ const { data: functionalities, loading: functionalitiesLoading} = useBackendReso
           {user?.isAdmin && (
             <CreateFunctionalityDialog
               projectId={id!}
-              onSuccess={fetchFunctionalities}
+              onSuccess={refresh}
             />
           )}
         </div>
