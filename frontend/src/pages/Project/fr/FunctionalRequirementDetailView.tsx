@@ -33,6 +33,7 @@ import { AddDocumentDialog } from "../../../components/dialogs/observation/Obser
 import { AddLinkedFRDialog } from "../../../components/dialogs/observation/ObserveFrDialog";
 import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog";
+import { useProject } from "@/hooks/useProject";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -202,6 +203,7 @@ function FunctionalRequirementDetailView() {
     functionalityId: string;
     frId: string;
   }>();
+  const project = useProject();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -534,7 +536,7 @@ function FunctionalRequirementDetailView() {
         projectId={projectId!}
         functionalityId={functionalityId!}
         parentId={frId}
-        priorityStyle={priorityStyle}
+        priorityStyle={project.priorityStyle}
         onSuccess={refresh}
       />
       <AddStakeholderDialog
