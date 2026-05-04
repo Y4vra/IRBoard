@@ -23,12 +23,14 @@ import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/RequirementStateBadge"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { FunctionalRequirement } from "../../types/FunctionalRequirement"
-import type { Functionality, PriorityStyle } from "@/types/Functionality"
+import type { Functionality } from "@/types/Functionality"
 import { RequirementState } from "@/types/enum/RequirementState"
 import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog"
 import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
+import type { PriorityStyle } from "@/types/Project"
+import { useProject } from "@/hooks/useProject"
 
 const MOSCOW_STYLES: Record<string, string> = {
   MUST: "bg-amber-50 text-amber-700 border-amber-200",
@@ -180,6 +182,7 @@ function FunctionalityView() {
     projectId: string
     functionalityId: string
   }>()
+  const { priorityStyle } = useProject();
   const { user } = useAuth()
 
   const fetchFunctionality = useCallback(
@@ -231,8 +234,7 @@ function FunctionalityView() {
     }, 0)
 
   const pendingCount = countPending(requirements)
-  const priorityStyle = (functionality?.priorityStyle ?? "TERNARY") as PriorityStyle
-
+  
   // Derive the prefix from the functionality label (e.g. "User Management" → "UM", or use label directly if already short)
   const functionalityPrefix = functionality?.label ?? "FR"
 
