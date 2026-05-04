@@ -17,25 +17,24 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Loader2,
-  Plus,
   AlignLeft,
   Hash,
   GitMerge,
   Star,
   Anchor,
 } from "lucide-react";
-
-type PriorityStyle = "MOSCOW" | "TERNARY";
+import type { PriorityStyle } from "@/types/Project";
 
 const MOSCOW_OPTIONS = ["MUST", "SHOULD", "COULD", "WONT"];
 const TERNARY_OPTIONS = ["HIGH", "NORMAL", "LOW"];
 const STABILITY_OPTIONS = ["STABLE", "UNSTABLE", "VOLATILE"];
 
 interface CreateFunctionalRequirementDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   projectId: string;
   functionalityId: string;
   priorityStyle: PriorityStyle;
@@ -59,13 +58,14 @@ const EMPTY_FORM: FormData = {
 };
 
 export function CreateFunctionalRequirementDialog({
+  open,
+  onOpenChange,
   projectId,
   functionalityId,
   priorityStyle,
   parentId,
   onSuccess,
 }: CreateFunctionalRequirementDialogProps) {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
@@ -123,19 +123,12 @@ export function CreateFunctionalRequirementDialog({
   };
 
   const handleClose = () => {
-    setOpen(false);
     setFormData(EMPTY_FORM);
     setError(null);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="shadow-md">
-          <Plus className="mr-2 h-4 w-4" />
-          {isChild ? "Add child FR" : "Add Requirement"}
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>

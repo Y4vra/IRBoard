@@ -17,8 +17,7 @@ public class FunctionalityMapper {
         functionality.getDescription(),
         functionality.getLabel(),
         functionality.getState().toString(),
-        functionality.getProject().getId(),
-        functionality.getProject().getPriorityStyle().toString()
+        functionality.getProject().getId()
         );
 
     }

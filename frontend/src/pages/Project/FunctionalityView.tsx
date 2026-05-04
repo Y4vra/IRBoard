@@ -18,6 +18,7 @@ import {
   Pencil,
   ChevronRight,
   ChevronDown,
+  Plus,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/RequirementStateBadge"
@@ -87,6 +88,7 @@ function FunctionalRequirementCard({
   const navigate = useNavigate()
   const hasChildren = r.children && r.children.length > 0
   const [collapsed, setCollapsed] = useState(false)
+  const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
 
   return (
     <div
@@ -143,13 +145,19 @@ function FunctionalRequirementCard({
 
         {isAdmin && (
           <div onClick={(e) => e.stopPropagation()} className="shrink-0">
-            <CreateFunctionalRequirementDialog
-              projectId={projectId}
-              functionalityId={functionalityId}
-              parentId={r.id}
-              priorityStyle={priorityStyle}
-              onSuccess={onRefetch}
-            />
+            <Button size="sm" variant="outline" onClick={()=>setCreateFunctionalRequirementDialogOpen(!createFunctionalRequirementDialogOpen)}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add Child FR
+              <CreateFunctionalRequirementDialog
+                open={createFunctionalRequirementDialogOpen}
+                onOpenChange={setCreateFunctionalRequirementDialogOpen}
+                projectId={projectId}
+                functionalityId={functionalityId}
+                parentId={r.id}
+                priorityStyle={priorityStyle}
+                onSuccess={onRefetch}
+              />
+            </Button>
           </div>
         )}
 
@@ -184,6 +192,8 @@ function FunctionalityView() {
   }>()
   const { priorityStyle } = useProject();
   const { user } = useAuth()
+  
+  const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
 
   const fetchFunctionality = useCallback(
     () =>
@@ -320,12 +330,18 @@ function FunctionalityView() {
             </p>
           </div>
           {user?.isAdmin && (
-            <CreateFunctionalRequirementDialog
-              projectId={projectId!}
-              functionalityId={functionalityId!}
-              onSuccess={refreshRequirements}
-              priorityStyle={priorityStyle}
-            />
+            <Button size="sm" variant="outline" onClick={()=>setCreateFunctionalRequirementDialogOpen(!createFunctionalRequirementDialogOpen)}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add FR
+              <CreateFunctionalRequirementDialog
+                open={createFunctionalRequirementDialogOpen}
+                onOpenChange={setCreateFunctionalRequirementDialogOpen}
+                projectId={projectId!}
+                functionalityId={functionalityId!}
+                onSuccess={refreshRequirements}
+                priorityStyle={priorityStyle}
+              />
+            </Button>
           )}
         </div>
 

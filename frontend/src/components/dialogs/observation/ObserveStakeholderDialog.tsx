@@ -12,13 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Search, AlertCircle, Check } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
-
-interface Stakeholder {
-  id: number;
-  name: string;
-  description?: string;
-  state?: string;
-}
+import type { Stakeholder } from "@/types/Stakeholder";
 
 interface Props {
   open: boolean;

@@ -20,6 +20,5 @@ public record FunctionalityDTO(
     String label,
     String state,
     @NotNull(message = "The project ID is mandatory")
-    Long projectId,
-    String priorityStyle
+    Long projectId
 ) implements Serializable{}

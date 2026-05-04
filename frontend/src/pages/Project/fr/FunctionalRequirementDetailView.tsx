@@ -208,6 +208,7 @@ function FunctionalRequirementDetailView() {
   const navigate = useNavigate();
 
   // Dialog open states
+  const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
   const [stakeholderDialogOpen, setStakeholderDialogOpen] = useState(false);
   const [nfrDialogOpen, setNfrDialogOpen] = useState(false);
   const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
@@ -319,11 +320,7 @@ function FunctionalRequirementDetailView() {
           count={requirement.children?.length ?? 0}
           isAdmin={isAdmin}
           addLabel="Add Child FR"
-          onAdd={() =>
-            navigate(
-              `/project/${projectId}/functionalities/${functionalityId}/requirement/${frId}/add-child`
-            )
-          }
+          onAdd={() => setCreateFunctionalRequirementDialogOpen(true)}
         >
           {requirement.children?.length === 0 ? (
             <p className="text-center text-slate-400 italic py-6">
@@ -533,6 +530,8 @@ function FunctionalRequirementDetailView() {
 
       {/* Dialogs */}
       <CreateFunctionalRequirementDialog
+        open={createFunctionalRequirementDialogOpen}
+        onOpenChange={setCreateFunctionalRequirementDialogOpen}
         projectId={projectId!}
         functionalityId={functionalityId!}
         parentId={frId}
