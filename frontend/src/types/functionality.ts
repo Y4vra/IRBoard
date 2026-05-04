@@ -7,7 +7,6 @@ export interface Functionality {
   label: string;
   state: FunctionalityState;
   projectId: number;
-  priorityStyle: string;
 }
 
 export type Permission = "edit" | "view" | "none";

@@ -19,6 +19,7 @@ import { LockProvider } from './context/LockContext'
 import EditProject from './pages/Project/EditProject'
 import { TooltipProvider } from './components/ui/tooltip'
 import FunctionalRequirementDetailView from './pages/Project/fr/FunctionalRequirementDetailView'
+import { ProjectProviderWrapper } from './components/wrappers/ProjectProviderWrapper'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -55,14 +56,16 @@ function App() {
                 <Route path="/projects/new" element={<NewProject />}/>
               </Route>
               <Route element={<ProjectLockWrapper />}>
-                <Route path="/project/:id" element={<ProjectView/>}/>
-                <Route path="/project/:id/edit" element={<EditProject/>}/>
+              <Route element={<ProjectProviderWrapper />}>
+                <Route path="/project/:projectId" element={<ProjectView/>}/>
+                <Route path="/project/:projectId/edit" element={<EditProject/>}/>
                 <Route path="/project/:projectId/functionalities/:functionalityId" element={<FunctionalityView/>}/>
                 <Route path="/project/:projectId/functionalities/:functionalityId/functionalRequirements/:frId" element={<FunctionalRequirementDetailView/>}/>
                 <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
                 <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>
                 <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
                 <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>
+              </Route>
               </Route>
             </Route>
           </Route>

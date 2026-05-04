@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { API_BASE_URL } from "../../lib/globalVars";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import {
   Pencil,
   Lock,
 } from "lucide-react";
-import { type Project } from "../../types/Project";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { CreateFunctionalityDialog } from "../../components/NewFunctionalityDialog";
 import { useBackendResource } from "@/hooks/useBackendResource";
@@ -25,6 +24,7 @@ import type { Permission, Functionality, FunctionalitiesResponse } from "@/types
 import { useLocks } from "@/hooks/useLocks";
 import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
+import { useProject } from "@/hooks/useProject";
 
 const permissionConfig: Record<
   Permission,
@@ -122,23 +122,25 @@ function FunctionalityCard({
 }
 
 function ProjectView() {
-  const { id } = useParams<{ id: string }>();
+  const project = useProject();
   const { user } = useAuth();
-  
-  const fetchProject = useCallback(
-  () => fetch(`${API_BASE_URL}/projects/${id}`, { credentials: "include" })
-    .then(r => { if (!r.ok) throw new Error("Failed to fetch project details"); return r.json(); }),
-  [id]
-);
 
-const fetchFunctionalities = useCallback(
-  () => fetch(`${API_BASE_URL}/projects/${id}/functionalities`, { credentials: "include" })
-    .then(r => { if (!r.ok) throw new Error("Failed to fetch functionalities"); return r.json(); }),
-  [id]
-);
+  const fetchFunctionalities = useCallback(
+    () => {
+      if (!project?.id) return Promise.reject("Project ID not available");
 
-const { data: project, loading, error } = useBackendResource<Project>({ fetcher: fetchProject });
-const { data: functionalities, loading: functionalitiesLoading, refresh } = useBackendResource<FunctionalitiesResponse>({ fetcher: fetchFunctionalities });
+      return fetch(`${API_BASE_URL}/projects/${project.id}/functionalities`, { 
+        credentials: "include" 
+      })
+      .then(r => { 
+        if (!r.ok) throw new Error("Failed to fetch functionalities"); 
+        return r.json(); 
+      });
+    },
+    [project]
+  );
+
+  const { data: functionalities, loading, refresh, error } = useBackendResource<FunctionalitiesResponse>({ fetcher: fetchFunctionalities });
 
   if (loading) return <LoadingSpinner />;
 
@@ -160,19 +162,19 @@ const { data: functionalities, loading: functionalitiesLoading, refresh } = useB
     {
       title: "Stakeholders",
       description: "Identify and manage project actors and interest groups.",
-      href: `/project/${id}/stakeholders`,
+      href: `/project/${project.id}/stakeholders`,
       icon: <Users className="h-6 w-6" />,
     },
     {
       title: "Non-Functional Requirements",
       description: "Security, performance, and technical constraints.",
-      href: `/project/${id}/nfr`,
+      href: `/project/${project.id}/nfr`,
       icon: <ShieldAlert className="h-6 w-6" />,
     },
     {
       title: "Documents",
       description: "Technical documentation and linked project files.",
-      href: `/project/${id}/documents`,
+      href: `/project/${project.id}/documents`,
       icon: <FileText className="h-6 w-6" />,
     },
   ];
@@ -206,7 +208,7 @@ const { data: functionalities, loading: functionalitiesLoading, refresh } = useB
         </Button>
         {user?.isAdmin && (
           <Button asChild variant="outline" size="sm">
-            <Link to={`/project/${id}/edit`}>
+            <Link to={`/project/${project.id}/edit`}>
               <Settings className="mr-2 h-4 w-4" /> Edit Project
             </Link>
           </Button>
@@ -284,13 +286,13 @@ const { data: functionalities, loading: functionalitiesLoading, refresh } = useB
           </div>
           {user?.isAdmin && (
             <CreateFunctionalityDialog
-              projectId={id!}
+              projectId={project.id!}
               onSuccess={refresh}
             />
           )}
         </div>
 
-        {functionalitiesLoading ? (
+        {loading ? (
           <div className="flex items-center justify-center py-16">
             <LoadingSpinner />
           </div>
@@ -305,7 +307,7 @@ const { data: functionalities, loading: functionalitiesLoading, refresh } = useB
             {user?.isAdmin && (
               <div className="mt-4">
                 <CreateFunctionalityDialog
-                  projectId={id!}
+                  projectId={project.id!}
                   onSuccess={fetchFunctionalities}
                 />
               </div>
@@ -338,10 +340,10 @@ const { data: functionalities, loading: functionalitiesLoading, refresh } = useB
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {allFunctionalities.map(({ func, permission }) => (
                 <FunctionalityCard
-                  key={`${permission}-${func.id}`}
+                  key={`${permission}-${func.projectId}`}
                   functionality={func}
                   permission={permission}
-                  projectId={id!}
+                  projectId={project.id!}
                 />
               ))}
             </div>

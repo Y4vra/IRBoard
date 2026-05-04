@@ -32,6 +32,7 @@ import { AddNFRDialog } from "../../../components/dialogs/observation/ObserveNfr
 import { AddDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
 import { AddLinkedFRDialog } from "../../../components/dialogs/observation/ObserveFrDialog";
 import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
+import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -529,6 +530,13 @@ function FunctionalRequirementDetailView() {
       </SectionCard>
 
       {/* Dialogs */}
+      <CreateFunctionalRequirementDialog
+        projectId={projectId!}
+        functionalityId={functionalityId!}
+        parentId={frId}
+        priorityStyle={priorityStyle}
+        onSuccess={refresh}
+      />
       <AddStakeholderDialog
         open={stakeholderDialogOpen}
         onOpenChange={setStakeholderDialogOpen}

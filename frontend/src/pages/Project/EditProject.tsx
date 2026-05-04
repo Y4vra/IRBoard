@@ -16,7 +16,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Project } from "../../types/Project";
 
 export default function EditProject() {
-  const { id } = useParams<{ id: string }>();
+  const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -29,11 +29,11 @@ export default function EditProject() {
   // 1. Fetch project details
   const fetchProject = useCallback(
     () =>
-      fetch(`${API_BASE_URL}/projects/${id}`, { credentials: "include" }).then((r) => {
+      fetch(`${API_BASE_URL}/projects/${projectId}`, { credentials: "include" }).then((r) => {
         if (!r.ok) throw new Error("Failed to fetch project details");
         return r.json();
       }),
-    [id]
+    [projectId]
   );
 
   const { data: project, loading: projectLoading, error: projectError } =
@@ -50,7 +50,7 @@ export default function EditProject() {
 
     const requestLock = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/projects/${id}/requestEdit`, {
+        const res = await fetch(`${API_BASE_URL}/projects/${projectId}/requestEdit`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Server error requesting edit lock");
@@ -58,7 +58,7 @@ export default function EditProject() {
         if (!granted) {
           navigate("/error", {
             state: {
-              from: `/project/${id}`,
+              from: `/project/${projectId}`,
               errorType: "permission",
               // Override description via state — ErrorPage uses errorType for content,
               // so we redirect with permission type which shows "Access Denied"
@@ -68,14 +68,14 @@ export default function EditProject() {
         }
       } catch {
         navigate("/error", {
-          state: { from: `/project/${id}`, errorType: "server" },
+          state: { from: `/project/${projectId}`, errorType: "server" },
           replace: true,
         });
       }
     };
 
     requestLock();
-  }, [project, id, navigate]);
+  }, [project, projectId, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +83,7 @@ export default function EditProject() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/${id}/modify`, {
+      const response = await fetch(`${API_BASE_URL}/projects/${projectId}/modify`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -101,7 +101,7 @@ export default function EditProject() {
         throw new Error("An error occurred while saving the project.");
       }
 
-      navigate(`/project/${id}`);
+      navigate(`/project/${projectId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -127,7 +127,7 @@ export default function EditProject() {
     <div className="min-h-screen bg-background p-8 flex flex-col items-center justify-center text-foreground">
       <div className="w-full max-w-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
         <button
-          onClick={() => navigate(`/project/${id}`)}
+          onClick={() => navigate(`/project/${projectId}`)}
           className="group mb-6 flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors bg-transparent border-none cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -188,7 +188,7 @@ export default function EditProject() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(`/project/${id}`)}
+                onClick={() => navigate(`/project/${projectId}`)}
                 className="flex-1 rounded-xl h-12"
               >
                 Cancel
