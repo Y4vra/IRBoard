@@ -539,7 +539,8 @@ function FunctionalRequirementDetailView() {
         onOpenChange={setStakeholderDialogOpen}
         projectId={projectId!}
         functionalityId={functionalityId!}
-        functionalRequirementId={frId!}
+        requirementId={frId!}
+        requirementType="FR"
         onSuccess={refresh}
       />
       <AddNFRDialog
@@ -555,7 +556,8 @@ function FunctionalRequirementDetailView() {
         onOpenChange={setDocumentDialogOpen}
         projectId={projectId!}
         functionalityId={functionalityId!}
-        functionalRequirementId={frId!}
+        requirementId={frId!}
+        requirementType="FR"
         onSuccess={refresh}
       />
       <AddLinkedFRDialog

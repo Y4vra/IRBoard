@@ -13,13 +13,15 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Search, AlertCircle, Check } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { Stakeholder } from "@/types/Stakeholder";
+import type { RequirementType } from "@/types/RequirementSummaryDTO";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
   functionalityId: string;
-  functionalRequirementId: string;
+  requirementId: string;
+  requirementType: RequirementType;
   onSuccess: () => void;
 }
 
@@ -28,7 +30,8 @@ export function AddStakeholderDialog({
   onOpenChange,
   projectId,
   functionalityId,
-  functionalRequirementId,
+  requirementId,
+  requirementType,
   onSuccess,
 }: Props) {
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
@@ -43,7 +46,7 @@ export function AddStakeholderDialog({
     setError(null);
     try {
       const res = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/stakeholders`,
+        `${API_BASE_URL}/projects/${projectId}/stakeholders/observable/${requirementId}`,
         { credentials: "include" }
       );
       if (!res.ok) throw new Error("Failed to fetch stakeholders");
@@ -54,7 +57,7 @@ export function AddStakeholderDialog({
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId,requirementId]);
 
   useEffect(() => {
     if (open) {
@@ -73,7 +76,8 @@ export function AddStakeholderDialog({
     setSubmitting(true);
     try {
       const res = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/linkStakeholder`,
+        requirementType=="FR"?`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/linkStakeholder`
+        : `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/linkStakeholder`,
         { method: "POST", credentials: "include",
           headers: {
             Accept: "application/json",

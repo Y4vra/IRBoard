@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileText, Search, AlertCircle, Check } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import type { RequirementType } from "@/types/RequirementSummaryDTO";
 
 interface DocumentDTO {
   id: number;
@@ -24,7 +25,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   functionalityId: string;
-  functionalRequirementId: string;
+  requirementType: RequirementType;
+  requirementId: string;
   onSuccess: () => void;
 }
 
@@ -33,7 +35,8 @@ export function AddDocumentDialog({
   onOpenChange,
   projectId,
   functionalityId,
-  functionalRequirementId,
+  requirementType,
+  requirementId,
   onSuccess,
 }: Props) {
   const [documents, setDocuments] = useState<DocumentDTO[]>([]);
@@ -78,7 +81,8 @@ export function AddDocumentDialog({
     setSubmitting(true);
     try {
       const res = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/documents/${selectedId}`,
+        requirementType=="FR"?`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/documents/${selectedId}`
+        :`${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/documents/${selectedId}`,
         { method: "POST", credentials: "include" }
       );
       if (!res.ok) throw new Error("Failed to link document");

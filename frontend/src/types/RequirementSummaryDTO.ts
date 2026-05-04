@@ -9,3 +9,4 @@ export interface FunctionalRequirementSummaryDTO extends RequirementSummaryDTO {
   requirementType: "FR";
   functionalityId: number;
 }
+export type RequirementType = "FR"|"NFR";
