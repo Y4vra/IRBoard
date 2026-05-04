@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,6 +32,10 @@ interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalReq
         SELECT functionality_id FROM root_finder WHERE parent_id IS NULL LIMIT 1
         """, nativeQuery = true)
     Optional<Long> findRootFunctionalityIdById(@Param("id") Long id);
+    @Query("""
+        SELECT r FROM Requirement r JOIN r.observerRequirements r2 WHERE r2.id = :requirementId
+    """)
+    List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId);
 }
 
 @Component
@@ -74,5 +79,10 @@ public class FunctionalRequirementRepositoryImpl implements FunctionalRequiremen
     @Override
     public Optional<Long> findRootFunctionalityIdById(Long id) {
         return jpaRepository.findRootFunctionalityIdById(id);
+    }
+
+    @Override
+    public List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId) {
+        return jpaRepository.findAllObservedByRequirement(requirementId);
     }
 }

@@ -4,10 +4,13 @@ import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
 import com.y4vra.irboardbackend.domain.model.Document;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Component
 public class DocumentMapper {
 
-    public DocumentDTO toDto(Document entity, String accessUrl) {
+    public DocumentDTO toDto(Document entity) {
         if (entity == null) return null;
 
         return new DocumentDTO(
@@ -16,7 +19,19 @@ public class DocumentMapper {
             entity.getMimeType(),
             entity.getFileSize(),
             entity.getProject() != null? entity.getProject().getId():null,
-            accessUrl
+            null
+        );
+    }
+    public DocumentDTO toDtoDetailed(Document entity, String accessUrl) {
+        if (entity == null) return null;
+
+        return new DocumentDTO(
+                entity.getId(),
+                entity.getFileName(),
+                entity.getMimeType(),
+                entity.getFileSize(),
+                entity.getProject() != null? entity.getProject().getId():null,
+                accessUrl
         );
     }
 
@@ -30,5 +45,9 @@ public class DocumentMapper {
         entity.setFileSize(dto.fileSize());
 
         return entity;
+    }
+
+    public List<DocumentDTO> toDtoList(List<Document> docs) {
+        return docs.stream().map(this::toDto).collect(Collectors.toList());
     }
 }

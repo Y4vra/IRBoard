@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,10 +23,11 @@ public class NonFunctionalRequirementService extends RequirementService {
     private final ProjectRepository projectRepository;
     private final NonFunctionalRequirementMapper nfrMapper;
 
-    public NonFunctionalRequirementService(NonFunctionalRequirementRepository nfrRepository, DocumentRepository documentRepository, StakeholderRepository stakeholderRepository, RequirementRepository requirementRepository,
+    public NonFunctionalRequirementService(NonFunctionalRequirementRepository nfrRepository,
+                                           DocumentRepository documentRepository, StakeholderRepository stakeholderRepository,RequirementRepository rRepository,
                                            NonFunctionalRequirementMapper nfrMapper,
                                            PermissionService permService, ProjectRepository projectRepository) {
-        super(permService,stakeholderRepository,documentRepository,nfrRepository,requirementRepository);
+        super(permService,stakeholderRepository,documentRepository,nfrRepository,rRepository);
         this.projectRepository = projectRepository;
         this.nfrMapper = nfrMapper;
     }

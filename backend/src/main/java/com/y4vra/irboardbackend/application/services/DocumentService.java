@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class DocumentService {
@@ -42,7 +41,7 @@ public class DocumentService {
         return documentRepository.findAllByProjectId(projectId).stream()
                 .map(doc -> {
                     String url = objStorageService.getDownloadUrl(doc.getFileName());
-                    return documentMapper.toDto(doc, url);
+                    return documentMapper.toDtoDetailed(doc, url);
                 })
                 .toList();
     }
@@ -58,7 +57,7 @@ public class DocumentService {
                 .orElseThrow(() -> new EntityNotFoundException("Document not found"));
 
         String url = objStorageService.getDownloadUrl(document.getFileName());
-        return documentMapper.toDto(document, url);
+        return documentMapper.toDtoDetailed(document, url);
     }
 
     @Transactional
@@ -77,6 +76,6 @@ public class DocumentService {
         permService.grantPermission("Document", String.valueOf(saved.getId()), "owners", oryId);
 
         String url = objStorageService.getDownloadUrl(saved.getFileName());
-        return documentMapper.toDto(saved, url);
+        return documentMapper.toDtoDetailed(saved, url);
     }
 }

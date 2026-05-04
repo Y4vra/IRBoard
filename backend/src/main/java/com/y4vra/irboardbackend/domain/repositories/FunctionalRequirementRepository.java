@@ -14,4 +14,6 @@ public interface FunctionalRequirementRepository {
     void deleteById(Long id);
     List<FunctionalRequirement> findAllByFunctionalityId(Long functionalityId);
     Optional<Long> findRootFunctionalityIdById(Long id);
+
+    List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId);
 }

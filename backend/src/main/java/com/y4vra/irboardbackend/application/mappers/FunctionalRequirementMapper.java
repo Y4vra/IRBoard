@@ -1,12 +1,7 @@
 package com.y4vra.irboardbackend.application.mappers;
 
-import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
-import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
-import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
-import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
-import com.y4vra.irboardbackend.domain.model.Functionality;
-import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -15,11 +10,21 @@ import java.util.List;
 @Component
 public class FunctionalRequirementMapper {
 
+    private StakeholderMapper stakeholderMapper;
+    private DocumentMapper documentMapper;
+    private NonFunctionalRequirementMapper nonFunctionalRequirementMapper;
+
+    public FunctionalRequirementMapper(StakeholderMapper stakeholderMapper,DocumentMapper documentMapper,NonFunctionalRequirementMapper nonFunctionalRequirementMapper) {
+        this.stakeholderMapper = stakeholderMapper;
+        this.documentMapper = documentMapper;
+        this.nonFunctionalRequirementMapper = nonFunctionalRequirementMapper;
+    }
+
     public FunctionalRequirementDTO toDto(FunctionalRequirement entity) {
         List emptyList = List.of();
         return toDetailedDto(entity,emptyList,emptyList,emptyList,emptyList);
     }
-    public FunctionalRequirementDTO toDetailedDto(FunctionalRequirement entity, List<StakeholderDTO> stkhs, List<NonFunctionalRequirementDTO> nfrs, List<DocumentDTO> docs, List<FunctionalRequirementDTO> frs) {
+    public FunctionalRequirementDTO toDetailedDto(FunctionalRequirement entity, List<Stakeholder> stkhs, List<NonFunctionalRequirement> nfrs, List<Document> docs, List<FunctionalRequirement> frs) {
         if (entity == null) return null;
 
         Long functionalityId = null;
@@ -48,10 +53,10 @@ public class FunctionalRequirementMapper {
                 entity.getOrderValue(),
                 entity.getState().name(),
                 childDtos,
-                stkhs,
-                nfrs,
-                docs,
-                frs
+                stakeholderMapper.toDtoList(stkhs),
+                nonFunctionalRequirementMapper.toDtoList(nfrs),
+                documentMapper.toDtoList(docs),
+                toDtoList(frs)
         );
     }
 
@@ -71,10 +76,6 @@ public class FunctionalRequirementMapper {
 
     public List<FunctionalRequirementDTO> toDtoList(List<FunctionalRequirement> roots) {
         return roots.stream()
-                .sorted(Comparator.comparing(
-                        FunctionalRequirement::getOrderValue,
-                        Comparator.nullsLast(Comparator.naturalOrder())
-                ))
                 .map(this::toDto)
                 .toList();
     }

@@ -12,4 +12,6 @@ public interface DocumentRepository {
     Optional<Document> findById(Long id);
     Document save(Document doc);
     void deleteById(Long id);
+
+    List<Document> findAllObservedByRequirement(Long requirementId);
 }

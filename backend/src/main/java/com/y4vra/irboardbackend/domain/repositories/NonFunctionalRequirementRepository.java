@@ -13,4 +13,6 @@ public interface NonFunctionalRequirementRepository {
     Optional<NonFunctionalRequirement> findById(Long id);
     NonFunctionalRequirement save(NonFunctionalRequirement nfr);
     void deleteById(Long id);
+
+    List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
 }

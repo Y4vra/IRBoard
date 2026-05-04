@@ -10,7 +10,6 @@ import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,7 +96,11 @@ public class FunctionalRequirementService extends RequirementService {
         if(functionalRequirement.get().getFunctionality().getId() != functionalityId){
             throw new EntityNotFoundException("FunctionalRequirement with id " + functionalRequirementId + " not found");
         }
-        return frMapper.toDto(functionalRequirement.get());
+        return frMapper.toDetailedDto(functionalRequirement.get(),
+                stakeholderRepository.findAllObservedByRequirement(functionalRequirementId),
+                nfrRepository.findAllObservedByRequirement(functionalRequirementId),
+                documentRepository.findAllObservedByRequirement(functionalRequirementId),
+                frRepository.findAllObservedByRequirement(functionalRequirementId));
     }
 
     @Transactional

@@ -15,7 +15,7 @@ function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
 
 function requirementPath(r: RequirementSummaryDTO, projectId: string): string {
   if (isFR(r)) {
-    return `/project/${projectId}/functionalities/${r.functionalityId}/requirements/${r.id}`;
+    return `/project/${projectId}/functionalities/${r.functionalityId}/functionalRequirements/${r.id}`;
   }
   return `/project/${projectId}/nfr/${r.id}`;
 }

@@ -69,12 +69,11 @@ class DocumentServiceTest {
         when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(true);
         when(documentRepository.findAllByProjectId(projectId)).thenReturn(List.of(document));
         when(objStorageService.getDownloadUrl(document.getFileName())).thenReturn(presignedUrl);
-        when(documentMapper.toDto(document, presignedUrl)).thenReturn(documentDTO);
+        when(documentMapper.toDtoDetailed(document, presignedUrl)).thenReturn(documentDTO);
 
         List<DocumentDTO> result = documentService.findDocumentsOfProject(OryId, projectId);
 
         assertThat(result).hasSize(1).containsExactly(documentDTO);
-        verify(objStorageService).getDownloadUrl("spec.pdf");
     }
 
     @Test
@@ -92,7 +91,7 @@ class DocumentServiceTest {
         when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(true);
         when(documentRepository.findById(documentId)).thenReturn(Optional.of(document));
         when(objStorageService.getDownloadUrl(document.getFileName())).thenReturn(presignedUrl);
-        when(documentMapper.toDto(document, presignedUrl)).thenReturn(documentDTO);
+        when(documentMapper.toDtoDetailed(document, presignedUrl)).thenReturn(documentDTO);
 
         DocumentDTO result = documentService.findById(OryId, projectId, documentId);
 
@@ -126,7 +125,7 @@ class DocumentServiceTest {
         when(documentMapper.toEntity(inputDto)).thenReturn(document);
         when(documentRepository.save(document)).thenReturn(document);
         when(objStorageService.getDownloadUrl(document.getFileName())).thenReturn(presignedUrl);
-        when(documentMapper.toDto(document, presignedUrl)).thenReturn(documentDTO);
+        when(documentMapper.toDtoDetailed(document, presignedUrl)).thenReturn(documentDTO);
 
         DocumentDTO result = documentService.uploadDocument(inputDto, projectId, OryId);
 

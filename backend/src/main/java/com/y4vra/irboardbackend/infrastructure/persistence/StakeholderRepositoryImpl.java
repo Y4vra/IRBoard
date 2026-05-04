@@ -32,6 +32,10 @@ interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
             @Param("stakeholderId") Long stakeholderId,
             @Param("functionalityIds") Set<Long> functionalityIds
     );
+    @Query("""
+        SELECT s FROM Stakeholder s JOIN s.observerRequirements r WHERE r.id = :requirementId
+    """)
+    List<Stakeholder> findAllObservedByRequirement(Long requirementId);
 }
 
 @Component
@@ -75,5 +79,9 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     @Override
     public List<Requirement> findFilteredRequirementsForStakeholder(Long stakeholderId, Set<Long> functionalityIds) {
         return jpaRepository.findFilteredRequirementsForStakeholder(stakeholderId, functionalityIds);
+    }
+    @Override
+    public List<Stakeholder> findAllObservedByRequirement(Long requirementId) {
+        return jpaRepository.findAllObservedByRequirement(requirementId);
     }
 }

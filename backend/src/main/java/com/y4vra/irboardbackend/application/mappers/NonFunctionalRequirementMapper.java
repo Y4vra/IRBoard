@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class NonFunctionalRequirementMapper {
@@ -67,5 +68,9 @@ public class NonFunctionalRequirementMapper {
         entity.setActualValue(dto.actualValue());
 
         return entity;
+    }
+
+    public List<NonFunctionalRequirementDTO> toDtoList(List<NonFunctionalRequirement> nfrs) {
+        return nfrs.stream().map(this::toDto).collect(Collectors.toList());
     }
 }

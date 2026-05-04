@@ -30,6 +30,10 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
         SELECT project_id FROM root_finder WHERE parent_id IS NULL LIMIT 1
         """, nativeQuery = true)
     Optional<Long> findRootProjectIdById(@Param("id") Long id);
+    @Query("""
+        SELECT nfr FROM NonFunctionalRequirement nfr JOIN nfr.observerRequirements r WHERE r.id = :requirementId
+        """)
+    List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
 }
 
 @Component
@@ -73,5 +77,9 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     @Override
     public Optional<Long> findRootProjectIdById(Long id){
         return jpaRepository.findRootProjectIdById(id);
+    }
+    @Override
+    public List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId){
+        return jpaRepository.findAllObservedByRequirement(requirementId);
     }
 }

@@ -1,8 +1,10 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.Document;
+import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +14,10 @@ import java.util.Optional;
 @Repository
 interface JpaDocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findAllByProjectId(Long projectId);
+    @Query("""
+        SELECT d FROM Document d JOIN d.observerRequirements r WHERE r.id = :requirementId
+    """)
+    List<Document> findAllObservedByRequirement(Long requirementId);
 }
 
 @Component
@@ -51,5 +57,10 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     @Override
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Document> findAllObservedByRequirement(Long requirementId) {
+        return jpaRepository.findAllObservedByRequirement(requirementId);
     }
 }

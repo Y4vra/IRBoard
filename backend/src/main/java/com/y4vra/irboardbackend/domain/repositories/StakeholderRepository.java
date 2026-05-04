@@ -15,4 +15,5 @@ public interface StakeholderRepository {
     Stakeholder save(Stakeholder stakeholder);
     void deleteById(Long id);
     List<Requirement> findFilteredRequirementsForStakeholder(Long stakeholderId, Set<Long> functionalityIds);
+    List<Stakeholder> findAllObservedByRequirement(Long requirementId);
 }

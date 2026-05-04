@@ -19,7 +19,7 @@ class DocumentMapperTest {
 
     @Test
     void toDto_returnsNullWhenEntityIsNull() {
-        assertThat(mapper.toDto(null, "url")).isNull();
+        assertThat(mapper.toDto(null)).isNull();
     }
 
     @Test
@@ -34,7 +34,7 @@ class DocumentMapperTest {
         document.setFileSize(1024L);
         document.setProject(project);
 
-        DocumentDTO dto = mapper.toDto(document, "https://minio/spec.pdf");
+        DocumentDTO dto = mapper.toDtoDetailed(document, "https://minio/spec.pdf");
 
         assertThat(dto.id()).isEqualTo(1L);
         assertThat(dto.fileName()).isEqualTo("spec.pdf");
@@ -53,7 +53,7 @@ class DocumentMapperTest {
         document.setFileSize(512L);
         document.setProject(null);
 
-        DocumentDTO dto = mapper.toDto(document, "url");
+        DocumentDTO dto = mapper.toDto(document);
 
         assertThat(dto.projectId()).isNull();
     }
