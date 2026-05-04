@@ -27,10 +27,10 @@ import {
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { RequirementStateBadge } from "@/components/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
-import { AddStakeholderDialog } from "../../../components/dialogs/observation/ObserveStakeholderDialog";
-import { AddNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
+import { ObserveStakeholderDialog } from "../../../components/dialogs/observation/ObserveStakeholderDialog";
+import { ObserveNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
 import { AddDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
-import { AddLinkedFRDialog } from "../../../components/dialogs/observation/ObserveFrDialog";
+import { ObserveLinkedFRDialog } from "../../../components/dialogs/observation/ObserveFrDialog";
 import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog";
 import { useProject } from "@/hooks/useProject";
@@ -534,7 +534,7 @@ function FunctionalRequirementDetailView() {
         priorityStyle={project.priorityStyle}
         onSuccess={refresh}
       />
-      <AddStakeholderDialog
+      <ObserveStakeholderDialog
         open={stakeholderDialogOpen}
         onOpenChange={setStakeholderDialogOpen}
         projectId={projectId!}
@@ -543,7 +543,7 @@ function FunctionalRequirementDetailView() {
         requirementType="FR"
         onSuccess={refresh}
       />
-      <AddNFRDialog
+      <ObserveNFRDialog
         open={nfrDialogOpen}
         onOpenChange={setNfrDialogOpen}
         projectId={projectId!}
@@ -560,7 +560,7 @@ function FunctionalRequirementDetailView() {
         requirementType="FR"
         onSuccess={refresh}
       />
-      <AddLinkedFRDialog
+      <ObserveLinkedFRDialog
         open={linkedFRDialogOpen}
         onOpenChange={setLinkedFRDialogOpen}
         projectId={projectId!}

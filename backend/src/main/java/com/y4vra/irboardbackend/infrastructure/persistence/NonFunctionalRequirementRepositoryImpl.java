@@ -37,12 +37,13 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
     List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
     @Query("""
         SELECT nfr FROM NonFunctionalRequirement nfr
-        WHERE NOT EXISTS (
+        WHERE nfr.project.id = :projectId
+        AND NOT EXISTS (
             SELECT 1 FROM nfr.observerRequirements r
             WHERE r.id = :requirementId
         )
     """)
-    List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long requirementId);
+    List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId);
 }
 
 @Component
@@ -93,7 +94,7 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     }
 
     @Override
-    public List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long requirementId) {
-        return jpaRepository.findObservableNfRequirementsForRequirement(requirementId);
+    public List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId) {
+        return jpaRepository.findObservableNfRequirementsForRequirement(projectId,requirementId);
     }
 }

@@ -17,5 +17,9 @@ public interface FunctionalRequirementRepository {
     Optional<Long> findRootFunctionalityIdById(Long id);
 
     List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId);
-    List<FunctionalRequirement> findObservableFRequirementsForRequirement(Long requirementId);
+    List<FunctionalRequirement> findObservableFRequirementsForRequirementAndFunctionality(
+            Long projectId,
+            Long functionalityId,
+            Long requirementId
+    );
 }

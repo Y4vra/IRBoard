@@ -11,14 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { FileText, Search, AlertCircle, Check } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useBackendResource } from "@/hooks/useBackendResource";
 import type { RequirementType } from "@/types/RequirementSummaryDTO";
-
-interface DocumentDTO {
-  id: number;
-  name: string;
-  description?: string;
-  url?: string;
-}
+import type { DocumentDTO } from "@/types/Document";
 
 interface Props {
   open: boolean;
@@ -39,61 +34,63 @@ export function AddDocumentDialog({
   requirementId,
   onSuccess,
 }: Props) {
-  const [documents, setDocuments] = useState<DocumentDTO[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const fetchDocuments = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/documents`,
+  const fetcher = useCallback(
+    () =>
+      fetch(
+        `${API_BASE_URL}/projects/${projectId}/documents/observable/${requirementId}`,
         { credentials: "include" }
-      );
-      if (!res.ok) throw new Error("Failed to fetch documents");
-      const data = await res.json();
-      setDocuments(data);
-    } catch (e: any) {
-      setError(e.message ?? "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId]);
+      ).then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch documents");
+        return res.json() as Promise<DocumentDTO[]>;
+      }),
+    [projectId, requirementId]
+  );
+
+  const { data: documents, loading, error, refresh } = useBackendResource<DocumentDTO[]>({
+    fetcher,
+    enabled: open,
+  });
 
   useEffect(() => {
     if (open) {
-      fetchDocuments();
       setSelectedId(null);
       setSearch("");
+      setSubmitError(null);
+      refresh();
     }
-  }, [open, fetchDocuments]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const filtered = documents.filter((d) =>
+  const filtered = (documents ?? []).filter((d) =>
     d.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleSubmit = async () => {
     if (!selectedId) return;
     setSubmitting(true);
+    setSubmitError(null);
     try {
-      const res = await fetch(
-        requirementType=="FR"?`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/documents/${selectedId}`
-        :`${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/documents/${selectedId}`,
-        { method: "POST", credentials: "include" }
-      );
+      const url =
+        requirementType === "FR"
+          ? `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/documents/${selectedId}`
+          : `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/documents/${selectedId}`;
+
+      const res = await fetch(url, { method: "POST", credentials: "include" });
       if (!res.ok) throw new Error("Failed to link document");
       onSuccess();
       onOpenChange(false);
     } catch (e: any) {
-      setError(e.message ?? "Unknown error");
+      setSubmitError(e.message ?? "Unknown error");
     } finally {
       setSubmitting(false);
     }
   };
+
+  const displayError = submitError ?? error;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -111,7 +108,6 @@ export function AddDocumentDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
@@ -122,16 +118,15 @@ export function AddDocumentDialog({
             />
           </div>
 
-          {/* List */}
           <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
             {loading ? (
               <div className="py-8 flex justify-center">
                 <LoadingSpinner text="Loading documents..." />
               </div>
-            ) : error ? (
+            ) : displayError ? (
               <div className="py-6 text-center">
                 <AlertCircle className="h-6 w-6 text-red-400 mx-auto mb-1" />
-                <p className="text-sm text-red-500">{error}</p>
+                <p className="text-sm text-red-500">{displayError}</p>
               </div>
             ) : filtered.length === 0 ? (
               <p className="text-center text-slate-400 italic text-sm py-6">
@@ -181,10 +176,7 @@ export function AddDocumentDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            disabled={!selectedId || submitting}
-            onClick={handleSubmit}
-          >
+          <Button disabled={!selectedId || submitting} onClick={handleSubmit}>
             {submitting ? "Linking..." : "Link Document"}
           </Button>
         </DialogFooter>

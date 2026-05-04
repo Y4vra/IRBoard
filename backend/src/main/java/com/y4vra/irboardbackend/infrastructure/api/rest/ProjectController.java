@@ -24,15 +24,15 @@ public class ProjectController {
     private final NonFunctionalRequirementService nonFunctionalRequirementService;
     private final DocumentService documentService;
 
-    private final EntityLockService entityLockService;
+    private final FunctionalRequirementService functionalRequirementService;
 
-    public ProjectController(ProjectService projectService, FunctionalityService functionalityService, StakeholderService stakeholderService, NonFunctionalRequirementService nonFunctionalRequirementService, DocumentService documentService, EntityLockService entityLockService) {
+    public ProjectController(ProjectService projectService, FunctionalityService functionalityService, StakeholderService stakeholderService, NonFunctionalRequirementService nonFunctionalRequirementService, DocumentService documentService, FunctionalRequirementService functionalRequirementService) {
         this.projectService = projectService;
         this.functionalityService = functionalityService;
         this.stakeholderService = stakeholderService;
         this.nonFunctionalRequirementService = nonFunctionalRequirementService;
         this.documentService = documentService;
-        this.entityLockService = entityLockService;
+        this.functionalRequirementService = functionalRequirementService;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -84,5 +84,9 @@ public class ProjectController {
                                              @RequestBody ProjectDTO patch) {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(projectService.patch(id, patch, user));
+    }
+    @GetMapping("/{projectId}/functionalRequirements/observable/{requirementId}")
+    public ResponseEntity<List<FunctionalityDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
+        return ResponseEntity.ok(functionalRequirementService.findObservableFRequirementsGroupedByFunctionality(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
     }
 }

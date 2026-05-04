@@ -17,5 +17,5 @@ public interface StakeholderRepository {
     List<Requirement> findFilteredRequirementsForStakeholder(Long stakeholderId, Set<Long> functionalityIds);
     List<Stakeholder> findAllObservedByRequirement(Long requirementId);
 
-    List<Stakeholder> findObservableStakeholdersForRequirement(Long requirementId);
+    List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId);
 }

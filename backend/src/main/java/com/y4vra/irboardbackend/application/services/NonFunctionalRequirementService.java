@@ -129,6 +129,6 @@ public class NonFunctionalRequirementService extends RequirementService {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)){
             throw new AccessDeniedException("User not authorized to view non functional requirements of this project");
         }
-        return nfrMapper.toDtoList(nfrRepository.findObservableNfRequirementsForRequirement(requirementId));
+        return nfrMapper.toDtoList(nfrRepository.findObservableNfRequirementsForRequirement(projectId,requirementId));
     }
 }

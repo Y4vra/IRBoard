@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record FunctionalityDTO(
     Long id,
@@ -20,5 +21,6 @@ public record FunctionalityDTO(
     String label,
     String state,
     @NotNull(message = "The project ID is mandatory")
-    Long projectId
+    Long projectId,
+    List<FunctionalRequirementDTO> requirements
 ) implements Serializable{}

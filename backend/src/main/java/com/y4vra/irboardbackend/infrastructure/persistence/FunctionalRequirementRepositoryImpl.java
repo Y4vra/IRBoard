@@ -39,12 +39,18 @@ interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalReq
     List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId);
     @Query("""
         SELECT fr FROM FunctionalRequirement fr
-        WHERE NOT EXISTS (
+        WHERE fr.functionality.project.id = :projectId
+        AND fr.functionality.id = :functionalityId
+        AND NOT EXISTS (
             SELECT 1 FROM fr.observerRequirements r
             WHERE r.id = :requirementId
         )
     """)
-    List<FunctionalRequirement> findObservableFRequirementsForRequirement(Long requirementId);
+    List<FunctionalRequirement> findObservableFRequirementsForRequirementAndFunctionality(
+            Long projectId,
+            Long functionalityId,
+            Long requirementId
+    );
 }
 
 @Component
@@ -96,7 +102,11 @@ public class FunctionalRequirementRepositoryImpl implements FunctionalRequiremen
     }
 
     @Override
-    public List<FunctionalRequirement> findObservableFRequirementsForRequirement(Long requirementId) {
-        return jpaRepository.findObservableFRequirementsForRequirement(requirementId);
+    public List<FunctionalRequirement> findObservableFRequirementsForRequirementAndFunctionality(
+            Long projectId,
+            Long functionalityId,
+            Long requirementId
+    ) {
+        return jpaRepository.findObservableFRequirementsForRequirementAndFunctionality(projectId,functionalityId,requirementId);
     }
 }

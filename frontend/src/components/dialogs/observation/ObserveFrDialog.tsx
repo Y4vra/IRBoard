@@ -13,22 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Circle, Search, AlertCircle, Check, ChevronDown, ChevronRight } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { RequirementStateBadge } from "@/components/RequirementStateBadge";
-
-interface FROption {
-  id: number;
-  name: string;
-  description?: string;
-  state: string;
-  functionalityId: number;
-  children?: FROption[];
-}
-
-interface FunctionalityGroup {
-  id: number;
-  name: string;
-  label?: string;
-  requirements: FROption[];
-}
+import { useBackendResource } from "@/hooks/useBackendResource";
+import type { Functionality, FunctionalitiesResponse, FunctionalityWithRequirements } from "@/types/Functionality";
+import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 
 interface Props {
   open: boolean;
@@ -39,10 +26,10 @@ interface Props {
   onSuccess: () => void;
 }
 
-function FlattenFR(reqs: FROption[], result: FROption[] = []): FROption[] {
+function flattenFR(reqs: FunctionalRequirement[], result: FunctionalRequirement[] = []): FunctionalRequirement[] {
   for (const r of reqs) {
     result.push(r);
-    if (r.children?.length) FlattenFR(r.children, result);
+    if (r.children?.length) flattenFR(r.children, result);
   }
   return result;
 }
@@ -53,7 +40,7 @@ function FRItem({
   currentId,
   onSelect,
 }: {
-  fr: FROption;
+  fr: FunctionalRequirement;
   selectedId: number | null;
   currentId: string;
   onSelect: (id: number) => void;
@@ -132,7 +119,7 @@ function FRItem({
   );
 }
 
-export function AddLinkedFRDialog({
+export function ObserveLinkedFRDialog({
   open,
   onOpenChange,
   projectId,
@@ -140,75 +127,50 @@ export function AddLinkedFRDialog({
   functionalRequirementId,
   onSuccess,
 }: Props) {
-  const [groups, setGroups] = useState<FunctionalityGroup[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const fetchFunctionalities = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Fetch all functionalities for the project
-      const funcRes = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities`,
+  const fetcher = useCallback(async (): Promise<FunctionalityWithRequirements[]> => {
+    const res = await fetch(
+        `${API_BASE_URL}/projects/${projectId}/functionalRequirements/observable/${functionalRequirementId}`,
         { credentials: "include" }
-      );
-      if (!funcRes.ok) throw new Error("Failed to fetch functionalities");
-      const functionalities: FunctionalityGroup[] = await funcRes.json();
+    );
+    if (!res.ok) throw new Error("Failed to fetch requirements");
+    return res.json();
+}, [projectId, functionalRequirementId]);
 
-      // For each functionality, fetch its requirements
-      const groupsWithReqs = await Promise.all(
-        functionalities.map(async (f) => {
-          try {
-            const reqRes = await fetch(
-              `${API_BASE_URL}/projects/${projectId}/functionalities/${f.id}/functionalRequirements/`,
-              { credentials: "include" }
-            );
-            const reqs: FROption[] = reqRes.ok ? await reqRes.json() : [];
-            return { ...f, requirements: reqs };
-          } catch {
-            return { ...f, requirements: [] };
-          }
-        })
-      );
-
-      setGroups(groupsWithReqs.filter((g) => g.requirements.length > 0));
-    } catch (e: any) {
-      setError(e.message ?? "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId]);
+  const { data: groups, loading, error, refresh } = useBackendResource<FunctionalityWithRequirements[]>({
+    fetcher,
+    enabled: open,
+  });
 
   useEffect(() => {
     if (open) {
-      fetchFunctionalities();
       setSelectedId(null);
       setSearch("");
+      setSubmitError(null);
     }
-  }, [open, fetchFunctionalities]);
+  }, [open]);
 
-  // Flat list for searching
-  const allFRs: (FROption & { functionalityName: string })[] = groups.flatMap(
-    (g) =>
-      FlattenFR(g.requirements).map((r) => ({
-        ...r,
-        functionalityName: g.name,
-      }))
+  // Reset and re-fetch when dialog opens again
+  useEffect(() => {
+    if (open) refresh();
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const allFRs = (groups ?? []).flatMap((g) =>
+    flattenFR(g.requirements).map((r) => ({ ...r, functionalityName: g.name }))
   );
 
   const filteredFlat = search
-    ? allFRs.filter((r) =>
-        r.name.toLowerCase().includes(search.toLowerCase())
-      )
+    ? allFRs.filter((r) => r.name.toLowerCase().includes(search.toLowerCase()))
     : null;
 
   const handleSubmit = async () => {
     if (!selectedId) return;
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await fetch(
         `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/linkedRequirements/${selectedId}`,
@@ -218,11 +180,13 @@ export function AddLinkedFRDialog({
       onSuccess();
       onOpenChange(false);
     } catch (e: any) {
-      setError(e.message ?? "Unknown error");
+      setSubmitError(e.message ?? "Unknown error");
     } finally {
       setSubmitting(false);
     }
   };
+
+  const displayError = submitError ?? error;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -240,7 +204,6 @@ export function AddLinkedFRDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
@@ -251,19 +214,17 @@ export function AddLinkedFRDialog({
             />
           </div>
 
-          {/* List */}
           <div className="max-h-80 overflow-y-auto space-y-4 pr-1">
             {loading ? (
               <div className="py-8 flex justify-center">
                 <LoadingSpinner text="Loading requirements..." />
               </div>
-            ) : error ? (
+            ) : displayError ? (
               <div className="py-6 text-center">
                 <AlertCircle className="h-6 w-6 text-red-400 mx-auto mb-1" />
-                <p className="text-sm text-red-500">{error}</p>
+                <p className="text-sm text-red-500">{displayError}</p>
               </div>
             ) : filteredFlat !== null ? (
-              // Search results - flat
               filteredFlat.length === 0 ? (
                 <p className="text-center text-slate-400 italic text-sm py-6">
                   No requirements match your search.
@@ -282,8 +243,7 @@ export function AddLinkedFRDialog({
                           : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
                       }`}
                       onClick={() =>
-                        String(fr.id) !== functionalRequirementId &&
-                        setSelectedId(fr.id)
+                        String(fr.id) !== functionalRequirementId && setSelectedId(fr.id)
                       }
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -311,13 +271,12 @@ export function AddLinkedFRDialog({
                   ))}
                 </div>
               )
-            ) : groups.length === 0 ? (
+            ) : (groups ?? []).length === 0 ? (
               <p className="text-center text-slate-400 italic text-sm py-6">
                 No functional requirements found.
               </p>
             ) : (
-              // Grouped tree view
-              groups.map((group) => (
+              (groups ?? []).map((group) => (
                 <div key={group.id} className="space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 px-1">
                     {group.label ? `${group.label} — ` : ""}{group.name}
@@ -341,10 +300,7 @@ export function AddLinkedFRDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            disabled={!selectedId || submitting}
-            onClick={handleSubmit}
-          >
+          <Button disabled={!selectedId || submitting} onClick={handleSubmit}>
             {submitting ? "Linking..." : "Link Requirement"}
           </Button>
         </DialogFooter>

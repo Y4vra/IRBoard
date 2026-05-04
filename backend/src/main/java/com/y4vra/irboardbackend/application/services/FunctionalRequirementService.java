@@ -1,7 +1,9 @@
 package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
+import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalRequirementMapper;
+import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
@@ -9,12 +11,12 @@ import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,16 +27,20 @@ public class FunctionalRequirementService extends RequirementService {
     private final FunctionalRequirementRepository frRepository;
     private final FunctionalRequirementMapper frMapper;
     private final FunctionalityRepository functionalityRepository;
+    private final FunctionalityMapper functionalityMapper;
+    private final FunctionalityService functionalityService;
 
     public FunctionalRequirementService(FunctionalRequirementRepository frRepository,
-                                        NonFunctionalRequirementRepository nfrRepository, DocumentRepository documentRepository, StakeholderRepository stakeholderRepository,RequirementRepository requirementRepository,
+                                        NonFunctionalRequirementRepository nfrRepository, DocumentRepository documentRepository, StakeholderRepository stakeholderRepository, RequirementRepository requirementRepository,
                                         FunctionalRequirementMapper frMapper,
                                         FunctionalityRepository functionalityRepository,
-                                        PermissionService permService) {
+                                        PermissionService permService, FunctionalityMapper functionalityMapper, FunctionalityService functionalityService) {
         super(permService,stakeholderRepository,documentRepository,nfrRepository,requirementRepository);
         this.frRepository = frRepository;
         this.frMapper = frMapper;
         this.functionalityRepository = functionalityRepository;
+        this.functionalityMapper = functionalityMapper;
+        this.functionalityService = functionalityService;
     }
 
     @Transactional(readOnly = true)
@@ -183,10 +189,27 @@ public class FunctionalRequirementService extends RequirementService {
     }
 
     @Transactional
-    public List<FunctionalRequirementDTO> findObservableFRequirementsForRequirement(String oryId, Long functionalityId, Long requirementId) {
-        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId)){
-            throw new AccessDeniedException("User not authorized to view requirements in this functionality");
-        }
-        return frMapper.toDtoList(frRepository.findObservableFRequirementsForRequirement(requirementId));
+    public List<FunctionalityDTO> findObservableFRequirementsGroupedByFunctionality(
+            String oryId, Long projectId, Long requirementId) {
+
+        Set<Long> viewableIds = functionalityService.getViewableFunctionalityIds(oryId, projectId);
+
+        List<Functionality> functionalities = functionalityRepository.findByProjectId(projectId)
+                .stream()
+                .filter(f -> viewableIds.contains(f.getId()))
+                .toList();
+
+        Map<Long, List<FunctionalRequirementDTO>> requirementsByFunctionality = functionalities.stream()
+                .collect(Collectors.toMap(
+                        Functionality::getId,
+                        f -> frRepository
+                                .findObservableFRequirementsForRequirementAndFunctionality(
+                                        projectId, f.getId(), requirementId)
+                                .stream()
+                                .map(frMapper::toDto)
+                                .toList()
+                ));
+
+        return functionalityMapper.toDtoListWithRequirements(functionalities, requirementsByFunctionality);
     }
 }

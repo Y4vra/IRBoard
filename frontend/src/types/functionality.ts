@@ -1,3 +1,5 @@
+import type { FunctionalRequirement } from "./FunctionalRequirement";
+
 export type FunctionalityState = "ACTIVE" | "DEACTIVATED";
 
 export interface Functionality {
@@ -7,6 +9,10 @@ export interface Functionality {
   label: string;
   state: FunctionalityState;
   projectId: number;
+}
+
+export interface FunctionalityWithRequirements extends Functionality {
+  requirements: FunctionalRequirement[];
 }
 
 export type Permission = "edit" | "view" | "none";

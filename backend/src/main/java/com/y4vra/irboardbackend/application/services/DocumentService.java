@@ -85,6 +85,6 @@ public class DocumentService {
         if(!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
             throw new AccessDeniedException("User not authorized to view documents of this project");
         }
-        return documentMapper.toDtoList(documentRepository.findObservableDocumentsForRequirement(requirementId));
+        return documentMapper.toDtoList(documentRepository.findObservableDocumentsForRequirement(projectId,requirementId));
     }
 }

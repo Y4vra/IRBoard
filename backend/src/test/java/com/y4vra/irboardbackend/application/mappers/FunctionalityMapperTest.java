@@ -8,6 +8,8 @@ import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FunctionalityMapperTest {
@@ -52,7 +54,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        FunctionalityDTO dto = new FunctionalityDTO(2L, "Authentication", "description", "AU", "DEACTIVATED", 5L);
+        FunctionalityDTO dto = new FunctionalityDTO(2L, "Authentication", "description", "AU", "DEACTIVATED", 5L,List.of());
 
         Functionality entity = mapper.toEntity(dto);
 
@@ -64,7 +66,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_throwsWhenStateIsInvalid() {
-        FunctionalityDTO dto = new FunctionalityDTO(1L, "Name","description", "NM", "INVALID_STATE", 1L);
+        FunctionalityDTO dto = new FunctionalityDTO(1L, "Name","description", "NM", "INVALID_STATE", 1L, List.of());
 
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalArgumentException.class,

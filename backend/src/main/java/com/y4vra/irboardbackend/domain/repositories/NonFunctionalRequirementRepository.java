@@ -16,5 +16,5 @@ public interface NonFunctionalRequirementRepository {
     void deleteById(Long id);
 
     List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
-    List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long requirementId);
+    List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId);
 }

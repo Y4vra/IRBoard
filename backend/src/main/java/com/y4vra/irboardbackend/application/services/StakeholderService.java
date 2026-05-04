@@ -94,6 +94,6 @@ public class StakeholderService {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
             throw new AccessDeniedException("User not authorized to view stakeholders of this project");
         }
-        return stakeholderMapper.toDtoList(stakeholderRepository.findObservableStakeholdersForRequirement(requirementId));
+        return stakeholderMapper.toDtoList(stakeholderRepository.findObservableStakeholdersForRequirement(projectId,requirementId));
     }
 }

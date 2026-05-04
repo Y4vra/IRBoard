@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
+import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.services.FunctionalRequirementService;
 import com.y4vra.irboardbackend.domain.model.User;
@@ -41,9 +42,5 @@ public class FunctionalRequirementController {
     public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
         functionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,stakeholderId);
         return ResponseEntity.ok().build();
-    }
-    @GetMapping("/observable/{requirementId}")
-    public ResponseEntity<List<FunctionalRequirementDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long requirementId) {
-        return ResponseEntity.ok(functionalRequirementService.findObservableFRequirementsForRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId, requirementId));
     }
 }
