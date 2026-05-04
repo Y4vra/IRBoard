@@ -84,7 +84,7 @@ function ChildRequirementCard({
         className="flex items-center gap-4 px-5 py-4 cursor-pointer"
         onClick={() =>
           navigate(
-            `/project/${projectId}/functionality/${functionalityId}/requirement/${req.id}`
+            `/project/${projectId}/functionalities/${functionalityId}/requirement/${req.id}`
           )
         }
       >
@@ -238,7 +238,7 @@ function FunctionalRequirementDetailView() {
         <p className="text-red-600 font-semibold">Could not load requirement</p>
         <p className="text-red-500 text-sm mt-1">{error}</p>
         <Button asChild variant="outline" className="mt-4">
-          <Link to={`/project/${projectId}/functionality/${functionalityId}`}>
+          <Link to={`/project/${projectId}/functionalities/${functionalityId}`}>
             Back to Functionality
           </Link>
         </Button>
@@ -252,7 +252,7 @@ function FunctionalRequirementDetailView() {
       {/* Nav */}
       <nav className="flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
-          <Link to={`/project/${projectId}/functionality/${functionalityId}`}>
+          <Link to={`/project/${projectId}/functionalities/${functionalityId}`}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Functionality
           </Link>
         </Button>
@@ -318,7 +318,7 @@ function FunctionalRequirementDetailView() {
           addLabel="Add Child FR"
           onAdd={() =>
             navigate(
-              `/project/${projectId}/functionality/${functionalityId}/requirement/${frId}/add-child`
+              `/project/${projectId}/functionalities/${functionalityId}/requirement/${frId}/add-child`
             )
           }
         >
@@ -503,7 +503,7 @@ function FunctionalRequirementDetailView() {
                 className="hover:border-blue-300 transition-colors cursor-pointer"
                 onClick={() =>
                   navigate(
-                    `/project/${projectId}/functionality/${fr.functionalityId}/requirement/${fr.id}`
+                    `/project/${projectId}/functionalities/${fr.functionalityId}/requirement/${fr.id}`
                   )
                 }
               >
