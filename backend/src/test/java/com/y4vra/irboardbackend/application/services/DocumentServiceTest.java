@@ -87,33 +87,33 @@ class DocumentServiceTest {
     }
 
     @Test
-    void findById_returnsDocumentWithPresignedUrl() {
+    void findDocumentById_returnsDocumentWithPresignedUrl() {
         when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(true);
         when(documentRepository.findById(documentId)).thenReturn(Optional.of(document));
         when(objStorageService.getDownloadUrl(document.getFileName())).thenReturn(presignedUrl);
         when(documentMapper.toDtoDetailed(document, presignedUrl)).thenReturn(documentDTO);
 
-        DocumentDTO result = documentService.findById(OryId, projectId, documentId);
+        DocumentDTO result = documentService.findDocumentById(OryId, projectId, documentId);
 
         assertThat(result).isEqualTo(documentDTO);
     }
 
     @Test
-    void findById_throwsAccessDeniedWhenNotAuthorized() {
+    void findDocumentById_throwsAccessDeniedWhenNotAuthorized() {
         when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(false);
 
-        assertThatThrownBy(() -> documentService.findById(OryId, projectId, documentId))
+        assertThatThrownBy(() -> documentService.findDocumentById(OryId, projectId, documentId))
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(documentRepository, never()).findById(any());
     }
 
     @Test
-    void findById_throwsEntityNotFoundWhenDocumentDoesNotExist() {
+    void findDocumentById_throwsEntityNotFoundWhenDocumentDoesNotExist() {
         when(permService.checkPermission("Project", "1", "view", OryId)).thenReturn(true);
         when(documentRepository.findById(documentId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> documentService.findById(OryId, projectId, documentId))
+        assertThatThrownBy(() -> documentService.findDocumentById(OryId, projectId, documentId))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("Document not found");
     }

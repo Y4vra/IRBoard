@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
+import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -34,6 +35,14 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
         SELECT nfr FROM NonFunctionalRequirement nfr JOIN nfr.observerRequirements r WHERE r.id = :requirementId
         """)
     List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
+    @Query("""
+        SELECT nfr FROM NonFunctionalRequirement nfr
+        WHERE NOT EXISTS (
+            SELECT 1 FROM nfr.observerRequirements r
+            WHERE r.id = :requirementId
+        )
+    """)
+    List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long requirementId);
 }
 
 @Component
@@ -81,5 +90,10 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     @Override
     public List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId){
         return jpaRepository.findAllObservedByRequirement(requirementId);
+    }
+
+    @Override
+    public List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long requirementId) {
+        return jpaRepository.findObservableNfRequirementsForRequirement(requirementId);
     }
 }

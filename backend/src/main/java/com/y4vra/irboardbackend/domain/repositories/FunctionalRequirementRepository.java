@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.domain.repositories;
 
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,4 +17,5 @@ public interface FunctionalRequirementRepository {
     Optional<Long> findRootFunctionalityIdById(Long id);
 
     List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId);
+    List<FunctionalRequirement> findObservableFRequirementsForRequirement(Long requirementId);
 }

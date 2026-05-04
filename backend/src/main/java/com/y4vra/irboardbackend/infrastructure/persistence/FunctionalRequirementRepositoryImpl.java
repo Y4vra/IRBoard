@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
+import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
@@ -36,6 +37,14 @@ interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalReq
         SELECT r FROM Requirement r JOIN r.observerRequirements r2 WHERE r2.id = :requirementId
     """)
     List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId);
+    @Query("""
+        SELECT fr FROM FunctionalRequirement fr
+        WHERE NOT EXISTS (
+            SELECT 1 FROM fr.observerRequirements r
+            WHERE r.id = :requirementId
+        )
+    """)
+    List<FunctionalRequirement> findObservableFRequirementsForRequirement(Long requirementId);
 }
 
 @Component
@@ -84,5 +93,10 @@ public class FunctionalRequirementRepositoryImpl implements FunctionalRequiremen
     @Override
     public List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId) {
         return jpaRepository.findAllObservedByRequirement(requirementId);
+    }
+
+    @Override
+    public List<FunctionalRequirement> findObservableFRequirementsForRequirement(Long requirementId) {
+        return jpaRepository.findObservableFRequirementsForRequirement(requirementId);
     }
 }

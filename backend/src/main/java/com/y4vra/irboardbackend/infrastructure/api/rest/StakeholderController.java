@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/projects/{projectId}/stakeholders")
 public class StakeholderController {
@@ -27,5 +29,9 @@ public class StakeholderController {
     @GetMapping("/{stakeholderId}")
     public ResponseEntity<StakeholderDTO> getStakeholderById(Authentication authentication,@PathVariable Long projectId, @PathVariable Long stakeholderId) {
         return ResponseEntity.ok(stakeholderService.findStakeholderById(((User) authentication.getPrincipal()).getOryId(),projectId, stakeholderId));
+    }
+    @GetMapping("/observable/{requirementId}")
+    public ResponseEntity<List<StakeholderDTO>> getObservableStakeholdersForRequirement(Authentication authentication,@PathVariable Long projectId,@PathVariable Long requirementId) {
+        return ResponseEntity.ok(stakeholderService.findObservableStakeholdersForRequirement(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
     }
 }

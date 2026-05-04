@@ -14,4 +14,5 @@ public interface DocumentRepository {
     void deleteById(Long id);
 
     List<Document> findAllObservedByRequirement(Long requirementId);
+    List<Document> findObservableDocumentsForRequirement(Long requirementId);
 }

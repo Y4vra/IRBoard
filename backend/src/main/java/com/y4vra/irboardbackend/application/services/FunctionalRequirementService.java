@@ -9,6 +9,7 @@ import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -179,5 +180,13 @@ public class FunctionalRequirementService extends RequirementService {
         }
         Associations.unobserve(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 requirementRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
+    }
+
+    @Transactional
+    public List<FunctionalRequirementDTO> findObservableFRequirementsForRequirement(String oryId, Long functionalityId, Long requirementId) {
+        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId)){
+            throw new AccessDeniedException("User not authorized to view requirements in this functionality");
+        }
+        return frMapper.toDtoList(frRepository.findObservableFRequirementsForRequirement(requirementId));
     }
 }

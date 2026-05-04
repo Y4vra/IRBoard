@@ -18,6 +18,14 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
         SELECT d FROM Document d JOIN d.observerRequirements r WHERE r.id = :requirementId
     """)
     List<Document> findAllObservedByRequirement(Long requirementId);
+    @Query("""
+        SELECT d FROM Document d
+        WHERE NOT EXISTS (
+            SELECT 1 FROM d.observerRequirements r
+            WHERE r.id = :requirementId
+        )
+    """)
+    List<Document> findObservableDocumentsForRequirement(Long requirementId);
 }
 
 @Component
@@ -62,5 +70,9 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     @Override
     public List<Document> findAllObservedByRequirement(Long requirementId) {
         return jpaRepository.findAllObservedByRequirement(requirementId);
+    }
+    @Override
+    public List<Document> findObservableDocumentsForRequirement(Long requirementId){
+        return jpaRepository.findObservableDocumentsForRequirement(requirementId);
     }
 }

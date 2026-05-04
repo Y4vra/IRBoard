@@ -8,6 +8,7 @@ import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -121,5 +122,13 @@ public class NonFunctionalRequirementService extends RequirementService {
         }
         Associations.unobserve(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
+    }
+
+    @Transactional(readOnly = true)
+    public List<NonFunctionalRequirementDTO> findObservableNfRequirementsForRequirement(String oryId, Long projectId, Long requirementId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)){
+            throw new AccessDeniedException("User not authorized to view non functional requirements of this project");
+        }
+        return nfrMapper.toDtoList(nfrRepository.findObservableNfRequirementsForRequirement(requirementId));
     }
 }

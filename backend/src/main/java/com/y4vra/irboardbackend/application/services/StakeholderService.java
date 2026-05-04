@@ -13,6 +13,7 @@ import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,5 +88,12 @@ public class StakeholderService {
         List<Requirement> observers = stakeholderRepository
                 .findFilteredRequirementsForStakeholder(stakeholderId, viewableFunctionalities);
         return stakeholderMapper.toDtoWithObservers(stakeholder, observers);
+    }
+
+    public List<StakeholderDTO> findObservableStakeholdersForRequirement(String oryId, long projectId, long requirementId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
+            throw new AccessDeniedException("User not authorized to view stakeholders of this project");
+        }
+        return stakeholderMapper.toDtoList(stakeholderRepository.findObservableStakeholdersForRequirement(requirementId));
     }
 }

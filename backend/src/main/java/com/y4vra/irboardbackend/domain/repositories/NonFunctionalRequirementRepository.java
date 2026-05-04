@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.repositories;
 
+import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface NonFunctionalRequirementRepository {
     void deleteById(Long id);
 
     List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
+    List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long requirementId);
 }

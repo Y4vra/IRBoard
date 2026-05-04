@@ -136,7 +136,7 @@ export function AddStakeholderDialog({
               </div>
             ) : filtered.length === 0 ? (
               <p className="text-center text-slate-400 italic text-sm py-6">
-                No stakeholders found.
+                No observable stakeholders were found.
               </p>
             ) : (
               filtered.map((s) => (
