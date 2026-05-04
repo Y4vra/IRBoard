@@ -7,6 +7,8 @@ import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StakeholderMapperTest {
@@ -50,7 +52,8 @@ class StakeholderMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.ACTIVE.name(), 2L);
+        List emptyList = List.of();
+        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.ACTIVE.name(), 2L,emptyList);
 
         Stakeholder entity = mapper.toEntity(dto);
 

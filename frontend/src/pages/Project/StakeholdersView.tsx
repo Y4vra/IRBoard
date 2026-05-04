@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
-import { CreateStakeholderDialog } from "@/components/CreateStakeholderDialog"
+import { CreateStakeholderDialog } from "@/components/dialogs/creatingDialogs/CreateStakeholderDialog"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { Stakeholder } from "@/types/Stakeholder"
 import { useLocks } from "@/hooks/useLocks"

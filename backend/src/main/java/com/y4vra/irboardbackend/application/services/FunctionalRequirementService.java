@@ -89,7 +89,7 @@ public class FunctionalRequirementService extends RequirementService {
     }
     @Transactional(readOnly = true)
     public FunctionalRequirementDTO findFunctionalRequirementById(String oryId, long functionalityId, long functionalRequirementId) {
-        if (permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId)){
+        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to view requirements in this functionality");
         }
 

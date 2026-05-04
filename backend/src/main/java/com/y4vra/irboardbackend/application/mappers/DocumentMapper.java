@@ -1,7 +1,6 @@
 package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
-import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.domain.model.Document;
 import org.springframework.stereotype.Component;
 

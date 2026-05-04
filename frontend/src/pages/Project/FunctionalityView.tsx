@@ -25,7 +25,7 @@ import { useBackendResource } from "@/hooks/useBackendResource"
 import type { FunctionalRequirement } from "../../types/FunctionalRequirement"
 import type { Functionality } from "@/types/Functionality"
 import { RequirementState } from "@/types/enum/RequirementState"
-import { CreateFunctionalRequirementDialog } from "@/components/CreateFunctionalRequirementDialog"
+import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog"
 import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
@@ -96,7 +96,7 @@ function FunctionalRequirementCard({
     >
       <div
         className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-        onClick={() => navigate(`/project/${projectId}/functionality/${functionalityId}/requirement/${r.id}`)}
+        onClick={() => navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`)}
       >
         {/* Collapse toggle */}
         {hasChildren ? (

@@ -1,7 +1,6 @@
 package com.y4vra.irboardbackend.application.dtos;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record NonFunctionalRequirementDTO(

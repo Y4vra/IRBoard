@@ -1,7 +1,6 @@
 package com.y4vra.irboardbackend.application.dtos;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 public record DocumentDTO(
         Long id,

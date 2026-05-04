@@ -1,8 +1,12 @@
 package com.y4vra.irboardbackend.application.mappers;
 
+import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
+import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
+import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Functionality;
+import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -12,6 +16,10 @@ import java.util.List;
 public class FunctionalRequirementMapper {
 
     public FunctionalRequirementDTO toDto(FunctionalRequirement entity) {
+        List emptyList = List.of();
+        return toDetailedDto(entity,emptyList,emptyList,emptyList,emptyList);
+    }
+    public FunctionalRequirementDTO toDetailedDto(FunctionalRequirement entity, List<StakeholderDTO> stkhs, List<NonFunctionalRequirementDTO> nfrs, List<DocumentDTO> docs, List<FunctionalRequirementDTO> frs) {
         if (entity == null) return null;
 
         Long functionalityId = null;
@@ -39,7 +47,11 @@ public class FunctionalRequirementMapper {
                 entity.getParent() != null ? entity.getParent().getId() : null,
                 entity.getOrderValue(),
                 entity.getState().name(),
-                childDtos
+                childDtos,
+                stkhs,
+                nfrs,
+                docs,
+                frs
         );
     }
 
