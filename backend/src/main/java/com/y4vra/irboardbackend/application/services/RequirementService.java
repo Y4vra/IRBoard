@@ -1,49 +1,24 @@
 package com.y4vra.irboardbackend.application.services;
 
-import com.y4vra.irboardbackend.domain.model.*;
-import org.springframework.transaction.annotation.Transactional;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
+import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
+import com.y4vra.irboardbackend.domain.repositories.RequirementRepository;
+import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
 
 public abstract class RequirementService {
-    // linking
-    @Transactional
-    public void observeStakeholder(FunctionalRequirement requirement, Stakeholder stakeholder) {
-        Associations.observe(requirement, stakeholder);
-    }
-    @Transactional
-    public void observeStakeholder(NonFunctionalRequirement requirement, Stakeholder stakeholder) {
-        Associations.observe(requirement, stakeholder);
-    }
-    @Transactional
-    public void observeDocument(FunctionalRequirement requirement, Document document) {
-        Associations.observe(requirement, document);
-    }
-    @Transactional
-    public void observeDocument(NonFunctionalRequirement requirement, Document document) {
-        Associations.observe(requirement, document);
-    }
-    @Transactional
-    public void observeRequirement(FunctionalRequirement requirement, Requirement requirement2) {
-        Associations.observe(requirement, requirement2);
-    }
-    //unlinking
-    @Transactional
-    public void unobserveStakeholder(FunctionalRequirement requirement, Stakeholder stakeholder) {
-        Associations.unobserve(requirement, stakeholder);
-    }
-    @Transactional
-    public void unobserveStakeholder(NonFunctionalRequirement requirement, Stakeholder stakeholder) {
-        Associations.unobserve(requirement, stakeholder);
-    }
-    @Transactional
-    public void unobserveDocument(FunctionalRequirement requirement, Document document) {
-        Associations.unobserve(requirement, document);
-    }
-    @Transactional
-    public void unobserveDocument(NonFunctionalRequirement requirement, Document document) {
-        Associations.unobserve(requirement, document);
-    }
-    @Transactional
-    public void unobserveRequirement(FunctionalRequirement requirement, Requirement requirement2) {
-        Associations.unobserve(requirement, requirement2);
+
+    protected final PermissionService permService;
+    protected final StakeholderRepository stakeholderRepository;
+    protected final DocumentRepository documentRepository;
+    protected final NonFunctionalRequirementRepository nfrRepository;
+    protected final RequirementRepository requirementRepository;
+
+    public RequirementService(PermissionService permService,StakeholderRepository stakeholderRepository,DocumentRepository documentRepository,NonFunctionalRequirementRepository nonFunctionalRequirementRepository,RequirementRepository requirementRepository) {
+        this.permService = permService;
+        this.stakeholderRepository = stakeholderRepository;
+        this.documentRepository = documentRepository;
+        this.nfrRepository = nonFunctionalRequirementRepository;
+        this.requirementRepository = requirementRepository;
     }
 }

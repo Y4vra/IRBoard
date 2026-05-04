@@ -73,8 +73,14 @@ export function AddStakeholderDialog({
     setSubmitting(true);
     try {
       const res = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/stakeholders/${selectedId}`,
-        { method: "POST", credentials: "include" }
+        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/linkStakeholder`,
+        { method: "POST", credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedId), 
+        }
       );
       if (!res.ok) throw new Error("Failed to link stakeholder");
       onSuccess();

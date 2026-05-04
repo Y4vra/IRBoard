@@ -479,7 +479,7 @@ function FunctionalRequirementDetailView() {
 
       {/* Linked Functional Requirements */}
       <SectionCard
-        title="Linked Functional Requirements"
+        title="Observed Functional Requirements"
         description="Other functional requirements related to this one."
         icon={<Circle className="h-4 w-4" />}
         count={requirement.observedFRequirements?.length ?? 0}
@@ -489,7 +489,7 @@ function FunctionalRequirementDetailView() {
       >
         {requirement.observedFRequirements?.length === 0 ? (
           <p className="text-center text-slate-400 italic py-6">
-            No linked functional requirements.
+            No observed functional requirements.
           </p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

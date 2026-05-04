@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, UserPlus, User, AlignLeft, Tag, Hash, AlertCircle } from "lucide-react";
+import { Loader2, UserPlus, User, AlignLeft, Hash } from "lucide-react";
 import {
   Dialog,
   DialogContent,

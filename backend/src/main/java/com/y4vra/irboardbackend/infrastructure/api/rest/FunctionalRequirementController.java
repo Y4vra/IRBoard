@@ -3,6 +3,7 @@ package com.y4vra.irboardbackend.infrastructure.api.rest;
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.services.FunctionalRequirementService;
 import com.y4vra.irboardbackend.domain.model.User;
+import io.minio.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,11 +22,6 @@ public class FunctionalRequirementController {
         this.functionalRequirementService = functionalRequirementService;
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<FunctionalRequirementDTO> createFunctionalRequirement(@Validated @RequestBody FunctionalRequirementDTO functionalRequirementDTO, @PathVariable Long functionalityId, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(functionalRequirementService.createFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),functionalRequirementDTO,functionalityId));
-    }
-
     @GetMapping("/{functionalRequirementId}")
     public ResponseEntity<FunctionalRequirementDTO> getFunctionalRequirementById(Authentication authentication,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
         return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementById(((User) authentication.getPrincipal()).getOryId(),functionalityId, functionalRequirementId));
@@ -33,5 +29,16 @@ public class FunctionalRequirementController {
     @GetMapping("/")
     public ResponseEntity<List<FunctionalRequirementDTO>> getFunctionalRequirementOfFunctionality(Authentication authentication, @PathVariable Long functionalityId) {
         return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementsOfFunctionality(((User) authentication.getPrincipal()).getOryId(),functionalityId));
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<FunctionalRequirementDTO> createFunctionalRequirement(@Validated @RequestBody FunctionalRequirementDTO functionalRequirementDTO, @PathVariable Long functionalityId, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(functionalRequirementService.createFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),functionalRequirementDTO,functionalityId));
+    }
+
+    @PostMapping("/{functionalRequirementId}/linkStakeholder")
+    public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,stakeholderId);
+        return ResponseEntity.ok().build();
     }
 }
