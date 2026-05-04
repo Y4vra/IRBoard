@@ -84,11 +84,7 @@ function ChildRequirementCard({
     >
       <div
         className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-        onClick={() =>
-          navigate(
-            `/project/${projectId}/functionalities/${functionalityId}/requirement/${req.id}`
-          )
-        }
+        onClick={() => navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${req.id}`)}
       >
         {hasChildren ? (
           <button
