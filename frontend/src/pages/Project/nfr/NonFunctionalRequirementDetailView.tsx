@@ -28,7 +28,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { RequirementStateBadge } from "@/components/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import { ObserveStakeholderDialog } from "../../../components/dialogs/observation/ObserveStakeholderDialog";
-import { ObserveNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
+// import { ObserveNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
 import { AddDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog";
@@ -196,7 +196,7 @@ function NonFunctionalRequirementDetailView() {
 
   const [createNonFunctionalRequirementDialogOpen,setCreateNonFunctionalRequirementDialogOpen]= useState(false);
   const [stakeholderDialogOpen, setStakeholderDialogOpen] = useState(false);
-  const [nfrDialogOpen, setNfrDialogOpen] = useState(false);
+  // const [nfrDialogOpen, setNfrDialogOpen] = useState(false);
   const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
 
@@ -240,11 +240,11 @@ function NonFunctionalRequirementDetailView() {
       stakeholderId
     );
 
-  const unlinkNfr = (linkedNfrId: number) =>
-    unlink(
-      `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/nonFunctionalRequirements/${linkedNfrId}`,
-      linkedNfrId
-    );
+  // const unlinkNfr = (linkedNfrId: number) =>
+  //   unlink(
+  //     `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/nonFunctionalRequirements/${linkedNfrId}`,
+  //     linkedNfrId
+  //   );
 
   const unlinkDocument = (docId: number) =>
     unlink(
@@ -415,7 +415,7 @@ function NonFunctionalRequirementDetailView() {
       </SectionCard>
 
       {/* Observed NFRs */}
-      <SectionCard
+      {/* <SectionCard
         title="Observed Non-Functional Requirements"
         description="Other NFRs that this requirement observes or depends on."
         icon={<ShieldCheck className="h-4 w-4" />}
@@ -454,7 +454,7 @@ function NonFunctionalRequirementDetailView() {
             ))}
           </div>
         )}
-      </SectionCard>
+      </SectionCard> */}
 
       {/* Documents */}
       <SectionCard
@@ -560,7 +560,7 @@ function NonFunctionalRequirementDetailView() {
         requirementType="NFR"
         onSuccess={refresh}
       />
-      <ObserveNFRDialog
+      {/* <ObserveNFRDialog
         open={nfrDialogOpen}
         onOpenChange={setNfrDialogOpen}
         projectId={projectId!}
@@ -568,7 +568,7 @@ function NonFunctionalRequirementDetailView() {
         requirementType="NFR"
         requirementId={nfrId!}
         onSuccess={refresh}
-      />
+      /> */}
       <AddDocumentDialog
         open={documentDialogOpen}
         onOpenChange={setDocumentDialogOpen}

@@ -148,7 +148,7 @@ public class FunctionalRequirementService extends RequirementService {
                             stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
-    protected void observeDocument(String oryId, Long functionalityId,Long requirementId, Long documentId) {
+    public void observeDocument(String oryId, Long functionalityId,Long requirementId, Long documentId) {
         if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to modify requirements in functionality");
         }
@@ -156,15 +156,15 @@ public class FunctionalRequirementService extends RequirementService {
                 documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
-    protected void observeRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
+    public void observeRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
         if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to modify requirements in functionality");
         }
         Associations.observe(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                requirementRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
+                requirementRepository.findById(requirementId2).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
     }
     @Transactional
-    protected void unobserveStakeholder(String oryId, Long functionalityId,Long requirementId, Long stakeholderId) {
+    public void unobserveStakeholder(String oryId, Long functionalityId,Long requirementId, Long stakeholderId) {
         if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to modify requirements in functionality");
         }
@@ -172,7 +172,7 @@ public class FunctionalRequirementService extends RequirementService {
                 stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
-    protected void unobserveDocument(String oryId, Long functionalityId,Long requirementId, Long documentId) {
+    public void unobserveDocument(String oryId, Long functionalityId,Long requirementId, Long documentId) {
         if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to modify requirements in functionality");
         }
@@ -180,12 +180,12 @@ public class FunctionalRequirementService extends RequirementService {
                 documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
-    protected void unobserveRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
+    public void unobserveRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
         if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to modify requirements in functionality");
         }
         Associations.unobserve(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                requirementRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
+                requirementRepository.findById(requirementId2).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
     }
 
     @Transactional

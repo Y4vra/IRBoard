@@ -102,7 +102,7 @@ public class NonFunctionalRequirementService extends RequirementService {
 
     // linking & unlinking
     @Transactional
-    protected void observeStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
+    public void observeStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
         }
@@ -110,7 +110,7 @@ public class NonFunctionalRequirementService extends RequirementService {
                 stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
-    protected void observeDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
+    public void observeDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
         }
@@ -118,7 +118,7 @@ public class NonFunctionalRequirementService extends RequirementService {
                 documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
-    protected void unobserveStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
+    public void unobserveStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
         }
@@ -126,7 +126,7 @@ public class NonFunctionalRequirementService extends RequirementService {
                 stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
-    protected void unobserveDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
+    public void unobserveDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
         }

@@ -35,4 +35,14 @@ public class NonFunctionalRequirementController {
     public ResponseEntity<List<NonFunctionalRequirementDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
         return ResponseEntity.ok(nonFunctionalRequirementService.findObservableNfRequirementsForRequirement(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
     }
+    @PostMapping("/{nonFunctionalRequirementId}/linkStakeholder")
+    public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long nonFunctionalRequirementId, @PathVariable Long projectId, Authentication authentication) {
+        nonFunctionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,stakeholderId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{nonFunctionalRequirementId}/linkDocument")
+    public ResponseEntity<Void> linkDocument(@RequestBody Long documentId,@PathVariable Long nonFunctionalRequirementId, @PathVariable Long projectId, Authentication authentication) {
+        nonFunctionalRequirementService.observeDocument(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,documentId);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -80,7 +80,7 @@ export function ObserveNFRDialog({
     try {
       const res = await fetch(
         requirementType === "FR"
-          ? `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/linkNfr`
+          ? `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/linkRequirement`
           :`${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/linkNfr`,
         { 
           method: "POST", 

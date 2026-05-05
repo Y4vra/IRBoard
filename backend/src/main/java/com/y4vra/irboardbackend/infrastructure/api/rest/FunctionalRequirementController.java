@@ -43,4 +43,14 @@ public class FunctionalRequirementController {
         functionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,stakeholderId);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/{functionalRequirementId}/linkDocument")
+    public ResponseEntity<Void> linkDocument(@RequestBody Long documentId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.observeDocument(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,documentId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{functionalRequirementId}/linkRequirement")
+    public ResponseEntity<Void> linkRequirement(@RequestBody Long nfrId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.observeRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,nfrId);
+        return ResponseEntity.ok().build();
+    }
 }

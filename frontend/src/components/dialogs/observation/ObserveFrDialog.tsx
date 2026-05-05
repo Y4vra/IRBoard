@@ -14,7 +14,7 @@ import { Circle, Search, AlertCircle, Check, ChevronDown, ChevronRight } from "l
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { RequirementStateBadge } from "@/components/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
-import type { Functionality, FunctionalitiesResponse, FunctionalityWithRequirements } from "@/types/Functionality";
+import type { FunctionalityWithRequirements } from "@/types/Functionality";
 import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 
 interface Props {
@@ -172,9 +172,16 @@ export function ObserveLinkedFRDialog({
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/linkedRequirements/${selectedId}`,
-        { method: "POST", credentials: "include" }
+      const res = await fetch(`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/linkRequirement`,
+        { 
+          method: "POST", 
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedId),
+        }
       );
       if (!res.ok) throw new Error("Failed to link requirement");
       onSuccess();
