@@ -38,6 +38,7 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
     @Query("""
         SELECT nfr FROM NonFunctionalRequirement nfr
         WHERE nfr.project.id = :projectId
+        AND nfr.id <> :requirementId
         AND NOT EXISTS (
             SELECT 1 FROM nfr.observerRequirements r
             WHERE r.id = :requirementId

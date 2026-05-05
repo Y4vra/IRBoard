@@ -76,10 +76,18 @@ export function AddDocumentDialog({
     try {
       const url =
         requirementType === "FR"
-          ? `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/documents/${selectedId}`
-          : `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/documents/${selectedId}`;
+          ? `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/linkDocument`
+          : `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/linkDocument`;
 
-      const res = await fetch(url, { method: "POST", credentials: "include" });
+      const res = await fetch(url, { 
+          method: "POST", 
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedId),
+        });
       if (!res.ok) throw new Error("Failed to link document");
       onSuccess();
       onOpenChange(false);

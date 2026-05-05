@@ -15,5 +15,9 @@ public record NonFunctionalRequirementDTO(
         Double actualValue,
         Long projectId,
         Long parentId,
-        List<NonFunctionalRequirementDTO> children
+        List<NonFunctionalRequirementDTO> children,
+        List<StakeholderDTO> observedStakeholders,
+        List<NonFunctionalRequirementDTO> observedNFRequirements,
+        List<DocumentDTO> observedDocuments,
+        List<FunctionalRequirementDTO> observerFRequirements
 ) implements Serializable {}

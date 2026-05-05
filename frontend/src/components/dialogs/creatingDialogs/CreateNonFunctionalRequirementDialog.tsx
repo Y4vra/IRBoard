@@ -17,7 +17,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Loader2,
@@ -43,6 +42,8 @@ const COMPARISON_OPERATORS = [
 ];
 
 interface CreateNonFunctionalRequirementDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   projectId: string;
   /** When provided, the new NFR will be created as a child of this requirement. */
   parentId?: number | string;
@@ -70,11 +71,12 @@ const EMPTY_FORM: FormData = {
 };
 
 export function CreateNonFunctionalRequirementDialog({
+  open,
+  onOpenChange,
   projectId,
   parentId,
   onSuccess,
 }: CreateNonFunctionalRequirementDialogProps) {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
@@ -143,19 +145,12 @@ export function CreateNonFunctionalRequirementDialog({
   };
 
   const handleClose = () => {
-    setOpen(false);
     setFormData(EMPTY_FORM);
     setError(null);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="shadow-md">
-          <ShieldAlert className="mr-2 h-4 w-4" />
-          {isChild ? "Add child NFR" : "Add NFR"}
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>

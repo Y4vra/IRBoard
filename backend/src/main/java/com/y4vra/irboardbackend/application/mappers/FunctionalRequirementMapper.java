@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
 import com.y4vra.irboardbackend.domain.model.*;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -14,7 +15,7 @@ public class FunctionalRequirementMapper {
     private DocumentMapper documentMapper;
     private NonFunctionalRequirementMapper nonFunctionalRequirementMapper;
 
-    public FunctionalRequirementMapper(StakeholderMapper stakeholderMapper,DocumentMapper documentMapper,NonFunctionalRequirementMapper nonFunctionalRequirementMapper) {
+    public FunctionalRequirementMapper(StakeholderMapper stakeholderMapper,DocumentMapper documentMapper,@Lazy NonFunctionalRequirementMapper nonFunctionalRequirementMapper) {
         this.stakeholderMapper = stakeholderMapper;
         this.documentMapper = documentMapper;
         this.nonFunctionalRequirementMapper = nonFunctionalRequirementMapper;
@@ -75,8 +76,6 @@ public class FunctionalRequirementMapper {
     }
 
     public List<FunctionalRequirementDTO> toDtoList(List<FunctionalRequirement> roots) {
-        return roots.stream()
-                .map(this::toDto)
-                .toList();
+        return roots.stream().map(this::toDto).toList();
     }
 }

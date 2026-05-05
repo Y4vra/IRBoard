@@ -2,10 +2,14 @@ package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
+import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -15,7 +19,25 @@ import java.util.stream.Collectors;
 @Component
 public class NonFunctionalRequirementMapper {
 
+    private StakeholderMapper stakeholderMapper;
+    private DocumentMapper documentMapper;
+    private FunctionalRequirementMapper frMapper;
+
+    @Autowired
+    public void setStakeholderMapper(StakeholderMapper stakeholderMapper){this.stakeholderMapper = stakeholderMapper;}
+    @Autowired
+    public void setDocumentMapper(DocumentMapper documentMapper){this.documentMapper = documentMapper;}
+    @Autowired
+    public void setFrMapper(FunctionalRequirementMapper frMapper){this.frMapper = frMapper;}
+
+    public NonFunctionalRequirementMapper() {}
+
     public NonFunctionalRequirementDTO toDto(NonFunctionalRequirement entity) {
+        List emptyList = List.of();
+        return toDetailedDto(entity,emptyList,emptyList,emptyList,emptyList);
+    }
+
+    public NonFunctionalRequirementDTO toDetailedDto(NonFunctionalRequirement entity, List<Stakeholder> stkhs, List<NonFunctionalRequirement> nfrs, List<Document> docs, List<FunctionalRequirement> frs) {
         if (entity == null) return null;
 
         Long projectId = null;
@@ -49,7 +71,11 @@ public class NonFunctionalRequirementMapper {
             entity.getActualValue(),
             projectId,
             parentId,
-            childDtos
+            childDtos,
+            stakeholderMapper.toDtoList(stkhs),
+            toDtoList(nfrs),
+            documentMapper.toDtoList(docs),
+            frMapper.toDtoList(frs)
         );
     }
 

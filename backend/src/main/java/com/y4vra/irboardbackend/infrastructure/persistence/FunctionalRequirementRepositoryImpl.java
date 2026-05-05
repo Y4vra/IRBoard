@@ -41,6 +41,7 @@ interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalReq
         SELECT fr FROM FunctionalRequirement fr
         WHERE fr.functionality.project.id = :projectId
         AND fr.functionality.id = :functionalityId
+        AND fr.id <> :requirementId
         AND NOT EXISTS (
             SELECT 1 FROM fr.observerRequirements r
             WHERE r.id = :requirementId

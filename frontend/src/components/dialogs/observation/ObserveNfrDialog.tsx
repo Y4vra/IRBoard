@@ -15,13 +15,15 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { RequirementStateBadge } from "@/components/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
+import type { RequirementType } from "@/types/RequirementSummaryDTO";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
   functionalityId: string;
-  functionalRequirementId: string;
+  requirementType: RequirementType;
+  requirementId: string;
   onSuccess: () => void;
 }
 
@@ -30,7 +32,8 @@ export function ObserveNFRDialog({
   onOpenChange,
   projectId,
   functionalityId,
-  functionalRequirementId,
+  requirementType,
+  requirementId,
   onSuccess,
 }: Props) {
   const [submitting, setSubmitting] = useState(false);
@@ -41,13 +44,13 @@ export function ObserveNFRDialog({
   const fetcher = useCallback(
     () =>
       fetch(
-        `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/observable/${functionalRequirementId}`,
+        `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/observable/${requirementId}`,
         { credentials: "include" }
       ).then((res) => {
         if (!res.ok) throw new Error("Failed to fetch non-functional requirements");
         return res.json() as Promise<NonFunctionalRequirement[]>;
       }),
-    [projectId, functionalRequirementId]
+    [projectId, requirementId]
   );
 
   const { data: nfrs, loading, error, refresh } = useBackendResource<NonFunctionalRequirement[]>({
@@ -76,8 +79,18 @@ export function ObserveNFRDialog({
     setSubmitError(null);
     try {
       const res = await fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${functionalRequirementId}/nonFunctionalRequirements/${selectedId}`,
-        { method: "POST", credentials: "include" }
+        requirementType === "FR"
+          ? `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/linkNfr`
+          :`${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/${requirementId}/linkNfr`,
+        { 
+          method: "POST", 
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedId),
+        }
       );
       if (!res.ok) throw new Error("Failed to link NFR");
       onSuccess();

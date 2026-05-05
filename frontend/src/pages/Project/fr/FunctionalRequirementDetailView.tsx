@@ -548,7 +548,8 @@ function FunctionalRequirementDetailView() {
         onOpenChange={setNfrDialogOpen}
         projectId={projectId!}
         functionalityId={functionalityId!}
-        functionalRequirementId={frId!}
+        requirementType="FR"
+        requirementId={frId!}
         onSuccess={refresh}
       />
       <AddDocumentDialog

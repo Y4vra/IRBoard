@@ -8,7 +8,7 @@ import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +23,12 @@ public class NonFunctionalRequirementService extends RequirementService {
 
     private final ProjectRepository projectRepository;
     private final NonFunctionalRequirementMapper nfrMapper;
+    private FunctionalRequirementRepository frRepository;
+
+    @Autowired
+    public void setFunctionalRequirementRepository(FunctionalRequirementRepository frRepository) {
+        this.frRepository = frRepository;
+    }
 
     public NonFunctionalRequirementService(NonFunctionalRequirementRepository nfrRepository,
                                            DocumentRepository documentRepository, StakeholderRepository stakeholderRepository,RequirementRepository rRepository,
@@ -58,7 +64,11 @@ public class NonFunctionalRequirementService extends RequirementService {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
             throw new AccessDeniedException("User not authorized to view nonFunctionalRequirements of this project");
         }
-        return nfrMapper.toDto(nonFunctionalRequirement.get());
+        return nfrMapper.toDetailedDto(nonFunctionalRequirement.get(),
+                stakeholderRepository.findAllObservedByRequirement(nonFunctionalRequirementId),
+                nfrRepository.findAllObservedByRequirement(nonFunctionalRequirementId),
+                documentRepository.findAllObservedByRequirement(nonFunctionalRequirementId),
+                frRepository.findAllObservedByRequirement(nonFunctionalRequirementId));
     }
 
     @Transactional

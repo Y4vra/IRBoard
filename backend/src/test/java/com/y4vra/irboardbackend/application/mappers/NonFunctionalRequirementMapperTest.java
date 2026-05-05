@@ -5,8 +5,11 @@ import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
+import jakarta.el.FunctionMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,7 +19,12 @@ class NonFunctionalRequirementMapperTest {
 
     @BeforeEach
     void setUp() {
+        StakeholderMapper stakeholderMapper = new StakeholderMapper();
+        DocumentMapper documentMapper = new DocumentMapper();
         mapper = new NonFunctionalRequirementMapper();
+        mapper.setFrMapper(new FunctionalRequirementMapper(stakeholderMapper,documentMapper,mapper));
+        mapper.setStakeholderMapper(stakeholderMapper);
+        mapper.setDocumentMapper(documentMapper);
     }
 
     @Test
@@ -63,7 +71,8 @@ class NonFunctionalRequirementMapperTest {
     void toEntity_mapsAllFields() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
                 9L, "Availability", "Must be highly available", RequirementState.PENDING_APPROVAL.name(),"percent",
-                "GREATER_THAN", 99.0, 99.9, 99.5, 1L, null, null
+                "GREATER_THAN", 99.0, 99.9, 99.5, 1L, null, null,
+                List.of(),List.of(),List.of(),List.of()
         );
 
         NonFunctionalRequirement entity = mapper.toEntity(dto);
@@ -82,7 +91,7 @@ class NonFunctionalRequirementMapperTest {
     void toEntity_throwsOnInvalidOperator() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
                 1L, "Name", "desc", RequirementState.PENDING_APPROVAL.name(), "ms", "NOT_AN_OPERATOR",
-                1.0, 2.0, 1.5, 1L,null, null
+                1.0, 2.0, 1.5, 1L,null, null,List.of(),List.of(),List.of(),List.of()
         );
 
         org.junit.jupiter.api.Assertions.assertThrows(

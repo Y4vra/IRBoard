@@ -2,7 +2,7 @@ import { useCallback, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "@/lib/globalVars"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, ChevronRight, ChevronDown } from "lucide-react"
+import { AlertCircle, ChevronRight, ChevronDown, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
@@ -30,6 +30,7 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
   const navigate = useNavigate()
   const hasChildren = r.children && r.children.length > 0
   const [collapsed, setCollapsed] = useState(false)
+  const [createNonFunctionalRequirementDialogOpen,setCreateNonFunctionalRequirementDialogOpen]= useState(false);
 
   return (
     <div
@@ -82,11 +83,17 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
         {/* Add child button — stop propagation so it doesn't navigate */}
         {isAdmin && (
           <div onClick={(e) => e.stopPropagation()} className="shrink-0">
-            <CreateNonFunctionalRequirementDialog
-              projectId={projectId}
-              parentId={r.id}
-              onSuccess={onRefetch}
-            />
+            <Button size="sm" variant="outline" onClick={()=>setCreateNonFunctionalRequirementDialogOpen(!createNonFunctionalRequirementDialogOpen)}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add Child NFR
+              <CreateNonFunctionalRequirementDialog
+                open={createNonFunctionalRequirementDialogOpen}
+                onOpenChange={setCreateNonFunctionalRequirementDialogOpen}
+                projectId={projectId}
+                parentId={r.id}
+                onSuccess={onRefetch}
+              />
+            </Button>
           </div>
         )}
 
@@ -118,6 +125,8 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
 function NonFunctionalRequirementsView() {
   const { projectId } = useParams<{ projectId: string }>()
   const { isAuthenticated, user } = useAuth()
+
+  const [createNonFunctionalRequirementDialogOpen, setCreateNonFunctionalRequirementDialogOpen] = useState(false);
 
   const fetchRequirements = useCallback(
     () =>
@@ -158,10 +167,16 @@ function NonFunctionalRequirementsView() {
           <p className="text-slate-500 mt-1">Manage quality attributes and system constraints.</p>
         </div>
         {user?.isAdmin && (
-          <CreateNonFunctionalRequirementDialog
-            projectId={projectId!}
-            onSuccess={refresh}
-          />
+          <Button size="sm" variant="outline" onClick={()=>setCreateNonFunctionalRequirementDialogOpen(!createNonFunctionalRequirementDialogOpen)}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add NFR
+            <CreateNonFunctionalRequirementDialog
+              open={createNonFunctionalRequirementDialogOpen}
+              onOpenChange={setCreateNonFunctionalRequirementDialogOpen}
+              projectId={projectId!}
+              onSuccess={refresh}
+            />
+          </Button>
         )}
       </header>
 
