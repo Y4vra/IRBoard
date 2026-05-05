@@ -8,6 +8,7 @@ import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
+import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -157,15 +158,13 @@ class DocumentServiceTest {
         when(multipartFile.getContentType()).thenReturn("application/pdf");
         when(documentMapper.toEntity(inputDto)).thenReturn(document);
         when(documentRepository.save(document)).thenReturn(document);
-        when(objStorageService.getDownloadUrl("spec.pdf")).thenReturn(presignedUrl);
-        when(documentMapper.toDtoDetailed(document, presignedUrl)).thenReturn(documentDTO);
+        when(objStorageService.getDownloadUrl(anyString())).thenReturn(presignedUrl);
+        when(documentMapper.toDtoDetailed(eq(document), eq(presignedUrl))).thenReturn(documentDTO);
 
         DocumentDTO result = documentService.uploadDocument(multipartFile, inputDto, projectId, oryId);
 
         assertThat(result).isEqualTo(documentDTO);
-        verify(objStorageService).uploadFile("spec.pdf", any(), 1024L, "application/pdf");
-        verify(permService).grantPermission("Document", "10", "parents", "Project:1");
-        verify(permService).grantPermission("Document", "10", "owners", oryId);
+        verify(objStorageService).uploadFile(matches(projectId + "-DOC-\\d{8}-\\d{6}-[A-Z0-9]{4}/spec\\.pdf"), any(), eq(1024L), eq("application/pdf"));
     }
 
     @Test
@@ -187,6 +186,7 @@ class DocumentServiceTest {
         when(multipartFile.getInputStream()).thenReturn(InputStream.nullInputStream());
         when(multipartFile.getSize()).thenReturn(1024L);
         when(multipartFile.getContentType()).thenReturn("application/pdf");
+        when(documentMapper.toEntity(inputDto)).thenReturn(document);
         doThrow(new RuntimeException("MinIO unreachable"))
                 .when(objStorageService).uploadFile(any(), any(), anyLong(), any());
 

@@ -126,7 +126,7 @@ class StakeholderServiceTest {
 
     @Test
     void createStakeholder_throwsEntityNotFoundWhenProjectDoesNotExist() {
-        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
         when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> stakeholderService.createStakeholder(oryId,stakeholderDTO, projectId))

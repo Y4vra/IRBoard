@@ -455,19 +455,22 @@ function FunctionalRequirementDetailView() {
               <Card
                 key={doc.id}
                 className="hover:border-blue-300 transition-colors cursor-pointer"
-                onClick={() => doc.url && window.open(doc.url, "_blank")}
+                onClick={() =>
+                  navigate(
+                    `/project/${projectId}/documents/${doc.id}`
+                  )}
               >
                 <CardHeader className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg shrink-0">
                       <FileText className="h-4 w-4" />
                     </div>
-                    <CardTitle className="text-sm flex-1 truncate">{doc.name}</CardTitle>
+                    <CardTitle className="text-sm flex-1 truncate">{doc.fileName}</CardTitle>
                     <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
                   </div>
-                  {doc.description && (
+                  {doc.mimeType && (
                     <p className="text-xs text-slate-400 truncate mt-1 pl-9">
-                      {doc.description}
+                      {doc.mimeType}
                     </p>
                   )}
                 </CardHeader>

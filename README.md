@@ -61,7 +61,7 @@ For the Reverse Proxy (Traefik) and the identity system to function correctly, *
 *Example:*
 If your `.env` contains `DOMAIN_NAME=irboard.local`, add the following line:
 ```text
-127.0.0.1  irboard.local
+127.0.0.1 irboard.local api.irboard.local auth.irboard.local objects.irboard.local grafana.irboard.local
 
 ```
 4. **Oathkeeper Configuration:**

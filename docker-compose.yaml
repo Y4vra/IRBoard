@@ -16,9 +16,11 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.minio.address=:9000"
     ports:
       - "80:80"
       - "8080:8080"
+      - "9000:9000"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -172,7 +174,7 @@ services:
       - internal
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) || Host(`grafana.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) || Host(`grafana.${DOMAIN_NAME}`) || Host(`${OBJS_DOMAIN}`)"
       - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
       - "traefik.docker.network=irboard_public"
 
@@ -185,9 +187,15 @@ services:
       - "traefik.http.routers.kratos-login.entrypoints=web"
       - "traefik.http.routers.kratos-login.middlewares=kratos-ratelimit"
       - "traefik.http.routers.kratos-login.service=oathkeeper"
-      - "traefik.http.middlewares.keep-host.headers.customrequestheaders.X-Forwarded-Host=grafana.irboard.local"
-      - "traefik.http.routers.oathkeeper.middlewares=keep-host"
-      - "traefik.http.routers.kratos-login.middlewares=kratos-ratelimit,keep-host"
+
+      - "traefik.http.routers.oathkeeper.entrypoints=web"
+      - "traefik.http.routers.oathkeeper-minio.rule=Host(`${OBJS_DOMAIN}`)"
+      - "traefik.http.routers.oathkeeper-minio.entrypoints=minio"
+      - "traefik.http.routers.oathkeeper-minio.service=oathkeeper"
+      
+      # Mantenemos el puerto interno de Oathkeeper (proxy)
+      - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
+
 
   # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ON KRATOS, KETO, AND BACKEND ---
   initial-setup-admin:
@@ -285,12 +293,16 @@ services:
   object-storage:
     image: minio/minio
     networks:
-      - internal
+      internal:
+        aliases:
+          - ${OBJS_DOMAIN}
     volumes:
       - minio_data:/data
     environment:
       - MINIO_ROOT_USER=${OBJ_STORAGE_USER}
       - MINIO_ROOT_PASSWORD=${OBJ_STORAGE_PASS}
+      - MINIO_BROWSER_REDIRECT_URL=http://${OBJS_DOMAIN}
+      - MINIO_SERVER_URL=http://${OBJS_DOMAIN}
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -318,7 +330,7 @@ services:
       backend-db:
         condition: service_healthy
       object-storage: 
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./backend:/app
       - ~/.m2:/root/.m2
@@ -328,7 +340,7 @@ services:
       - KRATOS_PUBLIC_URL=http://kratos:4433
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_ADMIN_API_KEY=dummy_value # unnecessary due to local deployment but added for future extension purposes.
-      - OBJ_STORAGE_URL=http://object-storage:9000
+      - OBJ_STORAGE_URL=http://${OBJS_DOMAIN}:9000
       - OBJ_STORAGE_USER=${OBJ_STORAGE_USER}
       - OBJ_STORAGE_PASS=${OBJ_STORAGE_PASS}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://backend-db:5432/${RMS_DB_NAME}

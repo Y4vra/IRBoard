@@ -66,7 +66,7 @@ export function AddDocumentDialog({
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = (documents ?? []).filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase())
+    d.fileName.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleSubmit = async () => {
@@ -157,21 +157,21 @@ export function AddDocumentDialog({
                         <FileText className="h-3.5 w-3.5" />
                       </div>
                       <span className="font-medium text-sm text-slate-800 truncate">
-                        {doc.name}
+                        {doc.fileName}
                       </span>
                     </div>
                     {selectedId === doc.id && (
                       <Check className="h-4 w-4 text-blue-600 shrink-0" />
                     )}
                   </div>
-                  {doc.description && (
+                  {doc.mimeType && (
                     <p className="text-xs text-slate-400 truncate mt-1 pl-7">
-                      {doc.description}
+                      {doc.mimeType}
                     </p>
                   )}
-                  {doc.url && (
+                  {doc.fileSize && (
                     <p className="text-xs text-blue-400 truncate mt-0.5 pl-7">
-                      {doc.url}
+                      {doc.fileSize}
                     </p>
                   )}
                 </button>
