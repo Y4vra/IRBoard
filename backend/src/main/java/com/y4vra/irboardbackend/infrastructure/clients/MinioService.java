@@ -25,13 +25,13 @@ public class MinioService implements ObjectStorageService {
     }
 
     @Override
-    public String getDownloadUrl(String objectName) {
+    public String getDownloadUrl(String s3Key) {
         try {
             return minioClient.getPresignedObjectUrl(
                     GetPresignedObjectUrlArgs.builder()
                             .method(Method.GET)
                             .bucket(bucketName)
-                            .object(objectName)
+                            .object(s3Key)
                             .expiry(2, TimeUnit.HOURS)
                             .build()
             );

@@ -43,20 +43,6 @@
   upstream:
     url: "http://backend:8080"
 
-- id: "minio-protected"
-  match:
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-    url: "http://objects.irboard.local/<.*>"
-  authenticators:
-    - handler: "noop"
-  authorizer:
-    handler: "allow"
-  mutators:
-    - handler: "noop"
-  upstream:
-    url: "http://object-storage:9000"
-    preserve_host: true
-
 - id: "grafana-protected"
   match:
     methods: ["GET", "POST"]

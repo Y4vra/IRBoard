@@ -47,7 +47,7 @@ public class DocumentService {
         }
         return documentRepository.findAllByProjectId(projectId).stream()
                 .map(doc -> {
-                    String url = objStorageService.getDownloadUrl(doc.getFileName());
+                    String url = objStorageService.getDownloadUrl(doc.getS3Key());
                     return documentMapper.toDtoDetailed(doc, url);
                 })
                 .toList();
@@ -64,7 +64,7 @@ public class DocumentService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found"));
 
-        String url = objStorageService.getDownloadUrl(document.getFileName());
+        String url = objStorageService.getDownloadUrl(document.getS3Key());
         List<Requirement> observers = documentRepository
                 .findFilteredRequirementsForDocument(documentId, viewableFunctionalities);
         return documentMapper.toDtoDetailedWithObservers(document, url,observers);
@@ -81,7 +81,7 @@ public class DocumentService {
         EntitySlugGenerator.setSlug(document, projectId); // generates slug e.g. "1-DOC-20260505-113422-A3F9"
 
         // Reuse the slug as the S3 key — it's already unique
-        String objectKey = document.getEntityIdentifier() + "/" + file.getOriginalFilename();
+        String objectKey = projectId + "/" + document.getEntityIdentifier();//error, debería ser projectId/file.getOriginalFilename()
         document.setS3Key(objectKey);
 
         try {

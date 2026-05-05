@@ -152,7 +152,6 @@ class DocumentServiceTest {
     @Test
     void uploadDocument_uploadsFileAndSavesDocumentWithKetoRelations() throws Exception {
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
-        when(multipartFile.getOriginalFilename()).thenReturn("spec.pdf");
         when(multipartFile.getInputStream()).thenReturn(InputStream.nullInputStream());
         when(multipartFile.getSize()).thenReturn(1024L);
         when(multipartFile.getContentType()).thenReturn("application/pdf");
@@ -164,7 +163,7 @@ class DocumentServiceTest {
         DocumentDTO result = documentService.uploadDocument(multipartFile, inputDto, projectId, oryId);
 
         assertThat(result).isEqualTo(documentDTO);
-        verify(objStorageService).uploadFile(matches(projectId + "-DOC-\\d{8}-\\d{6}-[A-Z0-9]{4}/spec\\.pdf"), any(), eq(1024L), eq("application/pdf"));
+        verify(objStorageService).uploadFile(matches(projectId +"/"+projectId + "-DOC-\\d{8}-\\d{6}-[A-Z0-9]{4}"), any(), eq(1024L), eq("application/pdf"));
     }
 
     @Test
@@ -182,7 +181,6 @@ class DocumentServiceTest {
     @Test
     void uploadDocument_throwsWhenStorageFails() throws Exception {
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
-        when(multipartFile.getOriginalFilename()).thenReturn("spec.pdf");
         when(multipartFile.getInputStream()).thenReturn(InputStream.nullInputStream());
         when(multipartFile.getSize()).thenReturn(1024L);
         when(multipartFile.getContentType()).thenReturn("application/pdf");
