@@ -20,6 +20,7 @@ import EditProject from './pages/Project/EditProject'
 import { TooltipProvider } from './components/ui/tooltip'
 import FunctionalRequirementDetailView from './pages/Project/fr/FunctionalRequirementDetailView'
 import { ProjectProviderWrapper } from './components/wrappers/ProjectProviderWrapper'
+import DocumentsView from './pages/Project/document/DocumentsView'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -63,6 +64,7 @@ function App() {
                 <Route path="/project/:projectId/functionalities/:functionalityId/functionalRequirements/:frId" element={<FunctionalRequirementDetailView/>}/>
                 <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
                 <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>
+                <Route path="/project/:projectId/documents" element={<DocumentsView/>}/>
                 <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
                 <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>
               </Route>

@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest.errors;
 
 import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
+import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex) {
-        log.error("Unhandled exception", ex);
+        log.error("MethodArgumentNotValidException exception", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -54,7 +55,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> handleAccessDenied(AccessDeniedException ex) {
-        log.error("Unhandled exception", ex);
+        log.error("AccessDeniedException exception", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -66,7 +67,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Object> handleNotFound(EntityNotFoundException ex) {
-        log.error("Unhandled exception", ex);
+        log.error("EntityNotFound exception", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -77,7 +78,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ReBACException.class)
     public ResponseEntity<Object> handleReBACException(ReBACException ex) {
-        log.error("Unhandled exception", ex);
+        log.error("ReBAC exception", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -85,9 +86,19 @@ public class GlobalExceptionHandler {
         body.put("message", "Authorization service communication error: " + ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    @ExceptionHandler(ObjectStorageException.class)
+    public ResponseEntity<Object> handleObjectStorageException(ObjectStorageException ex) {
+        log.error("ObjectStorage exception", ex);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("message", "Object Storage service error: " + ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     @ExceptionHandler(LabelConflictException.class)
     public ResponseEntity<Object> handleLabelConflict(LabelConflictException ex) {
-        log.error("Unhandled exception", ex);
+        log.error("LabelConflictException exception", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -112,7 +123,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     public ResponseEntity<Object> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
-        log.error("Unhandled exception", ex);
+        log.error("DataIntegrityViolationException exception", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
@@ -124,7 +135,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({NoHandlerFoundException.class, NoHandlerFoundException.class})
     public ResponseEntity<Object> handle404(Exception ex) {
-        log.error("Unhandled exception", ex);
         return ResponseEntity.notFound().build();
     }
 

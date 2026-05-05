@@ -6,6 +6,8 @@ import com.y4vra.irboardbackend.domain.model.Project;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DocumentMapperTest {
@@ -65,7 +67,7 @@ class DocumentMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        DocumentDTO dto = new DocumentDTO(7L, "report.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 2048L, 3L, "url");
+        DocumentDTO dto = new DocumentDTO(7L, "report.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 2048L, 3L, "url", List.of());
 
         Document entity = mapper.toEntity(dto);
 

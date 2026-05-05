@@ -97,11 +97,12 @@ class StakeholderServiceTest {
 
     @Test
     void createStakeholder_savesAndReturnsDto() {
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(stakeholderRepository.save(any(Stakeholder.class))).thenReturn(stakeholder);
         when(stakeholderMapper.toDto(stakeholder)).thenReturn(stakeholderDTO);
 
-        StakeholderDTO result = stakeholderService.createStakeholder(stakeholderDTO, projectId);
+        StakeholderDTO result = stakeholderService.createStakeholder(oryId,stakeholderDTO, projectId);
 
         assertThat(result).isEqualTo(stakeholderDTO);
         verify(stakeholderRepository).save(any(Stakeholder.class));
@@ -109,11 +110,12 @@ class StakeholderServiceTest {
 
     @Test
     void createStakeholder_setsProjectOnEntity() {
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(stakeholderRepository.save(any(Stakeholder.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stakeholderMapper.toDto(any(Stakeholder.class))).thenReturn(stakeholderDTO);
 
-        stakeholderService.createStakeholder(stakeholderDTO, projectId);
+        stakeholderService.createStakeholder(oryId,stakeholderDTO, projectId);
 
         verify(stakeholderRepository).save(argThat(s ->
                 s.getProject().equals(project) &&
@@ -124,9 +126,10 @@ class StakeholderServiceTest {
 
     @Test
     void createStakeholder_throwsEntityNotFoundWhenProjectDoesNotExist() {
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> stakeholderService.createStakeholder(stakeholderDTO, projectId))
+        assertThatThrownBy(() -> stakeholderService.createStakeholder(oryId,stakeholderDTO, projectId))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("Project not found");
 

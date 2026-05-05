@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { ShieldAlert, ServerCrash, AlertCircle, Home } from "lucide-react";
 
 export default function ErrorPage() {
@@ -51,14 +51,12 @@ export default function ErrorPage() {
       </p>
 
       <div className="flex gap-4">
-        <Button variant="outline" asChild>
-          <Link to={from}>Try Again</Link>
+        <Button variant="outline" onClick={() => window.location.replace(from)}>
+          Try Again
         </Button>
-        <Button asChild>
-          <Link to="/home" className="flex items-center gap-2">
-            <Home className="h-4 w-4" />
-            Return Home
-          </Link>
+        <Button onClick={() => window.location.replace("/home")}>
+          <Home className="h-4 w-4 mr-2" />
+          Return Home
         </Button>
       </div>
     </div>

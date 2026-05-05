@@ -4,7 +4,9 @@ import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
 import com.y4vra.irboardbackend.application.mappers.DocumentMapper;
 import com.y4vra.irboardbackend.application.ports.ObjectStorageService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import com.y4vra.irboardbackend.domain.model.Document;
+import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,8 +14,10 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DocumentService {
@@ -22,14 +26,16 @@ public class DocumentService {
     private final DocumentMapper documentMapper;
     private final PermissionService permService;
     private final ObjectStorageService objStorageService;
+    private final FunctionalityService functionalityService;
 
     public DocumentService(DocumentRepository documentRepository,
                            DocumentMapper documentMapper,
-                           PermissionService permService,ObjectStorageService objStorageService) {
+                           PermissionService permService, ObjectStorageService objStorageService, FunctionalityService functionalityService) {
         this.documentRepository = documentRepository;
         this.documentMapper = documentMapper;
         this.permService = permService;
         this.objStorageService = objStorageService;
+        this.functionalityService = functionalityService;
     }
 
     @Transactional(readOnly = true)
@@ -48,35 +54,50 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public DocumentDTO findDocumentById(String oryId, Long projectId, Long id) {
+    public DocumentDTO findDocumentById(String oryId, Long projectId, Long documentId) {
         boolean hasProjectAccess = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
+        Set<Long> viewableFunctionalities = functionalityService.getViewableFunctionalityIds(oryId, projectId);
 
         if (!hasProjectAccess) {
             throw new AccessDeniedException("User not authorized to view documents of this project");
         }
-        Document document = documentRepository.findById(id)
+        Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found"));
 
         String url = objStorageService.getDownloadUrl(document.getFileName());
-        return documentMapper.toDtoDetailed(document, url);
+        List<Requirement> observers = documentRepository
+                .findFilteredRequirementsForDocument(documentId, viewableFunctionalities);
+        return documentMapper.toDtoDetailedWithObservers(document, url,observers);
     }
 
     @Transactional
-    public DocumentDTO uploadDocument(DocumentDTO dto, Long projectId, String oryId) {
-        boolean hasProjectAccess = permService.checkPermission("Project", String.valueOf(projectId), "write", oryId);
-
-        if (!hasProjectAccess) {
+    public DocumentDTO uploadDocument(MultipartFile file, DocumentDTO dto, Long projectId, String oryId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to upload documents for this project");
         }
+
         Document document = documentMapper.toEntity(dto);
         document.setProjectId(projectId);
-        EntitySlugGenerator.setSlug(document,projectId);
+        EntitySlugGenerator.setSlug(document, projectId); // generates slug e.g. "1-DOC-20260505-113422-A3F9"
+
+        // Reuse the slug as the S3 key — it's already unique
+        String objectKey = document.getEntityIdentifier() + "/" + file.getOriginalFilename();
+        document.setS3Key(objectKey);
+
+        try {
+            objStorageService.uploadFile(
+                    objectKey,
+                    file.getInputStream(),
+                    file.getSize(),
+                    file.getContentType()
+            );
+        } catch (Exception e) {
+            throw new ObjectStorageException("Failed to upload file to storage", e);
+        }
+
         Document saved = documentRepository.save(document);
 
-        permService.grantPermission("Document", String.valueOf(saved.getId()), "parents", "Project:" + projectId);
-        permService.grantPermission("Document", String.valueOf(saved.getId()), "owners", oryId);
-
-        String url = objStorageService.getDownloadUrl(saved.getFileName());
+        String url = objStorageService.getDownloadUrl(objectKey);
         return documentMapper.toDtoDetailed(saved, url);
     }
 

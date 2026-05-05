@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.Document;
+import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 interface JpaDocumentRepository extends JpaRepository<Document, Long> {
@@ -27,6 +29,19 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
         )
     """)
     List<Document> findObservableDocumentsForRequirement(Long projectId,Long requirementId);
+    @Query("""
+        SELECT r FROM Requirement r
+        LEFT JOIN FETCH TREAT(r AS FunctionalRequirement).functionality
+        WHERE r IN (
+            SELECT r2 FROM Document d JOIN d.observerRequirements r2 WHERE d.id = :documentId
+        )
+        AND (
+            TYPE(r) = NonFunctionalRequirement
+            OR (TYPE(r) = FunctionalRequirement
+                 AND TREAT(r AS FunctionalRequirement).functionality.id IN :functionalityIds)
+        )
+    """)
+    List<Requirement> findFilteredRequirementsForDocument(Long documentId, Set<Long> viewableFunctionalities);
 }
 
 @Component
@@ -75,5 +90,10 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     @Override
     public List<Document> findObservableDocumentsForRequirement(Long projectId,Long requirementId){
         return jpaRepository.findObservableDocumentsForRequirement(projectId,requirementId);
+    }
+
+    @Override
+    public List<Requirement> findFilteredRequirementsForDocument(Long documentId, Set<Long> viewableFunctionalities) {
+        return jpaRepository.findFilteredRequirementsForDocument(documentId, viewableFunctionalities);
     }
 }

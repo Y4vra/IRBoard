@@ -58,7 +58,10 @@ public class StakeholderService {
     }
 
     @Transactional
-    public StakeholderDTO createStakeholder(StakeholderDTO dto, long projectId) {
+    public StakeholderDTO createStakeholder(String oryId,StakeholderDTO dto, long projectId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
+            throw new AccessDeniedException("User not authorized to add a Stakeholders to this project");
+        }
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 

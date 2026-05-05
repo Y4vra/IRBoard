@@ -23,7 +23,7 @@ public class StakeholderController {
 
     @PostMapping("/new")
     public ResponseEntity<StakeholderDTO> createStakeholder(@Validated @RequestBody StakeholderDTO stakeholderDTO, @PathVariable Long projectId, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(stakeholderService.createStakeholder(stakeholderDTO,projectId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(stakeholderService.createStakeholder(((User) authentication.getPrincipal()).getOryId(),stakeholderDTO,projectId));
     }
 
     @GetMapping("/{stakeholderId}")

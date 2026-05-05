@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
 import com.y4vra.irboardbackend.domain.model.Document;
+import com.y4vra.irboardbackend.domain.model.Requirement;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,7 +20,8 @@ public class DocumentMapper {
             entity.getMimeType(),
             entity.getFileSize(),
             entity.getProject() != null? entity.getProject().getId():null,
-            null
+            null,
+                List.of()
         );
     }
     public DocumentDTO toDtoDetailed(Document entity, String accessUrl) {
@@ -31,7 +33,21 @@ public class DocumentMapper {
                 entity.getMimeType(),
                 entity.getFileSize(),
                 entity.getProject() != null? entity.getProject().getId():null,
-                accessUrl
+                accessUrl,
+                List.of()
+        );
+    }
+    public DocumentDTO toDtoDetailedWithObservers(Document entity, String accessUrl,List<Requirement> observers) {
+        if (entity == null) return null;
+
+        return new DocumentDTO(
+                entity.getId(),
+                entity.getFileName(),
+                entity.getMimeType(),
+                entity.getFileSize(),
+                entity.getProject() != null? entity.getProject().getId():null,
+                accessUrl,
+                SummaryMapper.toRequirementSummaries(observers)
         );
     }
 
