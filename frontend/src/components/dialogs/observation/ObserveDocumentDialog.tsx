@@ -25,7 +25,7 @@ interface Props {
   onSuccess: () => void;
 }
 
-export function AddDocumentDialog({
+export function ObserveDocumentDialog({
   open,
   onOpenChange,
   projectId,
@@ -42,7 +42,8 @@ export function AddDocumentDialog({
   const fetcher = useCallback(
     () =>
       fetch(
-        `${API_BASE_URL}/projects/${projectId}/documents/observable/${requirementId}`,
+        // `${API_BASE_URL}/projects/${projectId}/documents/observable/${requirementId}`, //TODO bug that does not return anything despite being the exact same thing as the rest. No idea why.
+        `${API_BASE_URL}/projects/${projectId}/documents`,
         { credentials: "include" }
       ).then((res) => {
         if (!res.ok) throw new Error("Failed to fetch documents");

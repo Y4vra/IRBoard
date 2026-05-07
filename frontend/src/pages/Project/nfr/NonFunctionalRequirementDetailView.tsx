@@ -29,7 +29,7 @@ import { RequirementStateBadge } from "@/components/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import { ObserveStakeholderDialog } from "../../../components/dialogs/observation/ObserveStakeholderDialog";
 // import { ObserveNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
-import { AddDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
+import { ObserveDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog";
 
@@ -572,7 +572,7 @@ function NonFunctionalRequirementDetailView() {
         requirementId={nfrId!}
         onSuccess={refresh}
       /> */}
-      <AddDocumentDialog
+      <ObserveDocumentDialog
         open={documentDialogOpen}
         onOpenChange={setDocumentDialogOpen}
         projectId={projectId!}

@@ -29,7 +29,7 @@ import { RequirementStateBadge } from "@/components/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import { ObserveStakeholderDialog } from "../../../components/dialogs/observation/ObserveStakeholderDialog";
 import { ObserveNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
-import { AddDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
+import { ObserveDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
 import { ObserveLinkedFRDialog } from "../../../components/dialogs/observation/ObserveFrDialog";
 import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog";
@@ -555,7 +555,7 @@ function FunctionalRequirementDetailView() {
         requirementId={frId!}
         onSuccess={refresh}
       />
-      <AddDocumentDialog
+      <ObserveDocumentDialog
         open={documentDialogOpen}
         onOpenChange={setDocumentDialogOpen}
         projectId={projectId!}

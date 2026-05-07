@@ -34,7 +34,7 @@ interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalReq
         """, nativeQuery = true)
     Optional<Long> findRootFunctionalityIdById(@Param("id") Long id);
     @Query("""
-        SELECT r FROM Requirement r JOIN r.observerRequirements r2 WHERE r2.id = :requirementId
+        SELECT r FROM FunctionalRequirement r JOIN r.observerRequirements r2 WHERE r2.id = :requirementId
     """)
     List<FunctionalRequirement> findAllObservedByRequirement(Long requirementId);
     @Query("""
