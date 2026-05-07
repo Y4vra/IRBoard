@@ -34,6 +34,7 @@ import { ObserveLinkedFRDialog } from "../../../components/dialogs/observation/O
 import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog";
 import { useProject } from "@/hooks/useProject";
+import { RemoveButton } from "@/components/RemoveButton";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -202,6 +203,7 @@ function FunctionalRequirementDetailView() {
   const project = useProject();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [removingId, setRemovingId] = useState<number | null>(null);
 
   // Dialog open states
   const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
@@ -228,6 +230,48 @@ function FunctionalRequirementDetailView() {
     error,
     refresh,
   } = useBackendResource<FunctionalRequirement>({ fetcher });
+
+  const unlink = async (path: string, id: number) => {
+    setRemovingId(id);
+    try {
+      await fetch(`${API_BASE_URL}${path}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(id),
+      });
+
+      refresh();
+    } finally {
+      setRemovingId(null);
+    }
+  };
+  const unlinkStakeholder = (stakeholderId: number) =>
+    unlink(
+      `/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${frId}/unlinkStakeholder`,
+      stakeholderId
+    );
+
+  const unlinkNFR = (nfrId: number) =>
+    unlink(
+      `/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${frId}/unlinkRequirement`,
+      nfrId
+    );
+
+  const unlinkDocument = (docId: number) =>
+    unlink(
+      `/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${frId}/unlinkDocument`,
+      docId
+    );
+
+  const unlinkFR = (linkedFrId: number) =>
+    unlink(
+      `/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${frId}/unlinkRequirement`,
+      linkedFrId
+    );
 
   if (loading) return <LoadingSpinner text="Loading requirement..." />;
 
@@ -378,6 +422,12 @@ function FunctionalRequirementDetailView() {
                         {s.state}
                       </Badge>
                     )}
+                    {isAdmin && (
+                      <RemoveButton
+                        onClick={() => unlinkStakeholder(s.id)}
+                        loading={removingId === s.id}
+                      />
+                    )}
                     <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
                   </div>
                   {s.description && (
@@ -426,6 +476,12 @@ function FunctionalRequirementDetailView() {
                       <CardTitle className="text-sm truncate">{nfr.name}</CardTitle>
                     </div>
                     {nfr.state && <RequirementStateBadge state={nfr.state} />}
+                    {isAdmin && (
+                      <RemoveButton
+                        onClick={() => unlinkNFR(nfr.id)}
+                        loading={removingId === nfr.id}
+                      />
+                    )}
                     <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
                   </div>
                 </CardHeader>
@@ -466,6 +522,12 @@ function FunctionalRequirementDetailView() {
                       <FileText className="h-4 w-4" />
                     </div>
                     <CardTitle className="text-sm flex-1 truncate">{doc.fileName}</CardTitle>
+                    {isAdmin && (
+                      <RemoveButton
+                        onClick={() => unlinkDocument(doc.id)}
+                        loading={removingId === doc.id}
+                      />
+                    )}
                     <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
                   </div>
                   {doc.mimeType && (
@@ -513,6 +575,12 @@ function FunctionalRequirementDetailView() {
                     </Badge>
                     <CardTitle className="text-sm flex-1 truncate">{fr.name}</CardTitle>
                     <RequirementStateBadge state={fr.state} />
+                    {isAdmin && (
+                      <RemoveButton
+                        onClick={() => unlinkFR(fr.id)}
+                        loading={removingId === fr.id}
+                      />
+                    )}
                     <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
                   </div>
                   {fr.description && (

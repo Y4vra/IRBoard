@@ -45,4 +45,14 @@ public class NonFunctionalRequirementController {
         nonFunctionalRequirementService.observeDocument(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,documentId);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/{nonFunctionalRequirementId}/unlinkStakeholder")
+    public ResponseEntity<Void> unlinkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long nonFunctionalRequirementId, @PathVariable Long projectId, Authentication authentication) {
+        nonFunctionalRequirementService.unobserveStakeholder(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,stakeholderId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{nonFunctionalRequirementId}/unlinkDocument")
+    public ResponseEntity<Void> unlinkDocument(@RequestBody Long documentId,@PathVariable Long nonFunctionalRequirementId, @PathVariable Long projectId, Authentication authentication) {
+        nonFunctionalRequirementService.unobserveDocument(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,documentId);
+        return ResponseEntity.ok().build();
+    }
 }

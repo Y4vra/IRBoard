@@ -3,18 +3,28 @@ package com.y4vra.irboardbackend.infrastructure.api.rest.errors;
 import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
 import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -133,11 +143,56 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({NoHandlerFoundException.class, NoHandlerFoundException.class})
+    @ExceptionHandler({NoHandlerFoundException.class, NoHandlerFoundException.class, NoResourceFoundException.class})
     public ResponseEntity<Object> handle404(Exception ex) {
         return ResponseEntity.notFound().build();
     }
-
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body("Malformed JSON or invalid request body");
+    }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Object> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest().body(
+                "Invalid value '" + ex.getValue() + "' for parameter '" + ex.getName() + "'"
+        );
+    }
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<Object> handleMissingParam(MissingServletRequestParameterException ex) {
+        return ResponseEntity.badRequest().body(
+                "Missing required parameter: " + ex.getParameterName()
+        );
+    }
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<Object> handleMissingHeader(MissingRequestHeaderException ex) {
+        return ResponseEntity.badRequest().body(
+                "Missing required header: " + ex.getHeaderName()
+        );
+    }
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Object> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return ResponseEntity.status(405).body("HTTP method not supported");
+    }
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Object> handleMediaTypeNotSupported(HttpMediaTypeNotSupportedException ex) {
+        return ResponseEntity.status(415).body("Unsupported Media Type");
+    }
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException ex) {
+        return ResponseEntity.badRequest().body(
+                ex.getConstraintViolations().stream()
+                        .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                        .toList()
+        );
+    }
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Object> handleMultipartException(MultipartException ex) {
+        return ResponseEntity.badRequest().body("Invalid multipart request");
+    }
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Object> handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(413).body("File too large");
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleGeneralException(Exception ex) {
         log.error("Unhandled exception", ex);

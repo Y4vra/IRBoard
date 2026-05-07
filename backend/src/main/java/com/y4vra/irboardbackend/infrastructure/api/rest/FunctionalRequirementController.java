@@ -53,4 +53,19 @@ public class FunctionalRequirementController {
         functionalRequirementService.observeRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,nfrId);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/{functionalRequirementId}/unlinkStakeholder")
+    public ResponseEntity<Void> unlinkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.unobserveStakeholder(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,stakeholderId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{functionalRequirementId}/unlinkDocument")
+    public ResponseEntity<Void> unlinkDocument(@RequestBody Long documentId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.unobserveDocument(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,documentId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{functionalRequirementId}/unlinkRequirement")
+    public ResponseEntity<Void> unlinkRequirement(@RequestBody Long nfrId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.unobserveRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,nfrId);
+        return ResponseEntity.ok().build();
+    }
 }

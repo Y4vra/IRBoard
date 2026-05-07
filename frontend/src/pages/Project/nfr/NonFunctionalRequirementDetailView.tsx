@@ -22,7 +22,6 @@ import {
   FileText,
   GitBranch,
   Plus,
-  Trash2,
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { RequirementStateBadge } from "@/components/RequirementStateBadge";
@@ -32,6 +31,7 @@ import { ObserveStakeholderDialog } from "../../../components/dialogs/observatio
 import { ObserveDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog";
+import { RemoveButton } from "@/components/RemoveButton";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
@@ -160,30 +160,6 @@ function ChildNFRCard({
   );
 }
 
-// ─── Remove button ────────────────────────────────────────────────────────────
-
-function RemoveButton({
-  onClick,
-  loading,
-}: {
-  onClick: () => void;
-  loading?: boolean;
-}) {
-  return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      disabled={loading}
-      className="shrink-0 p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-      title="Remove"
-    >
-      <Trash2 className="h-3.5 w-3.5" />
-    </button>
-  );
-}
-
 // ─── Main view ────────────────────────────────────────────────────────────────
 
 function NonFunctionalRequirementDetailView() {
@@ -224,10 +200,16 @@ function NonFunctionalRequirementDetailView() {
   const unlink = async (path: string, id: number) => {
     setRemovingId(id);
     try {
-      await fetch(`${API_BASE_URL}${path}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      await fetch(`${API_BASE_URL}${path}`, 
+        { 
+          method: "POST", 
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(id),
+        });
       refresh();
     } finally {
       setRemovingId(null);
@@ -236,7 +218,7 @@ function NonFunctionalRequirementDetailView() {
 
   const unlinkStakeholder = (stakeholderId: number) =>
     unlink(
-      `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/unlinkStakeholder/${stakeholderId}`,
+      `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/unlinkStakeholder`,
       stakeholderId
     );
 
@@ -248,7 +230,7 @@ function NonFunctionalRequirementDetailView() {
 
   const unlinkDocument = (docId: number) =>
     unlink(
-      `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/documents/${docId}`,
+      `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/unlinkDocument`,
       docId
     );
 
