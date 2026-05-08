@@ -35,7 +35,6 @@ class ProjectMapperTest {
         assertThat(dto.description()).isEqualTo("A requirements board");
         assertThat(dto.priorityStyle()).isEqualTo("TERNARY");
         assertThat(dto.state()).isEqualTo("ACTIVE");
-        assertThat(dto.requirementCount()).isEqualTo(0);
     }
 
     @Test
@@ -58,7 +57,7 @@ class ProjectMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        ProjectDTO dto = new ProjectDTO(5L, "My Project", "desc", "MOSCOW", "FINISHED", 0);
+        ProjectDTO dto = new ProjectDTO(5L, "My Project", "desc", "MOSCOW", "FINISHED",null,null,null);
 
         Project project = mapper.toEntity(dto);
 

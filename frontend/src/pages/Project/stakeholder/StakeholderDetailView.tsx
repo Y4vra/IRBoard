@@ -11,7 +11,7 @@ import type { Stakeholder } from "@/types/Stakeholder";
 import { useLocks } from "@/hooks/useLocks";
 import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
-import { EntityStateBadge } from "@/components/EntityStateBadge";
+import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";

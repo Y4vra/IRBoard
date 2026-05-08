@@ -18,13 +18,15 @@ import {
   Lock,
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { CreateFunctionalityDialog } from "../../components/NewFunctionalityDialog";
+import { CreateFunctionalityDialog } from "../../components/dialogs/creatingDialogs/CreateFunctionalityDialog";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import type { Permission, Functionality, FunctionalitiesResponse } from "@/types/Functionality";
 import { useLocks } from "@/hooks/useLocks";
 import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
 import { useProject } from "@/hooks/useProject";
+import { ProjectStatsSection } from "@/components/graphics/ProjectStatsSectionGraph";
+import { ProjectHealthBar } from "@/components/graphics/ProjectHealthBar";
 
 const permissionConfig: Record<
   Permission,
@@ -89,6 +91,9 @@ function FunctionalityCard({
             <CardTitle className="text-base font-semibold truncate">
               {functionality.name}
             </CardTitle>
+            <p className="text-xs text-muted-foreground font-mono mt-1">
+              ID: {functionality.id}
+            </p>
             {functionality.description && (
               <CardDescription className="mt-1 text-sm line-clamp-2">
                 {functionality.description}
@@ -200,42 +205,55 @@ function ProjectView() {
   return (
     <div className="max-w-[1600px] mx-auto space-y-10 animate-in fade-in duration-500">
       {/* ── Top nav ── */}
-      <nav className="flex items-center justify-between">
+            <nav className="flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link to="/">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
           </Link>
         </Button>
-        {user?.isAdmin && (
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/project/${project.id}/edit`}>
-              <Settings className="mr-2 h-4 w-4" /> Edit Project
-            </Link>
-          </Button>
-        )}
       </nav>
-
+ 
       {/* ── Project info ── */}
-      <header className="space-y-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-4xl font-black tracking-tight">{project.name}</h1>
-          <Badge className="bg-primary/10 text-primary border-none uppercase text-xs">
-            {project.priorityStyle}
-          </Badge>
+      <header className="flex items-start justify-between gap-8">
+        {/* Left: title + description + meta */}
+        <div className="space-y-3 flex-1 min-w-0">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-4xl font-black tracking-tight">{project.name}</h1>
+            <Badge className="bg-primary/10 text-primary border-none uppercase text-xs">
+              {project.priorityStyle}
+            </Badge>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
+            {project.description || "No project description available."}
+          </p>
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5 font-bold text-foreground/80">
+              <Activity className="h-4 w-4" />
+              {project.state}
+            </div>
+            <div className="font-mono opacity-50">
+              REF: {project.id.toString().slice(0, 12)}
+            </div>
+          </div>
         </div>
-        <p className="text-xl text-muted-foreground max-w-4xl leading-relaxed">
-          {project.description || "No project description available."}
-        </p>
-        <div className="flex items-center gap-6 text-sm text-muted-foreground pt-2">
-          <div className="flex items-center gap-1.5 font-bold text-foreground/80">
-            <Activity className="h-4 w-4" />
-            {project.state}
-          </div>
-          <div className="font-mono opacity-50">
-            REF: {project.id.toString().slice(0, 12)}
-          </div>
+ 
+        {/* Right: health bar + admin actions */}
+        <div className="flex flex-col items-end gap-4 shrink-0 pt-1">
+          <ProjectHealthBar project={project} />
+ 
+          {user?.isAdmin && (
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/project/${project.id}/edit`}>
+                  <Settings className="mr-2 h-4 w-4" /> Edit Project
+                </Link>
+              </Button>
+              {/* Add more admin utility buttons here */}
+            </div>
+          )}
         </div>
       </header>
+
 
       {/* ── Quick-nav cards (Stakeholders, NFR, Documents) ── */}
       <section>
@@ -350,6 +368,8 @@ function ProjectView() {
           </>
         )}
       </section>
+      
+      <ProjectStatsSection project={project} />
     </div>
   );
 }

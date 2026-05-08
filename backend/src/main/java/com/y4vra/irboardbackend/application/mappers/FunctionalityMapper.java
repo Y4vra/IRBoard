@@ -36,10 +36,36 @@ public class FunctionalityMapper {
         functionality.setId(dto.id());
         functionality.setName(dto.name());
         functionality.setDescription(dto.description());
-        functionality.setLabel(dto.label());
-        functionality.setState(FunctionalityState.valueOf(dto.state()));
+        if (dto.label() != null && !dto.label().isBlank()) {
+            functionality.setLabel(dto.label());
+        } else {
+            functionality.setLabel(generateLabel(dto.name()));
+        }
+        if(dto.state() != null && !dto.state().isBlank()) {
+            functionality.setState(FunctionalityState.valueOf(dto.state()));
+        }
 
         return functionality;
+    }
+    private String generateLabel(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Cannot generate label for empty name");
+        }
+
+        String[] words = name.trim().split("\\s+");
+        StringBuilder label = new StringBuilder();
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                label.append(Character.toUpperCase(word.charAt(0)));
+            }
+        }
+
+        if (words.length == 1 && name.length() >= 3) {
+            return name.substring(0, 3).toUpperCase();
+        }
+
+        return label.toString();
     }
 
     public FunctionalityDTO toDtoWithRequirements(
@@ -74,4 +100,5 @@ public class FunctionalityMapper {
         if(patch.description() != null && !patch.description().isBlank()) functionality.setDescription(patch.description());
         if(patch.label() != null && !patch.label().isBlank()) functionality.setLabel(patch.label());
     }
+
 }

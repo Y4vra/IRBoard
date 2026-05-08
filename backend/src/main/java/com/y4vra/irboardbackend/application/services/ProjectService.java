@@ -8,6 +8,7 @@ import com.y4vra.irboardbackend.domain.model.User;
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
+import com.y4vra.irboardbackend.domain.repositories.StatisticsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,14 @@ public class ProjectService {
     private final ProjectMapper projectMapper;
     private final PermissionService permService;
     private final EntityLockService entityLockService;
+    private final StatisticsRepository statisticsRepository;
 
-    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper,PermissionService permService, EntityLockService entityLockService) {
+    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper, PermissionService permService, EntityLockService entityLockService, StatisticsRepository statisticsRepository) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.permService = permService;
         this.entityLockService = entityLockService;
+        this.statisticsRepository = statisticsRepository;
     }
 
     @Transactional(readOnly = true)
@@ -61,14 +64,18 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public ProjectDTO findById(String oryId, long id) {
-        boolean isAuthorized = permService.checkPermission("Project", String.valueOf(id), "view", oryId);
+    public ProjectDTO findById(String oryId, long projectId) {
+        boolean isAuthorized = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
         if (!isAuthorized) {
             throw new AccessDeniedException("User not authorized to view this project");
         }
-        return projectRepository.findById(id)
-                .map(projectMapper::toDto)
+        Project project =projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+
+        return projectMapper.toDto(project,
+                statisticsRepository.getStakeholderStatistics(projectId),
+                statisticsRepository.getNonFunctionalRequirementStatistics(projectId),
+                statisticsRepository.getFunctionalitiesStatistics(projectId));
     }
 
     @Transactional

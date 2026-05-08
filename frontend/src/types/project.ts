@@ -5,6 +5,10 @@ export interface Project {
   priorityStyle: PriorityStyle;
   state: ProjectState;
   createdAt: string;
+  
+  stakeholderStats?: Record<string, number>;
+  nonFunctionalRequirementStats?: Record<string, number>;
+  functionalRequirementStats?: Record<string, Record<string, number>>;
 }
 
 export type PriorityStyle = "MOSCOW" | "TERNARY";

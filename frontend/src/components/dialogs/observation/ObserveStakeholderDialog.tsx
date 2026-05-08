@@ -14,7 +14,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import type { Stakeholder } from "@/types/Stakeholder";
 import type { RequirementType } from "@/types/RequirementSummaryDTO";
-import { EntityStateBadge } from "@/components/EntityStateBadge";
+import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 
 interface Props {
   open: boolean;

@@ -24,7 +24,7 @@ import {
   Plus,
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { RequirementStateBadge } from "@/components/RequirementStateBadge";
+import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import { ObserveStakeholderDialog } from "../../../components/dialogs/observation/ObserveStakeholderDialog";
 // import { ObserveNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
@@ -32,7 +32,7 @@ import { ObserveDocumentDialog } from "../../../components/dialogs/observation/O
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog";
 import { RemoveButton } from "@/components/RemoveButton";
-import { EntityStateBadge } from "@/components/EntityStateBadge";
+import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 

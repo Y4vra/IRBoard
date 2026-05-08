@@ -20,7 +20,7 @@ import {
   Plus,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
-import { RequirementStateBadge } from "@/components/RequirementStateBadge"
+import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { FunctionalRequirement } from "../../types/FunctionalRequirement"
 import type { Functionality } from "@/types/Functionality"
@@ -30,36 +30,8 @@ import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
 import type { PriorityStyle } from "@/types/Project"
 import { useProject } from "@/hooks/useProject"
-
-const MOSCOW_STYLES: Record<string, string> = {
-  MUST: "bg-amber-50 text-amber-700 border-amber-200",
-  SHOULD: "bg-blue-50 text-blue-700 border-blue-200",
-  COULD: "bg-slate-100 text-slate-600 border-slate-200",
-  WONT: "bg-red-50 text-red-400 border-red-100",
-}
-
-const TERNARY_STYLES: Record<string, string> = {
-  HIGH: "bg-amber-50 text-amber-700 border-amber-200",
-  NORMAL: "bg-blue-50 text-blue-700 border-blue-200",
-  LOW: "bg-slate-100 text-slate-600 border-slate-200",
-}
-
-function PriorityBadge({
-  priority,
-  priorityStyle,
-}: {
-  priority?: string | null
-  priorityStyle: PriorityStyle
-}) {
-  if (!priority) return null
-  const styleMap = priorityStyle === "MOSCOW" ? MOSCOW_STYLES : TERNARY_STYLES
-  const className = styleMap[priority] ?? "bg-slate-100 text-slate-500 border-slate-200"
-  return (
-    <Badge className={`border font-semibold text-xs ${className}`}>
-      {priority}
-    </Badge>
-  )
-}
+import { PriorityBadge } from "@/components/badges/PriorityBadge"
+import { StatsChart } from "@/components/graphics/StatsChart"
 
 interface FunctionalRequirementCardProps {
   requirement: FunctionalRequirement
@@ -122,8 +94,11 @@ function FunctionalRequirementCard({
         <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
 
         <div className="flex-1 min-w-0">
-          <RequirementStateBadge state={r.state}/>
-          {r.description && (
+          {r.name && (
+            <p className="text-sm font-semibold truncate mt-0.5">
+              {r.name}
+            </p>
+          )}{r.description && (
             <p className="text-sm text-slate-500 truncate mt-0.5">
               {r.description}
             </p>
@@ -183,7 +158,7 @@ function FunctionalityView() {
     projectId: string
     functionalityId: string
   }>()
-  const { priorityStyle } = useProject();
+  const { priorityStyle,functionalRequirementStats } = useProject();
   const { user } = useAuth()
   
   const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
@@ -226,18 +201,8 @@ function FunctionalityView() {
   } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
 
   const requirements = requirementsData ?? []
+  const frStats = functionalRequirementStats?.[functionalityId!] ?? {} 
 
-  const countAll = (reqs: FunctionalRequirement[]): number =>
-    reqs.reduce((acc, r) => acc + 1 + countAll(r.children ?? []), 0)
-
-  const countPending = (reqs: FunctionalRequirement[]): number =>
-    reqs.reduce((acc, r) => {
-      const isPending = r.state === "PENDING_APPROVAL" ? 1 : 0
-      return acc + isPending + countPending(r.children ?? [])
-    }, 0)
-
-  const pendingCount = countPending(requirements)
-  
   // Derive the prefix from the functionality label (e.g. "User Management" → "UM", or use label directly if already short)
   const functionalityPrefix = functionality?.label ?? "FR"
 
@@ -296,19 +261,8 @@ function FunctionalityView() {
           </div>
         </div>
 
-        <div className="flex gap-3 shrink-0">
-          <div className="bg-white border border-slate-200 rounded-xl px-5 py-3 text-center min-w-[80px]">
-            <p className="text-2xl font-extrabold text-slate-900">
-              {countAll(requirements)}
-            </p>
-            <p className="text-xs text-slate-400 font-medium mt-0.5">Requirements</p>
-          </div>
-          {pendingCount > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 text-center min-w-[80px]">
-              <p className="text-2xl font-extrabold text-amber-600">{pendingCount}</p>
-              <p className="text-xs text-amber-500 font-medium mt-0.5">Pending</p>
-            </div>
-          )}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 min-w-[200px]">
+          <StatsChart stats={frStats} title="Requirements" size={100} />
         </div>
       </header>
 

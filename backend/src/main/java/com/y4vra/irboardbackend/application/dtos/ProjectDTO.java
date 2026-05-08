@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public record ProjectDTO(
         Long id,
@@ -19,5 +20,7 @@ public record ProjectDTO(
         @Pattern(regexp = "TERNARY|MOSCOW", message = "Priority style must be TERNARY or MOSCOW")
         String priorityStyle,
         String state,
-        Integer requirementCount
+        Map<String,Long> stakeholderStats,
+        Map<String,Long> nonFunctionalRequirementStats,
+        Map<String,Map<String,Long>> functionalRequirementStats
 ) implements Serializable {}

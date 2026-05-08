@@ -7,10 +7,15 @@ import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class ProjectMapper {
 
     public ProjectDTO toDto(Project project) {
+        return toDto(project,null,null,null);
+    }
+    public ProjectDTO toDto(Project project, Map<String,Long> stakeholderStats, Map<String,Long> nonFunctionalRequirementStats, Map<String,Map<String,Long>> functionalRequirementStats) {
         if (project == null) return null;
 
         ProjectDTO dto = new ProjectDTO(
@@ -19,8 +24,8 @@ public class ProjectMapper {
                 project.getDescription(),
                 project.getPriorityStyle() != null ? project.getPriorityStyle().toString() : null,
                 project.getState() != null ? project.getState().toString() : null,
-                0
-            );
+                stakeholderStats,nonFunctionalRequirementStats,functionalRequirementStats
+        );
 
         return dto;
     }

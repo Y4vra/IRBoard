@@ -117,18 +117,11 @@ public class FunctionalityService {
             throw new AccessDeniedException("User not authorized to add functionalities to this project");
         }
 
-        Functionality functionality = new Functionality();
+        Functionality functionality = functionalityMapper.toEntity(dto);
         functionality.setProjectId(projectId);
         EntitySlugGenerator.setSlug(functionality,projectId);
-        functionality.setName(dto.name());
         functionality.setProject(project);
         functionality.setState(FunctionalityState.ACTIVE);
-
-        if (dto.label() != null && !dto.label().isBlank()) {
-            functionality.setLabel(dto.label());
-        } else {
-            functionality.setLabel(generateLabel(dto.name()));
-        }
 
         Functionality saved;
         try{
@@ -138,27 +131,6 @@ public class FunctionalityService {
         }
         permService.grantPermissionToSubjectSet("Functionality", String.valueOf(saved.getId()), "project", "Project", String.valueOf(projectId), "");
         return functionalityMapper.toDto(saved);
-    }
-
-    private String generateLabel(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Cannot generate label for empty name");
-        }
-
-        String[] words = name.trim().split("\\s+");
-        StringBuilder label = new StringBuilder();
-
-        for (String word : words) {
-            if (!word.isEmpty()) {
-                label.append(Character.toUpperCase(word.charAt(0)));
-            }
-        }
-
-        if (words.length == 1 && name.length() >= 3) {
-            return name.substring(0, 3).toUpperCase();
-        }
-
-        return label.toString();
     }
 
     @Transactional

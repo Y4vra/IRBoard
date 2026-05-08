@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Circle, Search, AlertCircle, Check, ChevronDown, ChevronRight } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { RequirementStateBadge } from "@/components/RequirementStateBadge";
+import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import type { FunctionalityWithRequirements } from "@/types/Functionality";
 import type { FunctionalRequirement } from "@/types/FunctionalRequirement";

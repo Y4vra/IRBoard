@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog"
-import { RequirementStateBadge } from "@/components/RequirementStateBadge"
+import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement"
 import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
+import { useProject } from "@/hooks/useProject"
+import { StatsChart } from "@/components/graphics/StatsChart"
 
 // ─── Recursive card ──────────────────────────────────────────────────────────
 
@@ -125,7 +127,8 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
 function NonFunctionalRequirementsView() {
   const { projectId } = useParams<{ projectId: string }>()
   const { isAuthenticated, user } = useAuth()
-
+  const { nonFunctionalRequirementStats } = useProject()
+  
   const [createNonFunctionalRequirementDialogOpen, setCreateNonFunctionalRequirementDialogOpen] = useState(false);
 
   const fetchRequirements = useCallback(
@@ -179,7 +182,11 @@ function NonFunctionalRequirementsView() {
           </Button>
         )}
       </header>
-
+      {nonFunctionalRequirementStats && (
+        <Card className="p-4">
+          <StatsChart stats={nonFunctionalRequirementStats} title="NFR States" size={110} />
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Project Non-Functional Requirements</CardTitle>

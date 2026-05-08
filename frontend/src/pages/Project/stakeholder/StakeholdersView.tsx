@@ -21,7 +21,9 @@ import type { Stakeholder } from "@/types/Stakeholder"
 import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
-import { EntityStateBadge } from "@/components/EntityStateBadge"
+import { EntityStateBadge } from "@/components/badges/EntityStateBadge"
+import { StatsChart } from "@/components/graphics/StatsChart"
+import { useProject } from "@/hooks/useProject"
 
 
 function StakeholdersView() {
@@ -29,6 +31,7 @@ function StakeholdersView() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const {stakeholderStats} = useProject();
 
   const fetchStakeholders = useCallback(() =>
   fetch(`${API_BASE_URL}/projects/${projectId}/stakeholders`, { credentials: 'include' })
@@ -62,6 +65,11 @@ const stakeholders = data ?? [];
         </div>
         {user?.isAdmin && <CreateStakeholderDialog projectId={projectId!} onSuccess={refresh}/>}
       </header>
+      {stakeholderStats && (
+        <Card className="p-4">
+          <StatsChart stats={stakeholderStats} title="Stakeholder States" size={110} />
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
