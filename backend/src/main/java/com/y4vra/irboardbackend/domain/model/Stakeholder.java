@@ -33,6 +33,10 @@ public class Stakeholder extends ProjectElement {
     )
     private Set<Requirement> observerRequirements = new HashSet<>();
 
+    public void notifyObservers() {
+        observerRequirements.forEach(Requirement::update);
+    }
+
     public Stakeholder() {}
 
     public Long getId() { return id; }
@@ -52,7 +56,6 @@ public class Stakeholder extends ProjectElement {
 
     public Set<Requirement> getObserverRequirements() { return Set.copyOf(observerRequirements); }
     protected Set<Requirement> _getObserverRequirements() { return observerRequirements; }
-
 
     @Override
     public boolean equals(Object o) {

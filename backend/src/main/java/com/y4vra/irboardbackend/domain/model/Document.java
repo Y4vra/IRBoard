@@ -37,6 +37,10 @@ public class Document extends ProjectElement {
     )
     private Set<Requirement> observerRequirements = new HashSet<>();
 
+    public void notifyObservers() {
+        observerRequirements.forEach(Requirement::update);
+    }
+
     public Document() {}
 
     public Long getId() { return id; }

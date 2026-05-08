@@ -121,6 +121,7 @@ public class StakeholderService {
         }
         stakeholderMapper.patchEntity(patch, stakeholder);
         entityLockService.unlock(stakeholder,user);
+        stakeholder.notifyObservers();
         return stakeholderMapper.toDto(stakeholderRepository.save(stakeholder));
     }
 }
