@@ -37,4 +37,11 @@ public class ProjectMapper {
 
         return project;
     }
+
+    public void patchEntity(ProjectDTO patch, Project project) {
+        if (patch.name() != null) project.setName(patch.name());
+        if (patch.description() != null) project.setDescription(patch.description());
+        if (patch.priorityStyle() != null) project.setPriorityStyle(PriorityStyle.valueOf(patch.priorityStyle()));
+        if(patch.state() != null) project.setState(ProjectState.valueOf(patch.state()));
+    }
 }

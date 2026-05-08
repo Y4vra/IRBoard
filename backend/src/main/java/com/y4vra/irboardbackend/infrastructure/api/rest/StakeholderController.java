@@ -1,10 +1,13 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
+import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.application.services.StakeholderService;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +24,6 @@ public class StakeholderController {
         this.stakeholderService = stakeholderService;
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<StakeholderDTO> createStakeholder(@Validated @RequestBody StakeholderDTO stakeholderDTO, @PathVariable Long projectId, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(stakeholderService.createStakeholder(((User) authentication.getPrincipal()).getOryId(),stakeholderDTO,projectId));
-    }
-
     @GetMapping("/{stakeholderId}")
     public ResponseEntity<StakeholderDTO> getStakeholderById(Authentication authentication,@PathVariable Long projectId, @PathVariable Long stakeholderId) {
         return ResponseEntity.ok(stakeholderService.findStakeholderById(((User) authentication.getPrincipal()).getOryId(),projectId, stakeholderId));
@@ -33,5 +31,30 @@ public class StakeholderController {
     @GetMapping("/observable/{requirementId}")
     public ResponseEntity<List<StakeholderDTO>> getObservableStakeholdersForRequirement(Authentication authentication,@PathVariable Long projectId,@PathVariable Long requirementId) {
         return ResponseEntity.ok(stakeholderService.findObservableStakeholdersForRequirement(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
+    }
+
+    @GetMapping("/{stakeholderId}/requestEdit")
+    public ResponseEntity<Boolean> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long stakeholderId) {
+        User user = (User) authentication.getPrincipal();
+        try {
+            stakeholderService.requestEdit(user,projectId,stakeholderId);
+            return ResponseEntity.ok(true);
+        } catch (LockableEntityException e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.ok(false);
+        }
+    }
+    @PatchMapping("/{stakeholderId}/modify")
+    public ResponseEntity<StakeholderDTO> modify(Authentication authentication,
+                                          @PathVariable Long projectId,
+                                          @PathVariable Long stakeholderId,
+                                          @RequestBody StakeholderDTO patch) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(stakeholderService.patch(user,projectId,stakeholderId,patch));
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<StakeholderDTO> createStakeholder(@Validated @RequestBody StakeholderDTO stakeholderDTO, @PathVariable Long projectId, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(stakeholderService.createStakeholder(((User) authentication.getPrincipal()).getOryId(),stakeholderDTO,projectId));
     }
 }

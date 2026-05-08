@@ -86,11 +86,8 @@ public class ProjectService {
         if (!entityLockService.isLockedByUser(project, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
-
-        if (patch.name() != null) project.setName(patch.name());
-        if (patch.description() != null) project.setDescription(patch.description());
-        if (patch.priorityStyle() != null) project.setPriorityStyle(PriorityStyle.valueOf(patch.priorityStyle()));
-
+        projectMapper.patchEntity(patch,project);
+        entityLockService.unlock(project,user);
         return projectMapper.toDto(projectRepository.save(project));
     }
 }

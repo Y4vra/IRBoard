@@ -4,6 +4,8 @@ import com.y4vra.irboardbackend.domain.model.EntityLock;
 import com.y4vra.irboardbackend.domain.model.User;
 import com.y4vra.irboardbackend.domain.repositories.EntityLockRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +17,8 @@ interface JpaEntityLockRepository extends JpaRepository<EntityLock, Long> {
     Optional<EntityLock> findByEntityTypeAndEntityId(String entityType, Long entityId);
     Optional<EntityLock> findByUser(User user);
     void deleteByUser(User user);
+    @Modifying
+    @Query("delete from EntityLock l where l.entityType = :entityType and l.entityId = :entityId")
     void deleteByEntityTypeAndEntityId(String entityType, Long entityId);
     List<EntityLock> findByProjectId(Long projectId);
     List<EntityLock> findBySystemWide(Boolean systemWide);

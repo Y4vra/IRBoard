@@ -1,7 +1,9 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
+import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.application.services.UserService;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,5 +60,26 @@ public class UserController {
     public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
         userService.deactivateUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/{id}/requestEdit")
+    public ResponseEntity<Boolean> requestEdit(Authentication authentication, @PathVariable Long id) {
+        User user = (User) authentication.getPrincipal();
+        try {
+            userService.requestEdit(id, user);
+            return ResponseEntity.ok(true);
+        } catch (LockableEntityException e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.ok(false);
+        }
+    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PatchMapping("/{id}/modify")
+    public ResponseEntity<UserDTO> modify(Authentication authentication,
+                                             @PathVariable Long id,
+                                             @RequestBody UserDTO patch) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(userService.patch(id, patch, user));
     }
 }

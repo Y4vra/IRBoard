@@ -53,4 +53,10 @@ public class StakeholderMapper {
     public List<StakeholderDTO> toDtoList(List<Stakeholder> stkhs) {
         return stkhs.stream().map(this::toDto).collect(Collectors.toList());
     }
+
+    public void patchEntity(StakeholderDTO dto, Stakeholder entity) {
+        if(dto.name()!=null) entity.setName(dto.name());
+        if(dto.description()!=null) entity.setDescription(dto.description());
+        if(dto.state()!=null) entity.setState(EntityState.valueOf(dto.state()));
+    }
 }

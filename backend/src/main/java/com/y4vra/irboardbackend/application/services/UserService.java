@@ -1,12 +1,16 @@
 package com.y4vra.irboardbackend.application.services;
 
+import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.application.mappers.UserMapper;
 import com.y4vra.irboardbackend.application.ports.IdentityService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +24,14 @@ public class UserService {
     private final UserMapper userMapper;
     private final PermissionService permService;
     private final IdentityService identService;
+    private final EntityLockService entityLockService;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, PermissionService permService, IdentityService identService) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PermissionService permService, IdentityService identService, EntityLockService entityLockService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.permService = permService;
         this.identService = identService;
+        this.entityLockService = entityLockService;
     }
 
     @Transactional(readOnly = true)
@@ -116,5 +122,21 @@ public class UserService {
 
     public UserDTO getUserAuthenticatedDto(User user) {
         return userMapper.toDto(user);
+    }
+
+    @Transactional
+    public void requestEdit(Long id, User user) {
+        User userEntity = userRepository.findById(id).orElseThrow(()->new EntityNotFoundException("User not found"));
+        entityLockService.lock(userEntity,user);
+    }
+
+    @Transactional
+    public UserDTO patch(Long id, UserDTO patch, User user) {
+        User userEntity = userRepository.findById(id).orElseThrow(()->new EntityNotFoundException("User not found"));
+        if(!entityLockService.isLockedByUser(userEntity, user)) {
+            throw new LockableEntityException("You do not hold the lock for this project");
+        }
+        userMapper.patchEntity(patch, userEntity);
+        return userMapper.toDto(userRepository.save(userEntity));
     }
 }

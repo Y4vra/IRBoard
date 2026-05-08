@@ -8,6 +8,9 @@ import { ArrowLeft, Pencil, User, FileText, AlertTriangle, ChevronRight } from "
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { FunctionalRequirementSummaryDTO, RequirementSummaryDTO } from "@/types/RequirementSummaryDTO";
 import type { Stakeholder } from "@/types/Stakeholder";
+import { useLocks } from "@/hooks/useLocks";
+import { LockIndicator } from "@/components/LockIndicator";
+import { EntityType } from "@/lib/lockUtils";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -25,6 +28,10 @@ function StakeholderDetailView() {
   const navigate = useNavigate();
   const [stakeholder, setStakeholder] = useState<Stakeholder | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const { getLock } = useLocks();
+  const lock = getLock(EntityType.STAKEHOLDER, Number(stakeholderId));
+  const isLocked = !!lock;
 
   useEffect(() => {
     const fetchStakeholder = async () => {
@@ -68,9 +75,20 @@ function StakeholderDetailView() {
             </div>
             <h1 className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
           </div>
-          <Button variant="outline" size="sm">
-            <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
-          </Button>
+          <div className="flex items-center gap-2">
+            <LockIndicator lock={lock} />
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              disabled={isLocked}
+              title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
+            >
+              <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
+                <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
+              </Link>
+            </Button>
+          </div>
         </div>
         <div className="flex gap-2">
           {stakeholder.pendingReview && (
@@ -114,10 +132,7 @@ function StakeholderDetailView() {
                             FR
                           </Badge>
                           <CardTitle className="text-sm flex-1 truncate">{r.name}</CardTitle>
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] shrink-0"
-                          >
+                          <Badge variant="outline" className="text-[10px] shrink-0">
                             {r.state}
                           </Badge>
                           <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
@@ -150,10 +165,7 @@ function StakeholderDetailView() {
                             NFR
                           </Badge>
                           <CardTitle className="text-sm flex-1 truncate">{r.name}</CardTitle>
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] shrink-0"
-                          >
+                          <Badge variant="outline" className="text-[10px] shrink-0">
                             {r.state}
                           </Badge>
                           <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
