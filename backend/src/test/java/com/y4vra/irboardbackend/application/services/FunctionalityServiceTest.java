@@ -6,6 +6,7 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +53,7 @@ class FunctionalityServiceTest {
         functionality.setId(10L);
         functionality.setName("User Management");
         functionality.setLabel("UM");
-        functionality.setState(EntityState.ACTIVE);
+        functionality.setState(FunctionalityState.ACTIVE);
         functionality.setProject(project);
 
         functionalityDTO = new FunctionalityDTO(10L, "User Management","description", "UM", "ACTIVE", 1L,List.of());
@@ -80,9 +81,9 @@ class FunctionalityServiceTest {
         when(functionalityRepository.findByProjectId(projectId)).thenReturn(List.of(funcEdit, funcView, funcNone));
 
         // Setup DTOs
-        FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit","description", "E", "ACTIVE", 1L,List.of());
-        FunctionalityDTO dtoView = new FunctionalityDTO(11L, "View","description", "V", "ACTIVE", 1L,List.of());
-        FunctionalityDTO dtoNone = new FunctionalityDTO(12L, "None","description", "N", "ACTIVE", 1L,List.of());
+        FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit","description", "E", "PENDING_APPROVAL", 1L,List.of());
+        FunctionalityDTO dtoView = new FunctionalityDTO(11L, "View","description", "V", "PENDING_APPROVAL", 1L,List.of());
+        FunctionalityDTO dtoNone = new FunctionalityDTO(12L, "None","description", "N", "PENDING_APPROVAL", 1L,List.of());
 
         when(functionalityMapper.toDto(funcEdit)).thenReturn(dtoEdit);
         when(functionalityMapper.toDto(funcView)).thenReturn(dtoView);

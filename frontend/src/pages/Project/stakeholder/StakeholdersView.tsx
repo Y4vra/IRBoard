@@ -21,6 +21,7 @@ import type { Stakeholder } from "@/types/Stakeholder"
 import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
+import { EntityStateBadge } from "@/components/EntityStateBadge"
 
 
 function StakeholdersView() {
@@ -96,11 +97,7 @@ const stakeholders = data ?? [];
                           Pending Review
                         </Badge>
                       )}
-                      {s.state === "ACTIVE" ? (
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">Active</Badge>
-                      ) : (
-                        <Badge variant="destructive" className="uppercase text-[10px]">Deactivated</Badge>
-                      )}
+                      <EntityStateBadge state={s.state} />
                     </div>
                   </TableCell>
                   <TableCell className="text-right">

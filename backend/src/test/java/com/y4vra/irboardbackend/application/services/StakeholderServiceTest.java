@@ -60,7 +60,7 @@ class StakeholderServiceTest {
         stakeholder.setDescription("Primary system user");
         stakeholder.setProject(project);
 
-        stakeholderDTO = new StakeholderDTO(5L, "End User", "Primary system user", EntityState.ACTIVE.name(), projectId, List.of());
+        stakeholderDTO = new StakeholderDTO(5L, "End User", "Primary system user", EntityState.PENDING_APPROVAL.name(), projectId, List.of());
     }
 
     @Test

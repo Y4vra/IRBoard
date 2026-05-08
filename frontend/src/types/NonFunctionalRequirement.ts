@@ -1,4 +1,5 @@
 import type { DocumentDTO } from "./Document";
+import type { RequirementState } from "./enum/RequirementState";
 import type { FunctionalRequirementSummaryDTO, RequirementSummaryDTO } from "./RequirementSummaryDTO";
 import type { Stakeholder } from "./Stakeholder";
 
@@ -7,7 +8,7 @@ export interface NonFunctionalRequirement {
   identifier: string;
   name: string;
   description: string;
-  state: string;
+  state: RequirementState;
   measurementUnit: string,
   operator: string,
   thresholdValue: number,

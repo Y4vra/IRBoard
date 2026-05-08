@@ -72,7 +72,7 @@ public class StakeholderService {
         stakeholder.setProject(project);
         stakeholder.setProjectId(project.getId());
         EntitySlugGenerator.setSlug(stakeholder,project.getId());
-        stakeholder.setState(EntityState.ACTIVE);
+        stakeholder.setState(EntityState.PENDING_APPROVAL);
 
         Stakeholder saved = stakeholderRepository.save(stakeholder);
         return stakeholderMapper.toDto(saved);

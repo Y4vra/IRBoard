@@ -1,3 +1,4 @@
+import type { EntityState } from "./enum/EntityState";
 import type { RequirementSummaryDTO } from "./RequirementSummaryDTO";
 
 export interface Stakeholder {
@@ -5,6 +6,6 @@ export interface Stakeholder {
   name: string;
   description: string;
   pendingReview: boolean;
-  state: string;
+  state: EntityState;
   observers: RequirementSummaryDTO[];
 }

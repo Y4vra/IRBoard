@@ -34,7 +34,7 @@ class StakeholderMapperTest {
         stakeholder.setId(5L);
         stakeholder.setName("End User");
         stakeholder.setDescription("Primary system user");
-        stakeholder.setState(EntityState.ACTIVE);
+        stakeholder.setState(EntityState.PENDING_APPROVAL);
         stakeholder.setProject(project);
 
         StakeholderDTO dto = mapper.toDto(stakeholder);
@@ -53,7 +53,7 @@ class StakeholderMapperTest {
     @Test
     void toEntity_mapsAllFields() {
         List emptyList = List.of();
-        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.ACTIVE.name(), 2L,emptyList);
+        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.PENDING_APPROVAL.name(), 2L,emptyList);
 
         Stakeholder entity = mapper.toEntity(dto);
 

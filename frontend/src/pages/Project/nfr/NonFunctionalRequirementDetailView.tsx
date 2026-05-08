@@ -32,6 +32,7 @@ import { ObserveDocumentDialog } from "../../../components/dialogs/observation/O
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog";
 import { RemoveButton } from "@/components/RemoveButton";
+import { EntityStateBadge } from "@/components/EntityStateBadge";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
@@ -368,15 +369,7 @@ function NonFunctionalRequirementDetailView() {
                     </div>
                     <CardTitle className="text-sm flex-1 truncate">{s.name}</CardTitle>
                     {s.state && (
-                      <Badge
-                        className={
-                          s.state === "ACTIVE"
-                            ? "bg-emerald-100 text-emerald-700 text-[10px]"
-                            : "bg-red-100 text-red-700 text-[10px]"
-                        }
-                      >
-                        {s.state}
-                      </Badge>
+                      <EntityStateBadge state={s.state}/>
                     )}
                     {isAdmin && (
                       <RemoveButton

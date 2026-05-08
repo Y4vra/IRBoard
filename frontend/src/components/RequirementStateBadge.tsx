@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import type { RequirementState } from "@/types/enum/RequirementState";
 
 export const REQUIREMENT_STATE_CONFIG = {
   PENDING_APPROVAL: {
@@ -23,10 +24,8 @@ export const REQUIREMENT_STATE_CONFIG = {
   },
 } as const;
 
-export type RequirementState = keyof typeof REQUIREMENT_STATE_CONFIG;
-
 interface RequirementStateBadgeProps {
-  state: string;
+  state: RequirementState;
 }
 
 export function RequirementStateBadge({ state }: RequirementStateBadgeProps) {

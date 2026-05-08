@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.domain.model;
 
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,27 +34,27 @@ class FunctionalityTest {
         }
 
         @Test
-        @DisplayName("stores ACTIVE state")
+        @DisplayName("stores PENDING_APPROVAL state")
         void storesActiveState() {
             Functionality f = new Functionality();
-            f.setState(EntityState.ACTIVE);
-            assertThat(f.getState()).isEqualTo(EntityState.ACTIVE);
+            f.setState(FunctionalityState.ACTIVE);
+            assertThat(f.getState()).isEqualTo(FunctionalityState.ACTIVE);
         }
 
         @Test
         @DisplayName("stores DEACTIVATED state")
         void storesDeactivatedState() {
             Functionality f = new Functionality();
-            f.setState(EntityState.DEACTIVATED);
-            assertThat(f.getState()).isEqualTo(EntityState.DEACTIVATED);
+            f.setState(FunctionalityState.DEACTIVATED);
+            assertThat(f.getState()).isEqualTo(FunctionalityState.DEACTIVATED);
         }
 
         @Test
         @DisplayName("stores REMOVED state")
         void storesRemovedState() {
             Functionality f = new Functionality();
-            f.setState(EntityState.REMOVED);
-            assertThat(f.getState()).isEqualTo(EntityState.REMOVED);
+            f.setState(FunctionalityState.REMOVED);
+            assertThat(f.getState()).isEqualTo(FunctionalityState.REMOVED);
         }
 
         @Test

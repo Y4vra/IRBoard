@@ -1,4 +1,5 @@
 import type { DocumentDTO } from "./Document";
+import type { RequirementState } from "./enum/RequirementState";
 import type { FunctionalRequirementSummaryDTO, RequirementSummaryDTO } from "./RequirementSummaryDTO";
 import type { Stakeholder } from "./Stakeholder";
 
@@ -12,7 +13,7 @@ export interface FunctionalRequirement {
   functionalityId: number;
   parentId: number;
   orderValue: number;
-  state: string;
+  state: RequirementState;
   children: FunctionalRequirement[];
   observedStakeholders: Stakeholder[];
   observedNFRequirements: RequirementSummaryDTO[];

@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.*;
 import com.y4vra.irboardbackend.application.services.*;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +20,32 @@ public class FunctionalityController {
         this.functionalityService = functionalityService;
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<FunctionalityDTO> createFunctionality(@Validated @RequestBody FunctionalityDTO functionalityDTO, @PathVariable Long projectId, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(functionalityService.createFunctionality(functionalityDTO,projectId,((User) authentication.getPrincipal()).getOryId()));
-    }
-
     @GetMapping("/{functionalityId}")
     public ResponseEntity<FunctionalityDTO> getFunctionalityById(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId) {
         return ResponseEntity.ok(functionalityService.findFunctionalityById(((User) authentication.getPrincipal()).getOryId(),projectId, functionalityId));
+    }
+    @GetMapping("/{functionalityId}/requestEdit")
+    public ResponseEntity<Boolean> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
+        User user = (User) authentication.getPrincipal();
+        try {
+            functionalityService.requestEdit(user,projectId,functionalityId);
+            return ResponseEntity.ok(true);
+        } catch (LockableEntityException e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.ok(false);
+        }
+    }
+    @PatchMapping("/{functionalityId}/modify")
+    public ResponseEntity<FunctionalityDTO> modify(Authentication authentication,
+                                                 @PathVariable Long projectId,
+                                                 @PathVariable Long functionalityId,
+                                                 @RequestBody FunctionalityDTO patch) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(functionalityService.patch(user,projectId,functionalityId,patch));
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<FunctionalityDTO> createFunctionality(@Validated @RequestBody FunctionalityDTO functionalityDTO, @PathVariable Long projectId, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(functionalityService.createFunctionality(functionalityDTO,projectId,((User) authentication.getPrincipal()).getOryId()));
     }
 }

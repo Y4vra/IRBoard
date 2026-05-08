@@ -9,12 +9,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Users, Search, AlertCircle, Check } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import type { Stakeholder } from "@/types/Stakeholder";
 import type { RequirementType } from "@/types/RequirementSummaryDTO";
+import { EntityStateBadge } from "@/components/EntityStateBadge";
 
 interface Props {
   open: boolean;
@@ -161,15 +161,7 @@ export function ObserveStakeholderDialog({
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {s.state && (
-                        <Badge
-                          className={
-                            s.state === "ACTIVE"
-                              ? "bg-emerald-100 text-emerald-700 text-[10px]"
-                              : "bg-red-100 text-red-700 text-[10px]"
-                          }
-                        >
-                          {s.state}
-                        </Badge>
+                        <EntityStateBadge state={s.state}/>
                       )}
                       {selectedId === s.id && (
                         <Check className="h-4 w-4 text-indigo-600" />

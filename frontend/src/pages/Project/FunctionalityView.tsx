@@ -14,7 +14,6 @@ import {
 import {
   AlertCircle,
   ArrowLeft,
-  Circle,
   Pencil,
   ChevronRight,
   ChevronDown,
@@ -25,7 +24,6 @@ import { RequirementStateBadge } from "@/components/RequirementStateBadge"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { FunctionalRequirement } from "../../types/FunctionalRequirement"
 import type { Functionality } from "@/types/Functionality"
-import { RequirementState } from "@/types/enum/RequirementState"
 import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog"
 import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
@@ -124,12 +122,7 @@ function FunctionalRequirementCard({
         <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            {r.state === RequirementState.PENDING_APPROVAL && (
-              <Circle className="h-2 w-2 fill-amber-400 text-amber-400 shrink-0" />
-            )}
-            <p className="font-semibold text-slate-800 truncate">{r.name}</p>
-          </div>
+          <RequirementStateBadge state={r.state}/>
           {r.description && (
             <p className="text-sm text-slate-500 truncate mt-0.5">
               {r.description}
@@ -239,7 +232,7 @@ function FunctionalityView() {
 
   const countPending = (reqs: FunctionalRequirement[]): number =>
     reqs.reduce((acc, r) => {
-      const isPending = r.state === RequirementState.PENDING_APPROVAL ? 1 : 0
+      const isPending = r.state === "PENDING_APPROVAL" ? 1 : 0
       return acc + isPending + countPending(r.children ?? [])
     }, 0)
 

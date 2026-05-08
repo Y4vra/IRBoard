@@ -55,8 +55,8 @@ public class StakeholderMapper {
     }
 
     public void patchEntity(StakeholderDTO dto, Stakeholder entity) {
-        if(dto.name()!=null) entity.setName(dto.name());
-        if(dto.description()!=null) entity.setDescription(dto.description());
-        if(dto.state()!=null) entity.setState(EntityState.valueOf(dto.state()));
+        if(dto.name()!=null && !dto.name().isBlank()) entity.setName(dto.name());
+        if(dto.description()!=null && !dto.description().isBlank()) entity.setDescription(dto.description());
+        if(dto.state()!=null && !dto.state().isBlank()) entity.setState(EntityState.valueOf(dto.state()));
     }
 }

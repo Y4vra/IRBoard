@@ -35,9 +35,9 @@ public class UserMapper {
     }
 
     public void patchEntity(UserDTO dto, User entity) {
-        if (dto.name() != null) entity.setName(dto.name());
-        if (dto.email() != null) entity.setEmail(dto.email());
-        if (dto.surname() != null) entity.setSurname(dto.surname());
+        if (dto.name() != null && !dto.name().isBlank()) entity.setName(dto.name());
+        if (dto.email() != null && !dto.email().isBlank()) entity.setEmail(dto.email());
+        if (dto.surname() != null && !dto.surname().isBlank()) entity.setSurname(dto.surname());
         if (dto.active() != null) entity.setActive(dto.active());
         if (dto.isAdmin() != null) entity.setIsAdmin(dto.isAdmin());
     }

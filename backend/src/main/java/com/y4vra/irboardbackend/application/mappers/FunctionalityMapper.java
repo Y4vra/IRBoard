@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public class FunctionalityMapper {
         functionality.setName(dto.name());
         functionality.setDescription(dto.description());
         functionality.setLabel(dto.label());
-        functionality.setState(EntityState.valueOf(dto.state()));
+        functionality.setState(FunctionalityState.valueOf(dto.state()));
 
         return functionality;
     }
@@ -66,5 +67,11 @@ public class FunctionalityMapper {
                 ))
                 .filter(dto -> !dto.requirements().isEmpty())
                 .toList();
+    }
+
+    public void patchEntity(FunctionalityDTO patch, Functionality functionality) {
+        if(patch.name() !=null && !patch.name().isBlank()) functionality.setName(patch.name());
+        if(patch.description() != null && !patch.description().isBlank()) functionality.setDescription(patch.description());
+        if(patch.label() != null && !patch.label().isBlank()) functionality.setLabel(patch.label());
     }
 }

@@ -1,6 +1,6 @@
 import type { FunctionalRequirement } from "./FunctionalRequirement";
 
-export type FunctionalityState = "ACTIVE" | "DEACTIVATED";
+export type FunctionalityState = "ACTIVE" | "DEACTIVATED" | "REMOVED";
 
 export interface Functionality {
   id: string;

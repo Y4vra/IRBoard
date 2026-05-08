@@ -35,6 +35,7 @@ import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateFunctionalRequirementDialog";
 import { useProject } from "@/hooks/useProject";
 import { RemoveButton } from "@/components/RemoveButton";
+import { EntityStateBadge } from "@/components/EntityStateBadge";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -412,15 +413,7 @@ function FunctionalRequirementDetailView() {
                     </div>
                     <CardTitle className="text-sm flex-1 truncate">{s.name}</CardTitle>
                     {s.state && (
-                      <Badge
-                        className={
-                          s.state === "ACTIVE"
-                            ? "bg-emerald-100 text-emerald-700 text-[10px]"
-                            : "bg-red-100 text-red-700 text-[10px]"
-                        }
-                      >
-                        {s.state}
-                      </Badge>
+                      <EntityStateBadge state={s.state}/>
                     )}
                     {isAdmin && (
                       <RemoveButton

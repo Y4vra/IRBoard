@@ -1,12 +1,17 @@
 package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
+import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.User;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -27,12 +32,14 @@ public class FunctionalityService {
     private final ProjectRepository projectRepository;
     private final FunctionalityMapper functionalityMapper;
     private final PermissionService permService;
+    private final EntityLockService entityLockService;
 
-    public FunctionalityService(FunctionalityRepository functionalityRepository, ProjectRepository projectRepository, FunctionalityMapper functionalityMapper,PermissionService permService) {
+    public FunctionalityService(FunctionalityRepository functionalityRepository, ProjectRepository projectRepository, FunctionalityMapper functionalityMapper, PermissionService permService, EntityLockService entityLockService) {
         this.functionalityRepository = functionalityRepository;
         this.projectRepository = projectRepository;
         this.functionalityMapper = functionalityMapper;
         this.permService = permService;
+        this.entityLockService = entityLockService;
     }
 
     @Transactional(readOnly = true)
@@ -115,7 +122,7 @@ public class FunctionalityService {
         EntitySlugGenerator.setSlug(functionality,projectId);
         functionality.setName(dto.name());
         functionality.setProject(project);
-        functionality.setState(EntityState.ACTIVE);
+        functionality.setState(FunctionalityState.ACTIVE);
 
         if (dto.label() != null && !dto.label().isBlank()) {
             functionality.setLabel(dto.label());
@@ -152,5 +159,28 @@ public class FunctionalityService {
         }
 
         return label.toString();
+    }
+
+    @Transactional
+    public void requestEdit(User user, Long projectId, Long funcId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
+            throw new AccessDeniedException("User not authorized to edit functionalities of this project");
+        }
+        Functionality stakeholder = functionalityRepository.findById(funcId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        entityLockService.lock(stakeholder,user);
+    }
+
+    @Transactional
+    public FunctionalityDTO patch(User user, Long projectId, Long funcId, FunctionalityDTO patch) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
+            throw new AccessDeniedException("User not authorized to edit functionalities of this project");
+        }
+        Functionality functionality = functionalityRepository.findById(funcId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        if(!entityLockService.isLockedByUser(functionality, user)) {
+            throw new LockableEntityException("You do not hold the lock for this project");
+        }
+        functionalityMapper.patchEntity(patch, functionality);
+        entityLockService.unlock(functionality,user);
+        return functionalityMapper.toDto(functionalityRepository.save(functionality));
     }
 }

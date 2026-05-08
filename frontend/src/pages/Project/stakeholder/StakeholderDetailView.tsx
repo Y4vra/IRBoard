@@ -11,6 +11,7 @@ import type { Stakeholder } from "@/types/Stakeholder";
 import { useLocks } from "@/hooks/useLocks";
 import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
+import { EntityStateBadge } from "@/components/EntityStateBadge";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -96,9 +97,7 @@ function StakeholderDetailView() {
               <AlertTriangle className="h-3 w-3 mr-1" /> Pending Review
             </Badge>
           )}
-          <Badge className={stakeholder.state === "ACTIVE" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}>
-            {stakeholder.state === "ACTIVE" ? "Active" : "Deactivated"}
-          </Badge>
+          <EntityStateBadge state={stakeholder.state}/>
         </div>
         <p className="text-xl text-muted-foreground leading-relaxed">{stakeholder.description}</p>
       </header>

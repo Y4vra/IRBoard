@@ -1,8 +1,10 @@
+import type { RequirementState } from "./enum/RequirementState";
+
 export interface RequirementSummaryDTO {
     id:number;
     name: string;
     description: string;
-    state: string;
+    state: RequirementState;
     requirementType: string;
 }
 export interface FunctionalRequirementSummaryDTO extends RequirementSummaryDTO {

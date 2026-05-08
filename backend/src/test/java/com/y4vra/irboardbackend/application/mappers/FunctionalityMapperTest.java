@@ -4,6 +4,7 @@ import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class FunctionalityMapperTest {
         functionality.setId(1L);
         functionality.setName("User Management");
         functionality.setLabel("UM");
-        functionality.setState(EntityState.ACTIVE);
+        functionality.setState(FunctionalityState.ACTIVE);
         functionality.setProject(project);
 
         FunctionalityDTO dto = mapper.toDto(functionality);
