@@ -18,6 +18,7 @@ import LoadingSpinner from "@/components/LoadingSpinner"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { DocumentDTO } from "@/types/Document"
 import { UploadDocumentDialog } from "@/components/dialogs/creatingDialogs/UploadDocumentDialog"
+import { BackToProjectButton } from "@/components/BackToProjectButton"
 
 function DocumentsView() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -56,8 +57,9 @@ function DocumentsView() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
-      <header className="flex items-center justify-between">
-        <div>
+      <BackToProjectButton className="mb-0" projectId={projectId!}/>
+      <header className="flex items-center justify-between gap-4">
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-extrabold text-slate-900">Documents</h1>
           <p className="text-slate-500 mt-1">Manage project files and references.</p>
         </div>

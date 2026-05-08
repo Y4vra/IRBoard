@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/card"
 import {
   AlertCircle,
-  ArrowLeft,
   Pencil,
   ChevronRight,
   ChevronDown,
@@ -32,6 +31,7 @@ import type { PriorityStyle } from "@/types/Project"
 import { useProject } from "@/hooks/useProject"
 import { PriorityBadge } from "@/components/badges/PriorityBadge"
 import { StatsChart } from "@/components/graphics/StatsChart"
+import { BackToProjectButton } from "@/components/BackToProjectButton"
 
 interface FunctionalRequirementCardProps {
   requirement: FunctionalRequirement
@@ -226,11 +226,7 @@ function FunctionalityView() {
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
       <nav className="flex items-center justify-between">
-        <Button asChild variant="ghost" size="sm">
-          <Link to={`/project/${projectId}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Project
-          </Link>
-        </Button>
+        <BackToProjectButton className="mb-0" projectId={projectId!}/>
         {user?.isAdmin && (
           <Button variant="outline" size="sm" onClick={handleEditFunctionality}>
             <Pencil className="mr-2 h-4 w-4" /> Edit Functionality

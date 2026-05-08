@@ -24,6 +24,7 @@ import { EntityType } from "@/lib/lockUtils"
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge"
 import { StatsChart } from "@/components/graphics/StatsChart"
 import { useProject } from "@/hooks/useProject"
+import { BackToProjectButton } from "@/components/BackToProjectButton"
 
 
 function StakeholdersView() {
@@ -58,6 +59,7 @@ const stakeholders = data ?? [];
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
+      <BackToProjectButton className="mb-0" projectId={projectId!}/>
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Stakeholders</h1>

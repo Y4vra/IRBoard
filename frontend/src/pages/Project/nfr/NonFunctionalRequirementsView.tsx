@@ -15,6 +15,7 @@ import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
 import { useProject } from "@/hooks/useProject"
 import { StatsChart } from "@/components/graphics/StatsChart"
+import { BackToProjectButton } from "@/components/BackToProjectButton"
 
 // ─── Recursive card ──────────────────────────────────────────────────────────
 
@@ -164,6 +165,7 @@ function NonFunctionalRequirementsView() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
+      <BackToProjectButton className="mb-0" projectId={projectId!}/>
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Non-Functional Requirements</h1>
