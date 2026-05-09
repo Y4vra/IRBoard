@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.application.services.UserService;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
@@ -35,6 +37,32 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.findAll());
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/linking/{projectId}")
+    public ResponseEntity<Map<String,List<UserDTO>>> getAllUsersForProject(@PathVariable Long projectId) {
+        return ResponseEntity.ok(userService.findAllForProject(projectId));
+    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/linking/{projectId}")
+    public ResponseEntity<Void> linkUserToProject(@PathVariable Long projectId, @RequestBody Long userIdToBeLinked) {
+        userService.linkUserToProject(projectId,userIdToBeLinked);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/linking/{projectId}/{functionalityId}")
+    public ResponseEntity<Map<String, List<UserDTO>>> getAllUsersForFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
+        return ResponseEntity.ok(userService.findAllForProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId));
+    }
+    @PostMapping("/linking/{projectId}/{functionalityId}/engineer")
+    public ResponseEntity<Void> linkUserToProjectsFunctionalityAsEngineer(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId, @RequestBody Long userIdToBeLinked) {
+        userService.linkUserToProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,userIdToBeLinked,"engineers");
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/linking/{projectId}/{functionalityId}/stakeholder")
+    public ResponseEntity<Void> linkUserToProjectsFunctionalityAsStakeholder(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId, @RequestBody Long userIdToBeLinked) {
+        userService.linkUserToProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,userIdToBeLinked,"stakeholders");
+        return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
-import { InviteUserDialog } from "@/components/InviteUserDialog"
+import { InviteUserDialog } from "@/components/dialogs/userLinking/InviteUserDialog"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import type { User } from "@/types/User"
 import { useBackendResource } from "@/hooks/useBackendResource"
@@ -34,7 +34,7 @@ function UserManagement() {
     []
   );
 
-  const { data, loading, error } = useBackendResource<User[]>({
+  const { data, loading, error,refresh } = useBackendResource<User[]>({
     fetcher: fetchUsers,
     enabled: !authLoading && isAuthenticated,
   });
@@ -81,7 +81,7 @@ function UserManagement() {
           <h1 className="text-3xl font-extrabold text-slate-900">User Management</h1>
           <p className="text-slate-500 mt-1">Manage system access, roles, and invitations.</p>
         </div>
-        <InviteUserDialog onSuccess={fetchUsers}/>
+        <InviteUserDialog onSuccess={refresh}/>
       </header>
 
       <Card>

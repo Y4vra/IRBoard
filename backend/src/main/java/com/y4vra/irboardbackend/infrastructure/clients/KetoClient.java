@@ -105,4 +105,31 @@ public class KetoClient implements PermissionService {
             throw new ReBACException("Failed to create ReBAC tuple in Keto", e);
         }
     }
+    @Override
+    public List<String> getSubjectsForObject(String namespace, String object, String relation) {
+        String url = UriComponentsBuilder.fromUriString(ketoReadUrl)
+                .path("/relation-tuples")
+                .queryParam("namespace", namespace)
+                .queryParam("object", object)
+                .queryParam("relation", relation)
+                .build()
+                .toUriString();
+
+        try {
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+            if (response == null || !response.containsKey("relation_tuples")) {
+                return List.of();
+            }
+
+            List<Map<String, Object>> tuples = (List<Map<String, Object>>) response.get("relation_tuples");
+
+            return tuples.stream()
+                    .filter(t -> t.get("subject_id") != null) // only direct user subjects, not subject sets
+                    .map(t -> t.get("subject_id").toString())
+                    .toList();
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
 }

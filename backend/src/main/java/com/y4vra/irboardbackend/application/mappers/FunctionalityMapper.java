@@ -14,7 +14,7 @@ import java.util.Map;
 @Component
 public class FunctionalityMapper {
 
-    public FunctionalityDTO toDto(Functionality functionality) {
+    public FunctionalityDTO toDto(Functionality functionality,boolean isUserManager) {
         if (functionality == null) return null;
 
         return new FunctionalityDTO(
@@ -24,6 +24,7 @@ public class FunctionalityMapper {
         functionality.getLabel(),
         functionality.getState().toString(),
         functionality.getProject().getId(),
+        isUserManager,
         List.of()
         );
 
@@ -79,6 +80,7 @@ public class FunctionalityMapper {
                 functionality.getLabel(),
                 functionality.getState().toString(),
                 functionality.getProject().getId(),
+                false,
                 requirements
         );
     }

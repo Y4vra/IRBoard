@@ -8,4 +8,6 @@ public interface PermissionService {
     void grantPermission(String resourceType, String resourceId, String action, String subjectId);
     void grantPermissionToSubjectSet(String namespace, String object, String relation,
                                 String subjectNamespace, String subjectObject, String subjectRelation);
+
+    List<String> getSubjectsForObject(String namespace, String object, String relation);
 }

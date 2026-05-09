@@ -27,6 +27,7 @@ import { EntityType } from "@/lib/lockUtils";
 import { useProject } from "@/hooks/useProject";
 import { ProjectStatsSection } from "@/components/graphics/ProjectStatsSectionGraph";
 import { ProjectHealthBar } from "@/components/graphics/ProjectHealthBar";
+import { LinkUserToProjectDialog } from "@/components/dialogs/userLinking/LinkUserToProjectDialog";
 
 const permissionConfig: Record<
   Permission,
@@ -205,7 +206,7 @@ function ProjectView() {
   return (
     <div className="max-w-[1600px] mx-auto space-y-10 animate-in fade-in duration-500">
       {/* ── Top nav ── */}
-            <nav className="mb-0 flex items-center justify-between">
+      <nav className="mb-0 flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link to="/">
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
@@ -248,6 +249,7 @@ function ProjectView() {
                   <Settings className="mr-2 h-4 w-4" /> Edit Project
                 </Link>
               </Button>
+              <LinkUserToProjectDialog projectId={project.id!} />
               {/* Add more admin utility buttons here */}
             </div>
           )}

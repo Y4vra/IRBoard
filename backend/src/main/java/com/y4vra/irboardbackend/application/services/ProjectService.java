@@ -9,6 +9,7 @@ import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.repositories.StatisticsRepository;
+import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -25,13 +26,15 @@ public class ProjectService {
     private final PermissionService permService;
     private final EntityLockService entityLockService;
     private final StatisticsRepository statisticsRepository;
+    private final UserRepository userRepository;
 
-    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper, PermissionService permService, EntityLockService entityLockService, StatisticsRepository statisticsRepository) {
+    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper, PermissionService permService, EntityLockService entityLockService, StatisticsRepository statisticsRepository, UserRepository userRepository) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.permService = permService;
         this.entityLockService = entityLockService;
         this.statisticsRepository = statisticsRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -65,8 +68,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public ProjectDTO findById(String oryId, long projectId) {
-        boolean isAuthorized = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
-        if (!isAuthorized) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
             throw new AccessDeniedException("User not authorized to view this project");
         }
         Project project =projectRepository.findById(projectId)

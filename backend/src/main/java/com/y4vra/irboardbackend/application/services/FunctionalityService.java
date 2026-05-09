@@ -55,7 +55,7 @@ public class FunctionalityService {
         result.put("none", new ArrayList<>());
 
         for (Functionality f : allProjectFunctionalities) {
-            FunctionalityDTO dto = functionalityMapper.toDto(f);
+            FunctionalityDTO dto = functionalityMapper.toDto(f,false);
             String fId = String.valueOf(f.getId());
 
             if (canEditProject || permService.checkPermission("Functionality", fId, "editRequirements", oryId)) {
@@ -82,7 +82,7 @@ public class FunctionalityService {
         if (permService.checkPermission("Functionality", String.valueOf(functionalityId),"viewRequirements",oryId)==false){
             throw new AccessDeniedException("You do not have permission to view this Functionality");
         }
-        return functionalityMapper.toDto(functionality.get());
+        return functionalityMapper.toDto(functionality.get(),permService.checkPermission("Project",String.valueOf(projectId),"linkProjectUsers",oryId));
     }
     @Transactional(readOnly = true)
     public Set<Long> getViewableFunctionalityIds(String oryId, long projectId) {
@@ -130,7 +130,7 @@ public class FunctionalityService {
             throw new LabelConflictException("A functionality with label '" + functionality.getLabel() + "' already exists in this project.",e);
         }
         permService.grantPermissionToSubjectSet("Functionality", String.valueOf(saved.getId()), "project", "Project", String.valueOf(projectId), "");
-        return functionalityMapper.toDto(saved);
+        return functionalityMapper.toDto(saved,true);
     }
 
     @Transactional
@@ -153,6 +153,6 @@ public class FunctionalityService {
         }
         functionalityMapper.patchEntity(patch, functionality);
         entityLockService.unlock(functionality,user);
-        return functionalityMapper.toDto(functionalityRepository.save(functionality));
+        return functionalityMapper.toDto(functionalityRepository.save(functionality),true);
     }
 }

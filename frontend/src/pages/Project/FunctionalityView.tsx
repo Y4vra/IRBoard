@@ -32,6 +32,7 @@ import { useProject } from "@/hooks/useProject"
 import { PriorityBadge } from "@/components/badges/PriorityBadge"
 import { StatsChart } from "@/components/graphics/StatsChart"
 import { BackToProjectButton } from "@/components/BackToProjectButton"
+import { LinkUserToFunctionalityDialog } from "@/components/dialogs/userLinking/LinkUserToFunctionalityDialog"
 
 interface FunctionalRequirementCardProps {
   requirement: FunctionalRequirement
@@ -159,7 +160,7 @@ function FunctionalityView() {
     functionalityId: string
   }>()
   const { priorityStyle,functionalRequirementStats } = useProject();
-  const { user } = useAuth()
+  const { user } = useAuth();
   
   const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
 
@@ -225,16 +226,12 @@ function FunctionalityView() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
-      <nav className="flex items-center justify-between">
+      {/* ── Top nav ── */}
+      <nav className="mb-0 flex items-center justify-between">
         <BackToProjectButton className="mb-0" projectId={projectId!}/>
-        {user?.isAdmin && (
-          <Button variant="outline" size="sm" onClick={handleEditFunctionality}>
-            <Pencil className="mr-2 h-4 w-4" /> Edit Functionality
-          </Button>
-        )}
       </nav>
 
-      <header className="flex items-start justify-between gap-6">
+      <header className="flex items-center justify-between gap-6">
         <div className="space-y-3 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
             Functionality
@@ -257,8 +254,24 @@ function FunctionalityView() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 min-w-[200px]">
-          <StatsChart stats={frStats} title="Requirements" size={100} />
+        <div className="flex items-stretch gap-3">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 min-w-[200px]">
+            <StatsChart stats={frStats} title="Requirements" size={100} />
+          </div>
+          <div className="flex flex-col gap-3">
+            {user?.isAdmin && (
+              <Button variant="outline" size="sm" onClick={handleEditFunctionality}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit Functionality
+              </Button>
+            )}
+            {functionality.isUserFunctionalityManager && (
+                <LinkUserToFunctionalityDialog
+                  projectId={projectId!}
+                  functionalityId={functionalityId!}
+                  canManage={functionality.isUserFunctionalityManager}
+                />
+              )}
+          </div>
         </div>
       </header>
 

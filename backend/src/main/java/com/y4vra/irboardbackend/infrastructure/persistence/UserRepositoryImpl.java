@@ -13,6 +13,9 @@ import java.util.Optional;
 interface JpaUserRepository extends JpaRepository<User, Long> {
     Optional<User> findByOryId(String oryId);
     Optional<User> findByEmail(String email);
+
+    List<User> findByOryIdIn(List<String> oryIds);
+    List<User> findByOryIdNotIn(List<String> oryIds);
 }
 
 @Component
@@ -51,5 +54,15 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<User> findByOryIdIn(List<String> oryIds) {
+        return jpaRepository.findByOryIdIn(oryIds);
+    }
+
+    @Override
+    public List<User> findByOryIdNotIn(List<String> oryIds) {
+        return jpaRepository.findByOryIdNotIn(oryIds);
     }
 }

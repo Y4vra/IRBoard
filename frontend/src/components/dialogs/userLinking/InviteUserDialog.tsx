@@ -51,6 +51,7 @@ export function InviteUserDialog({ onSuccess }: InviteUserDialogProps) {
       const result = await response.json()
       setInvitationCode(result.oryId)
       onSuccess()
+      setTimeout(() => handleClose(), 1000) 
     } catch (err) {
       alert("Error inviting user")
     } finally {
