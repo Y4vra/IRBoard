@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react"
 import { API_BASE_URL } from "@/lib/globalVars"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -11,7 +10,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Search, ShieldCheck, Users, Check, Loader2 } from "lucide-react"
+import { Search, ShieldCheck, Users, Loader2, UserMinus } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { User } from "@/types/User"
@@ -29,6 +28,7 @@ export function LinkUserToProjectDialog({ projectId }: LinkUserToProjectDialogPr
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [linking, setLinking] = useState<number | null>(null)
+  const [unlinking, setUnlinking] = useState<number | null>(null)
 
   const fetcher = useCallback(
     () =>
@@ -41,9 +41,7 @@ export function LinkUserToProjectDialog({ projectId }: LinkUserToProjectDialogPr
     [projectId]
   )
 
-  const { data: users, loading, refresh } = useBackendResource<ProjectUsersMap>({
-    fetcher,
-  })
+  const { data: users, loading, refresh } = useBackendResource<ProjectUsersMap>({ fetcher })
 
   const linkUser = async (userId: number) => {
     setLinking(userId)
@@ -58,6 +56,20 @@ export function LinkUserToProjectDialog({ projectId }: LinkUserToProjectDialogPr
       refresh()
     } finally {
       setLinking(null)
+    }
+  }
+
+  const unlinkUser = async (userId: number) => {
+    setUnlinking(userId)
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/linking/${projectId}/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      if (!res.ok) throw new Error("Failed to unlink user")
+      refresh()
+    } finally {
+      setUnlinking(null)
     }
   }
 
@@ -91,7 +103,7 @@ export function LinkUserToProjectDialog({ projectId }: LinkUserToProjectDialogPr
             Project Members
           </DialogTitle>
           <DialogDescription>
-            Grant manager access to users for this project.
+            Grant or revoke manager access for this project.
           </DialogDescription>
         </DialogHeader>
 
@@ -128,9 +140,18 @@ export function LinkUserToProjectDialog({ projectId }: LinkUserToProjectDialogPr
                         <p className="text-sm font-medium truncate">{u.name} {u.surname}</p>
                         <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                       </div>
-                      <Badge className="ml-2 shrink-0 bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs flex items-center">
-                        <Check className="h-3 w-3 mr-1" /> Manager
-                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="ml-2 shrink-0 h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                        disabled={unlinking === u.id}
+                        onClick={() => unlinkUser(u.id)}
+                      >
+                        {unlinking === u.id
+                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          : <><UserMinus className="h-3.5 w-3.5 mr-1" /> Remove</>
+                        }
+                      </Button>
                     </div>
                   ))}
                 </div>

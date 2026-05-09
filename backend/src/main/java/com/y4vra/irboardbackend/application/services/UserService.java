@@ -221,6 +221,8 @@ public class UserService {
         );
     }
 
+    //----------------------Linking----------------------
+
     @Transactional
     public void linkUserToProject(Long projectId, Long userIdToBeLinked) {
         projectRepository.findById(projectId)
@@ -245,5 +247,30 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User not found")).getOryId();
 
         permService.grantPermission("Functionality", String.valueOf(functionalityId), relation, userOryIdToBeLinked);
+    }
+
+    public void unlinkUserFromProject(Long projectId, Long userIdToBeUnlinked) {
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+
+        String oryId=userRepository.findById(userIdToBeUnlinked)
+                .orElseThrow(() -> new EntityNotFoundException("User not found")).getOryId();
+
+        permService.revokePermission("Project", String.valueOf(projectId), "managers", oryId);
+    }
+
+    public void unlinkUserFromProjectsFunctionality(String oryId, Long projectId, Long functionalityId, Long userIdToBeUnlinked, String relation) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "linkProjectUsers", oryId))
+            throw new AccessDeniedException("User not authorized to link users to this project");
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+
+        functionalityRepository.findById(functionalityId)
+                .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));
+
+        String userOryIdToBeLinked=userRepository.findById(userIdToBeUnlinked)
+                .orElseThrow(() -> new EntityNotFoundException("User not found")).getOryId();
+
+        permService.revokePermission("Functionality", String.valueOf(functionalityId), relation, userOryIdToBeLinked);
     }
 }

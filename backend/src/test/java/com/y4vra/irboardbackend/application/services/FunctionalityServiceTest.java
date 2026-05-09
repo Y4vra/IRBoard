@@ -56,7 +56,7 @@ class FunctionalityServiceTest {
         functionality.setState(FunctionalityState.ACTIVE);
         functionality.setProject(project);
 
-        functionalityDTO = new FunctionalityDTO(10L, "User Management","description", "UM", "ACTIVE", 1L,List.of());
+        functionalityDTO = new FunctionalityDTO(10L, "User Management","description", "UM", "ACTIVE", 1L,false,List.of());
     }
 
     @Test
@@ -81,13 +81,13 @@ class FunctionalityServiceTest {
         when(functionalityRepository.findByProjectId(projectId)).thenReturn(List.of(funcEdit, funcView, funcNone));
 
         // Setup DTOs
-        FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit","description", "E", "PENDING_APPROVAL", 1L,List.of());
-        FunctionalityDTO dtoView = new FunctionalityDTO(11L, "View","description", "V", "PENDING_APPROVAL", 1L,List.of());
-        FunctionalityDTO dtoNone = new FunctionalityDTO(12L, "None","description", "N", "PENDING_APPROVAL", 1L,List.of());
+        FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "Edit","description", "E", "PENDING_APPROVAL", 1L,false,List.of());
+        FunctionalityDTO dtoView = new FunctionalityDTO(11L, "View","description", "V", "PENDING_APPROVAL", 1L,false,List.of());
+        FunctionalityDTO dtoNone = new FunctionalityDTO(12L, "None","description", "N", "PENDING_APPROVAL", 1L,false,List.of());
 
-        when(functionalityMapper.toDto(funcEdit)).thenReturn(dtoEdit);
-        when(functionalityMapper.toDto(funcView)).thenReturn(dtoView);
-        when(functionalityMapper.toDto(funcNone)).thenReturn(dtoNone);
+        when(functionalityMapper.toDto(funcEdit,false)).thenReturn(dtoEdit);
+        when(functionalityMapper.toDto(funcView,false)).thenReturn(dtoView);
+        when(functionalityMapper.toDto(funcNone,false)).thenReturn(dtoNone);
 
         // EXECUTE
         Map<String, List<FunctionalityDTO>> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, projectId);
@@ -118,13 +118,13 @@ class FunctionalityServiceTest {
 
 
         when(functionalityRepository.findByProjectId(1L)).thenReturn(List.of(correctProject));
-        when(functionalityMapper.toDto(correctProject)).thenReturn(functionalityDTO);
+        when(functionalityMapper.toDto(correctProject,false)).thenReturn(functionalityDTO);
 
         Map<String, List<FunctionalityDTO>> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, 1L);
 
         // Should only contain the one from project 1
         assertThat(result.get("edit")).hasSize(1);
         assertThat(result.get("edit").get(0).id()).isEqualTo(10L);
-        verify(functionalityMapper, never()).toDto(wrongProject);
+        verify(functionalityMapper, never()).toDto(wrongProject,false);
     }
 }

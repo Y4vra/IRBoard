@@ -17,7 +17,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Search, Users, Check, Loader2, Wrench, Eye } from "lucide-react"
+import { Search, Users, Loader2, Wrench, Eye, UserMinus, Check } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { User } from "@/types/User"
@@ -45,6 +45,7 @@ export function LinkUserToFunctionalityDialog({
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [linking, setLinking] = useState<number | null>(null)
+  const [unlinking, setUnlinking] = useState<number | null>(null)
 
   const fetcher = useCallback(
     () =>
@@ -57,9 +58,7 @@ export function LinkUserToFunctionalityDialog({
     [projectId, functionalityId]
   )
 
-  const { data: users, loading, refresh } = useBackendResource<FunctionalityUsersMap>({
-    fetcher,
-  })
+  const { data: users, loading, refresh } = useBackendResource<FunctionalityUsersMap>({ fetcher })
 
   const linkUser = async (userId: number, role: AssignableRole) => {
     setLinking(userId)
@@ -78,6 +77,24 @@ export function LinkUserToFunctionalityDialog({
       refresh()
     } finally {
       setLinking(null)
+    }
+  }
+
+  const unlinkUser = async (userId: number, role: AssignableRole) => {
+    setUnlinking(userId)
+    try {
+      const endpoint = role === "engineers" ? "engineer" : "stakeholder"
+      const res = await fetch(
+        `${API_BASE_URL}/users/linking/${projectId}/${functionalityId}/${endpoint}/${userId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      )
+      if (!res.ok) throw new Error("Failed to unlink user")
+      refresh()
+    } finally {
+      setUnlinking(null)
     }
   }
 
@@ -113,7 +130,7 @@ export function LinkUserToFunctionalityDialog({
             Functionality Team
           </DialogTitle>
           <DialogDescription>
-            Assign engineers and stakeholders to this functionality.
+            Assign or remove engineers and stakeholders for this functionality.
           </DialogDescription>
         </DialogHeader>
 
@@ -196,20 +213,27 @@ export function LinkUserToFunctionalityDialog({
 
             {/* ── Current team tab ── */}
             <TabsContent value="current" className="mt-3 max-h-[380px] overflow-y-auto space-y-4 pr-1">
+              {/* Project managers — inherited, no remove button */}
               <AssignedSection
                 title="Project Managers"
                 users={(users?.project_managers ?? []).filter(matchesSearch)}
                 role="managers"
               />
+              {/* Engineers — removable */}
               <AssignedSection
                 title="Engineers"
                 users={(users?.requirement_engineers ?? []).filter(matchesSearch)}
                 role="engineers"
+                unlinking={unlinking}
+                onUnlink={(id) => unlinkUser(id, "engineers")}
               />
+              {/* Stakeholders — removable */}
               <AssignedSection
                 title="Stakeholders"
                 users={(users?.stakeholders ?? []).filter(matchesSearch)}
                 role="stakeholders"
+                unlinking={unlinking}
+                onUnlink={(id) => unlinkUser(id, "stakeholders")}
               />
               {assignedCount === 0 && (users?.project_managers ?? []).length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-8 italic">
@@ -249,10 +273,14 @@ function AssignedSection({
   title,
   users,
   role,
+  unlinking,
+  onUnlink,
 }: {
   title: string
   users: User[]
   role: keyof typeof roleConfig
+  unlinking?: number | null
+  onUnlink?: (userId: number) => void
 }) {
   if (users.length === 0) return null
   const config = roleConfig[role]
@@ -268,13 +296,29 @@ function AssignedSection({
             key={u.id}
             className={`flex items-center justify-between px-3 py-2.5 rounded-lg border ${config.rowClass}`}
           >
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium truncate">{u.name} {u.surname}</p>
               <p className="text-xs text-muted-foreground truncate">{u.email}</p>
             </div>
-            <Badge className={`ml-2 shrink-0 text-xs border flex items-center ${config.badgeClass}`}>
-              {config.icon}{config.label}
-            </Badge>
+            <div className="flex items-center gap-2 ml-2 shrink-0">
+              <Badge className={`text-xs border flex items-center ${config.badgeClass}`}>
+                {config.icon}{config.label}
+              </Badge>
+              {onUnlink && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 px-2"
+                  disabled={unlinking === u.id}
+                  onClick={() => onUnlink(u.id)}
+                >
+                  {unlinking === u.id
+                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    : <UserMinus className="h-3.5 w-3.5" />
+                  }
+                </Button>
+              )}
+            </div>
           </div>
         ))}
       </div>

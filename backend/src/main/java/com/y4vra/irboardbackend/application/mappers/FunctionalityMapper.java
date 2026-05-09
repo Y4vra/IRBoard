@@ -14,7 +14,7 @@ import java.util.Map;
 @Component
 public class FunctionalityMapper {
 
-    public FunctionalityDTO toDto(Functionality functionality,boolean isUserManager) {
+    public FunctionalityDTO toDto(Functionality functionality,Boolean isUserManager) {
         if (functionality == null) return null;
 
         return new FunctionalityDTO(

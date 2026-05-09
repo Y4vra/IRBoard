@@ -106,6 +106,21 @@ public class KetoClient implements PermissionService {
         }
     }
     @Override
+    public void revokePermission(String namespace, String object, String relation, String subjectId) {
+        String url = UriComponentsBuilder.fromUriString(ketoWriteUrl + "/admin/relation-tuples")
+                .queryParam("namespace", namespace)
+                .queryParam("object", object)
+                .queryParam("relation", relation)
+                .queryParam("subject_id", subjectId)
+                .toUriString();
+
+        try {
+            restTemplate.delete(url);
+        } catch (Exception e) {
+            throw new ReBACException("Failed to revoke ReBAC tuple in Keto", e);
+        }
+    }
+    @Override
     public List<String> getSubjectsForObject(String namespace, String object, String relation) {
         String url = UriComponentsBuilder.fromUriString(ketoReadUrl)
                 .path("/relation-tuples")

@@ -40,32 +40,6 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping("/linking/{projectId}")
-    public ResponseEntity<Map<String,List<UserDTO>>> getAllUsersForProject(@PathVariable Long projectId) {
-        return ResponseEntity.ok(userService.findAllForProject(projectId));
-    }
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @PostMapping("/linking/{projectId}")
-    public ResponseEntity<Void> linkUserToProject(@PathVariable Long projectId, @RequestBody Long userIdToBeLinked) {
-        userService.linkUserToProject(projectId,userIdToBeLinked);
-        return ResponseEntity.ok().build();
-    }
-    @GetMapping("/linking/{projectId}/{functionalityId}")
-    public ResponseEntity<Map<String, List<UserDTO>>> getAllUsersForFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
-        return ResponseEntity.ok(userService.findAllForProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId));
-    }
-    @PostMapping("/linking/{projectId}/{functionalityId}/engineer")
-    public ResponseEntity<Void> linkUserToProjectsFunctionalityAsEngineer(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId, @RequestBody Long userIdToBeLinked) {
-        userService.linkUserToProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,userIdToBeLinked,"engineers");
-        return ResponseEntity.ok().build();
-    }
-    @PostMapping("/linking/{projectId}/{functionalityId}/stakeholder")
-    public ResponseEntity<Void> linkUserToProjectsFunctionalityAsStakeholder(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId, @RequestBody Long userIdToBeLinked) {
-        userService.linkUserToProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,userIdToBeLinked,"stakeholders");
-        return ResponseEntity.ok().build();
-    }
-
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findById(id));
@@ -109,5 +83,62 @@ public class UserController {
                                              @RequestBody UserDTO patch) {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(userService.patch(id, patch, user));
+    }
+
+    //---------------Linking-------------------
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/linking/{projectId}")
+    public ResponseEntity<Map<String,List<UserDTO>>> getAllUsersForProject(@PathVariable Long projectId) {
+        return ResponseEntity.ok(userService.findAllForProject(projectId));
+    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/linking/{projectId}")
+    public ResponseEntity<Void> linkUserToProject(@PathVariable Long projectId, @RequestBody Long userIdToBeLinked) {
+        userService.linkUserToProject(projectId,userIdToBeLinked);
+        return ResponseEntity.ok().build();
+    }
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @DeleteMapping("/linking/{projectId}/{userId}")
+    public ResponseEntity<Void> unlinkUserFromProject(
+            @PathVariable Long projectId,
+            @PathVariable Long userId
+    ) {
+        userService.unlinkUserFromProject(projectId, userId);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+    @GetMapping("/linking/{projectId}/{functionalityId}")
+    public ResponseEntity<Map<String, List<UserDTO>>> getAllUsersForFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
+        return ResponseEntity.ok(userService.findAllForProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId));
+    }
+    @PostMapping("/linking/{projectId}/{functionalityId}/engineer")
+    public ResponseEntity<Void> linkUserToProjectsFunctionalityAsEngineer(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId, @RequestBody Long userIdToBeLinked) {
+        userService.linkUserToProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,userIdToBeLinked,"engineers");
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/linking/{projectId}/{functionalityId}/stakeholder")
+    public ResponseEntity<Void> linkUserToProjectsFunctionalityAsStakeholder(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId, @RequestBody Long userIdToBeLinked) {
+        userService.linkUserToProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,userIdToBeLinked,"stakeholders");
+        return ResponseEntity.ok().build();
+    }
+    @DeleteMapping("/linking/{projectId}/{functionalityId}/engineer/{userId}")
+    public ResponseEntity<Void> unlinkEngineerFromFunctionality(
+            Authentication authentication,
+            @PathVariable Long projectId,
+            @PathVariable Long functionalityId,
+            @PathVariable Long userId
+    ) {
+        userService.unlinkUserFromProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId, functionalityId, userId, "engineers");
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/linking/{projectId}/{functionalityId}/stakeholder/{userId}")
+    public ResponseEntity<Void> unlinkStakeholderFromFunctionality(
+            Authentication authentication,
+            @PathVariable Long projectId,
+            @PathVariable Long functionalityId,
+            @PathVariable Long userId
+    ) {
+        userService.unlinkUserFromProjectsFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId, functionalityId, userId, "stakeholders");
+        return ResponseEntity.noContent().build();
     }
 }

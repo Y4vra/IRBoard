@@ -62,6 +62,7 @@ public class ProjectService {
         Project project = new Project(projectDTO.name(),projectDTO.description(),projectDTO.priorityStyle());
         Project savedProject = projectRepository.save(project);
         permService.grantPermission("Project", String.valueOf(savedProject.getId()), "managers", oryId);
+        permService.grantPermissionToSubjectSet("Project", String.valueOf(savedProject.getId()), "parent_system", "System", "main", "admins");
 
         return projectMapper.toDto(savedProject);
     }
