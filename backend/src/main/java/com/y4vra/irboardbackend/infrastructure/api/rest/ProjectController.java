@@ -67,14 +67,14 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}/requestEdit")
-    public ResponseEntity<Boolean> requestEdit(Authentication authentication, @PathVariable Long id) {
+    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long id) {
         User user = (User) authentication.getPrincipal();
         try {
             projectService.requestEdit(id, user);
-            return ResponseEntity.ok(true);
+            return ResponseEntity.ok().build();
         } catch (LockableEntityException e) {
             System.err.println(e.getMessage());
-            return ResponseEntity.ok(false);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 

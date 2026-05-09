@@ -25,14 +25,14 @@ public class FunctionalityController {
         return ResponseEntity.ok(functionalityService.findFunctionalityById(((User) authentication.getPrincipal()).getOryId(),projectId, functionalityId));
     }
     @GetMapping("/{functionalityId}/requestEdit")
-    public ResponseEntity<Boolean> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
+    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
         User user = (User) authentication.getPrincipal();
         try {
             functionalityService.requestEdit(user,projectId,functionalityId);
-            return ResponseEntity.ok(true);
+            return ResponseEntity.ok().build();
         } catch (LockableEntityException e) {
             System.err.println(e.getMessage());
-            return ResponseEntity.ok(false);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
     @PatchMapping("/{functionalityId}/modify")

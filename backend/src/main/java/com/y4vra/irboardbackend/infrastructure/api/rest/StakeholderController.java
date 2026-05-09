@@ -34,14 +34,14 @@ public class StakeholderController {
     }
 
     @GetMapping("/{stakeholderId}/requestEdit")
-    public ResponseEntity<Boolean> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long stakeholderId) {
+    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long stakeholderId) {
         User user = (User) authentication.getPrincipal();
         try {
             stakeholderService.requestEdit(user,projectId,stakeholderId);
-            return ResponseEntity.ok(true);
+            return ResponseEntity.ok().build();
         } catch (LockableEntityException e) {
             System.err.println(e.getMessage());
-            return ResponseEntity.ok(false);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
     @PatchMapping("/{stakeholderId}/modify")
