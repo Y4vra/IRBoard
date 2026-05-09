@@ -13,8 +13,6 @@ public class FunctionalRequirement extends Requirement {
     @JoinColumn(name = "functionality_id")
     private Functionality functionality;//may be null if child of another
 
-    public FunctionalRequirement() {}
-
     public String getPriority() { return priority; }
     public void setPriority(String priority) {
         this.priority = priority;

@@ -20,8 +20,6 @@ public class NonFunctionalRequirement extends Requirement {
     @JoinColumn(name = "project_id")
     private Project project;
 
-    public NonFunctionalRequirement() {}
-
     public String getMeasurementUnit() { return measurementUnit; }
     public void setMeasurementUnit(String measurementUnit) { this.measurementUnit = measurementUnit; }
 

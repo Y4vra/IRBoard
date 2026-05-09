@@ -47,8 +47,6 @@ public abstract class Requirement extends ProjectElement {
     @ManyToMany(mappedBy = "observerRequirements")
     private Set<Requirement> observedRequirements = new HashSet<>();
 
-    public Requirement() {}
-
     public void update(){
         if(!state.equals(RequirementState.PENDING_APPROVAL)){
             setState(RequirementState.PENDING_APPROVAL);

@@ -27,9 +27,7 @@ public class User extends ProjectIndependentElement {
     private Boolean isAdmin=false;
 
     private String pendingActivationToken;
-
-    public User() {}
-
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getOryId() { return oryId; }

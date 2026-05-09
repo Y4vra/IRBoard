@@ -30,8 +30,6 @@ public class NonFunctionalRequirementMapper {
     @Autowired
     public void setFrMapper(FunctionalRequirementMapper frMapper){this.frMapper = frMapper;}
 
-    public NonFunctionalRequirementMapper() {}
-
     public NonFunctionalRequirementDTO toDto(NonFunctionalRequirement entity) {
         List emptyList = List.of();
         return toDetailedDto(entity,emptyList,emptyList,emptyList,emptyList);
