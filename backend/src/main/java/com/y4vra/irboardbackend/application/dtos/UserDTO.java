@@ -4,7 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 public record UserDTO(
         Long id,
@@ -22,6 +23,10 @@ public record UserDTO(
         String surname,
 
         Boolean active,
-        Boolean isAdmin
+        Boolean isAdmin,
+
+        List<String> projectsWhereUserIsManager,
+        Map<Long, List<String>> functionalitiesWhereUserIsEngineer,
+        Map<Long, List<String>> functionalitiesWhereUserIsStakeholder
 
 ) implements Serializable {}

@@ -5,7 +5,9 @@ import com.y4vra.irboardbackend.application.mappers.UserMapper;
 import com.y4vra.irboardbackend.application.ports.IdentityService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
+import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
@@ -75,9 +77,28 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserDTO findById(Long id) {
-        return userRepository.findById(id)
-                .map(userMapper::toDto)
+        User user=userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        List<String> managedProjects = permService.getAuthorizedObjects(user.getOryId(), "Project", "managers");
+        List<String> editableFunctionalities = permService.getAuthorizedObjects(user.getOryId(), "Functionality", "engineers");
+        List<String> viewableFunctionalities = permService.getAuthorizedObjects(user.getOryId(), "Functionality", "engineers");
+
+        Map<Long, List<String>> engineerByProject = functionalityRepository.groupByIdsGroupedByProject(editableFunctionalities.stream()
+                        .map(Long::valueOf)
+                        .toList()).stream()
+                .collect(Collectors.groupingBy(
+                        ProjectFunctionalityProjection::getProjectId,
+                        Collectors.mapping(ProjectFunctionalityProjection::getFuncId, Collectors.toList())
+                ));
+        Map<Long, List<String>> stakeholderByProject = functionalityRepository.groupByIdsGroupedByProject(viewableFunctionalities.stream()
+                        .map(Long::valueOf)
+                        .toList()).stream()
+                .collect(Collectors.groupingBy(
+                        ProjectFunctionalityProjection::getProjectId,
+                        Collectors.mapping(ProjectFunctionalityProjection::getFuncId, Collectors.toList())
+                ));
+
+        return userMapper.toDtoWithPermissions(user,managedProjects,engineerByProject,stakeholderByProject);
     }
 
     @Transactional

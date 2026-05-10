@@ -21,6 +21,7 @@ import { useBackendResource } from "@/hooks/useBackendResource"
 import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
+import { UserDetailDialog } from "@/components/dialogs/UserDetailDialog"
 
 function UserManagement() {
   const { getLock } = useLocks()
@@ -117,6 +118,8 @@ function UserManagement() {
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
+                    <div className="flex items-center gap-2">
+                    <LockIndicator lock={getLock(EntityType.USER, user.id)} />
                     {user.active ? (
                       <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">
                         Active
@@ -126,10 +129,10 @@ function UserManagement() {
                         Deactivated
                       </Badge>
                     )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <LockIndicator lock={getLock(EntityType.USER, user.id)} />
                       {user.isAdmin && (
                         <Badge
                           variant="outline"
@@ -142,6 +145,7 @@ function UserManagement() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <UserDetailDialog userId={user.id}/>
                       <EditUserDialog user={user} onSuccess={refresh} />
                       <Button
                         variant="ghost"

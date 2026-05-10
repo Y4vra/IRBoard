@@ -1,11 +1,9 @@
 package com.y4vra.irboardbackend.domain.repositories;
 
 import com.y4vra.irboardbackend.domain.model.Functionality;
+import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public interface FunctionalityRepository {
     List<Functionality> findAll();
@@ -15,4 +13,7 @@ public interface FunctionalityRepository {
     Functionality save(Functionality functionality);
     void deleteById(Long id);
     Set<Long> findIdsByProjectId(long projectId);
+
+    List<ProjectFunctionalityProjection> groupByIdsGroupedByProject(List<Long> functionalityIds);
+
 }

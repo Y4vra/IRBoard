@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.Functionality;
+import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,12 @@ interface JpaFunctionalityRepository extends JpaRepository<Functionality, Long> 
     List<Functionality> findByProjectId(Long projectId);
     @Query("SELECT f.id FROM Functionality f WHERE f.project.id = :projectId")
     Set<Long> findIdsByProjectId(long projectId);
+    @Query("""
+       SELECT f.project.id as projectId, f.id as funcId
+       FROM Functionality f
+       WHERE f.id IN :functionalityIds
+       """)
+    List<ProjectFunctionalityProjection> groupByIdsGroupedByProject(List<Long> functionalityIds);
 }
 
 @Component
@@ -60,5 +67,10 @@ public class FunctionalityRepositoryImpl implements FunctionalityRepository {
     @Override
     public Set<Long> findIdsByProjectId(long projectId){
         return jpaRepository.findIdsByProjectId(projectId);
+    }
+
+    @Override
+    public List<ProjectFunctionalityProjection> groupByIdsGroupedByProject(List<Long> functionalityIds){
+        return jpaRepository.groupByIdsGroupedByProject(functionalityIds);
     }
 }

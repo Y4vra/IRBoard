@@ -4,20 +4,14 @@ import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+
 @Component
 public class UserMapper {
 
     public UserDTO toDto(User user) {
-        if (user == null) return null;
-
-        return new UserDTO(
-                user.getId(),
-                user.getEmail(),
-                user.getName(),
-                user.getSurname(),
-                user.getActive(),
-                user.getIsAdmin()
-        );
+        return toDtoWithPermissions(user,null,null,null);
     }
 
     public User toEntity(UserDTO dto) {
@@ -40,5 +34,21 @@ public class UserMapper {
         if (dto.surname() != null && !dto.surname().isBlank()) entity.setSurname(dto.surname());
         if (dto.active() != null) entity.setActive(dto.active());
         if (dto.isAdmin() != null) entity.setIsAdmin(dto.isAdmin());
+    }
+
+    public UserDTO toDtoWithPermissions(User user, List<String> projectsWhereUserIsManager, Map<Long, List<String>> functionalitiesWhereUserIsEngineer, Map<Long, List<String>> functionalitiesWhereUserIsStakeholder) {
+        if (user == null) return null;
+
+        return new UserDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getSurname(),
+                user.getActive(),
+                user.getIsAdmin(),
+                projectsWhereUserIsManager,
+                functionalitiesWhereUserIsEngineer,
+                functionalitiesWhereUserIsStakeholder
+        );
     }
 }
