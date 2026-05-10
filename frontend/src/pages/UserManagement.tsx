@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useState, useCallback } from "react"
 import { API_BASE_URL } from "../lib/globalVars"
 import { Button } from "../components/ui/button"
 import { Mail, AlertCircle } from "lucide-react"
@@ -13,7 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
-import { InviteUserDialog } from "@/components/dialogs/userLinking/InviteUserDialog"
+import { InviteUserDialog } from "@/components/dialogs/creatingDialogs/InviteUserDialog"
+import { EditUserDialog } from "@/components/dialogs/updatingDialogs/EditUserDialog"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import type { User } from "@/types/User"
 import { useBackendResource } from "@/hooks/useBackendResource"
@@ -22,57 +23,63 @@ import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
 
 function UserManagement() {
-  const { getLock } = useLocks();
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const { getLock } = useLocks()
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth()
 
-  const fetchUsers = useCallback(() =>
-    fetch(`${API_BASE_URL}/users`, { credentials: 'include' })
-      .then(r => { if (!r.ok) throw new Error('Failed to fetch users'); return r.json(); }),
+  const fetchUsers = useCallback(
+    () =>
+      fetch(`${API_BASE_URL}/users`, { credentials: "include" }).then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch users")
+        return r.json()
+      }),
     []
-  );
+  )
 
-  const { data, loading, error,refresh } = useBackendResource<User[]>({
+  const { data, loading, error, refresh } = useBackendResource<User[]>({
     fetcher: fetchUsers,
     enabled: !authLoading && isAuthenticated,
-  });
-  const users = data ?? [];
+  })
+  const users = data ?? []
 
   const handleReinvite = async (userId: number) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/${userId}/re-invite`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+        method: "POST",
+        credentials: "include",
+      })
       if (response.ok) {
-        alert("Invitation code regenerated and sent.");
+        alert("Invitation code regenerated and sent.")
       }
     } catch (err) {
-      console.error("Re-invite failed", err);
+      console.error("Re-invite failed", err)
     }
-  };
+  }
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(users.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(users.length / itemsPerPage)
 
-  if (loading || authLoading) return (
-    <LoadingSpinner text="Loading User Directory.."/>
-  );
+  if (loading || authLoading) return <LoadingSpinner text="Loading User Directory.." />
 
-  if (error) return (
-    <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center">
-      <AlertCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
-      <p className="text-red-600 font-semibold">Connection Error</p>
-      <p className="text-red-500 text-sm mt-1">{error}</p>
-      <Button variant="outline" className="mt-4 border-red-200 hover:bg-red-100" onClick={() => fetchUsers()}>
-        Try Again
-      </Button>
-    </div>
-  );
+  if (error)
+    return (
+      <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center">
+        <AlertCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600 font-semibold">Connection Error</p>
+        <p className="text-red-500 text-sm mt-1">{error}</p>
+        <Button
+          variant="outline"
+          className="mt-4 border-red-200 hover:bg-red-100"
+          onClick={refresh}
+        >
+          Try Again
+        </Button>
+      </div>
+    )
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
@@ -81,13 +88,15 @@ function UserManagement() {
           <h1 className="text-3xl font-extrabold text-slate-900">User Management</h1>
           <p className="text-slate-500 mt-1">Manage system access, roles, and invitations.</p>
         </div>
-        <InviteUserDialog onSuccess={refresh}/>
+        <InviteUserDialog onSuccess={refresh} />
       </header>
 
       <Card>
         <CardHeader>
           <CardTitle>System Users</CardTitle>
-          <CardDescription>A total of {users.length} users are registered in IR-Board.</CardDescription>
+          <CardDescription>
+            A total of {users.length} users are registered in IR-Board.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -122,22 +131,28 @@ function UserManagement() {
                     <div className="flex items-center gap-2">
                       <LockIndicator lock={getLock(EntityType.USER, user.id)} />
                       {user.isAdmin && (
-                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                        <Badge
+                          variant="outline"
+                          className="bg-amber-50 text-amber-700 border-amber-200"
+                        >
                           System Admin
                         </Badge>
                       )}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleReinvite(user.id)}
-                      className="text-slate-600 hover:text-indigo-600"
-                    >
-                      <Mail className="h-4 w-4 mr-2" />
-                      Re-invite
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <EditUserDialog user={user} onSuccess={refresh} />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleReinvite(user.id)}
+                        className="text-slate-600 hover:text-indigo-600"
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Re-invite
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -149,7 +164,7 @@ function UserManagement() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
               >
                 Previous
@@ -160,7 +175,7 @@ function UserManagement() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
               >
                 Next
@@ -170,7 +185,7 @@ function UserManagement() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
 
-export default UserManagement;
+export default UserManagement

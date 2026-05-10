@@ -10,7 +10,7 @@ import { useBackendResource } from "@/hooks/useBackendResource";
 import { useAuth } from "@/context/AuthContext";
 import type { DocumentDTO } from "@/types/Document";
 import type { FunctionalRequirementSummaryDTO, RequirementSummaryDTO } from "@/types/RequirementSummaryDTO";
-import { UpdateDocumentDialog } from "@/components/dialogs/creatingDialogs/UpdateDocumentDialog";
+import { UpdateDocumentDialog } from "@/components/dialogs/updatingDialogs/UpdateDocumentDialog";
 import { useProject } from "@/hooks/useProject";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
