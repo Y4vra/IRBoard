@@ -48,7 +48,7 @@ public abstract class Requirement extends ProjectElement {
     private Set<Requirement> observedRequirements = new HashSet<>();
 
     public void update(){
-        if(!state.equals(RequirementState.PENDING_APPROVAL)){
+        if(!state.equals(RequirementState.PENDING_APPROVAL) && !state.equals(RequirementState.DEACTIVATED)&& !state.equals(RequirementState.REMOVED)){
             setState(RequirementState.PENDING_APPROVAL);
         }
     }
