@@ -198,7 +198,7 @@ services:
 
   # --- DEVELOPMENT ONLY, INSERTS ADMIN USER FOR FIRST TIME USE ON KRATOS, KETO, AND BACKEND ---
   initial-setup-admin:
-    image: alpine:3.23.3
+    build: ./config/initial-setup-admin
     depends_on:
       kratos:
         condition: service_started
@@ -218,59 +218,7 @@ services:
       - ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
       - ADMIN_NAME=${INITIAL_ADMIN_NAME}
       - ADMIN_SURNAME=${INITIAL_ADMIN_SURNAME}
-    entrypoint: /bin/sh -c
-    command:
-      - | 
-        apk add --no-cache curl jq postgresql-client
-        export PGPASSWORD="$$DB_PASS"
-        DB_CON_STR="postgresql://$$DB_USER:$$DB_PASS@backend-db:5432/$$DB_NAME"
-        sleep 10;
-        cat <<EOF > ./file.json
-        {
-          "schema_id": "default",
-          "traits": {
-            "email": "${INITIAL_ADMIN_EMAIL}",
-            "name": "${INITIAL_ADMIN_NAME}",
-            "surname": "${INITIAL_ADMIN_SURNAME}",
-            "is_admin": true
-          },
-          "credentials": {
-            "password": {
-              "config": {
-                "password": "${INITIAL_ADMIN_PASSWORD}"
-              }
-            }
-          }
-        }
-        EOF
-        USER_ID=$(curl -X POST $$KRATOS_URL -H "Content-Type: application/json" -d @file.json | jq -r '.id')
-        if [ "$$USER_ID" != "null" ] && [ -n "$$USER_ID" ]; then
-          echo "Admin user correctly added to Kratos."
-
-          curl -X PUT $$KETO_URL \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"namespace\": \"System\",
-              \"object\": \"main\",
-              \"relation\": \"admins\",
-              \"subject_id\": \"$$USER_ID\"
-            }"
-          echo "Admin user correctly added to Keto."
-
-          echo "Waiting for springboot to setup the entity database..."
-          until psql "$$DB_CON_STR" -c "SELECT 1 FROM app_user LIMIT 1;" > /dev/null 2>&1; do
-            sleep 2
-          done
-          echo "Tablas detectadas, procediendo con la inyección..."
-
-          psql "$$DB_CON_STR" -c "INSERT INTO app_user (ory_id, email, name, surname, is_admin, active) \
-            VALUES ('$$USER_ID', '${INITIAL_ADMIN_EMAIL}', '${INITIAL_ADMIN_NAME}', '${INITIAL_ADMIN_SURNAME}', true, true) \
-            ON CONFLICT (ory_id) DO NOTHING;"
-          
-          echo "Admin user correctly added to backend-db."
-        else
-          echo "Error: Unable to obtain adminId from Kratos response."
-        fi
+    
 
   # --- BUSINESS LOGIC ---
   backend-db:
@@ -292,9 +240,6 @@ services:
   object-storage:
     image: minio/minio
     networks:
-      internal:
-        aliases:
-          - ${OBJS_DOMAIN}
       public:
         aliases:
           - ${OBJS_DOMAIN}
@@ -331,10 +276,10 @@ services:
       object-storage:
         condition: service_healthy
     networks:
-      - internal
+      - public
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc alias set myminio http://object-storage:9000 ${OBJ_STORAGE_USER} ${OBJ_STORAGE_PASS}) do sleep 1; done;
+      until (/usr/bin/mc alias set myminio http://${OBJS_DOMAIN}:9000 ${OBJ_STORAGE_USER} ${OBJ_STORAGE_PASS}) do sleep 1; done;
       /usr/bin/mc mb myminio/documents;
       exit 0;
       "
@@ -364,6 +309,8 @@ services:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - internal
+    extra_hosts:
+    - "${OBJS_DOMAIN}:host-gateway"
     working_dir: /app # [PROD] remove for production, this allows hot-reload
     command: mvn spring-boot:run # [PROD] remove for production, this allows hot-reload
 
@@ -396,39 +343,39 @@ services:
     networks:
       - internal
 
-  # --- OBSERVABILITY ---
-  grafana:
-    image: grafana/grafana:12.3.5
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-      - GF_SECURITY_CSRF_ALWAYS_CHECK=false
-      - GF_SERVER_ROOT_URL=http://grafana.irboard.local
-      - GF_LIVE_ALLOWED_ORIGINS=http://grafana.irboard.local,http://irboard.local
-    volumes:
-      - ./config/grafana/provisioning:/etc/grafana/provisioning
-    networks:
-      - internal
+  # # --- OBSERVABILITY ---
+  # grafana:
+  #   image: grafana/grafana:12.3.5
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+  #     - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+  #     - GF_SECURITY_CSRF_ALWAYS_CHECK=false
+  #     - GF_SERVER_ROOT_URL=http://grafana.irboard.local
+  #     - GF_LIVE_ALLOWED_ORIGINS=http://grafana.irboard.local,http://irboard.local
+  #   volumes:
+  #     - ./config/grafana/provisioning:/etc/grafana/provisioning
+  #   networks:
+  #     - internal
   
   
-  loki:
-    image: grafana/loki:3.5.12
-    networks:
-      - internal
+  # loki:
+  #   image: grafana/loki:3.5.12
+  #   networks:
+  #     - internal
 
-  promtail:
-    image: grafana/promtail:3.5.12
-    container_name: promtail
-    user: root # Possible threat, but added as hardening the project's observability is beyond the project's scope
-    volumes:
-      - ./config/promtail/promtail-config.yaml:/etc/promtail/config.yaml
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-    command: -config.file=/etc/promtail/config.yaml
-    networks:
-      - internal
-    depends_on:
-      - loki
+  # promtail:
+  #   image: grafana/promtail:3.5.12
+  #   container_name: promtail
+  #   user: root # Possible threat, but added as hardening the project's observability is beyond the project's scope
+  #   volumes:
+  #     - ./config/promtail/promtail-config.yaml:/etc/promtail/config.yaml
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  #   command: -config.file=/etc/promtail/config.yaml
+  #   networks:
+  #     - internal
+  #   depends_on:
+  #     - loki
 
 volumes: # [PROD] remove volumes in production
   db_data_kratos:

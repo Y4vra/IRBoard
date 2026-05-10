@@ -22,7 +22,7 @@ class Project implements Namespace {
 
   permits = {
     edit: (ctx: Context) =>
-      this.related.managers.includes(ctx.subject)
+      this.related.managers.includes(ctx.subject),
     
     view: (ctx: Context) => 
       this.related.managers.includes(ctx.subject) ||

@@ -7,6 +7,7 @@ actor user
 package "Network: public" #line.dotted {
     [RMS Frontend] as front
     [Traefik] as gateway
+    [Object Storage] as minio
 }
 
 package "Network: internal" #AliceBlue {
@@ -15,7 +16,6 @@ package "Network: internal" #AliceBlue {
     [Ory Keto] as keto
     [RMS Backend] as backend
     [Mailpit] as mail
-    [Object Storage] as minio
     
     database "PostgreSQL (RMS)" as db_rms
     database "PostgreSQL (Identity)" as db_auth
@@ -25,7 +25,8 @@ package "Network: internal" #AliceBlue {
 ' Conexiones de tráfico
 user -down-> gateway
 gateway -down-> front 
-gateway -down--> proxy 
+gateway -down--> proxy
+gateway -down--> minio : access files via url
 
 ' Consultas internas Ory
 proxy ---> kratos 
@@ -33,7 +34,6 @@ proxy ---> keto
 
 ' Paso final al Backend
 proxy -down--> backend
-proxy -down--> minio : access files via url
 
 ' mailing provisional
 kratos --> mail : SMTP (1025)
@@ -41,7 +41,7 @@ kratos --> mail : SMTP (1025)
 ' Persistencia
 backend ..> keto : Write Tuples (GRPC)
 backend ..> kratos : Add user
-backend --> minio : Store or delete files  
+backend .up..> minio : Store or delete files  
 
 backend -down-> db_rms
 kratos -down-> db_auth

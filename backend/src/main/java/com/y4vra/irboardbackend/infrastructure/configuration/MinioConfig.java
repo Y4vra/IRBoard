@@ -34,17 +34,24 @@ public class MinioConfig {
     }
 
     private void initializeBucket(MinioClient client) {
-        try {
-            boolean exists = client.bucketExists(BucketExistsArgs.builder()
-                    .bucket(bucketName)
-                    .build());
-            if (!exists) {
-                client.makeBucket(MakeBucketArgs.builder()
+        int maxAttempts = 10;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                boolean exists = client.bucketExists(BucketExistsArgs.builder()
                         .bucket(bucketName)
                         .build());
+                if (!exists) {
+                    client.makeBucket(MakeBucketArgs.builder()
+                            .bucket(bucketName)
+                            .build());
+                }
+                return;
+            } catch (Exception e) {
+                if (attempt == maxAttempts) {
+                    throw new RuntimeException("Could not initialize MinIO bucket after " + maxAttempts + " attempts", e);
+                }
+                try { Thread.sleep(3000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Could not initialize MinIO bucket", e);
         }
     }
 }
