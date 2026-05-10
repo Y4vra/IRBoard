@@ -3,7 +3,7 @@ import type { EntityState } from "@/types/enum/EntityState"
 
 const STATE_CONFIG: Record<EntityState, { label: string; className: string }> = {
   PENDING_APPROVAL: {
-    label: "Pending Approval",
+    label: "Pending review",
     className: "bg-amber-50 text-amber-700 border-amber-200",
   },
   APPROVED: {

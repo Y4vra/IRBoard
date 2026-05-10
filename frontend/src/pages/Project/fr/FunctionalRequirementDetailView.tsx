@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../../lib/globalVars";
-import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,6 +35,7 @@ import { CreateFunctionalRequirementDialog } from "@/components/dialogs/creating
 import { useProject } from "@/hooks/useProject";
 import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
+import { useFunctionalities } from "@/hooks/useFunctionalities";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ function SectionCard({
   count,
   onAdd,
   addLabel,
-  isAdmin,
+  canEdit,
   children,
 }: {
   title: string;
@@ -159,7 +159,7 @@ function SectionCard({
   count: number;
   onAdd?: () => void;
   addLabel?: string;
-  isAdmin: boolean;
+  canEdit: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -180,7 +180,7 @@ function SectionCard({
               <CardDescription className="mt-0.5">{description}</CardDescription>
             </div>
           </div>
-          {isAdmin && onAdd && (
+          {canEdit && onAdd && (
             <Button size="sm" variant="outline" onClick={onAdd}>
               <Plus className="h-4 w-4 mr-1.5" />
               {addLabel ?? "Add"}
@@ -202,7 +202,8 @@ function FunctionalRequirementDetailView() {
     frId: string;
   }>();
   const project = useProject();
-  const { user } = useAuth();
+  const { canEditFunctionality } = useFunctionalities();
+  const canEdit = canEditFunctionality(functionalityId!);
   const navigate = useNavigate();
   const [removingId, setRemovingId] = useState<number | null>(null);
 
@@ -290,8 +291,6 @@ function FunctionalRequirementDetailView() {
       </div>
     );
 
-  const isAdmin = !!user?.isAdmin;
-
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
       {/* Nav */}
@@ -301,7 +300,7 @@ function FunctionalRequirementDetailView() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Functionality
           </Link>
         </Button>
-        {isAdmin && (
+        {canEdit && (
           <Button variant="outline" size="sm">
             <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
           </Button>
@@ -353,13 +352,13 @@ function FunctionalRequirementDetailView() {
       </header>
 
       {/* Children */}
-      {(requirement.children?.length > 0 || isAdmin) && (
+      {(requirement.children?.length > 0 || canEdit) && (
         <SectionCard
           title="Child Requirements"
           description="Hierarchical sub-requirements nested under this requirement."
           icon={<GitBranch className="h-4 w-4" />}
           count={requirement.children?.length ?? 0}
-          isAdmin={isAdmin}
+          canEdit={canEdit}
           addLabel="Add Child FR"
           onAdd={() => setCreateFunctionalRequirementDialogOpen(true)}
         >
@@ -388,7 +387,7 @@ function FunctionalRequirementDetailView() {
         description="Stakeholders who observe or are affected by this requirement."
         icon={<Users className="h-4 w-4" />}
         count={requirement.observedStakeholders?.length ?? 0}
-        isAdmin={isAdmin}
+        canEdit={canEdit}
         addLabel="Link Stakeholder"
         onAdd={() => setStakeholderDialogOpen(true)}
       >
@@ -415,7 +414,7 @@ function FunctionalRequirementDetailView() {
                     {s.state && (
                       <EntityStateBadge state={s.state}/>
                     )}
-                    {isAdmin && (
+                    {canEdit && (
                       <RemoveButton
                         onClick={() => unlinkStakeholder(s.id)}
                         loading={removingId === s.id}
@@ -441,7 +440,7 @@ function FunctionalRequirementDetailView() {
         description="NFRs that apply to or constrain this functional requirement."
         icon={<ShieldCheck className="h-4 w-4" />}
         count={requirement.observedNFRequirements?.length ?? 0}
-        isAdmin={isAdmin}
+        canEdit={canEdit}
         addLabel="Link NFR"
         onAdd={() => setNfrDialogOpen(true)}
       >
@@ -469,7 +468,7 @@ function FunctionalRequirementDetailView() {
                       <CardTitle className="text-sm truncate">{nfr.name}</CardTitle>
                     </div>
                     {nfr.state && <RequirementStateBadge state={nfr.state} />}
-                    {isAdmin && (
+                    {canEdit && (
                       <RemoveButton
                         onClick={() => unlinkNFR(nfr.id)}
                         loading={removingId === nfr.id}
@@ -490,7 +489,7 @@ function FunctionalRequirementDetailView() {
         description="Documents related to or referenced by this requirement."
         icon={<FileText className="h-4 w-4" />}
         count={requirement.observedDocuments?.length ?? 0}
-        isAdmin={isAdmin}
+        canEdit={canEdit}
         addLabel="Link Document"
         onAdd={() => setDocumentDialogOpen(true)}
       >
@@ -515,7 +514,7 @@ function FunctionalRequirementDetailView() {
                       <FileText className="h-4 w-4" />
                     </div>
                     <CardTitle className="text-sm flex-1 truncate">{doc.fileName}</CardTitle>
-                    {isAdmin && (
+                    {canEdit && (
                       <RemoveButton
                         onClick={() => unlinkDocument(doc.id)}
                         loading={removingId === doc.id}
@@ -541,7 +540,7 @@ function FunctionalRequirementDetailView() {
         description="Other functional requirements related to this one."
         icon={<Circle className="h-4 w-4" />}
         count={requirement.observedFRequirements?.length ?? 0}
-        isAdmin={isAdmin}
+        canEdit={canEdit}
         addLabel="Link FR"
         onAdd={() => setLinkedFRDialogOpen(true)}
       >
@@ -568,7 +567,7 @@ function FunctionalRequirementDetailView() {
                     </Badge>
                     <CardTitle className="text-sm flex-1 truncate">{fr.name}</CardTitle>
                     <RequirementStateBadge state={fr.state} />
-                    {isAdmin && (
+                    {canEdit && (
                       <RemoveButton
                         onClick={() => unlinkFR(fr.id)}
                         loading={removingId === fr.id}
