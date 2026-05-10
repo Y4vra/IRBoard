@@ -46,4 +46,19 @@ public class DocumentController {
                         ((User) authentication.getPrincipal()).getOryId()
                 ));
     }
+    @PutMapping(value = "/{documentId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DocumentDTO> updateDocument(
+            @PathVariable Long projectId,
+            @PathVariable Long documentId,
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("metadata") @Validated DocumentDTO documentDTO,
+            Authentication authentication) {
+        return ResponseEntity.ok(documentService.updateDocument(
+                file,
+                documentDTO,
+                projectId,
+                documentId,
+                ((User) authentication.getPrincipal()).getOryId()
+        ));
+    }
 }

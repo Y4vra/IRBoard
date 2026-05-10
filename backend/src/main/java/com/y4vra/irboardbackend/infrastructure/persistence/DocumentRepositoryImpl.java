@@ -38,7 +38,7 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
         AND (
             TYPE(r) = NonFunctionalRequirement
             OR (TYPE(r) = FunctionalRequirement
-                 AND TREAT(r AS FunctionalRequirement).functionality.id IN :functionalityIds)
+                 AND TREAT(r AS FunctionalRequirement).functionality.id IN :viewableFunctionalities)
         )
     """)
     List<Requirement> findFilteredRequirementsForDocument(Long documentId, Set<Long> viewableFunctionalities);

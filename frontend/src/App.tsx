@@ -22,6 +22,7 @@ import FunctionalRequirementDetailView from './pages/Project/fr/FunctionalRequir
 import { ProjectProviderWrapper } from './components/wrappers/ProjectProviderWrapper'
 import DocumentsView from './pages/Project/document/DocumentsView'
 import StakeholderEdit from './pages/Project/stakeholder/StakeholderEdit'
+import DocumentDetailView from './pages/Project/document/DocumentDetailView'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -70,6 +71,7 @@ function App() {
                 <Route path="/project/:projectId/stakeholders/:stakeholderId/edit" element={<StakeholderEdit/>}/>
                 
                 <Route path="/project/:projectId/documents" element={<DocumentsView/>}/>
+                <Route path="/project/:projectId/documents/:documentId" element={<DocumentDetailView/>}/>
                 
                 <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
                 <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>

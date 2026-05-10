@@ -108,4 +108,45 @@ public class DocumentService {
         }
         return documentMapper.toDtoList(documentRepository.findObservableDocumentsForRequirement(projectId,requirementId));
     }
+
+    @Transactional
+    public DocumentDTO updateDocument(MultipartFile file, DocumentDTO dto, Long projectId, Long documentId, String oryId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
+            throw new AccessDeniedException("User not authorized to update documents for this project");
+        }
+
+        Document existing = documentRepository.findById(documentId)
+                .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
+
+        if (!existing.getProjectId().equals(projectId)) {
+            throw new AccessDeniedException("Document does not belong to this project");
+        }
+
+        try {
+            objStorageService.deleteFile(existing.getS3Key());
+        } catch (Exception e) {
+            throw new ObjectStorageException("Failed to delete old file from storage", e);
+        }
+
+        String objectKey = projectId + "/" + existing.getEntityIdentifier();
+
+        try {
+            objStorageService.uploadFile(
+                    objectKey,
+                    file.getInputStream(),
+                    file.getSize(),
+                    file.getContentType()
+            );
+        } catch (Exception e) {
+            throw new ObjectStorageException("Failed to upload new file to storage", e);
+        }
+
+        documentMapper.patch(existing, dto);
+        existing.setS3Key(objectKey);
+
+        Document saved = documentRepository.save(existing);
+
+        String url = objStorageService.getDownloadUrl(objectKey);
+        return documentMapper.toDtoDetailed(saved, url);
+    }
 }

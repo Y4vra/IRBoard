@@ -66,4 +66,10 @@ public class DocumentMapper {
     public List<DocumentDTO> toDtoList(List<Document> docs) {
         return docs.stream().map(this::toDto).collect(Collectors.toList());
     }
+
+    public void patch(Document existing, DocumentDTO dto) {
+        if(dto.fileName() !=null) existing.setFileName(dto.fileName());
+        if(dto.mimeType() !=null) existing.setMimeType(dto.mimeType());
+        if(dto.fileSize() !=null) existing.setFileSize(dto.fileSize());
+    }
 }
