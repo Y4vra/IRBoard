@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../lib/globalVars"
-import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -33,6 +32,7 @@ import { PriorityBadge } from "@/components/badges/PriorityBadge"
 import { StatsChart } from "@/components/graphics/StatsChart"
 import { BackToProjectButton } from "@/components/BackToProjectButton"
 import { LinkUserToFunctionalityDialog } from "@/components/dialogs/userLinking/LinkUserToFunctionalityDialog"
+import { useFunctionalities } from "@/hooks/useFunctionalities"
 
 interface FunctionalRequirementCardProps {
   requirement: FunctionalRequirement
@@ -41,7 +41,7 @@ interface FunctionalRequirementCardProps {
   priorityStyle: PriorityStyle
   label: string
   depth?: number
-  isAdmin: boolean
+  canEdit: boolean
   onRefetch: () => void
 }
 
@@ -52,7 +52,7 @@ function FunctionalRequirementCard({
   priorityStyle,
   label,
   depth = 0,
-  isAdmin,
+  canEdit,
   onRefetch,
 }: FunctionalRequirementCardProps) {
   const {getLock} = useLocks();
@@ -112,7 +112,7 @@ function FunctionalRequirementCard({
           <RequirementStateBadge state={r.state} />
         </div>
 
-        {isAdmin && (
+        {canEdit && (
           <div onClick={(e) => e.stopPropagation()} className="shrink-0">
             <Button size="sm" variant="outline" onClick={()=>setCreateFunctionalRequirementDialogOpen(!createFunctionalRequirementDialogOpen)}>
               <Plus className="h-4 w-4 mr-1.5" />
@@ -144,7 +144,7 @@ function FunctionalRequirementCard({
               priorityStyle={priorityStyle}
               label={`${label}.${index + 1}`}
               depth={depth + 1}
-              isAdmin={isAdmin}
+              canEdit={canEdit}
               onRefetch={onRefetch}
             />
           ))}
@@ -160,7 +160,8 @@ function FunctionalityView() {
     functionalityId: string
   }>()
   const { priorityStyle,functionalRequirementStats } = useProject();
-  const { user } = useAuth();
+  const { canEditFunctionality } = useFunctionalities();
+  const canEdit = canEditFunctionality(functionalityId!);
   
   const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
 
@@ -259,7 +260,7 @@ function FunctionalityView() {
             <StatsChart stats={frStats} title="Requirements" size={100} />
           </div>
           <div className="flex flex-col gap-3">
-            {user?.isAdmin && (
+            {canEdit && (
               <Button variant="outline" size="sm" onClick={handleEditFunctionality}>
                 <Pencil className="mr-2 h-4 w-4" /> Edit Functionality
               </Button>
@@ -285,7 +286,7 @@ function FunctionalityView() {
               Manage hierarchical functional requirements.
             </p>
           </div>
-          {user?.isAdmin && (
+          {canEdit && (
             <Button size="sm" variant="outline" onClick={()=>setCreateFunctionalRequirementDialogOpen(!createFunctionalRequirementDialogOpen)}>
               <Plus className="h-4 w-4 mr-1.5" />
               Add FR
@@ -331,7 +332,7 @@ function FunctionalityView() {
                   functionalityId={functionalityId!}
                   priorityStyle={priorityStyle}
                   label={`${functionalityPrefix}.${index + 1}`}
-                  isAdmin={!!user?.isAdmin}
+                  canEdit={canEdit}
                   onRefetch={refreshRequirements}
                 />
               ))

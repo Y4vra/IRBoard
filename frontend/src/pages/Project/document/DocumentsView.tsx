@@ -19,11 +19,13 @@ import { useBackendResource } from "@/hooks/useBackendResource"
 import type { DocumentDTO } from "@/types/Document"
 import { UploadDocumentDialog } from "@/components/dialogs/creatingDialogs/UploadDocumentDialog"
 import { BackToProjectButton } from "@/components/BackToProjectButton"
+import { useProject } from "@/hooks/useProject"
 
 function DocumentsView() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated} = useAuth();
+  const { editPermission } = useProject();
 
   const fetchDocuments = useCallback(() =>
     fetch(`${API_BASE_URL}/projects/${projectId}/documents`, { credentials: "include" })
@@ -63,7 +65,7 @@ function DocumentsView() {
           <h1 className="text-3xl font-extrabold text-slate-900">Documents</h1>
           <p className="text-slate-500 mt-1">Manage project files and references.</p>
         </div>
-        {user?.isAdmin && (
+        {editPermission && (
           <UploadDocumentDialog projectId={projectId!} onSuccess={refresh} />
         )}
       </header>

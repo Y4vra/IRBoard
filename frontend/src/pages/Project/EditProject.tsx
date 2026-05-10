@@ -53,16 +53,14 @@ export default function EditProject() {
         const res = await fetch(`${API_BASE_URL}/projects/${projectId}/requestEdit`, {
           credentials: "include",
         });
-        if (!res.ok) throw new Error("Server error requesting edit lock");
-        const granted: boolean = await res.json();
-        if (!granted) {
+        if (res.status === 409) {
           navigate("/error", {
-            state: {
-              from: `/project/${projectId}`,
-              errorType: "permission",
-              // Override description via state — ErrorPage uses errorType for content,
-              // so we redirect with permission type which shows "Access Denied"
-            },
+            state: { from: `/project/${projectId}`, errorType: "permission" },
+            replace: true,
+          });
+        } else if (!res.ok) {
+          navigate("/error", {
+            state: { from: `/project/${projectId}`, errorType: "server" },
             replace: true,
           });
         }

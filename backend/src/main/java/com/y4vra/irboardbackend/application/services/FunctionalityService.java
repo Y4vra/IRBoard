@@ -79,7 +79,7 @@ public class FunctionalityService {
         if(functionality.get().getProject().getId() != projectId){
             throw new EntityNotFoundException("Functionality with id " + functionalityId + " not found");
         }
-        if (permService.checkPermission("Functionality", String.valueOf(functionalityId),"viewRequirements",oryId)==false){
+        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId)){
             throw new AccessDeniedException("You do not have permission to view this Functionality");
         }
         return functionalityMapper.toDto(functionality.get(),permService.checkPermission("Project",String.valueOf(projectId),"linkProjectUsers",oryId));
@@ -111,7 +111,7 @@ public class FunctionalityService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
-        boolean isAllowed = permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId);
+        boolean isAllowed = permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId);
 
         if (!isAllowed) {
             throw new AccessDeniedException("User not authorized to add functionalities to this project");
@@ -129,7 +129,8 @@ public class FunctionalityService {
         } catch (DataIntegrityViolationException e) {
             throw new LabelConflictException("A functionality with label '" + functionality.getLabel() + "' already exists in this project.",e);
         }
-        permService.grantPermissionToSubjectSet("Functionality", String.valueOf(saved.getId()), "project", "Project", String.valueOf(projectId), "");
+        permService.grantPermissionToSubjectSet("Project", String.valueOf(projectId), "functionalities", "Functionality", String.valueOf(saved.getId()), "project");
+        permService.grantPermissionToSubjectSet("Functionality", String.valueOf(saved.getId()), "project","Project", String.valueOf(projectId), "functionalities");
         return functionalityMapper.toDto(saved,true);
     }
 

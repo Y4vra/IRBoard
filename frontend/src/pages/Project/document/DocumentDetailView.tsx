@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import type { DocumentDTO } from "@/types/Document";
 import type { FunctionalRequirementSummaryDTO, RequirementSummaryDTO } from "@/types/RequirementSummaryDTO";
 import { UpdateDocumentDialog } from "@/components/dialogs/creatingDialogs/UpdateDocumentDialog";
+import { useProject } from "@/hooks/useProject";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -34,6 +35,7 @@ function DocumentDetailView() {
   const { projectId, documentId } = useParams<{ projectId: string; documentId: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { editPermission } = useProject();
 
   const fetchDocument = useCallback(
     () =>
@@ -100,7 +102,10 @@ function DocumentDetailView() {
                 <ExternalLink className="mr-2 h-4 w-4" /> Open File
               </Button>
             )}
-            <UpdateDocumentDialog projectId={projectId!} document={document} onSuccess={refresh} />
+            
+            {editPermission && (
+              <UpdateDocumentDialog projectId={projectId!} document={document} onSuccess={refresh} />
+            )}
           </div>
         </div>
 

@@ -16,20 +16,27 @@ class System implements Namespace {
 
 class Project implements Namespace {
   related: {
-    managers: User[]
     parent_system: System[]
+    functionalities: Functionality[]
+
+    managers: User[]
   }
 
   permits = {
-    edit: (ctx: Context) =>
+    editProject: (ctx: Context) =>
       this.related.managers.includes(ctx.subject),
+
+    edit: (ctx: Context) =>
+      this.related.managers.includes(ctx.subject)||
+      this.related.functionalities.traverse((f) => f.permits.edit(ctx)),
     
     view: (ctx: Context) => 
+      this.related.parent_system.traverse((s)=>s.permits.viewAll(ctx)) ||
       this.related.managers.includes(ctx.subject) ||
-      this.related.parent_system.traverse((s) => s.permits.viewAll(ctx)),
+      this.related.functionalities.traverse((f) => f.permits.view(ctx)),
     
     linkManagers: (ctx: Context) => 
-      this.related.parent_system.traverse((s) => s.permits.manageProjects(ctx)),
+      this.related.parent_system.traverse((s)=>s.permits.manageProjects(ctx)),
 
     linkProjectUsers: (ctx: Context) => this.related.managers.includes(ctx.subject)
       
@@ -44,16 +51,20 @@ class Functionality implements Namespace {
   }
 
   permits = {
+    edit: (ctx: Context) =>
+      this.related.engineers.includes(ctx.subject),
+    view: (ctx: Context) =>
+      this.related.engineers.includes(ctx.subject) || this.related.stakeholders.includes(ctx.subject),
+    
     editRequirements: (ctx: Context) =>
-      this.related.engineers.includes(ctx.subject) ||
-      this.related.project.traverse((p) => p.permits.edit(ctx)),
+      this.permits.edit(ctx) ||
+      this.related.project.traverse((p)=>p.permits.edit(ctx)),
 
     viewRequirements: (ctx: Context) =>
-      this.related.stakeholders.includes(ctx.subject) ||
-      this.related.engineers.includes(ctx.subject) ||
-      this.related.project.traverse((p) => p.permits.view(ctx)),
+      this.permits.view(ctx) ||
+      this.related.project.traverse((p)=>p.permits.view(ctx)),
 
     approveAll: (ctx: Context) =>
-      this.related.project.traverse((p) => p.permits.edit(ctx))
+      this.related.project.traverse((p)=>p.permits.editProject(ctx)),
   }
 }

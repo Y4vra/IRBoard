@@ -12,6 +12,7 @@ import { useLocks } from "@/hooks/useLocks";
 import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
+import { useProject } from "@/hooks/useProject";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -26,6 +27,7 @@ function requirementPath(r: RequirementSummaryDTO, projectId: string): string {
 
 function StakeholderDetailView() {
   const { projectId, stakeholderId } = useParams<{ projectId: string; stakeholderId: string }>();
+  const { editPermission } = useProject();
   const navigate = useNavigate();
   const [stakeholder, setStakeholder] = useState<Stakeholder | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,17 +80,20 @@ function StakeholderDetailView() {
           </div>
           <div className="flex items-center gap-2">
             <LockIndicator lock={lock} />
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              disabled={isLocked}
-              title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
-            >
-              <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
-              </Link>
-            </Button>
+            
+            {editPermission && (
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                disabled={isLocked}
+                title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
+              >
+                <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
         <div className="flex gap-2">

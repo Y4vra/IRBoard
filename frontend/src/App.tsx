@@ -23,6 +23,7 @@ import { ProjectProviderWrapper } from './components/wrappers/ProjectProviderWra
 import DocumentsView from './pages/Project/document/DocumentsView'
 import StakeholderEdit from './pages/Project/stakeholder/StakeholderEdit'
 import DocumentDetailView from './pages/Project/document/DocumentDetailView'
+import { FunctionalitiesProviderWrapper } from './components/wrappers/FunctionalitiesProviderWrapper'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -60,6 +61,7 @@ function App() {
               </Route>
               <Route element={<ProjectLockWrapper />}>
               <Route element={<ProjectProviderWrapper />}>
+              <Route element={<FunctionalitiesProviderWrapper />}>
                 <Route path="/project/:projectId" element={<ProjectView/>}/>
                 <Route path="/project/:projectId/edit" element={<EditProject/>}/>
 
@@ -75,6 +77,7 @@ function App() {
                 
                 <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
                 <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>
+              </Route>
               </Route>
               </Route>
             </Route>

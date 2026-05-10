@@ -22,9 +22,10 @@ interface ProjectUsersMap {
 
 interface LinkUserToProjectDialogProps {
   projectId: string
+  onSuccess?: ()=>void
 }
 
-export function LinkUserToProjectDialog({ projectId }: LinkUserToProjectDialogProps) {
+export function LinkUserToProjectDialog({ projectId, onSuccess }: LinkUserToProjectDialogProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [linking, setLinking] = useState<number | null>(null)
@@ -86,7 +87,10 @@ export function LinkUserToProjectDialog({ projectId }: LinkUserToProjectDialogPr
       onOpenChange={(next) => {
         setOpen(next)
         if (next) refresh()
-        else setSearch("")
+        else {
+          setSearch("")
+          onSuccess?.()
+        }
       }}
     >
       <DialogTrigger asChild>

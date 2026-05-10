@@ -3,8 +3,8 @@ import { useCallback } from "react";
 import { API_BASE_URL } from "../../lib/globalVars";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import { ProjectProvider } from "@/context/ProjectContext";
-import type { Project } from "@/types/Project";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import type { Project } from "@/types/Project";
 
 export const ProjectProviderWrapper = () => {
   const { projectId } = useParams();
@@ -15,13 +15,13 @@ export const ProjectProviderWrapper = () => {
     [projectId]
   );
 
-  const { data: project, loading } = useBackendResource<Project>({ fetcher: fetchProject });
+  const { data, loading, refresh } = useBackendResource<Project>({ fetcher: fetchProject });
 
   if (loading) return <LoadingSpinner />;
-  if (!project) return <Outlet />; // Or an error state
+  if (!data) return <Outlet />;
 
   return (
-    <ProjectProvider value={project}>
+    <ProjectProvider value={{...data,refresh}}>
       <Outlet />
     </ProjectProvider>
   );

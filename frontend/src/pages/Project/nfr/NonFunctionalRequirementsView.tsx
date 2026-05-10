@@ -24,11 +24,11 @@ interface NFRCardProps {
   projectId: string
   label: string
   depth?: number
-  isAdmin: boolean
+  editPermission: boolean
   onRefetch: () => void
 }
 
-function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefetch }: NFRCardProps) {
+function NFRCard({ requirement: r, projectId, label, depth = 0, editPermission, onRefetch }: NFRCardProps) {
   const { getLock } = useLocks()
   const navigate = useNavigate()
   const hasChildren = r.children && r.children.length > 0
@@ -84,7 +84,7 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
         </div>
 
         {/* Add child button — stop propagation so it doesn't navigate */}
-        {isAdmin && (
+        {editPermission && (
           <div onClick={(e) => e.stopPropagation()} className="shrink-0">
             <Button size="sm" variant="outline" onClick={()=>setCreateNonFunctionalRequirementDialogOpen(!createNonFunctionalRequirementDialogOpen)}>
               <Plus className="h-4 w-4 mr-1.5" />
@@ -113,7 +113,7 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
               projectId={projectId}
               label={`${label}.${index + 1}`}
               depth={depth + 1}
-              isAdmin={isAdmin}
+              editPermission={editPermission}
               onRefetch={onRefetch}
             />
           ))}
@@ -127,8 +127,8 @@ function NFRCard({ requirement: r, projectId, label, depth = 0, isAdmin, onRefet
 
 function NonFunctionalRequirementsView() {
   const { projectId } = useParams<{ projectId: string }>()
-  const { isAuthenticated, user } = useAuth()
-  const { nonFunctionalRequirementStats } = useProject()
+  const { isAuthenticated } = useAuth()
+  const { nonFunctionalRequirementStats, editPermission } = useProject()
   
   const [createNonFunctionalRequirementDialogOpen, setCreateNonFunctionalRequirementDialogOpen] = useState(false);
 
@@ -171,7 +171,7 @@ function NonFunctionalRequirementsView() {
           <h1 className="text-3xl font-extrabold text-slate-900">Non-Functional Requirements</h1>
           <p className="text-slate-500 mt-1">Manage quality attributes and system constraints.</p>
         </div>
-        {user?.isAdmin && (
+        {editPermission && (
           <Button size="sm" variant="outline" onClick={()=>setCreateNonFunctionalRequirementDialogOpen(!createNonFunctionalRequirementDialogOpen)}>
               <Plus className="h-4 w-4 mr-1.5" />
               Add NFR
@@ -206,7 +206,7 @@ function NonFunctionalRequirementsView() {
                 requirement={r}
                 projectId={projectId!}
                 label={`NFR.${index + 1}`}
-                isAdmin={!!user?.isAdmin}
+                editPermission={editPermission}
                 onRefetch={refresh}
               />
             ))

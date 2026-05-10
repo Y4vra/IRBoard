@@ -4,7 +4,7 @@ export interface Project {
   description: string;
   priorityStyle: PriorityStyle;
   state: ProjectState;
-  createdAt: string;
+  editPermission: boolean,
   
   stakeholderStats?: Record<string, number>;
   nonFunctionalRequirementStats?: Record<string, number>;

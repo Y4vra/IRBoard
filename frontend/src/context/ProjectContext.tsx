@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
-import type { Project } from "@/types/Project";
-import { ProjectContext } from "./ProjectContextInstance";
+import { ProjectContext,type ProjectContextValue } from "./ProjectContextInstance";
 
-export function ProjectProvider({ children, value }: { children: ReactNode; value: Project }) {
+export function ProjectProvider({ children, value }: { children: ReactNode; value: ProjectContextValue }) {
   return <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>;
 }

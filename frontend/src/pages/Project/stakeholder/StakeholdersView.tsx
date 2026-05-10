@@ -31,8 +31,8 @@ function StakeholdersView() {
   const { getLock } = useLocks()
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
-  const {stakeholderStats} = useProject();
+  const { isAuthenticated } = useAuth();
+  const {stakeholderStats, editPermission } = useProject();
 
   const fetchStakeholders = useCallback(() =>
   fetch(`${API_BASE_URL}/projects/${projectId}/stakeholders`, { credentials: 'include' })
@@ -65,7 +65,7 @@ const stakeholders = data ?? [];
           <h1 className="text-3xl font-extrabold text-slate-900">Stakeholders</h1>
           <p className="text-slate-500 mt-1">Manage project actors and interest groups.</p>
         </div>
-        {user?.isAdmin && <CreateStakeholderDialog projectId={projectId!} onSuccess={refresh}/>}
+        {editPermission && <CreateStakeholderDialog projectId={projectId!} onSuccess={refresh}/>}
       </header>
       {stakeholderStats && (
         <Card className="p-4">

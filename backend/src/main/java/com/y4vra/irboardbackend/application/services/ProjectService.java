@@ -76,6 +76,7 @@ public class ProjectService {
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
         return projectMapper.toDto(project,
+                permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId),
                 statisticsRepository.getStakeholderStatistics(projectId),
                 statisticsRepository.getNonFunctionalRequirementStatistics(projectId),
                 statisticsRepository.getFunctionalitiesStatistics(projectId));

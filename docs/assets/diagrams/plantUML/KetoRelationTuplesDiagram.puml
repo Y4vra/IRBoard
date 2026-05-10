@@ -1,0 +1,43 @@
+@startuml KetoRelationTuples
+title Keto namespace relationship diagram
+
+' Entities
+class User
+
+class System {
+    +admins: User[]
+    +manageProjects()
+    +inviteUsers()
+    +viewAll()
+}
+
+class Project {
+    +parent_system: System[]
+    +functionalities: Functionality[]
+    +managers: User[]
+    +editProject()
+    +edit()
+    +view()
+    +linkManagers()
+    +linkProjectUsers()
+}
+
+class Functionality {
+    +project: Project[]
+    +engineers: User[]
+    +stakeholders: User[]
+    +editRequirements()
+    +viewRequirements()
+    +approveAll()
+}
+
+' Relationships
+System "1" -down- "*" Project : owns
+Project "1" -down- "*" Functionality : contains
+Functionality "*" -- "1" Project : belongs to
+
+User "1" .left.. "*" System : admin of
+User "1" .left.. "*" Project : manager of
+User "1" ... "*" Functionality : engineer/stakeholder of
+
+@enduml

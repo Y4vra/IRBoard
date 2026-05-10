@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "@/lib/globalVars";
-import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,6 +32,7 @@ import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement"
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog";
 import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
+import { useProject } from "@/hooks/useProject";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ function SectionCard({
   count,
   onAdd,
   addLabel,
-  isAdmin,
+  editPermission,
   children,
 }: {
   title: string;
@@ -52,7 +52,7 @@ function SectionCard({
   count: number;
   onAdd?: () => void;
   addLabel?: string;
-  isAdmin: boolean;
+  editPermission: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -73,7 +73,7 @@ function SectionCard({
               <CardDescription className="mt-0.5">{description}</CardDescription>
             </div>
           </div>
-          {isAdmin && onAdd && (
+          {editPermission && onAdd && (
             <Button size="sm" variant="outline" onClick={onAdd}>
               <Plus className="h-4 w-4 mr-1.5" />
               {addLabel ?? "Add"}
@@ -168,7 +168,7 @@ function NonFunctionalRequirementDetailView() {
     projectId: string;
     nfrId: string;
   }>();
-  const { user } = useAuth();
+  const { editPermission } = useProject();
   const navigate = useNavigate();
 
   const [createNonFunctionalRequirementDialogOpen,setCreateNonFunctionalRequirementDialogOpen]= useState(false);
@@ -253,8 +253,6 @@ function NonFunctionalRequirementDetailView() {
       </div>
     );
 
-  const isAdmin = !!user?.isAdmin;
-
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
       {/* Nav */}
@@ -264,7 +262,7 @@ function NonFunctionalRequirementDetailView() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Non-Functional Requirements
           </Link>
         </Button>
-        {isAdmin && (
+        {editPermission && (
           <Button variant="outline" size="sm">
             <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
           </Button>
@@ -320,13 +318,13 @@ function NonFunctionalRequirementDetailView() {
       </header>
 
       {/* Children */}
-      {(requirement.children?.length > 0 || isAdmin) && (
+      {(requirement.children?.length > 0 || editPermission) && (
         <SectionCard
           title="Child Requirements"
           description="Hierarchical sub-requirements nested under this NFR."
           icon={<GitBranch className="h-4 w-4" />}
           count={requirement.children?.length ?? 0}
-          isAdmin={isAdmin}
+          editPermission={editPermission}
           addLabel="Add Child NFR"
           onAdd={() => setCreateNonFunctionalRequirementDialogOpen(true)}
         >
@@ -348,7 +346,7 @@ function NonFunctionalRequirementDetailView() {
         description="Stakeholders who observe or are affected by this requirement."
         icon={<Users className="h-4 w-4" />}
         count={requirement.observedStakeholders?.length ?? 0}
-        isAdmin={isAdmin}
+        editPermission={editPermission}
         addLabel="Link Stakeholder"
         onAdd={() => setStakeholderDialogOpen(true)}
       >
@@ -371,7 +369,7 @@ function NonFunctionalRequirementDetailView() {
                     {s.state && (
                       <EntityStateBadge state={s.state}/>
                     )}
-                    {isAdmin && (
+                    {editPermission && (
                       <RemoveButton
                         onClick={() => unlinkStakeholder(s.id)}
                         loading={removingId === s.id}
@@ -437,7 +435,7 @@ function NonFunctionalRequirementDetailView() {
         description="Documents related to or referenced by this requirement."
         icon={<FileText className="h-4 w-4" />}
         count={requirement.observedDocuments?.length ?? 0}
-        isAdmin={isAdmin}
+        editPermission={editPermission}
         addLabel="Link Document"
         onAdd={() => setDocumentDialogOpen(true)}
       >
@@ -460,7 +458,7 @@ function NonFunctionalRequirementDetailView() {
                       <FileText className="h-4 w-4" />
                     </div>
                     <CardTitle className="text-sm flex-1 truncate">{doc.fileName}</CardTitle>
-                    {isAdmin && (
+                    {editPermission && (
                       <RemoveButton
                         onClick={() => unlinkDocument(doc.id)}
                         loading={removingId === doc.id}
@@ -484,7 +482,7 @@ function NonFunctionalRequirementDetailView() {
         description="Functional requirements that observe or are constrained by this NFR."
         icon={<GitBranch className="h-4 w-4" />}
         count={requirement.observerFRequirements?.length ?? 0}
-        isAdmin={false}
+        editPermission={false}
       >
         {requirement.observerFRequirements?.length === 0 ? (
           <p className="text-center text-slate-400 italic py-6">

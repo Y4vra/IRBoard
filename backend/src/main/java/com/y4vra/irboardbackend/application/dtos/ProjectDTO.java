@@ -20,6 +20,7 @@ public record ProjectDTO(
         @Pattern(regexp = "TERNARY|MOSCOW", message = "Priority style must be TERNARY or MOSCOW")
         String priorityStyle,
         String state,
+        Boolean editPermission,
         Map<String,Long> stakeholderStats,
         Map<String,Long> nonFunctionalRequirementStats,
         Map<String,Map<String,Long>> functionalRequirementStats

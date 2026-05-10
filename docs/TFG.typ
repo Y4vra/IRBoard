@@ -609,6 +609,7 @@ Regarding usability testing, the plan involves observing real users interacting 
 = System Design //6
 
 == System Architecture
+=== General architecture desing
 The system architecture follows a Microservices approach based on the Zero Trust security model. This ensures flexibility and scalability while maintaining a high level of isolation between business logic and infrastructure concerns. To guarantee a professional security standard while maintaining a manageable project scope, core identity and access management responsibilities have been delegated to the Ory Open Source ecosystem.
 
 The figure below shows the main flow of the application represented by solid arrows, and secondary messaging between microservices represented by a dotted arrows.
@@ -629,6 +630,10 @@ The figure below shows the main flow of the application represented by solid arr
 
 #strong[Mailpit] - A simple email server that receives all messages sent by Ory Kratos. Acts as a placeholder for development instead of a real email server, to ensure the signup works.
 
+=== Backend system design
+
+=== Frontend system design
+
 == Real Use Case Design
 
 == Class Design
@@ -638,6 +643,10 @@ The figure below shows the main flow of the application represented by solid arr
 #strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value isActive is also delegated to the ReBAC system, as it represents a user-to-system relationship.
 
 == Database Design
+(explain both jpa resulting database and keto relationship db)
+
+
+
 
 == User Interface Design
 To design the user interfaces, the design tool moqups was used to model the UI wireframes.

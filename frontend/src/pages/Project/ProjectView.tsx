@@ -1,6 +1,4 @@
-import { useCallback } from "react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "../../lib/globalVars";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,12 +17,12 @@ import {
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { CreateFunctionalityDialog } from "../../components/dialogs/creatingDialogs/CreateFunctionalityDialog";
-import { useBackendResource } from "@/hooks/useBackendResource";
-import type { Permission, Functionality, FunctionalitiesResponse } from "@/types/Functionality";
+import type { Permission, Functionality } from "@/types/Functionality";
 import { useLocks } from "@/hooks/useLocks";
 import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
 import { useProject } from "@/hooks/useProject";
+import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { ProjectStatsSection } from "@/components/graphics/ProjectStatsSectionGraph";
 import { ProjectHealthBar } from "@/components/graphics/ProjectHealthBar";
 import { LinkUserToProjectDialog } from "@/components/dialogs/userLinking/LinkUserToProjectDialog";
@@ -43,16 +41,14 @@ const permissionConfig: Record<
     label: "Editable",
     icon: <Pencil className="h-3.5 w-3.5" />,
     badgeClass: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-    cardClass:
-      "border-emerald-500/20 hover:border-emerald-500/50 hover:shadow-emerald-500/5",
+    cardClass: "border-emerald-500/20 hover:border-emerald-500/50 hover:shadow-emerald-500/5",
     iconClass: "bg-emerald-500/10 text-emerald-600",
   },
   view: {
     label: "View only",
     icon: <Eye className="h-3.5 w-3.5" />,
     badgeClass: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-    cardClass:
-      "border-blue-500/20 hover:border-blue-500/50 hover:shadow-blue-500/5",
+    cardClass: "border-blue-500/20 hover:border-blue-500/50 hover:shadow-blue-500/5",
     iconClass: "bg-blue-500/10 text-blue-600",
   },
   none: {
@@ -113,15 +109,10 @@ function FunctionalityCard({
     </Card>
   );
 
-  if (isDisabled) {
-    return <div>{cardContent}</div>;
-  }
+  if (isDisabled) return <div>{cardContent}</div>;
 
   return (
-    <Link
-      to={`/project/${projectId}/functionalities/${functionality.id}`}
-      className="group"
-    >
+    <Link to={`/project/${projectId}/functionalities/${functionality.id}`} className="group">
       {cardContent}
     </Link>
   );
@@ -130,25 +121,7 @@ function FunctionalityCard({
 function ProjectView() {
   const project = useProject();
   const { user } = useAuth();
-
-  const fetchFunctionalities = useCallback(
-    () => {
-      if (!project?.id) return Promise.reject("Project ID not available");
-
-      return fetch(`${API_BASE_URL}/projects/${project.id}/functionalities`, { 
-        credentials: "include" 
-      })
-      .then(r => { 
-        if (!r.ok) throw new Error("Failed to fetch functionalities"); 
-        return r.json(); 
-      });
-    },
-    [project]
-  );
-
-  const { data: functionalities, loading, refresh, error } = useBackendResource<FunctionalitiesResponse>({ fetcher: fetchFunctionalities });
-
-  if (loading) return <LoadingSpinner />;
+  const { functionalities, loading, error, refresh } = useFunctionalities();
 
   if (error || !project)
     return (
@@ -185,27 +158,16 @@ function ProjectView() {
     },
   ];
 
-  const allFunctionalities: { func: Functionality; permission: Permission }[] =
-    functionalities
-      ? [
-          ...(functionalities.edit ?? []).map((f) => ({
-            func: f,
-            permission: "edit" as Permission,
-          })),
-          ...(functionalities.view ?? []).map((f) => ({
-            func: f,
-            permission: "view" as Permission,
-          })),
-          ...(functionalities.none ?? []).map((f) => ({
-            func: f,
-            permission: "none" as Permission,
-          })),
-        ]
-      : [];
+  const allFunctionalities: { func: Functionality; permission: Permission }[] = functionalities
+    ? [
+        ...(functionalities.edit ?? []).map((f) => ({ func: f, permission: "edit" as Permission })),
+        ...(functionalities.view ?? []).map((f) => ({ func: f, permission: "view" as Permission })),
+        ...(functionalities.none ?? []).map((f) => ({ func: f, permission: "none" as Permission })),
+      ]
+    : [];
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-10 animate-in fade-in duration-500">
-      {/* ── Top nav ── */}
       <nav className="mb-0 flex items-center justify-between">
         <Button asChild variant="ghost" size="sm">
           <Link to="/">
@@ -213,10 +175,8 @@ function ProjectView() {
           </Link>
         </Button>
       </nav>
- 
-      {/* ── Project info ── */}
+
       <header className="flex items-start justify-between gap-8">
-        {/* Left: title + description + meta */}
         <div className="space-y-3 flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-4xl font-black tracking-tight">{project.name}</h1>
@@ -237,11 +197,9 @@ function ProjectView() {
             </div>
           </div>
         </div>
- 
-        {/* Right: health bar + admin actions */}
+
         <div className="flex flex-col items-end gap-4 shrink-0 pt-1">
           <ProjectHealthBar project={project} />
- 
           {user?.isAdmin && (
             <div className="flex items-center gap-2">
               <Button asChild variant="outline" size="sm">
@@ -249,15 +207,12 @@ function ProjectView() {
                   <Settings className="mr-2 h-4 w-4" /> Edit Project
                 </Link>
               </Button>
-              <LinkUserToProjectDialog projectId={project.id!} />
-              {/* Add more admin utility buttons here */}
+              <LinkUserToProjectDialog projectId={project.id!} onSuccess={project.refresh}/>
             </div>
           )}
         </div>
       </header>
 
-
-      {/* ── Quick-nav cards (Stakeholders, NFR, Documents) ── */}
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground mb-4">
           Project Sections
@@ -272,12 +227,8 @@ function ProjectView() {
                       {link.icon}
                     </div>
                     <div>
-                      <CardTitle className="text-lg font-bold">
-                        {link.title}
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        {link.description}
-                      </CardDescription>
+                      <CardTitle className="text-lg font-bold">{link.title}</CardTitle>
+                      <CardDescription className="mt-1">{link.description}</CardDescription>
                     </div>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
@@ -288,7 +239,6 @@ function ProjectView() {
         </div>
       </section>
 
-      {/* ── Functionalities ── */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -297,18 +247,13 @@ function ProjectView() {
             </h2>
             {functionalities && (
               <p className="text-xs text-muted-foreground/60 mt-0.5">
-                {(functionalities.edit?.length ?? 0) +
-                  (functionalities.view?.length ?? 0)}{" "}
-                accessible ·{" "}
+                {(functionalities.edit?.length ?? 0) + (functionalities.view?.length ?? 0)} accessible ·{" "}
                 {functionalities.none?.length ?? 0} restricted
               </p>
             )}
           </div>
-          {user?.isAdmin && (
-            <CreateFunctionalityDialog
-              projectId={project.id!}
-              onSuccess={refresh}
-            />
+          {project.editPermission && (
+            <CreateFunctionalityDialog projectId={project.id!} onSuccess={refresh} />
           )}
         </div>
 
@@ -318,24 +263,18 @@ function ProjectView() {
           </div>
         ) : allFunctionalities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed rounded-xl">
-            <p className="text-muted-foreground font-medium">
-              No functionalities yet
-            </p>
+            <p className="text-muted-foreground font-medium">No functionalities yet</p>
             <p className="text-sm text-muted-foreground/60 mt-1">
               Add the first functionality to get started.
             </p>
-            {user?.isAdmin && (
+            {project.editPermission && (
               <div className="mt-4">
-                <CreateFunctionalityDialog
-                  projectId={project.id!}
-                  onSuccess={fetchFunctionalities}
-                />
+                <CreateFunctionalityDialog projectId={project.id!} onSuccess={refresh} />
               </div>
             )}
           </div>
         ) : (
           <>
-            {/* Legend */}
             <div className="flex flex-wrap gap-3 mb-4">
               {(["edit", "view", "none"] as Permission[]).map((p) => {
                 const count =
@@ -360,7 +299,7 @@ function ProjectView() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {allFunctionalities.map(({ func, permission }) => (
                 <FunctionalityCard
-                  key={`${permission}-${func.projectId}`}
+                  key={`${permission}-${func.id}`}
                   functionality={func}
                   permission={permission}
                   projectId={project.id!}
@@ -370,7 +309,7 @@ function ProjectView() {
           </>
         )}
       </section>
-      
+
       <ProjectStatsSection project={project} />
     </div>
   );
