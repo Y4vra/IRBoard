@@ -145,6 +145,7 @@ public class DocumentService {
         existing.setS3Key(objectKey);
 
         Document saved = documentRepository.save(existing);
+        saved.notifyObservers();
 
         String url = objStorageService.getDownloadUrl(objectKey);
         return documentMapper.toDtoDetailed(saved, url);
