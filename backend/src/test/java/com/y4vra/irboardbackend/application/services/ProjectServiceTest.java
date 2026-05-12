@@ -45,7 +45,7 @@ class ProjectServiceTest {
         project = new Project("IR-Board", "Description", "TERNARY");
         project.setId(1L);
 
-        projectDTO = new ProjectDTO(1L, "IR-Board", "Description", "TERNARY", "ACTIVE", null,null,null);
+        projectDTO = new ProjectDTO(1L, "IR-Board", "Description", "TERNARY", "ACTIVE", false,null,null,null);
     }
 
     @Test

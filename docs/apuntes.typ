@@ -105,3 +105,6 @@ Defining templates or abstract projects.
 In the industry, "copy and paste" is the standard approach.
 === Search and filtering
 The system must allow a user to search requirements by text
+=== extras
+i18n of frontend & databases with AI
+smtp server

@@ -111,6 +111,11 @@ public class KratosClient implements IdentityService {
             );
 
             restTemplate.postForEntity(submitUrl, body, String.class);
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            if (e.getStatusCode().value() == 422) {
+                return; // valid code, flow advanced — this is expected Kratos behavior
+            }
+            throw new AccountRecoveryException("INVALID_OR_EXPIRED_CODE",e);
         } catch (Exception e) {
             throw new AccountRecoveryException("INVALID_OR_EXPIRED_CODE",e);
         }

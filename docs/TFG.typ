@@ -163,13 +163,13 @@ Key objectives of the system include:
 == Current state
 
 == Definitions and Abbreviations
-
+ReBAC explain
 == Scope
 
 == Assumptions and Constraints
 
 = Theoretical Background //2
-
+explain the different identifiers, dynamic, slug and reordering
 = Feasibility Study and Alternatives Analysis //3
 
 = Initial Project Planning and Management //4
@@ -183,10 +183,8 @@ Key objectives of the system include:
 == Risk Analysis
 
 == Initial Budget
-
+cite the DPPI enterprise definition
 = System Analysis //5
-
-== Input Documentation
 
 == Users and Characteristics
 In this project, instead of conventional system-wide roles, the approach I found fit best the nature of requirement management systems was a relation-based role system. Therefore, two sets of user permissions can be defined: system-level permissions and project-level permissions.
@@ -629,7 +627,8 @@ The figure below shows the main flow of the application represented by solid arr
 #strong[RMS Backend] - The core service developed using Spring Boot, containing the domain-specific business logic and data persistence. It interacts with keto both to write Relation-Based Access Control (ReBAC) tuples and to filter by permissions.
 
 #strong[Mailpit] - A simple email server that receives all messages sent by Ory Kratos. Acts as a placeholder for development instead of a real email server, to ensure the signup works.
-
+TODO add the other containers
+TODO add another C1, C3
 === Backend system design
 
 === Frontend system design
