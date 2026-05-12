@@ -41,8 +41,8 @@ class NonFunctionalRequirementTest {
         @DisplayName("stores orderValue")
         void storesOrderValue() {
             NonFunctionalRequirement nfr = newNFR("NFR-01");
-            nfr.setOrderValue(2.0f);
-            assertThat(nfr.getOrderValue()).isEqualTo(2.0f);
+            nfr.setOrderValue(20L);
+            assertThat(nfr.getOrderValue()).isEqualTo(20L);
         }
 
         @Test

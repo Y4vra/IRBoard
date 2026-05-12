@@ -61,6 +61,7 @@ public class NonFunctionalRequirementMapper {
             entity.getId(),
             entity.getName(),
             entity.getDescription(),
+            entity.getOrderValue(),
             entity.getState().name(),
             entity.getMeasurementUnit(),
             entity.getOperator().toString(),
@@ -84,6 +85,7 @@ public class NonFunctionalRequirementMapper {
         entity.setId(dto.id());
         entity.setName(dto.name());
         entity.setDescription(dto.description());
+        entity.setOrderValue(dto.orderValue());
         entity.setState(dto.state() != null ? RequirementState.valueOf(dto.state()) : null);
         entity.setMeasurementUnit(dto.measurementUnit());
         entity.setOperator(dto.operator() != null ? ComparisonOperator.valueOf(dto.operator()) : null);

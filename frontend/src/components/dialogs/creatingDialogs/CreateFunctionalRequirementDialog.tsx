@@ -27,6 +27,7 @@ import {
   Anchor,
 } from "lucide-react";
 import type { PriorityStyle } from "@/types/Project";
+import type { FunctionalRequirement } from "@/types/FunctionalRequirement";
 
 const MOSCOW_OPTIONS = ["MUST", "SHOULD", "COULD", "WONT"];
 const TERNARY_OPTIONS = ["HIGH", "NORMAL", "LOW"];
@@ -40,6 +41,11 @@ interface CreateFunctionalRequirementDialogProps {
   priorityStyle: PriorityStyle;
   /** When provided, the new FR will be created as a child of this requirement. */
   parentId?: number | string;
+  /**
+   * The siblings at the same level (top-level list or parent's children).
+   * Used to compute the next orderValue automatically.
+   */
+  siblingRequirements: FunctionalRequirement[];
   onSuccess: () => void;
 }
 
@@ -57,6 +63,13 @@ const EMPTY_FORM: FormData = {
   stability: "",
 };
 
+/** Returns the orderValue for a new requirement appended at the end of siblings. */
+function computeOrderValue(siblings: FunctionalRequirement[]): number {
+  if (siblings.length === 0) return 1000;
+  const sorted = [...siblings].sort((a, b) => a.orderValue - b.orderValue);
+  return sorted[sorted.length - 1].orderValue + 1000;
+}
+
 export function CreateFunctionalRequirementDialog({
   open,
   onOpenChange,
@@ -64,6 +77,7 @@ export function CreateFunctionalRequirementDialog({
   functionalityId,
   priorityStyle,
   parentId,
+  siblingRequirements,
   onSuccess,
 }: CreateFunctionalRequirementDialogProps) {
   const [loading, setLoading] = useState(false);
@@ -84,6 +98,8 @@ export function CreateFunctionalRequirementDialog({
     setLoading(true);
     setError(null);
 
+    const orderValue = computeOrderValue(siblingRequirements);
+
     const payload = {
       name: formData.name,
       description: formData.description,
@@ -91,6 +107,7 @@ export function CreateFunctionalRequirementDialog({
       stability: formData.stability || undefined,
       functionalityId: Number(functionalityId),
       projectId: Number(projectId),
+      orderValue,
       ...(isChild ? { parentId: Number(parentId) } : {}),
     };
 
@@ -125,6 +142,7 @@ export function CreateFunctionalRequirementDialog({
   const handleClose = () => {
     setFormData(EMPTY_FORM);
     setError(null);
+    onOpenChange(false);
   };
 
   return (

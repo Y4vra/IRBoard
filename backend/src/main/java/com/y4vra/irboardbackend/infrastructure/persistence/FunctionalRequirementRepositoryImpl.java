@@ -52,6 +52,10 @@ interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalReq
             Long functionalityId,
             Long requirementId
     );
+    @Query("select f from FunctionalRequirement f left join fetch f.parent where f.id = :id")
+    Optional<FunctionalRequirement> findByIdWithParent(Long id);
+    @Query("SELECT r FROM FunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :id")
+    Optional<FunctionalRequirement> findByIdWithChildren(Long id);
 }
 
 @Component
@@ -109,5 +113,15 @@ public class FunctionalRequirementRepositoryImpl implements FunctionalRequiremen
             Long requirementId
     ) {
         return jpaRepository.findObservableFRequirementsForRequirementAndFunctionality(projectId,functionalityId,requirementId);
+    }
+
+    @Override
+    public Optional<FunctionalRequirement> findByIdWithParent(Long functionalRequirementId) {
+        return jpaRepository.findByIdWithParent(functionalRequirementId);
+    }
+
+    @Override
+    public Optional<FunctionalRequirement> findByIdWithChildren(Long functionalRequirementId) {
+        return jpaRepository.findByIdWithChildren(functionalRequirementId);
     }
 }

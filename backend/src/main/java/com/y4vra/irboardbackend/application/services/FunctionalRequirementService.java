@@ -10,19 +10,21 @@ import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class FunctionalRequirementService extends RequirementService {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private final FunctionalRequirementRepository frRepository;
     private final FunctionalRequirementMapper frMapper;
@@ -61,15 +63,11 @@ public class FunctionalRequirementService extends RequirementService {
         if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to create requirements in functionality");
         }
-        Optional<Functionality> functionality = functionalityRepository.findById(functionalityId);
-        if (functionality.isEmpty()) {
-            throw new IllegalArgumentException("Functionality does not exist");
-        }
+        Functionality functionality = functionalityRepository.findById(functionalityId).orElseThrow(()->new EntityNotFoundException("Functionality does not exist"));
 
-        Functionality f = functionality.get();
-        FunctionalRequirement fr = frMapper.toEntity(dto,f);
-        fr.setProjectId(f.getProjectId());
-        EntitySlugGenerator.setSlug(fr,f.getProjectId());
+        FunctionalRequirement fr = frMapper.toEntity(dto,functionality);
+        fr.setProjectId(functionality.getProjectId());
+        EntitySlugGenerator.setSlug(fr,functionality.getProjectId());
         fr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
             FunctionalRequirement frParent = frRepository.findById(dto.parentId())
@@ -84,7 +82,7 @@ public class FunctionalRequirementService extends RequirementService {
 
             Associations.link(frParent, fr);
         } else {
-            Associations.link(functionality.get(), fr);
+            Associations.link(functionality, fr);
         }
         FunctionalRequirement saved = frRepository.save(fr);
 
@@ -211,5 +209,44 @@ public class FunctionalRequirementService extends RequirementService {
                 ));
 
         return functionalityMapper.toDtoListWithRequirements(functionalities, requirementsByFunctionality);
+    }
+
+    @Transactional
+    public void reorderRequirement(String oryId, Long functionalityId, Long functionalRequirementId, Long orderValue) {
+        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
+            throw new AccessDeniedException("User not authorized to modify requirements in functionality");
+        }
+        functionalityRepository.findById(functionalityId).orElseThrow(()-> new EntityNotFoundException("Could not find functionality"));
+        FunctionalRequirement fr = frRepository.findById(functionalRequirementId).orElseThrow(()-> new EntityNotFoundException("Could not find functional requirement"));
+        if(!Objects.equals(fr.getFunctionality().getId(), functionalityId)){
+            throw new EntityNotFoundException("Functionality id does not match functionality id");
+        }
+        fr.setOrderValue(orderValue);
+    }
+    @Transactional
+    public void changeParent(String oryId, Long functionalityId, Long functionalRequirementId, Long newParentId) {
+        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
+            throw new AccessDeniedException("User not authorized to modify requirements in functionality");
+        }
+        functionalityRepository.findById(functionalityId)
+                .orElseThrow(() -> new EntityNotFoundException("Could not find functionality"));
+        FunctionalRequirement fr = frRepository.findByIdWithParent(functionalRequirementId)
+                .orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement"));
+        if (!Objects.equals(fr.getFunctionality().getId(), functionalityId))
+            throw new EntityNotFoundException("Functionality id does not match functionality id");
+
+        if (fr.getParent() != null) {
+            FunctionalRequirement currentParent = frRepository
+                    .findByIdWithChildren(fr.getParent().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Could not find current parent"));
+            Associations.unlink(currentParent, fr);
+        }
+        if (newParentId != null) {
+            FunctionalRequirement newParent = frRepository.findById(newParentId)
+                    .orElseThrow(() -> new EntityNotFoundException("Could not find parent"));
+            if (!Objects.equals(newParent.getFunctionality().getId(), functionalityId))
+                throw new EntityNotFoundException("Functionality id does not match functionality id");
+            Associations.link(newParent, fr);
+        }
     }
 }

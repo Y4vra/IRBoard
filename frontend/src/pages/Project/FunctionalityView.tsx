@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useState, useRef, useMemo } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../lib/globalVars"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ChevronDown,
   Plus,
+  GripVertical,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge"
@@ -34,8 +35,135 @@ import { BackToProjectButton } from "@/components/BackToProjectButton"
 import { LinkUserToFunctionalityDialog } from "@/components/dialogs/userLinking/LinkUserToFunctionalityDialog"
 import { useFunctionalities } from "@/hooks/useFunctionalities"
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+/**
+ * Describes where the dragged item will land when released.
+ * - `type: "between"` → insert between siblings at `index` within parent `parentId` (null = root)
+ * - `type: "child"`   → become first child of requirement `parentId`
+ */
+type DropPreview =
+  | { type: "between"; parentId: number | null; index: number }
+  | { type: "child"; parentId: number }
+  | null
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function sortByOrderValue(items: FunctionalRequirement[]): FunctionalRequirement[] {
+  return [...items]
+    .sort((a, b) => a.orderValue - b.orderValue)
+    .map((item) => ({
+      ...item,
+      children: item.children?.length ? sortByOrderValue(item.children) : item.children,
+    }))
+}
+
+/**
+ * Reorder within the same parent.
+ * Body is a raw JSON Long (the new orderValue), not an object.
+ */
+async function apiReorder(
+  projectId: string,
+  functionalityId: string,
+  requirementId: number,
+  newOrderValue: number
+): Promise<void> {
+  const res = await fetch(
+    `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/reorder`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newOrderValue),
+    }
+  )
+  if (!res.ok) {
+    const err = await res.json().catch(() => null)
+    throw new Error(err?.message || "Failed to reorder requirement")
+  }
+}
+
+/**
+ * Change parent (reparent / nest).
+ * Body is a raw JSON Long (the new parent id), not an object.
+ */
+async function apiChangeParent(
+  projectId: string,
+  functionalityId: string,
+  requirementId: number,
+  newParentId: number|null
+): Promise<void> {
+  const res = await fetch(
+    `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/changeParent`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newParentId),
+    }
+  )
+  if (!res.ok) {
+    const err = await res.json().catch(() => null)
+    throw new Error(err?.message || "Failed to change parent")
+  }
+}
+
+/**
+ * Given a sorted sibling list with the dragged item already removed,
+ * compute the orderValue for inserting at `insertIndex`.
+ */
+function midpointOrderValue(
+  siblingsWithoutDragged: FunctionalRequirement[],
+  insertIndex: number
+): number {
+  const prev = siblingsWithoutDragged[insertIndex - 1]
+  const next = siblingsWithoutDragged[insertIndex]
+  if (!prev && !next) return 1000
+  if (!prev) return next.orderValue - 1000
+  if (!next) return prev.orderValue + 1000
+  return Math.round((prev.orderValue + next.orderValue) / 2)
+}
+
+// ---------------------------------------------------------------------------
+// DropPlaceholder
+// ---------------------------------------------------------------------------
+
+// Add this <style> block once, e.g. just before the component declarations:
+const DROP_PLACEHOLDER_STYLE = `
+@keyframes placeholder-in {
+  from { opacity: 0; transform: scaleY(0.4); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+.drop-placeholder {
+  animation: placeholder-in 120ms cubic-bezier(0.2, 0, 0, 1) forwards;
+  transform-origin: top;
+}
+`
+
+function DropPlaceholder({ visible }: { visible: boolean }) {
+  if (!visible) return null
+  return (
+    <>
+      <style>{DROP_PLACEHOLDER_STYLE}</style>
+      <div className="drop-placeholder rounded-xl border-2 border-blue-400 border-dashed bg-blue-50/60 h-14 my-1 flex items-center justify-center pointer-events-none">
+        <span className="text-xs text-blue-400 font-medium select-none">Drop here</span>
+      </div>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// FunctionalRequirementCard
+// ---------------------------------------------------------------------------
+
 interface FunctionalRequirementCardProps {
   requirement: FunctionalRequirement
+  siblings: FunctionalRequirement[]    // sorted, same level
+  positionInSiblings: number
   projectId: string
   functionalityId: string
   priorityStyle: PriorityStyle
@@ -43,10 +171,22 @@ interface FunctionalRequirementCardProps {
   depth?: number
   canEdit: boolean
   onRefetch: () => void
+  dragStateRef: React.MutableRefObject<number | null>
+  dropPreview: DropPreview
+  setDropPreview: (p: DropPreview) => void
+  onReorder: (
+    draggingId: number,
+    siblings: FunctionalRequirement[],
+    insertIndex: number
+  ) => Promise<void>
+  parentIdMap: Map<number, number | null>
+  onChangeParent: (draggingId: number, newParentId: number | null) => Promise<void>
 }
 
 function FunctionalRequirementCard({
   requirement: r,
+  siblings,
+  positionInSiblings,
   projectId,
   functionalityId,
   priorityStyle,
@@ -54,116 +194,281 @@ function FunctionalRequirementCard({
   depth = 0,
   canEdit,
   onRefetch,
+  dragStateRef,
+  dropPreview,
+  setDropPreview,
+  onReorder,
+  parentIdMap,
+  onChangeParent,
 }: FunctionalRequirementCardProps) {
-  const {getLock} = useLocks();
+  const { getLock } = useLocks()
   const navigate = useNavigate()
   const hasChildren = r.children && r.children.length > 0
   const [collapsed, setCollapsed] = useState(false)
-  const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [reorderError, setReorderError] = useState<string | null>(null)
+
+  const parentId = (r.parentId as number | null | undefined) ?? null
+  const sortedChildren = sortByOrderValue(r.children ?? [])
+
+  // ── Drag source ──
+  const handleDragStart = (e: React.DragEvent) => {
+    if (!canEdit) return
+    dragStateRef.current = r.id
+    e.dataTransfer.effectAllowed = "move"
+    e.stopPropagation()
+  }
+
+  const handleDragEnd = () => {
+    dragStateRef.current = null
+    setDropPreview(null)
+  }
+
+  // ── Drop target ──
+  const handleDragOver = (e: React.DragEvent) => {
+    const draggingId = dragStateRef.current
+    if (!canEdit || !draggingId || draggingId === r.id) return
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Measure only the first child (the header row), not the whole card
+    // so zones don't bleed into the children area below
+    const header = (e.currentTarget as HTMLElement).firstElementChild as HTMLElement
+    const rect = header.getBoundingClientRect()
+
+    // If cursor is outside the header entirely (i.e. in the children area),
+    // treat it as "after" — don't nest, don't flicker
+    if (e.clientY > rect.bottom) {
+      setDropPreview({ type: "between", parentId, index: positionInSiblings + 1 })
+      return
+    }
+
+    const ratio = (e.clientY - rect.top) / rect.height
+
+    if (ratio < 0.35) {
+      setDropPreview({ type: "between", parentId, index: positionInSiblings })
+    } else if (ratio > 0.75) {
+      setDropPreview({ type: "between", parentId, index: positionInSiblings + 1 })
+    } else {
+      setDropPreview({ type: "child", parentId: r.id })
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if truly leaving the card element (not entering a child DOM node)
+    if ((e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) return
+    setDropPreview(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const draggingId = dragStateRef.current
+    const preview = dropPreview
+
+    setDropPreview(null)
+    setReorderError(null)
+
+    if (!canEdit || !draggingId || draggingId === r.id || !preview) return
+
+    try {
+      if (preview.type === "child") {
+        // Nest dragged item under this card
+        await onChangeParent(draggingId, r.id)
+      } else {
+        // "between" — puede ser reorden O cambio de nivel
+        const draggingCurrentParent = parentIdMap.get(draggingId) ?? null
+        const targetParentId = preview.parentId  // null si es root
+
+        if (draggingCurrentParent !== targetParentId) {
+          // El elemento cambia de nivel → primero desvincular/vincular padre
+          await onChangeParent(draggingId, targetParentId)
+        }
+        // Siempre reordenar dentro del nivel destino
+        await onReorder(draggingId, siblings, preview.index)
+      }
+      onRefetch()
+    } catch (err) {
+      setReorderError(err instanceof Error ? err.message : "Operation failed")
+    }
+  }
+
+  const isChildTarget = dropPreview?.type === "child" && dropPreview.parentId === r.id
+
+  // Insertion line BEFORE this card
+  const showLineBefore =
+    dropPreview?.type === "between" &&
+    dropPreview.parentId === parentId &&
+    dropPreview.index === positionInSiblings
+
+  // Insertion line AFTER this card (only for the last sibling, to avoid double-rendering)
+  const isLastSibling = positionInSiblings === siblings.length - 1
+  const showLineAfter =
+    isLastSibling &&
+    dropPreview?.type === "between" &&
+    dropPreview.parentId === parentId &&
+    dropPreview.index === siblings.length
 
   return (
-    <div
-      className={`rounded-xl border bg-white shadow-sm transition-shadow hover:shadow-md ${
-        depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : ""
-      }`}
-    >
+    <>
+      <DropPlaceholder visible={showLineBefore} />
+
       <div
-        className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-        onClick={() => navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`)}
+        className={[
+          "rounded-xl border bg-white shadow-sm transition-all select-none",
+          depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : "",
+          isChildTarget
+            ? "ring-2 ring-blue-400 bg-blue-50/40 shadow-md"
+            : "hover:shadow-md",
+        ].join(" ")}
+        draggable={canEdit}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
-        {/* Collapse toggle */}
-        {hasChildren ? (
-          <button
-            className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation()
-              setCollapsed((c) => !c)
-            }}
-            aria-label={collapsed ? "Expand" : "Collapse"}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
-        ) : (
-          <span className="w-4 shrink-0" />
+        {/* Nest-target label — only visible in the middle hover zone */}
+        {isChildTarget && (
+          <div className="text-center text-xs text-blue-500 font-semibold pt-1.5 pointer-events-none">
+            ↳ Nest inside "{r.name}"
+          </div>
         )}
 
-        {/* Computed label */}
-        <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
-
-        <div className="flex-1 min-w-0">
-          {r.name && (
-            <p className="text-sm font-semibold truncate mt-0.5">
-              {r.name}
-            </p>
-          )}{r.description && (
-            <p className="text-sm text-slate-500 truncate mt-0.5">
-              {r.description}
-            </p>
+        <div
+          className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+          onClick={() =>
+            navigate(
+              `/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`
+            )
+          }
+        >
+          {canEdit && (
+            <span
+              className="shrink-0 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <GripVertical className="h-4 w-4" />
+            </span>
           )}
-        </div>
 
-        <div className="shrink-0 flex items-center gap-3">
-          <LockIndicator lock={getLock(EntityType.FUNCTIONAL_REQUIREMENT, r.id)} />
-          <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
-          <RequirementStateBadge state={r.state} />
-        </div>
+          {hasChildren ? (
+            <button
+              className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation()
+                setCollapsed((c) => !c)
+              }}
+              aria-label={collapsed ? "Expand" : "Collapse"}
+            >
+              {collapsed ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+          ) : (
+            <span className="w-4 shrink-0" />
+          )}
 
-        {canEdit && (
-          <div onClick={(e) => e.stopPropagation()} className="shrink-0">
-            <Button size="sm" variant="outline" onClick={()=>setCreateFunctionalRequirementDialogOpen(!createFunctionalRequirementDialogOpen)}>
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add Child FR
+          <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
+
+          <div className="flex-1 min-w-0">
+            {r.name && <p className="text-sm font-semibold truncate">{r.name}</p>}
+            {r.description && (
+              <p className="text-sm text-slate-500 truncate mt-0.5">{r.description}</p>
+            )}
+            {reorderError && (
+              <p className="text-xs text-red-500 mt-0.5">{reorderError}</p>
+            )}
+          </div>
+
+          <div className="shrink-0 flex items-center gap-3">
+            <LockIndicator lock={getLock(EntityType.FUNCTIONAL_REQUIREMENT, r.id)} />
+            <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
+            <RequirementStateBadge state={r.state} />
+          </div>
+
+          {canEdit && (
+            <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+              <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-1.5" />
+                Add Child FR
+              </Button>
               <CreateFunctionalRequirementDialog
-                open={createFunctionalRequirementDialogOpen}
-                onOpenChange={setCreateFunctionalRequirementDialogOpen}
+                open={createDialogOpen}
+                onOpenChange={setCreateDialogOpen}
                 projectId={projectId}
                 functionalityId={functionalityId}
                 parentId={r.id}
                 priorityStyle={priorityStyle}
+                siblingRequirements={sortedChildren}
                 onSuccess={onRefetch}
               />
-            </Button>
+            </div>
+          )}
+
+          <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
+        </div>
+
+        {hasChildren && !collapsed && (
+          <div className="px-5 pb-4 space-y-3">
+            {/* Line before the very first child */}
+            <DropPlaceholder
+              visible={
+                dropPreview?.type === "between" &&
+                dropPreview.parentId === r.id &&
+                dropPreview.index === 0
+              }
+            />
+            {sortedChildren.map((child, index) => (
+              <FunctionalRequirementCard
+                key={child.id}
+                requirement={child}
+                siblings={sortedChildren}
+                positionInSiblings={index}
+                projectId={projectId}
+                functionalityId={functionalityId}
+                priorityStyle={priorityStyle}
+                label={`${label}.${index + 1}`}
+                depth={depth + 1}
+                canEdit={canEdit}
+                onRefetch={onRefetch}
+                dragStateRef={dragStateRef}
+                dropPreview={dropPreview}
+                setDropPreview={setDropPreview}
+                onReorder={onReorder}
+                parentIdMap={parentIdMap}
+                onChangeParent={onChangeParent}
+              />
+            ))}
           </div>
         )}
-
-        <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
       </div>
 
-      {hasChildren && !collapsed && (
-        <div className="px-5 pb-4 space-y-3">
-          {r.children.map((child, index) => (
-            <FunctionalRequirementCard
-              key={child.id}
-              requirement={child}
-              projectId={projectId}
-              functionalityId={functionalityId}
-              priorityStyle={priorityStyle}
-              label={`${label}.${index + 1}`}
-              depth={depth + 1}
-              canEdit={canEdit}
-              onRefetch={onRefetch}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+      <DropPlaceholder visible={showLineAfter} />
+    </>
   )
 }
+
+// ---------------------------------------------------------------------------
+// FunctionalityView
+// ---------------------------------------------------------------------------
 
 function FunctionalityView() {
   const { projectId, functionalityId } = useParams<{
     projectId: string
     functionalityId: string
   }>()
-  const { priorityStyle,functionalRequirementStats } = useProject();
-  const { canEditFunctionality } = useFunctionalities();
-  const canEdit = canEditFunctionality(functionalityId!);
-  
-  const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
+  const { priorityStyle, functionalRequirementStats } = useProject()
+  const { canEditFunctionality } = useFunctionalities()
+  const canEdit = canEditFunctionality(functionalityId!)
+
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const dragStateRef = useRef<number | null>(null)
+  const [dropPreview, setDropPreview] = useState<DropPreview>(null)
 
   const fetchFunctionality = useCallback(
     () =>
@@ -202,14 +507,44 @@ function FunctionalityView() {
     refresh: refreshRequirements,
   } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
 
-  const requirements = requirementsData ?? []
-  const frStats = functionalRequirementStats?.[functionalityId!] ?? {} 
-
-  // Derive the prefix from the functionality label (e.g. "User Management" → "UM", or use label directly if already short)
+  const requirements = sortByOrderValue(requirementsData ?? [])
+  const frStats = functionalRequirementStats?.[functionalityId!] ?? {}
   const functionalityPrefix = functionality?.label ?? "FR"
 
-  const handleEditFunctionality = () => {
-  }
+  const parentIdMap = useMemo(() => {
+    const map = new Map<number, number | null>()
+    function walk(items: FunctionalRequirement[], parentId: number | null) {
+      for (const item of items) {
+        map.set(item.id, parentId)
+        if (item.children?.length) walk(item.children, item.id)
+      }
+    }
+    walk(requirements, null)
+    return map
+  }, [requirements])
+
+  // Reorder within the same parent level
+  const handleReorder = useCallback(
+    async (
+      draggingId: number,
+      siblings: FunctionalRequirement[],
+      insertIndex: number
+    ) => {
+      const sorted = [...siblings].sort((a, b) => a.orderValue - b.orderValue)
+      const without = sorted.filter((s) => s.id !== draggingId)
+      const newOrderValue = midpointOrderValue(without, insertIndex)
+      await apiReorder(projectId!, functionalityId!, draggingId, newOrderValue)
+    },
+    [projectId, functionalityId]
+  )
+
+  // Nest under a different requirement
+  const handleChangeParent = useCallback(
+    async (draggingId: number, newParentId: number | null) => {
+      await apiChangeParent(projectId!, functionalityId!, draggingId, newParentId)
+    },
+    [projectId, functionalityId]
+  )
 
   if (funcLoading) return <LoadingSpinner text="Loading functionality..." />
 
@@ -227,9 +562,8 @@ function FunctionalityView() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
-      {/* ── Top nav ── */}
       <nav className="mb-0 flex items-center justify-between">
-        <BackToProjectButton className="mb-0" projectId={projectId!}/>
+        <BackToProjectButton className="mb-0" projectId={projectId!} />
       </nav>
 
       <header className="flex items-center justify-between gap-6">
@@ -261,17 +595,17 @@ function FunctionalityView() {
           </div>
           <div className="flex flex-col gap-3">
             {canEdit && (
-              <Button variant="outline" size="sm" onClick={handleEditFunctionality}>
+              <Button variant="outline" size="sm">
                 <Pencil className="mr-2 h-4 w-4" /> Edit Functionality
               </Button>
             )}
             {functionality.isUserFunctionalityManager && (
-                <LinkUserToFunctionalityDialog
-                  projectId={projectId!}
-                  functionalityId={functionalityId!}
-                  canManage={functionality.isUserFunctionalityManager}
-                />
-              )}
+              <LinkUserToFunctionalityDialog
+                projectId={projectId!}
+                functionalityId={functionalityId!}
+                canManage={functionality.isUserFunctionalityManager}
+              />
+            )}
           </div>
         </div>
       </header>
@@ -283,22 +617,30 @@ function FunctionalityView() {
               Functional Requirements
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
-              Manage hierarchical functional requirements.
+              Manage hierarchical functional requirements.{" "}
+              {canEdit && (
+                <span className="text-slate-400">
+                  Drag to reorder · drag to the middle of a card to nest inside it.
+                </span>
+              )}
             </p>
           </div>
           {canEdit && (
-            <Button size="sm" variant="outline" onClick={()=>setCreateFunctionalRequirementDialogOpen(!createFunctionalRequirementDialogOpen)}>
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add FR
+            <>
+              <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-1.5" />
+                Add FR
+              </Button>
               <CreateFunctionalRequirementDialog
-                open={createFunctionalRequirementDialogOpen}
-                onOpenChange={setCreateFunctionalRequirementDialogOpen}
+                open={createDialogOpen}
+                onOpenChange={setCreateDialogOpen}
                 projectId={projectId!}
                 functionalityId={functionalityId!}
                 onSuccess={refreshRequirements}
                 priorityStyle={priorityStyle}
+                siblingRequirements={requirements}
               />
-            </Button>
+            </>
           )}
         </div>
 
@@ -306,7 +648,7 @@ function FunctionalityView() {
           <CardHeader>
             <CardTitle>Functional Requirements</CardTitle>
             <CardDescription>
-              Listed functional requirements for this functionality.
+              Listed functional requirements for this functionality, ordered by priority.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -324,18 +666,36 @@ function FunctionalityView() {
                 No functional requirements found.
               </p>
             ) : (
-              requirements.map((r, index) => (
-                <FunctionalRequirementCard
-                  key={r.id}
-                  requirement={r}
-                  projectId={projectId!}
-                  functionalityId={functionalityId!}
-                  priorityStyle={priorityStyle}
-                  label={`${functionalityPrefix}.${index + 1}`}
-                  canEdit={canEdit}
-                  onRefetch={refreshRequirements}
+              <>
+                {/* Insertion line at the very top of the root list */}
+                <DropPlaceholder
+                  visible={
+                    dropPreview?.type === "between" &&
+                    dropPreview.parentId === null &&
+                    dropPreview.index === 0
+                  }
                 />
-              ))
+                {requirements.map((r, index) => (
+                  <FunctionalRequirementCard
+                    key={r.id}
+                    requirement={r}
+                    siblings={requirements}
+                    positionInSiblings={index}
+                    projectId={projectId!}
+                    functionalityId={functionalityId!}
+                    priorityStyle={priorityStyle}
+                    label={`${functionalityPrefix}.${index + 1}`}
+                    canEdit={canEdit}
+                    onRefetch={refreshRequirements}
+                    dragStateRef={dragStateRef}
+                    dropPreview={dropPreview}
+                    setDropPreview={setDropPreview}
+                    onReorder={handleReorder}
+                    parentIdMap={parentIdMap}
+                    onChangeParent={handleChangeParent}
+                  />
+                ))}
+              </>
             )}
           </CardContent>
         </Card>
@@ -344,4 +704,4 @@ function FunctionalityView() {
   )
 }
 
-export default FunctionalityView;
+export default FunctionalityView

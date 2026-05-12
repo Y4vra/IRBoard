@@ -16,7 +16,7 @@ public abstract class Requirement extends ProjectElement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Float orderValue;
+    private Long orderValue;
     private String name;
     private String description;
 
@@ -25,10 +25,10 @@ public abstract class Requirement extends ProjectElement {
 
     private Boolean isPendingReview;
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private Set<Requirement> children = new HashSet<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "parent_id")
     private Requirement parent;
 
@@ -59,8 +59,8 @@ public abstract class Requirement extends ProjectElement {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Float getOrderValue() { return orderValue; }
-    public void setOrderValue(Float orderValue) { this.orderValue = orderValue; }
+    public Long getOrderValue() { return orderValue; }
+    public void setOrderValue(Long orderValue) { this.orderValue = orderValue; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -101,5 +101,13 @@ public abstract class Requirement extends ProjectElement {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : System.identityHashCode(this);
+    }
+
+    public String toDebugString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FunctionalRequirement [parentFunctionality=");
+        sb.append(getParent()==null?"null":getParent().toDebugString());
+        sb.append("]");
+        return sb.toString();
     }
 }

@@ -40,8 +40,8 @@ class FunctionalRequirementTest {
         @DisplayName("stores orderValue")
         void storesOrderValue() {
             FunctionalRequirement fr = newFR("FR-01");
-            fr.setOrderValue(1.5f);
-            assertThat(fr.getOrderValue()).isEqualTo(1.5f);
+            fr.setOrderValue(100L);
+            assertThat(fr.getOrderValue()).isEqualTo(100L);
         }
 
         @Test

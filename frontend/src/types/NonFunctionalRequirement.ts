@@ -16,6 +16,7 @@ export interface NonFunctionalRequirement {
   actualValue: number,
   projectId: number,
   parentId: number,
+  orderValue: number;
   children: NonFunctionalRequirement[],
   observedStakeholders: Stakeholder[];
   observedNFRequirements: RequirementSummaryDTO[];

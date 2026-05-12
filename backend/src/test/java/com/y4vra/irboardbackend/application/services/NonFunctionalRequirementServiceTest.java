@@ -66,7 +66,7 @@ class NonFunctionalRequirementServiceTest {
         nfr.setProject(project);
 
         nfrDTO = new NonFunctionalRequirementDTO(
-                7L, "Response Time", "Must respond under threshold", RequirementState.PENDING_APPROVAL.name(),
+                7L, "Response Time", "Must respond under threshold",100L, RequirementState.PENDING_APPROVAL.name(),
                 "ms", "LESS_THAN", 200.0, 100.0, 150.0, projectId, null, null,List.of(),List.of(),List.of(),List.of()
         );
     }

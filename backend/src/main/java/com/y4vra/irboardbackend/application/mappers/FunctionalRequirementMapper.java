@@ -69,6 +69,7 @@ public class FunctionalRequirementMapper {
         entity.setName(dto.name());
         entity.setDescription(dto.description());
         entity.setFunctionality(functionality);
+        entity.setOrderValue(dto.orderValue());
         entity.setPriority(dto.priority());
         entity.setStability(dto.stability());
 

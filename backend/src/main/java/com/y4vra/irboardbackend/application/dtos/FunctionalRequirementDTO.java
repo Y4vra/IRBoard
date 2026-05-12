@@ -1,20 +1,24 @@
 package com.y4vra.irboardbackend.application.dtos;
 
-import com.y4vra.irboardbackend.domain.model.Requirement;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record FunctionalRequirementDTO(
         Long id,
+        @NotBlank(message = "The stakeholder name is compulsory")
+        @Size(max = 150, message = "The name is too long")
         String name,
         String description,
         String priority,
         String stability,
         Long functionalityId,
         Long parentId,
-        Float orderValue,
+        @NotNull(message = "The orderValue is mandatory")
+        Long orderValue,
         String state,
         List<FunctionalRequirementDTO> children,
         List<StakeholderDTO> observedStakeholders,
