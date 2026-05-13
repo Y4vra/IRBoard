@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useMemo } from "react"
+import { useCallback, useState, useRef, useMemo, Fragment } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../lib/globalVars"
 import { Button } from "@/components/ui/button"
@@ -39,11 +39,6 @@ import { useFunctionalities } from "@/hooks/useFunctionalities"
 // Types
 // ---------------------------------------------------------------------------
 
-/**
- * Describes where the dragged item will land when released.
- * - `type: "between"` → insert between siblings at `index` within parent `parentId` (null = root)
- * - `type: "child"`   → become first child of requirement `parentId`
- */
 type DropPreview =
   | { type: "between"; parentId: number | null; index: number }
   | { type: "child"; parentId: number }
@@ -62,10 +57,6 @@ function sortByOrderValue(items: FunctionalRequirement[]): FunctionalRequirement
     }))
 }
 
-/**
- * Reorder within the same parent.
- * Body is a raw JSON Long (the new orderValue), not an object.
- */
 async function apiReorder(
   projectId: string,
   functionalityId: string,
@@ -87,15 +78,11 @@ async function apiReorder(
   }
 }
 
-/**
- * Change parent (reparent / nest).
- * Body is a raw JSON Long (the new parent id), not an object.
- */
 async function apiChangeParent(
   projectId: string,
   functionalityId: string,
   requirementId: number,
-  newParentId: number|null
+  newParentId: number | null
 ): Promise<void> {
   const res = await fetch(
     `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/changeParent`,
@@ -112,16 +99,16 @@ async function apiChangeParent(
   }
 }
 
-/**
- * Given a sorted sibling list with the dragged item already removed,
- * compute the orderValue for inserting at `insertIndex`.
- */
 function midpointOrderValue(
   siblingsWithoutDragged: FunctionalRequirement[],
-  insertIndex: number
+  insertIndex: number,
+  draggedIndex: number
 ): number {
-  const prev = siblingsWithoutDragged[insertIndex - 1]
-  const next = siblingsWithoutDragged[insertIndex]
+  // After removing the dragged item, every slot at or after its original
+  // position shifts left by one. Adjust the target index accordingly.
+  const adjustedIndex = insertIndex > draggedIndex ? insertIndex - 1 : insertIndex
+  const prev = siblingsWithoutDragged[adjustedIndex - 1]
+  const next = siblingsWithoutDragged[adjustedIndex]
   if (!prev && !next) return 1000
   if (!prev) return next.orderValue - 1000
   if (!next) return prev.orderValue + 1000
@@ -129,11 +116,10 @@ function midpointOrderValue(
 }
 
 // ---------------------------------------------------------------------------
-// DropPlaceholder
+// Animation style (injected once)
 // ---------------------------------------------------------------------------
 
-// Add this <style> block once, e.g. just before the component declarations:
-const DROP_PLACEHOLDER_STYLE = `
+const DROP_ANIM_STYLE = `
 @keyframes placeholder-in {
   from { opacity: 0; transform: scaleY(0.4); }
   to   { opacity: 1; transform: scaleY(1); }
@@ -144,15 +130,100 @@ const DROP_PLACEHOLDER_STYLE = `
 }
 `
 
-function DropPlaceholder({ visible }: { visible: boolean }) {
-  if (!visible) return null
+// ---------------------------------------------------------------------------
+// GapDropZone
+// ---------------------------------------------------------------------------
+
+interface GapDropZoneProps {
+  parentId: number | null
+  index: number
+  canEdit: boolean
+  dragStateRef: React.MutableRefObject<number | null>
+  dropPreview: DropPreview
+  setDropPreview: (p: DropPreview) => void
+  /** Siblings at this level (sorted). Needed to compute orderValue on drop. */
+  siblings: FunctionalRequirement[]
+  parentIdMap: Map<number, number | null>
+  onReorder: (draggingId: number, siblings: FunctionalRequirement[], insertIndex: number) => Promise<void>
+  onChangeParent: (draggingId: number, newParentId: number | null) => Promise<void>
+  onRefetch: () => void
+}
+
+function GapDropZone({
+  parentId,
+  index,
+  canEdit,
+  dragStateRef,
+  dropPreview,
+  setDropPreview,
+  siblings,
+  parentIdMap,
+  onReorder,
+  onChangeParent,
+  onRefetch,
+}: GapDropZoneProps) {
+  const [dropError, setDropError] = useState<string | null>(null)
+
+  const isActive =
+    dropPreview?.type === "between" &&
+    dropPreview.parentId === parentId &&
+    dropPreview.index === index
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!canEdit || !dragStateRef.current) return
+    e.preventDefault()
+    e.stopPropagation()
+    setDropPreview({ type: "between", parentId, index })
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if ((e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) return
+    setDropPreview(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const draggingId = dragStateRef.current
+    setDropPreview(null)
+    setDropError(null)
+
+    if (!canEdit || !draggingId) return
+
+    try {
+      const draggingCurrentParent = parentIdMap.get(draggingId) ?? null
+
+      if (draggingCurrentParent !== parentId) {
+        await onChangeParent(draggingId, parentId)
+      }
+      await onReorder(draggingId, siblings, index)
+      onRefetch()
+    } catch (err) {
+      setDropError(err instanceof Error ? err.message : "Operation failed")
+    }
+  }
+
   return (
-    <>
-      <style>{DROP_PLACEHOLDER_STYLE}</style>
-      <div className="drop-placeholder rounded-xl border-2 border-blue-400 border-dashed bg-blue-50/60 h-14 my-1 flex items-center justify-center pointer-events-none">
-        <span className="text-xs text-blue-400 font-medium select-none">Drop here</span>
-      </div>
-    </>
+    <div
+      style={{ height: isActive ? 56 : 8, transition: "height 120ms ease" }}
+      className="relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isActive && (
+        <>
+          <style>{DROP_ANIM_STYLE}</style>
+          <div className="drop-placeholder absolute inset-0 rounded-xl border-2 border-blue-400 border-dashed bg-blue-50/60 flex items-center justify-center pointer-events-none">
+            <span className="text-xs text-blue-400 font-medium select-none">Drop here</span>
+          </div>
+        </>
+      )}
+      {dropError && (
+        <p className="text-xs text-red-500 px-2">{dropError}</p>
+      )}
+    </div>
   )
 }
 
@@ -162,7 +233,7 @@ function DropPlaceholder({ visible }: { visible: boolean }) {
 
 interface FunctionalRequirementCardProps {
   requirement: FunctionalRequirement
-  siblings: FunctionalRequirement[]    // sorted, same level
+  siblings: FunctionalRequirement[]
   positionInSiblings: number
   projectId: string
   functionalityId: string
@@ -174,11 +245,7 @@ interface FunctionalRequirementCardProps {
   dragStateRef: React.MutableRefObject<number | null>
   dropPreview: DropPreview
   setDropPreview: (p: DropPreview) => void
-  onReorder: (
-    draggingId: number,
-    siblings: FunctionalRequirement[],
-    insertIndex: number
-  ) => Promise<void>
+  onReorder: (draggingId: number, siblings: FunctionalRequirement[], insertIndex: number) => Promise<void>
   parentIdMap: Map<number, number | null>
   onChangeParent: (draggingId: number, newParentId: number | null) => Promise<void>
 }
@@ -224,42 +291,43 @@ function FunctionalRequirementCard({
     setDropPreview(null)
   }
 
-  // ── Drop target ──
+  // ── Drop target (card only handles "nest" in the middle zone) ──
   const handleDragOver = (e: React.DragEvent) => {
     const draggingId = dragStateRef.current
     if (!canEdit || !draggingId || draggingId === r.id) return
     e.preventDefault()
     e.stopPropagation()
 
-    // Measure only the first child (the header row), not the whole card
-    // so zones don't bleed into the children area below
-    const header = (e.currentTarget as HTMLElement).firstElementChild as HTMLElement
-    const rect = header.getBoundingClientRect()
+    // Use only the header row height for zone math, not the full card
+    // (children area is covered by their own GapDropZones)
+    const headerEl = (e.currentTarget as HTMLElement).firstElementChild as HTMLElement
+    const rect = headerEl
+      ? headerEl.getBoundingClientRect()
+      : (e.currentTarget as HTMLElement).getBoundingClientRect()
 
-    // If cursor is outside the header entirely (i.e. in the children area),
-    // treat it as "after" — don't nest, don't flicker
-    if (e.clientY > rect.bottom) {
-      setDropPreview({ type: "between", parentId, index: positionInSiblings + 1 })
-      return
-    }
+    // If cursor is below the header, don't steal from gap zones below
+    if (e.clientY > rect.bottom) return
 
     const ratio = (e.clientY - rect.top) / rect.height
 
-    if (ratio < 0.35) {
+    if (ratio < 0.3) {
+      // Top 30% → insert before (handled better by gap above, but fallback)
       setDropPreview({ type: "between", parentId, index: positionInSiblings })
-    } else if (ratio > 0.75) {
+    } else if (ratio > 0.7) {
+      // Bottom 30% → insert after (handled better by gap below, but fallback)
       setDropPreview({ type: "between", parentId, index: positionInSiblings + 1 })
     } else {
+      // Middle 40% → nest inside
       setDropPreview({ type: "child", parentId: r.id })
     }
   }
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only clear if truly leaving the card element (not entering a child DOM node)
     if ((e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) return
     setDropPreview(null)
   }
 
+  // Card drop only handles the "nest" case — between drops are handled by GapDropZone
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -274,21 +342,19 @@ function FunctionalRequirementCard({
 
     try {
       if (preview.type === "child") {
-        // Nest dragged item under this card
         await onChangeParent(draggingId, r.id)
+        onRefetch()
       } else {
-        // "between" — puede ser reorden O cambio de nivel
+        // "between" dropped on card — same logic as gap zone
         const draggingCurrentParent = parentIdMap.get(draggingId) ?? null
-        const targetParentId = preview.parentId  // null si es root
+        const targetParentId = preview.parentId
 
         if (draggingCurrentParent !== targetParentId) {
-          // El elemento cambia de nivel → primero desvincular/vincular padre
           await onChangeParent(draggingId, targetParentId)
         }
-        // Siempre reordenar dentro del nivel destino
         await onReorder(draggingId, siblings, preview.index)
+        onRefetch()
       }
-      onRefetch()
     } catch (err) {
       setReorderError(err instanceof Error ? err.message : "Operation failed")
     }
@@ -296,136 +362,124 @@ function FunctionalRequirementCard({
 
   const isChildTarget = dropPreview?.type === "child" && dropPreview.parentId === r.id
 
-  // Insertion line BEFORE this card
-  const showLineBefore =
-    dropPreview?.type === "between" &&
-    dropPreview.parentId === parentId &&
-    dropPreview.index === positionInSiblings
-
-  // Insertion line AFTER this card (only for the last sibling, to avoid double-rendering)
-  const isLastSibling = positionInSiblings === siblings.length - 1
-  const showLineAfter =
-    isLastSibling &&
-    dropPreview?.type === "between" &&
-    dropPreview.parentId === parentId &&
-    dropPreview.index === siblings.length
+  // Shared props for GapDropZone children
+  const gapProps = {
+    canEdit,
+    dragStateRef,
+    dropPreview,
+    setDropPreview,
+    siblings: sortedChildren,
+    parentIdMap,
+    onReorder,
+    onChangeParent,
+    onRefetch,
+  }
 
   return (
-    <>
-      <DropPlaceholder visible={showLineBefore} />
+    <div
+      className={[
+        "rounded-xl border bg-white shadow-sm transition-all select-none",
+        depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : "",
+        isChildTarget
+          ? "ring-2 ring-blue-400 bg-blue-50/40 shadow-md"
+          : "hover:shadow-md",
+      ].join(" ")}
+      draggable={canEdit}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isChildTarget && (
+        <div className="text-center text-xs text-blue-500 font-semibold pt-1.5 pointer-events-none">
+          ↳ Nest inside "{r.name}"
+        </div>
+      )}
 
       <div
-        className={[
-          "rounded-xl border bg-white shadow-sm transition-all select-none",
-          depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : "",
-          isChildTarget
-            ? "ring-2 ring-blue-400 bg-blue-50/40 shadow-md"
-            : "hover:shadow-md",
-        ].join(" ")}
-        draggable={canEdit}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+        onClick={() =>
+          navigate(
+            `/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`
+          )
+        }
       >
-        {/* Nest-target label — only visible in the middle hover zone */}
-        {isChildTarget && (
-          <div className="text-center text-xs text-blue-500 font-semibold pt-1.5 pointer-events-none">
-            ↳ Nest inside "{r.name}"
+        {canEdit && (
+          <span
+            className="shrink-0 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <GripVertical className="h-4 w-4" />
+          </span>
+        )}
+
+        {hasChildren ? (
+          <button
+            className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              setCollapsed((c) => !c)
+            }}
+            aria-label={collapsed ? "Expand" : "Collapse"}
+          >
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+        ) : (
+          <span className="w-4 shrink-0" />
+        )}
+
+        <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
+
+        <div className="flex-1 min-w-0">
+          {r.name && <p className="text-sm font-semibold truncate">{r.name}</p>}
+          {r.description && (
+            <p className="text-sm text-slate-500 truncate mt-0.5">{r.description}</p>
+          )}
+          {reorderError && (
+            <p className="text-xs text-red-500 mt-0.5">{reorderError}</p>
+          )}
+        </div>
+
+        <div className="shrink-0 flex items-center gap-3">
+          <LockIndicator lock={getLock(EntityType.FUNCTIONAL_REQUIREMENT, r.id)} />
+          <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
+          <RequirementStateBadge state={r.state} />
+        </div>
+
+        {canEdit && (
+          <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+            <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              Add Child FR
+            </Button>
+            <CreateFunctionalRequirementDialog
+              open={createDialogOpen}
+              onOpenChange={setCreateDialogOpen}
+              projectId={projectId}
+              functionalityId={functionalityId}
+              parentId={r.id}
+              priorityStyle={priorityStyle}
+              siblingRequirements={sortedChildren}
+              onSuccess={onRefetch}
+            />
           </div>
         )}
 
-        <div
-          className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-          onClick={() =>
-            navigate(
-              `/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`
-            )
-          }
-        >
-          {canEdit && (
-            <span
-              className="shrink-0 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
-              onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <GripVertical className="h-4 w-4" />
-            </span>
-          )}
+        <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
+      </div>
 
-          {hasChildren ? (
-            <button
-              className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation()
-                setCollapsed((c) => !c)
-              }}
-              aria-label={collapsed ? "Expand" : "Collapse"}
-            >
-              {collapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </button>
-          ) : (
-            <span className="w-4 shrink-0" />
-          )}
-
-          <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
-
-          <div className="flex-1 min-w-0">
-            {r.name && <p className="text-sm font-semibold truncate">{r.name}</p>}
-            {r.description && (
-              <p className="text-sm text-slate-500 truncate mt-0.5">{r.description}</p>
-            )}
-            {reorderError && (
-              <p className="text-xs text-red-500 mt-0.5">{reorderError}</p>
-            )}
-          </div>
-
-          <div className="shrink-0 flex items-center gap-3">
-            <LockIndicator lock={getLock(EntityType.FUNCTIONAL_REQUIREMENT, r.id)} />
-            <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
-            <RequirementStateBadge state={r.state} />
-          </div>
-
-          {canEdit && (
-            <div onClick={(e) => e.stopPropagation()} className="shrink-0">
-              <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-1.5" />
-                Add Child FR
-              </Button>
-              <CreateFunctionalRequirementDialog
-                open={createDialogOpen}
-                onOpenChange={setCreateDialogOpen}
-                projectId={projectId}
-                functionalityId={functionalityId}
-                parentId={r.id}
-                priorityStyle={priorityStyle}
-                siblingRequirements={sortedChildren}
-                onSuccess={onRefetch}
-              />
-            </div>
-          )}
-
-          <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
-        </div>
-
-        {hasChildren && !collapsed && (
-          <div className="px-5 pb-4 space-y-3">
-            {/* Line before the very first child */}
-            <DropPlaceholder
-              visible={
-                dropPreview?.type === "between" &&
-                dropPreview.parentId === r.id &&
-                dropPreview.index === 0
-              }
-            />
-            {sortedChildren.map((child, index) => (
+      {hasChildren && !collapsed && (
+        <div className="px-5 pb-4">
+          <GapDropZone parentId={r.id} index={0} {...gapProps} />
+          {sortedChildren.map((child, index) => (
+            <Fragment key={child.id}>
               <FunctionalRequirementCard
-                key={child.id}
                 requirement={child}
                 siblings={sortedChildren}
                 positionInSiblings={index}
@@ -443,13 +497,12 @@ function FunctionalRequirementCard({
                 parentIdMap={parentIdMap}
                 onChangeParent={onChangeParent}
               />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <DropPlaceholder visible={showLineAfter} />
-    </>
+              <GapDropZone parentId={r.id} index={index + 1} {...gapProps} />
+            </Fragment>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -523,7 +576,6 @@ function FunctionalityView() {
     return map
   }, [requirements])
 
-  // Reorder within the same parent level
   const handleReorder = useCallback(
     async (
       draggingId: number,
@@ -531,14 +583,14 @@ function FunctionalityView() {
       insertIndex: number
     ) => {
       const sorted = [...siblings].sort((a, b) => a.orderValue - b.orderValue)
+      const draggedIndex = sorted.findIndex((s) => s.id === draggingId)
       const without = sorted.filter((s) => s.id !== draggingId)
-      const newOrderValue = midpointOrderValue(without, insertIndex)
+      const newOrderValue = midpointOrderValue(without, insertIndex, draggedIndex)
       await apiReorder(projectId!, functionalityId!, draggingId, newOrderValue)
     },
     [projectId, functionalityId]
   )
 
-  // Nest under a different requirement
   const handleChangeParent = useCallback(
     async (draggingId: number, newParentId: number | null) => {
       await apiChangeParent(projectId!, functionalityId!, draggingId, newParentId)
@@ -559,6 +611,19 @@ function FunctionalityView() {
         </Button>
       </div>
     )
+
+  // Shared props for root-level GapDropZones
+  const rootGapProps = {
+    canEdit,
+    dragStateRef,
+    dropPreview,
+    setDropPreview,
+    siblings: requirements,
+    parentIdMap,
+    onReorder: handleReorder,
+    onChangeParent: handleChangeParent,
+    onRefetch: refreshRequirements,
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
@@ -651,7 +716,7 @@ function FunctionalityView() {
               Listed functional requirements for this functionality, ordered by priority.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-0">
             {reqLoading ? (
               <div className="py-16 flex justify-center">
                 <LoadingSpinner text="Loading requirements..." />
@@ -667,33 +732,28 @@ function FunctionalityView() {
               </p>
             ) : (
               <>
-                {/* Insertion line at the very top of the root list */}
-                <DropPlaceholder
-                  visible={
-                    dropPreview?.type === "between" &&
-                    dropPreview.parentId === null &&
-                    dropPreview.index === 0
-                  }
-                />
+                <GapDropZone parentId={null} index={0} {...rootGapProps} />
                 {requirements.map((r, index) => (
-                  <FunctionalRequirementCard
-                    key={r.id}
-                    requirement={r}
-                    siblings={requirements}
-                    positionInSiblings={index}
-                    projectId={projectId!}
-                    functionalityId={functionalityId!}
-                    priorityStyle={priorityStyle}
-                    label={`${functionalityPrefix}.${index + 1}`}
-                    canEdit={canEdit}
-                    onRefetch={refreshRequirements}
-                    dragStateRef={dragStateRef}
-                    dropPreview={dropPreview}
-                    setDropPreview={setDropPreview}
-                    onReorder={handleReorder}
-                    parentIdMap={parentIdMap}
-                    onChangeParent={handleChangeParent}
-                  />
+                  <Fragment key={r.id}>
+                    <FunctionalRequirementCard
+                      requirement={r}
+                      siblings={requirements}
+                      positionInSiblings={index}
+                      projectId={projectId!}
+                      functionalityId={functionalityId!}
+                      priorityStyle={priorityStyle}
+                      label={`${functionalityPrefix}.${index + 1}`}
+                      canEdit={canEdit}
+                      onRefetch={refreshRequirements}
+                      dragStateRef={dragStateRef}
+                      dropPreview={dropPreview}
+                      setDropPreview={setDropPreview}
+                      onReorder={handleReorder}
+                      parentIdMap={parentIdMap}
+                      onChangeParent={handleChangeParent}
+                    />
+                    <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
+                  </Fragment>
                 ))}
               </>
             )}
