@@ -41,7 +41,7 @@ public class Stakeholder extends ProjectElement {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-    
+
     public EntityState getState() { return state; }
     public void setState(EntityState state) { this.state = state; }
 

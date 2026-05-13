@@ -47,9 +47,9 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
     """)
     List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId);
 
-    @Query("select f from NonFunctionalRequirement f left join fetch f.parent where f.id = :id")
-    Optional<NonFunctionalRequirement> findByIdWithParent(Long id);
-    @Query("SELECT r FROM NonFunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :id")
+    @Query("select r from NonFunctionalRequirement r left join fetch r.parent where r.id = :nonFunctionalRequirementId")
+    Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId);
+    @Query("SELECT r FROM NonFunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :nonFunctionalRequirementId")
     Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId);
 }
 

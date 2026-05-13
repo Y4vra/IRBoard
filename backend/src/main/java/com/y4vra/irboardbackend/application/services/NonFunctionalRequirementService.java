@@ -139,7 +139,7 @@ public class NonFunctionalRequirementService extends RequirementService {
         }
         return nfrMapper.toDtoList(nfrRepository.findObservableNfRequirementsForRequirement(projectId,requirementId));
     }
-
+    @Transactional
     public void reorderRequirement(String oryId, Long projectId, Long nonFunctionalRequirementId, Long orderValue) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)){
             throw new AccessDeniedException("User not authorized to modify requirements in functionality");
@@ -151,7 +151,7 @@ public class NonFunctionalRequirementService extends RequirementService {
         }
         nfr.setOrderValue(orderValue);
     }
-
+    @Transactional
     public void changeParent(String oryId, Long projectId, Long nonFunctionalRequirementId, Long newParentId) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)){
             throw new AccessDeniedException("User not authorized to modify requirements in project");
