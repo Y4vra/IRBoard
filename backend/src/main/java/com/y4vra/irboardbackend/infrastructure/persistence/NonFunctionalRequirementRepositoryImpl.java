@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.Document;
+import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -45,6 +46,11 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
         )
     """)
     List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId);
+
+    @Query("select f from NonFunctionalRequirement f left join fetch f.parent where f.id = :id")
+    Optional<NonFunctionalRequirement> findByIdWithParent(Long id);
+    @Query("SELECT r FROM NonFunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :id")
+    Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId);
 }
 
 @Component
@@ -68,7 +74,11 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
 
     @Override
     public List<NonFunctionalRequirement> findAllByProjectId(Long projectId) {
-        return jpaRepository.findAllByProjectId(projectId);
+        List<NonFunctionalRequirement> requirements = jpaRepository.findAllByProjectId(projectId);
+        System.err.println("projectId: "+projectId);
+        System.err.println("requirement amount: "+requirements.size());
+        System.err.println("requirement actual amount: "+jpaRepository.findAll().size());
+        return requirements;
     }
 
     @Override
@@ -97,5 +107,14 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     @Override
     public List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId) {
         return jpaRepository.findObservableNfRequirementsForRequirement(projectId,requirementId);
+    }
+
+    @Override
+    public Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId) {
+        return jpaRepository.findByIdWithParent(nonFunctionalRequirementId);
+    }
+    @Override
+    public Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId) {
+        return jpaRepository.findByIdWithChildren(nonFunctionalRequirementId);
     }
 }

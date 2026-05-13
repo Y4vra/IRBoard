@@ -25,10 +25,6 @@ public class Document extends ProjectElement {
 
     private Long fileSize;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
-
     @ManyToMany()
     @JoinTable(
             name = "document_observer_requirement",
@@ -55,9 +51,6 @@ public class Document extends ProjectElement {
 
     public Long getFileSize() { return fileSize; }
     public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
-
-    public Project getProject() { return project; }
-    public void setProject(Project project) { this.project = project; }
 
     public Set<Requirement> getObserverRequirements() { return Set.copyOf(observerRequirements); }
     protected Set<Requirement> _getObserverRequirements() { return observerRequirements; }

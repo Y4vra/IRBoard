@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.mappers.ProjectMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
+import com.y4vra.irboardbackend.domain.repositories.StatisticsRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,12 @@ class ProjectServiceTest {
     @Mock
     private PermissionService permService;
 
+    @Mock
+    private EntityLockService entityLockService;
+
+    @Mock
+    private StatisticsRepository statisticsRepository;
+
     @InjectMocks
     private ProjectService projectService;
 
@@ -45,7 +52,7 @@ class ProjectServiceTest {
         project = new Project("IR-Board", "Description", "TERNARY");
         project.setId(1L);
 
-        projectDTO = new ProjectDTO(1L, "IR-Board", "Description", "TERNARY", "ACTIVE", false,null,null,null);
+        projectDTO = new ProjectDTO(1L, "IR-Board", "Description", "TERNARY", "ACTIVE", false, null, null, null);
     }
 
     @Test
@@ -92,7 +99,7 @@ class ProjectServiceTest {
     }
 
     @Test
-    void createProject_savesProjectAndCreatesKetoRelation() {
+    void createProject_savesProjectAndCreatesKetoRelations() {
         String oryId = "admin-ory-789";
         when(projectRepository.save(any(Project.class))).thenReturn(project);
         when(projectMapper.toDto(project)).thenReturn(projectDTO);
@@ -102,18 +109,26 @@ class ProjectServiceTest {
         assertThat(result).isEqualTo(projectDTO);
         verify(projectRepository).save(any(Project.class));
         verify(permService).grantPermission("Project", "1", "managers", oryId);
+        verify(permService).grantPermissionToSubjectSet(
+                "Project", "1", "parent_system", "System", "main", "admins"
+        );
     }
 
     @Test
     void findById_returnsProjectWhenAuthorized() {
         String oryId = "user-ory-123";
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(false);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-        when(projectMapper.toDto(project)).thenReturn(projectDTO);
+        when(statisticsRepository.getStakeholderStatistics(1L)).thenReturn(null);
+        when(statisticsRepository.getNonFunctionalRequirementStatistics(1L)).thenReturn(null);
+        when(statisticsRepository.getFunctionalitiesStatistics(1L)).thenReturn(null);
+        when(projectMapper.toDto(project, false, null, null, null)).thenReturn(projectDTO);
 
         ProjectDTO result = projectService.findById(oryId, 1L);
 
         assertThat(result).isEqualTo(projectDTO);
+        verify(projectMapper).toDto(project, false, null, null, null);
     }
 
     @Test
@@ -125,6 +140,7 @@ class ProjectServiceTest {
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(projectRepository, never()).findById(any());
+        verify(projectMapper, never()).toDto(any(), anyBoolean(), any(), any(), any());
     }
 
     @Test

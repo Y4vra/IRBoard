@@ -62,7 +62,7 @@ class FunctionalityMapperTest {
         assertThat(entity.getId()).isEqualTo(2L);
         assertThat(entity.getName()).isEqualTo("Authentication");
         assertThat(entity.getLabel()).isEqualTo("AU");
-        assertThat(entity.getState()).isEqualTo(EntityState.DEACTIVATED);
+        assertThat(entity.getState()).isEqualTo(FunctionalityState.DEACTIVATED);
     }
 
     @Test

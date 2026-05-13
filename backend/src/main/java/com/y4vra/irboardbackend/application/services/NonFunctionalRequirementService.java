@@ -80,7 +80,7 @@ public class NonFunctionalRequirementService extends RequirementService {
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
         NonFunctionalRequirement nfr = nfrMapper.toEntity(dto);
-        nfr.setProjectId(projectId);
+        Associations.link(project,nfr);
         EntitySlugGenerator.setSlug(nfr,projectId);
         nfr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
@@ -92,8 +92,6 @@ public class NonFunctionalRequirementService extends RequirementService {
                 throw new EntityNotFoundException("Parent is not the same as this project");
             }
             Associations.link(nfrParent, nfr);
-        }else{
-            Associations.link(project, nfr);
         }
         NonFunctionalRequirement saved = nfrRepository.save(nfr);
 
@@ -140,5 +138,43 @@ public class NonFunctionalRequirementService extends RequirementService {
             throw new AccessDeniedException("User not authorized to view non functional requirements of this project");
         }
         return nfrMapper.toDtoList(nfrRepository.findObservableNfRequirementsForRequirement(projectId,requirementId));
+    }
+
+    public void reorderRequirement(String oryId, Long projectId, Long nonFunctionalRequirementId, Long orderValue) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)){
+            throw new AccessDeniedException("User not authorized to modify requirements in functionality");
+        }
+        projectRepository.findById(projectId).orElseThrow(()-> new EntityNotFoundException("Could not find functionality"));
+        NonFunctionalRequirement nfr = nfrRepository.findById(nonFunctionalRequirementId).orElseThrow(()-> new EntityNotFoundException("Could not find functional requirement"));
+        if(!Objects.equals(nfr.getProject().getId(), projectId)){
+            throw new EntityNotFoundException("Project id does not match requirement's project id");
+        }
+        nfr.setOrderValue(orderValue);
+    }
+
+    public void changeParent(String oryId, Long projectId, Long nonFunctionalRequirementId, Long newParentId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)){
+            throw new AccessDeniedException("User not authorized to modify requirements in project");
+        }
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("Could not find project"));
+        NonFunctionalRequirement nfr = nfrRepository.findByIdWithParent(nonFunctionalRequirementId)
+                .orElseThrow(() -> new EntityNotFoundException("Could not find non functional requirement"));
+        if (!Objects.equals(nfr.getProject().getId(), projectId))
+            throw new EntityNotFoundException("Functionality id does not match project id");
+
+        if (nfr.getParent() != null) {
+            NonFunctionalRequirement currentParent = nfrRepository
+                    .findByIdWithChildren(nfr.getParent().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Could not find current parent"));
+            Associations.unlink(currentParent, nfr);
+        }
+        if (newParentId != null) {
+            NonFunctionalRequirement newParent = nfrRepository.findById(newParentId)
+                    .orElseThrow(() -> new EntityNotFoundException("Could not find parent"));
+            if (!Objects.equals(newParent.getProject().getId(), projectId))
+                throw new EntityNotFoundException("Parent project id does not match current requirement's project id");
+            Associations.link(newParent, nfr);
+        }
     }
 }

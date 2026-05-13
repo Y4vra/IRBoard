@@ -30,16 +30,19 @@ public class Project extends ProjectIndependentElement {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<Functionality> functionalities = new HashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<NonFunctionalRequirement> nonFunctionalRequirements = new HashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private Set<FunctionalRequirement> functionalRequirements = new HashSet<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<Stakeholder> stakeholders = new HashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private Set<Document> documents = new HashSet<>();
 
     public Project() {}
@@ -77,6 +80,9 @@ public class Project extends ProjectIndependentElement {
 
     public Set<NonFunctionalRequirement> getNonFunctionalRequirements() { return Set.copyOf(nonFunctionalRequirements); }
     protected Set<NonFunctionalRequirement> _getNonFunctionalRequirements() { return nonFunctionalRequirements; }
+
+    public Set<FunctionalRequirement> getFunctionalRequirements() { return Set.copyOf(functionalRequirements); }
+    protected Set<FunctionalRequirement> _getFunctionalRequirements() { return functionalRequirements; }
 
     public Set<Stakeholder> getStakeholders() { return Set.copyOf(stakeholders); }
     protected Set<Stakeholder> _getStakeholders() { return stakeholders; }

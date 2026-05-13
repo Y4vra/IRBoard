@@ -36,6 +36,7 @@ import { useProject } from "@/hooks/useProject";
 import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useFunctionalities } from "@/hooks/useFunctionalities";
+import { sortByOrderValue } from "@/lib/reorderUtils";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -595,6 +596,7 @@ function FunctionalRequirementDetailView() {
         functionalityId={functionalityId!}
         parentId={frId}
         priorityStyle={project.priorityStyle}
+        siblingRequirements={sortByOrderValue(requirement.children ?? [])}  
         onSuccess={refresh}
       />
       <ObserveStakeholderDialog

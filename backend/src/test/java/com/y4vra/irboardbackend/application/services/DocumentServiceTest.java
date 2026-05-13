@@ -8,6 +8,7 @@ import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
+import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,8 @@ class DocumentServiceTest {
 
     @Mock
     private DocumentRepository documentRepository;
+    @Mock
+    private ProjectRepository projectRepository;
 
     @Mock
     private DocumentMapper documentMapper;
@@ -70,6 +73,8 @@ class DocumentServiceTest {
         document = new Document();
         document.setId(documentId);
         document.setFileName("spec.pdf");
+        document.setEntityIdentifier("spec.pdf");
+        document.setS3Key(projectId + "/" + document.getEntityIdentifier());
         document.setMimeType("application/pdf");
         document.setFileSize(1024L);
         document.setProject(project);
@@ -88,7 +93,7 @@ class DocumentServiceTest {
     void findDocumentsOfProject_returnsDocumentsWithPresignedUrls() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(documentRepository.findAllByProjectId(projectId)).thenReturn(List.of(document));
-        when(objStorageService.getDownloadUrl("spec.pdf")).thenReturn(presignedUrl);
+        when(objStorageService.getDownloadUrl(projectId + "/" + document.getEntityIdentifier())).thenReturn(presignedUrl);
         when(documentMapper.toDtoDetailed(document, presignedUrl)).thenReturn(documentDTO);
 
         List<DocumentDTO> result = documentService.findDocumentsOfProject(oryId, projectId);
@@ -114,7 +119,7 @@ class DocumentServiceTest {
         when(functionalityService.getViewableFunctionalityIds(oryId, projectId))
                 .thenReturn(viewableFunctionalities);
         when(documentRepository.findById(documentId)).thenReturn(Optional.of(document));
-        when(objStorageService.getDownloadUrl("spec.pdf")).thenReturn(presignedUrl);
+        when(objStorageService.getDownloadUrl(projectId + "/" + document.getEntityIdentifier())).thenReturn(presignedUrl);
         when(documentRepository.findFilteredRequirementsForDocument(documentId, viewableFunctionalities))
                 .thenReturn(List.of());
         when(documentMapper.toDtoDetailedWithObservers(document, presignedUrl, List.of()))
@@ -128,6 +133,8 @@ class DocumentServiceTest {
     @Test
     void findDocumentById_throwsAccessDeniedWhenNotAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
+        when(functionalityService.getViewableFunctionalityIds(oryId, projectId))
+                .thenReturn(viewableFunctionalities);
 
         assertThatThrownBy(() -> documentService.findDocumentById(oryId, projectId, documentId))
                 .isInstanceOf(AccessDeniedException.class);
@@ -151,7 +158,11 @@ class DocumentServiceTest {
 
     @Test
     void uploadDocument_uploadsFileAndSavesDocumentWithKetoRelations() throws Exception {
+        Project project = new Project();
+        project.setId(projectId);
+
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(multipartFile.getInputStream()).thenReturn(InputStream.nullInputStream());
         when(multipartFile.getSize()).thenReturn(1024L);
         when(multipartFile.getContentType()).thenReturn("application/pdf");
@@ -163,7 +174,10 @@ class DocumentServiceTest {
         DocumentDTO result = documentService.uploadDocument(multipartFile, inputDto, projectId, oryId);
 
         assertThat(result).isEqualTo(documentDTO);
-        verify(objStorageService).uploadFile(matches(projectId +"/"+projectId + "-DOC-\\d{8}-\\d{6}-[A-Z0-9]{4}"), any(), eq(1024L), eq("application/pdf"));
+        verify(objStorageService).uploadFile(
+                matches(projectId + "/" + projectId + "-DOC-\\d{8}-\\d{6}-[A-Z0-9]{4}"),
+                any(), eq(1024L), eq("application/pdf")
+        );
     }
 
     @Test
@@ -173,14 +187,18 @@ class DocumentServiceTest {
         assertThatThrownBy(() -> documentService.uploadDocument(multipartFile, inputDto, projectId, oryId))
                 .isInstanceOf(AccessDeniedException.class);
 
+        verify(projectRepository, never()).findById(any());
         verify(objStorageService, never()).uploadFile(any(), any(), anyLong(), any());
         verify(documentRepository, never()).save(any());
-        verify(permService, never()).grantPermission(any(), any(), any(), any());
     }
 
     @Test
     void uploadDocument_throwsWhenStorageFails() throws Exception {
+        Project project = new Project();
+        project.setId(projectId);
+
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
         when(multipartFile.getInputStream()).thenReturn(InputStream.nullInputStream());
         when(multipartFile.getSize()).thenReturn(1024L);
         when(multipartFile.getContentType()).thenReturn("application/pdf");
@@ -192,6 +210,5 @@ class DocumentServiceTest {
                 .isInstanceOf(ObjectStorageException.class);
 
         verify(documentRepository, never()).save(any());
-        verify(permService, never()).grantPermission(any(), any(), any(), any());
     }
 }

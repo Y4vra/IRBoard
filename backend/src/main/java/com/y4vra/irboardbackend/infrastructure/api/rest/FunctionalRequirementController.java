@@ -46,8 +46,8 @@ public class FunctionalRequirementController {
     }
 
     @PostMapping("/new")
-    public ResponseEntity<FunctionalRequirementDTO> createFunctionalRequirement(@Validated @RequestBody FunctionalRequirementDTO functionalRequirementDTO, @PathVariable Long functionalityId, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(functionalRequirementService.createFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),functionalRequirementDTO,functionalityId));
+    public ResponseEntity<FunctionalRequirementDTO> createFunctionalRequirement(@Validated @RequestBody FunctionalRequirementDTO functionalRequirementDTO, @PathVariable Long projectId, @PathVariable Long functionalityId, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(functionalRequirementService.createFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),functionalRequirementDTO,projectId,functionalityId));
     }
 
     @PostMapping("/{functionalRequirementId}/linkStakeholder")

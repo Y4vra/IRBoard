@@ -42,7 +42,7 @@ public class NonFunctionalRequirementMapper {
         Long parentId = null;
 
         if (entity.getProject() != null) {
-            projectId = entity.getProject().getId();
+            projectId = entity.getProjectId();
         }
         if (entity.getParent() != null) {
             parentId = entity.getParent().getId();
@@ -52,7 +52,7 @@ public class NonFunctionalRequirementMapper {
                 .filter(child -> child instanceof NonFunctionalRequirement)
                 .map(child -> toDto((NonFunctionalRequirement) child))
                 .sorted(Comparator.comparing(
-                        NonFunctionalRequirementDTO::id,
+                        NonFunctionalRequirementDTO::orderValue,
                         Comparator.nullsLast(Comparator.naturalOrder())
                 ))
                 .toList();

@@ -33,6 +33,7 @@ import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creat
 import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
+import { sortByOrderValue } from "@/lib/reorderUtils";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
@@ -525,6 +526,7 @@ function NonFunctionalRequirementDetailView() {
         onOpenChange={setCreateNonFunctionalRequirementDialogOpen}
         projectId={projectId!}
         parentId={nfrId}
+        siblingRequirements={sortByOrderValue(requirement.children ?? [])}  
         onSuccess={refresh}
       />
       <ObserveStakeholderDialog

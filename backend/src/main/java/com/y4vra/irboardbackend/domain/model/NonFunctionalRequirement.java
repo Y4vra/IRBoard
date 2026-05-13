@@ -16,10 +16,6 @@ public class NonFunctionalRequirement extends Requirement {
     private Double targetValue;
     private Double actualValue;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
-
     public String getMeasurementUnit() { return measurementUnit; }
     public void setMeasurementUnit(String measurementUnit) { this.measurementUnit = measurementUnit; }
 
@@ -34,7 +30,4 @@ public class NonFunctionalRequirement extends Requirement {
 
     public Double getActualValue() { return actualValue; }
     public void setActualValue(Double actualValue) { this.actualValue = actualValue; }
-
-    public Project getProject() { return project; }
-    public void setProject(Project project) { this.project = project; }
 }

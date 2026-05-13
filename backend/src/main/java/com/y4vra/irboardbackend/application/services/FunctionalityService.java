@@ -6,10 +6,7 @@ import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
-import com.y4vra.irboardbackend.domain.model.Functionality;
-import com.y4vra.irboardbackend.domain.model.Project;
-import com.y4vra.irboardbackend.domain.model.Stakeholder;
-import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
@@ -118,7 +115,7 @@ public class FunctionalityService {
         }
 
         Functionality functionality = functionalityMapper.toEntity(dto);
-        functionality.setProjectId(projectId);
+        Associations.link(project, functionality);
         EntitySlugGenerator.setSlug(functionality,projectId);
         functionality.setProject(project);
         functionality.setState(FunctionalityState.ACTIVE);

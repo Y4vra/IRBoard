@@ -70,7 +70,7 @@ public class StakeholderService {
         stakeholder.setName(dto.name());
         stakeholder.setDescription(dto.description());
         stakeholder.setProject(project);
-        stakeholder.setProjectId(project.getId());
+        Associations.link(project, stakeholder);
         EntitySlugGenerator.setSlug(stakeholder,project.getId());
         stakeholder.setState(EntityState.PENDING_APPROVAL);
 

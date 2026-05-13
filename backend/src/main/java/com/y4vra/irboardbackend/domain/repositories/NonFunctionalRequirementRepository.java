@@ -17,4 +17,7 @@ public interface NonFunctionalRequirementRepository {
 
     List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
     List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId);
+
+    Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId);
+    Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId);
 }

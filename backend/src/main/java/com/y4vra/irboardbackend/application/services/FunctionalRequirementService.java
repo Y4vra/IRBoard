@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class FunctionalRequirementService extends RequirementService {
 
+    private final ProjectRepository projectRepository;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -36,13 +37,14 @@ public class FunctionalRequirementService extends RequirementService {
                                         NonFunctionalRequirementRepository nfrRepository, DocumentRepository documentRepository, StakeholderRepository stakeholderRepository, RequirementRepository requirementRepository,
                                         FunctionalRequirementMapper frMapper,
                                         FunctionalityRepository functionalityRepository,
-                                        PermissionService permService, FunctionalityMapper functionalityMapper, FunctionalityService functionalityService) {
+                                        PermissionService permService, FunctionalityMapper functionalityMapper, FunctionalityService functionalityService, ProjectRepository projectRepository) {
         super(permService,stakeholderRepository,documentRepository,nfrRepository,requirementRepository);
         this.frRepository = frRepository;
         this.frMapper = frMapper;
         this.functionalityRepository = functionalityRepository;
         this.functionalityMapper = functionalityMapper;
         this.functionalityService = functionalityService;
+        this.projectRepository = projectRepository;
     }
 
     @Transactional(readOnly = true)
@@ -59,15 +61,16 @@ public class FunctionalRequirementService extends RequirementService {
     }
 
     @Transactional
-    public FunctionalRequirementDTO createFunctionalRequirement(String oryId,FunctionalRequirementDTO dto, Long functionalityId) {
+    public FunctionalRequirementDTO createFunctionalRequirement(String oryId,FunctionalRequirementDTO dto, Long projectId, Long functionalityId) {
         if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId)){
             throw new AccessDeniedException("User not authorized to create requirements in functionality");
         }
+        Project project = projectRepository.findById(projectId).orElseThrow(()->new EntityNotFoundException("Project does not exist"));
         Functionality functionality = functionalityRepository.findById(functionalityId).orElseThrow(()->new EntityNotFoundException("Functionality does not exist"));
 
         FunctionalRequirement fr = frMapper.toEntity(dto,functionality);
-        fr.setProjectId(functionality.getProjectId());
-        EntitySlugGenerator.setSlug(fr,functionality.getProjectId());
+        Associations.link(project,fr);
+        EntitySlugGenerator.setSlug(fr,projectId);
         fr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
             FunctionalRequirement frParent = frRepository.findById(dto.parentId())

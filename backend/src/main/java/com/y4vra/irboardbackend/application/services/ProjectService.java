@@ -26,15 +26,13 @@ public class ProjectService {
     private final PermissionService permService;
     private final EntityLockService entityLockService;
     private final StatisticsRepository statisticsRepository;
-    private final UserRepository userRepository;
 
-    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper, PermissionService permService, EntityLockService entityLockService, StatisticsRepository statisticsRepository, UserRepository userRepository) {
+    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper, PermissionService permService, EntityLockService entityLockService, StatisticsRepository statisticsRepository) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.permService = permService;
         this.entityLockService = entityLockService;
         this.statisticsRepository = statisticsRepository;
-        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)

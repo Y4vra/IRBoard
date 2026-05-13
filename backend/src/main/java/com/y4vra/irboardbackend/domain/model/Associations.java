@@ -25,6 +25,15 @@ public class Associations {
         p._getNonFunctionalRequirements().remove(nfr);
         nfr.setProject(null);
     }
+
+    public static void link(Project p, FunctionalRequirement fr){
+        fr.setProject(p);
+        p._getFunctionalRequirements().add(fr);
+    }
+    public static void unlink(Project p, FunctionalRequirement fr){
+        p._getFunctionalRequirements().remove(fr);
+        fr.setProject(null);
+    }
     public static void link(Project p, Document d){
         d.setProject(p);
         p._getDocuments().add(d);

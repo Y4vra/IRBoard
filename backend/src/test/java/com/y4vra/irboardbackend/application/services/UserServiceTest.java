@@ -5,8 +5,11 @@ import com.y4vra.irboardbackend.application.mappers.UserMapper;
 import com.y4vra.irboardbackend.application.ports.IdentityService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
+import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +30,8 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private FunctionalityRepository funcitonalityRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -81,12 +86,31 @@ class UserServiceTest {
 
     @Test
     void findById_returnsUserWhenExists() {
+        List<String> managedProjects = List.of("1");
+        List<String> editableFunctionalities = List.of("10");
+        List<String> viewableFunctionalities = List.of("10");
+
+        ProjectFunctionalityProjection projection = mock(ProjectFunctionalityProjection.class);
+        when(projection.getProjectId()).thenReturn(1L);
+        when(projection.getFuncId()).thenReturn("10");
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(userMapper.toDto(user)).thenReturn(userDTO);
+        when(permService.getAuthorizedObjects(oryId, "Project", "managers")).thenReturn(managedProjects);
+        when(permService.getAuthorizedObjects(oryId, "Functionality", "engineers"))
+                .thenReturn(editableFunctionalities)
+                .thenReturn(viewableFunctionalities);
+        when(funcitonalityRepository.groupByIdsGroupedByProject(List.of(10L)))
+                .thenReturn(List.of(projection));
+        when(userMapper.toDtoWithPermissions(eq(user), eq(managedProjects), any(), any()))
+                .thenReturn(userDTO);
 
         UserDTO result = userService.findById(userId);
 
         assertThat(result).isEqualTo(userDTO);
+        verify(permService).getAuthorizedObjects(oryId, "Project", "managers");
+        verify(permService, times(2)).getAuthorizedObjects(oryId, "Functionality", "engineers");
+        verify(funcitonalityRepository, times(2)).groupByIdsGroupedByProject(List.of(10L));
+        verify(userMapper).toDtoWithPermissions(eq(user), eq(managedProjects), any(), any());
     }
 
     @Test

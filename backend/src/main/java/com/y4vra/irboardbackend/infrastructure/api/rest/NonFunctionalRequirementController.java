@@ -22,11 +22,6 @@ public class NonFunctionalRequirementController {
         this.nonFunctionalRequirementService = nonFunctionalRequirementService;
     }
 
-    @PostMapping("/new")
-    public ResponseEntity<NonFunctionalRequirementDTO> createNonFunctionalRequirement(@Validated @RequestBody NonFunctionalRequirementDTO nonFunctionalRequirementDTO, @PathVariable Long projectId, Authentication authentication) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(nonFunctionalRequirementService.createNonFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),nonFunctionalRequirementDTO,projectId));
-    }
-
     @GetMapping("/{nonFunctionalRequirementId}")
     public ResponseEntity<NonFunctionalRequirementDTO> getNonFunctionalRequirementById(Authentication authentication,@PathVariable Long projectId, @PathVariable Long nonFunctionalRequirementId) {
         return ResponseEntity.ok(nonFunctionalRequirementService.findNonFunctionalRequirementById(((User) authentication.getPrincipal()).getOryId(),projectId, nonFunctionalRequirementId));
@@ -35,6 +30,23 @@ public class NonFunctionalRequirementController {
     public ResponseEntity<List<NonFunctionalRequirementDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
         return ResponseEntity.ok(nonFunctionalRequirementService.findObservableNfRequirementsForRequirement(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
     }
+
+    @PatchMapping("/{nonFunctionalRequirementId}/reorder")
+    public ResponseEntity<Void> reorderNonFunctionalRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long nonFunctionalRequirementId, @RequestBody Long orderValue) {
+        nonFunctionalRequirementService.reorderRequirement(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,orderValue);
+        return ResponseEntity.ok().build();
+    }
+    @PatchMapping("/{nonFunctionalRequirementId}/changeParent")
+    public ResponseEntity<Void> changeParentNonFunctionalRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long nonFunctionalRequirementId, @RequestBody(required = false) Long newParentId) {
+        nonFunctionalRequirementService.changeParent(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,newParentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<NonFunctionalRequirementDTO> createNonFunctionalRequirement(@Validated @RequestBody NonFunctionalRequirementDTO nonFunctionalRequirementDTO, @PathVariable Long projectId, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(nonFunctionalRequirementService.createNonFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),nonFunctionalRequirementDTO,projectId));
+    }
+
     @PostMapping("/{nonFunctionalRequirementId}/linkStakeholder")
     public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long nonFunctionalRequirementId, @PathVariable Long projectId, Authentication authentication) {
         nonFunctionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,stakeholderId);

@@ -30,8 +30,8 @@ import {
   GitCompare,
   GitMerge,
 } from "lucide-react";
+import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
 
-// Must match the ComparisonOperator enum on the backend
 const COMPARISON_OPERATORS = [
   { value: "EQUAL_TO", label: "= Equal" },
   { value: "GREATER_THAN", label: "> Greater than" },
@@ -47,6 +47,11 @@ interface CreateNonFunctionalRequirementDialogProps {
   projectId: string;
   /** When provided, the new NFR will be created as a child of this requirement. */
   parentId?: number | string;
+  /**
+   * The siblings at the same level (top-level list or parent's children).
+   * Used to compute the next orderValue automatically.
+   */
+  siblingRequirements: NonFunctionalRequirement[];
   onSuccess: () => void;
 }
 
@@ -55,9 +60,9 @@ interface FormData {
   description: string;
   measurementUnit: string;
   operator: string;
-  thresholdValue: number;
-  targetValue: number;
-  actualValue: number;
+  thresholdValue: number | "";
+  targetValue: number | "";
+  actualValue: number | "";
 }
 
 const EMPTY_FORM: FormData = {
@@ -70,11 +75,19 @@ const EMPTY_FORM: FormData = {
   actualValue: 0,
 };
 
+/** Returns the orderValue for a new requirement appended at the end of siblings. */
+function computeOrderValue(siblings: NonFunctionalRequirement[]): number {
+  if (siblings.length === 0) return 1000;
+  const sorted = [...siblings].sort((a, b) => a.orderValue - b.orderValue);
+  return sorted[sorted.length - 1].orderValue + 1000;
+}
+
 export function CreateNonFunctionalRequirementDialog({
   open,
   onOpenChange,
   projectId,
   parentId,
+  siblingRequirements,
   onSuccess,
 }: CreateNonFunctionalRequirementDialogProps) {
   const [loading, setLoading] = useState(false);
@@ -104,15 +117,18 @@ export function CreateNonFunctionalRequirementDialog({
     setLoading(true);
     setError(null);
 
+    const orderValue = computeOrderValue(siblingRequirements);
+
     const payload = {
       name: formData.name,
       description: formData.description,
       measurementUnit: formData.measurementUnit || undefined,
       operator: formData.operator || undefined,
-      thresholdValue: formData.thresholdValue ? Number(formData.thresholdValue) : undefined,
-      targetValue: formData.targetValue ? Number(formData.targetValue) : undefined,
-      actualValue: formData.actualValue ? Number(formData.actualValue) : undefined,
+      thresholdValue: formData.thresholdValue !== "" ? Number(formData.thresholdValue) : undefined,
+      targetValue: formData.targetValue !== "" ? Number(formData.targetValue) : undefined,
+      actualValue: formData.actualValue !== "" ? Number(formData.actualValue) : undefined,
       projectId: Number(projectId),
+      orderValue,
       ...(isChild ? { parentId: Number(parentId) } : {}),
     };
 
@@ -147,6 +163,7 @@ export function CreateNonFunctionalRequirementDialog({
   const handleClose = () => {
     setFormData(EMPTY_FORM);
     setError(null);
+    onOpenChange(false);
   };
 
   return (
@@ -281,7 +298,7 @@ export function CreateNonFunctionalRequirementDialog({
             </div>
           </div>
 
-          {/* Numeric Values — three in a row */}
+          {/* Numeric Values */}
           <div className="grid grid-cols-3 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="thresholdValue" className="text-sm font-semibold">

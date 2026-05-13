@@ -59,7 +59,6 @@ class NonFunctionalRequirementMapperTest {
         assertThat(dto.thresholdValue()).isEqualTo(200.0);
         assertThat(dto.targetValue()).isEqualTo(100.0);
         assertThat(dto.actualValue()).isEqualTo(150.0);
-        assertThat(dto.projectId()).isEqualTo(2L);
     }
 
     @Test

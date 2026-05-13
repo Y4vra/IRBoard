@@ -5,9 +5,12 @@ import com.y4vra.irboardbackend.application.mappers.DocumentMapper;
 import com.y4vra.irboardbackend.application.ports.ObjectStorageService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
+import com.y4vra.irboardbackend.domain.model.Associations;
 import com.y4vra.irboardbackend.domain.model.Document;
+import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
+import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.jspecify.annotations.Nullable;
@@ -27,15 +30,17 @@ public class DocumentService {
     private final PermissionService permService;
     private final ObjectStorageService objStorageService;
     private final FunctionalityService functionalityService;
+    private final ProjectRepository projectRepository;
 
     public DocumentService(DocumentRepository documentRepository,
                            DocumentMapper documentMapper,
-                           PermissionService permService, ObjectStorageService objStorageService, FunctionalityService functionalityService) {
+                           PermissionService permService, ObjectStorageService objStorageService, FunctionalityService functionalityService, ProjectRepository projectRepository) {
         this.documentRepository = documentRepository;
         this.documentMapper = documentMapper;
         this.permService = permService;
         this.objStorageService = objStorageService;
         this.functionalityService = functionalityService;
+        this.projectRepository = projectRepository;
     }
 
     @Transactional(readOnly = true)
@@ -75,9 +80,9 @@ public class DocumentService {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to upload documents for this project");
         }
-
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found"));
         Document document = documentMapper.toEntity(dto);
-        document.setProjectId(projectId);
+        Associations.link(project,document);
         EntitySlugGenerator.setSlug(document, projectId); // generates slug e.g. "1-DOC-20260505-113422-A3F9"
 
         // Reuse the slug as the S3 key — it's already unique
