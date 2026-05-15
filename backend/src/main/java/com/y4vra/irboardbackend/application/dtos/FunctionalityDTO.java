@@ -12,7 +12,7 @@ import java.util.List;
 
 public record FunctionalityDTO(
     Long id,
-
+    String entityIdentifier,
     @NotBlank(message = "The functionality name is compulsory")
     @Size(max = 150, message = "The name is too long")
     String name,

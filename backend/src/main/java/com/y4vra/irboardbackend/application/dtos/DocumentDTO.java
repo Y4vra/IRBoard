@@ -10,6 +10,7 @@ import java.util.List;
 
 public record DocumentDTO(
     Long id,
+    String entityIdentifier,
     @NotBlank(message = "The stakeholder name is compulsory")
     @Size(max = 150, message = "The name is too long")
     String fileName,

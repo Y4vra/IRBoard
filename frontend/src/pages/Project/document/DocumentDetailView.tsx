@@ -88,6 +88,7 @@ function DocumentDetailView() {
             </div>
             <div>
               <h1 className="text-4xl font-black tracking-tight">{document.fileName}</h1>
+              <p className="text-xs font-mono text-slate-400 pt-2">{document.entityIdentifier}</p>
               <p className="text-sm text-muted-foreground mt-1 font-mono">{document.mimeType}</p>
             </div>
           </div>

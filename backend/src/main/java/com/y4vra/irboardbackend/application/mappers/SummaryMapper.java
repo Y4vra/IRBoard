@@ -4,7 +4,6 @@ import com.y4vra.irboardbackend.application.dtos.summaries.*;
 import com.y4vra.irboardbackend.domain.model.*;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SummaryMapper {
@@ -12,6 +11,7 @@ public class SummaryMapper {
         if (r instanceof FunctionalRequirement fr) {
             return new FunctionalRequirementSummaryDTO(
                     fr.getId(),
+                    fr.getEntityIdentifier(),
                     fr.getName(),
                     fr.getDescription(),
                     fr.getState() != null ? fr.getState().name() : null,
@@ -21,6 +21,7 @@ public class SummaryMapper {
         }
         return new RequirementSummaryDTO(
                 r.getId(),
+                r.getEntityIdentifier(),
                 r.getName(),
                 r.getDescription(),
                 r.getState() != null ? r.getState().name() : null,

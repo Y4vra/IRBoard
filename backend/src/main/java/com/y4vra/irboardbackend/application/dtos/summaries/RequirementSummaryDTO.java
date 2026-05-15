@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public record RequirementSummaryDTO(
         Long id,
+        String entityIdentifier,
         String name,
         String description,
         String state,

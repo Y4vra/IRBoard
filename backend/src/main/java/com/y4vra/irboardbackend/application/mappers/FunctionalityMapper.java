@@ -14,20 +14,8 @@ import java.util.Map;
 @Component
 public class FunctionalityMapper {
 
-    public FunctionalityDTO toDto(Functionality functionality,Boolean isUserManager) {
-        if (functionality == null) return null;
-
-        return new FunctionalityDTO(
-        functionality.getId(),
-        functionality.getName(),
-        functionality.getDescription(),
-        functionality.getLabel(),
-        functionality.getState().toString(),
-        functionality.getProject().getId(),
-        isUserManager,
-        List.of()
-        );
-
+    public FunctionalityDTO toDto(Functionality entity,Boolean isUserManager) {
+        return toDtoWithRequirements(entity,isUserManager,List.of());
     }
 
     public Functionality toEntity(FunctionalityDTO dto) {
@@ -71,16 +59,18 @@ public class FunctionalityMapper {
 
     public FunctionalityDTO toDtoWithRequirements(
             Functionality functionality,
+            Boolean isUserManager,
             List<FunctionalRequirementDTO> requirements) {
         if (functionality == null) return null;
         return new FunctionalityDTO(
                 functionality.getId(),
+                functionality.getEntityIdentifier(),
                 functionality.getName(),
                 functionality.getDescription(),
                 functionality.getLabel(),
                 functionality.getState().toString(),
                 functionality.getProject().getId(),
-                false,
+                isUserManager,
                 requirements
         );
     }
@@ -91,6 +81,7 @@ public class FunctionalityMapper {
         return functionalities.stream()
                 .map(f -> toDtoWithRequirements(
                         f,
+                        false, // current uses of this consumer gain nothing from this information.
                         requirementsByFunctionalityId.getOrDefault(f.getId(), List.of())
                 ))
                 .filter(dto -> !dto.requirements().isEmpty())

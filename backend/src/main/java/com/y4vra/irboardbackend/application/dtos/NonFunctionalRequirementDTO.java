@@ -5,6 +5,7 @@ import java.util.List;
 
 public record NonFunctionalRequirementDTO(
         Long id,
+        String entityIdentifier,
         String name,
         String description,
         Long orderValue,

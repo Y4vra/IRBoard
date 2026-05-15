@@ -14,22 +14,14 @@ import java.util.stream.Collectors;
 public class StakeholderMapper {
 
     public StakeholderDTO toDto(Stakeholder stakeholder) {
-        if (stakeholder == null) return null;
-
-        return new StakeholderDTO(
-            stakeholder.getId(),
-            stakeholder.getName(),
-            stakeholder.getDescription(),
-            stakeholder.getState().name(),
-            stakeholder.getProject().getId(),
-            List.of()
-        );
+        return toDtoWithObservers(stakeholder,List.of());
     }
     public StakeholderDTO toDtoWithObservers(Stakeholder stakeholder, List<Requirement> observers) {
         if (stakeholder == null) return null;
 
         return new StakeholderDTO(
             stakeholder.getId(),
+            stakeholder.getEntityIdentifier(),
             stakeholder.getName(),
             stakeholder.getDescription(),
             stakeholder.getState().name(),

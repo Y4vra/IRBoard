@@ -4,6 +4,8 @@ export type FunctionalityState = "ACTIVE" | "DEACTIVATED" | "REMOVED";
 
 export interface Functionality {
   id: string;
+  entityIdentifier: string;
+  
   name: string;
   description?: string;
   label: string;

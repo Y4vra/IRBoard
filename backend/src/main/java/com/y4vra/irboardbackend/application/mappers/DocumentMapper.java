@@ -12,36 +12,17 @@ import java.util.stream.Collectors;
 public class DocumentMapper {
 
     public DocumentDTO toDto(Document entity) {
-        if (entity == null) return null;
-
-        return new DocumentDTO(
-            entity.getId(),
-            entity.getFileName(),
-            entity.getMimeType(),
-            entity.getFileSize(),
-            entity.getProject() != null? entity.getProject().getId():null,
-            null,
-                List.of()
-        );
+        return toDtoDetailed(entity,null);
     }
     public DocumentDTO toDtoDetailed(Document entity, String accessUrl) {
-        if (entity == null) return null;
-
-        return new DocumentDTO(
-                entity.getId(),
-                entity.getFileName(),
-                entity.getMimeType(),
-                entity.getFileSize(),
-                entity.getProject() != null? entity.getProject().getId():null,
-                accessUrl,
-                List.of()
-        );
+        return toDtoDetailedWithObservers(entity,accessUrl,List.of());
     }
     public DocumentDTO toDtoDetailedWithObservers(Document entity, String accessUrl,List<Requirement> observers) {
         if (entity == null) return null;
 
         return new DocumentDTO(
                 entity.getId(),
+                entity.getEntityIdentifier(),
                 entity.getFileName(),
                 entity.getMimeType(),
                 entity.getFileSize(),

@@ -132,7 +132,7 @@ function ChildNFRCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-xs font-mono text-slate-400">{req.identifier}</p>
+            <p className="text-xs font-mono text-slate-400">{req.entityIdentifier}</p>
             <p className="font-semibold text-slate-800 truncate">{req.name}</p>
           </div>
           {req.description && (
@@ -281,8 +281,8 @@ function NonFunctionalRequirementDetailView() {
               <ShieldCheck className="h-8 w-8" />
             </div>
             <div>
-              <p className="text-xs font-mono text-slate-400 mb-1">{requirement.identifier}</p>
               <h1 className="text-4xl font-black tracking-tight">{requirement.name}</h1>
+              <p className="text-xs font-mono text-slate-400 pt-2">{requirement.entityIdentifier}</p>
             </div>
           </div>
           {requirement.description && (

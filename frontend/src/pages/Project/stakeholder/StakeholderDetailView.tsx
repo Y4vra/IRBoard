@@ -76,7 +76,10 @@ function StakeholderDetailView() {
             <div className="p-3 bg-indigo-100 text-indigo-700 rounded-xl">
               <User className="h-8 w-8" />
             </div>
-            <h1 className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
+            <div>
+              <h1 className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
+              <p className="text-xs font-mono text-slate-400 pt-2">{stakeholder.entityIdentifier}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <LockIndicator lock={lock} />

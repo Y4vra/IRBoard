@@ -45,6 +45,7 @@ public class FunctionalRequirementMapper {
 
         return new FunctionalRequirementDTO(
                 entity.getId(),
+                entity.getEntityIdentifier(),
                 entity.getName(),
                 entity.getDescription(),
                 entity.getPriority(),

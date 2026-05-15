@@ -5,7 +5,8 @@ import type { Stakeholder } from "./Stakeholder";
 
 export interface FunctionalRequirement {
   id: number;
-  identifier: string;
+  entityIdentifier: string;
+  
   name: string;
   description: string;
   priority: string;

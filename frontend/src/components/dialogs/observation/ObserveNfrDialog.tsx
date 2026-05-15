@@ -70,7 +70,7 @@ export function ObserveNFRDialog({
   const filtered = (nfrs ?? []).filter(
     (n) =>
       n.name.toLowerCase().includes(search.toLowerCase()) ||
-      n.identifier.toLowerCase().includes(search.toLowerCase())
+      n.entityIdentifier.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleSubmit = async () => {
@@ -162,7 +162,7 @@ export function ObserveNFRDialog({
                       </Badge>
                       <div className="min-w-0">
                         <p className="text-xs font-mono text-slate-400 truncate">
-                          {n.identifier}
+                          {n.entityIdentifier}
                         </p>
                         <p className="font-medium text-sm text-slate-800 truncate">
                           {n.name}

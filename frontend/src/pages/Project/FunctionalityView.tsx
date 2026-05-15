@@ -460,6 +460,7 @@ function FunctionalityView() {
         <div className="space-y-3 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Functionality</p>
           <h1 className="text-4xl font-black tracking-tight">{functionality.name}</h1>
+          <p className="text-xs font-mono text-slate-400 pt-2">{functionality.entityIdentifier}</p>
           {functionality.description && (
             <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
               {functionality.description}

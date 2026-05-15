@@ -29,7 +29,6 @@ export function CreateStakeholderDialog({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    identifier: "",
   });
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,7 +42,6 @@ export function CreateStakeholderDialog({
     const payload = {
       name: formData.name,
       description: formData.description,
-      identifier: formData.identifier || undefined,
       projectId,
     };
 
@@ -77,7 +75,7 @@ export function CreateStakeholderDialog({
 
   const handleClose = () => {
     setOpen(false);
-    setFormData({ name: "", description: "", identifier: "" });
+    setFormData({ name: "", description: "" });
   };
 
   return (

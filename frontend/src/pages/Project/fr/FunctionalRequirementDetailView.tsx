@@ -314,9 +314,10 @@ function FunctionalRequirementDetailView() {
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
             Functional Requirement
           </p>
-          <h1 className="text-4xl font-black tracking-tight">
-            {requirement.name}
-          </h1>
+          <div>
+            <h1 className="text-4xl font-black tracking-tight">{requirement.name}</h1>
+            <p className="text-xs font-mono text-slate-400 pt-2">{requirement.entityIdentifier}</p>
+          </div>
           {requirement.description && (
             <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
               {requirement.description}

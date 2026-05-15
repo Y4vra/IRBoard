@@ -59,6 +59,7 @@ public class NonFunctionalRequirementMapper {
 
         return new NonFunctionalRequirementDTO(
             entity.getId(),
+            entity.getEntityIdentifier(),
             entity.getName(),
             entity.getDescription(),
             entity.getOrderValue(),

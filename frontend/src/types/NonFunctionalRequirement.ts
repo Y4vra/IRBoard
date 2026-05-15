@@ -5,7 +5,8 @@ import type { Stakeholder } from "./Stakeholder";
 
 export interface NonFunctionalRequirement {
   id: number;
-  identifier: string;
+  entityIdentifier: string;
+  
   name: string;
   description: string;
   state: RequirementState;
