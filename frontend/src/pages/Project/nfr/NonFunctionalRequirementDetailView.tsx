@@ -26,7 +26,6 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge";
 import { useBackendResource } from "@/hooks/useBackendResource";
 import { ObserveStakeholderDialog } from "../../../components/dialogs/observation/ObserveStakeholderDialog";
-// import { ObserveNFRDialog } from "../../../components/dialogs/observation/ObserveNfrDialog";
 import { ObserveDocumentDialog } from "../../../components/dialogs/observation/ObserveDocumentDialog";
 import type { NonFunctionalRequirement } from "@/types/NonFunctionalRequirement";
 import { CreateNonFunctionalRequirementDialog } from "@/components/dialogs/creatingDialogs/CreateNonFunctionalRequirementDialog";
@@ -34,6 +33,179 @@ import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
 import { sortByOrderValue } from "@/lib/reorderUtils";
+
+// ─── Operator helpers ─────────────────────────────────────────────────────────
+
+const OPERATOR_SYMBOLS: Record<string, string> = {
+  EQUAL_TO: "=",
+  GREATER_THAN: ">",
+  GREATER_THAN_OR_EQUAL_TO: "≥",
+  LESS_THAN: "<",
+  LESS_THAN_OR_EQUAL_TO: "≤",
+  NOT_EQUAL_TO: "≠",
+};
+
+const OPERATOR_LABELS: Record<string, string> = {
+  EQUAL_TO: "must equal",
+  GREATER_THAN: "must be greater than",
+  GREATER_THAN_OR_EQUAL_TO: "must be ≥",
+  LESS_THAN: "must be less than",
+  LESS_THAN_OR_EQUAL_TO: "must be ≤",
+  NOT_EQUAL_TO: "must not equal",
+};
+
+function evaluatePassing(
+  actual: number | null | undefined,
+  operator: string | null | undefined,
+  threshold: number | null | undefined
+): boolean | null {
+  if (actual == null || threshold == null || !operator) return null;
+  switch (operator) {
+    case "EQUAL_TO": return actual === threshold;
+    case "GREATER_THAN": return actual > threshold;
+    case "GREATER_THAN_OR_EQUAL_TO": return actual >= threshold;
+    case "LESS_THAN": return actual < threshold;
+    case "LESS_THAN_OR_EQUAL_TO": return actual <= threshold;
+    case "NOT_EQUAL_TO": return actual !== threshold;
+    default: return null;
+  }
+}
+
+// ─── Metric expression block ──────────────────────────────────────────────────
+
+function MetricExpression({ req }: { req: NonFunctionalRequirement }) {
+  const { actualValue, thresholdValue, targetValue, operator, measurementUnit } = req;
+
+  const hasMetrics =
+    actualValue != null || thresholdValue != null || targetValue != null;
+
+  if (!hasMetrics) return null;
+
+  const passing = evaluatePassing(actualValue, operator, thresholdValue);
+  const unit = measurementUnit ? ` ${measurementUnit}` : "";
+
+  // Progress bar: position of actual relative to threshold (clamped 0–100%)
+  const barPercent =
+    actualValue != null && thresholdValue != null && thresholdValue !== 0
+      ? Math.min(100, Math.max(0, Math.round((actualValue / thresholdValue) * 100)))
+      : null;
+
+  const targetPercent =
+    targetValue != null && thresholdValue != null && thresholdValue !== 0
+      ? Math.min(100, Math.max(0, Math.round((targetValue / thresholdValue) * 100)))
+      : null;
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
+      {/* Expression row */}
+      <div className="flex items-center flex-wrap gap-y-3">
+        {/* Actual */}
+        {actualValue != null && (
+          <div className="flex flex-col items-center gap-1 min-w-[64px]">
+            <span className="text-[11px] uppercase tracking-widest font-semibold text-slate-400">
+              Actual
+            </span>
+            <span className="text-3xl font-extrabold text-slate-900 tabular-nums">
+              {actualValue}
+            </span>
+            {unit && (
+              <span className="text-xs text-slate-400 font-mono">{unit.trim()}</span>
+            )}
+          </div>
+        )}
+
+        {/* Operator */}
+        {operator && thresholdValue != null && actualValue != null && (
+          <div className="flex flex-col items-center px-4 gap-0.5">
+            <span className="text-2xl text-slate-400 leading-none font-light">
+              {OPERATOR_SYMBOLS[operator] ?? operator}
+            </span>
+            <span className="text-[10px] uppercase tracking-widest text-slate-300 whitespace-nowrap">
+              must be
+            </span>
+          </div>
+        )}
+
+        {/* Threshold */}
+        {thresholdValue != null && (
+          <div className="flex flex-col items-center gap-1 min-w-[64px]">
+            <span className="text-[11px] uppercase tracking-widest font-semibold text-slate-400">
+              Threshold
+            </span>
+            <span className="text-3xl font-extrabold text-slate-900 tabular-nums">
+              {thresholdValue}
+            </span>
+            {unit && (
+              <span className="text-xs text-slate-400 font-mono">{unit.trim()}</span>
+            )}
+          </div>
+        )}
+
+        {/* Spacer + right-side info */}
+        <div className="flex-1 min-w-6" />
+
+        <div className="flex flex-col items-end gap-2">
+          {/* Passing / Failing pill — only shown when we can evaluate */}
+          {passing !== null && (
+            <span
+              className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                passing
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-red-50 text-red-600 border-red-200"
+              }`}
+            >
+              {passing ? "Passing" : "Failing"}
+            </span>
+          )}
+
+          {/* Target — secondary context */}
+          {targetValue != null && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">Target</span>
+              <span className="text-sm font-semibold text-slate-700 tabular-nums">
+                {targetValue}{unit}
+              </span>
+            </div>
+          )}
+
+          {/* Operator plain-language fallback when actual is missing */}
+          {actualValue == null && operator && thresholdValue != null && (
+            <span className="text-xs text-slate-400">
+              {OPERATOR_LABELS[operator] ?? operator} {thresholdValue}{unit}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Progress bar — only when actual + threshold both present */}
+      {barPercent !== null && (
+        <div className="space-y-1.5">
+          <div className="relative h-1.5 bg-slate-100 rounded-full overflow-visible">
+            {/* Filled segment */}
+            <div
+              className={`absolute left-0 top-0 h-full rounded-full transition-all ${
+                passing === false ? "bg-red-400" : "bg-emerald-400"
+              }`}
+              style={{ width: `${barPercent}%` }}
+            />
+            {/* Target tick */}
+            {targetPercent !== null && (
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3 bg-slate-400 rounded-full"
+                style={{ left: `${targetPercent}%` }}
+                title={`Target: ${targetValue}${unit}`}
+              />
+            )}
+          </div>
+          <div className="flex justify-between text-[10px] text-slate-300 font-mono">
+            <span>0</span>
+            <span>threshold: {thresholdValue}{unit}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 
@@ -61,9 +233,7 @@ function SectionCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-slate-100 text-slate-600">
-              {icon}
-            </div>
+            <div className="p-2 rounded-lg bg-slate-100 text-slate-600">{icon}</div>
             <div>
               <CardTitle className="flex items-center gap-2">
                 {title}
@@ -149,12 +319,7 @@ function ChildNFRCard({
       {hasChildren && !collapsed && (
         <div className="px-5 pb-4 space-y-3">
           {req.children.map((child) => (
-            <ChildNFRCard
-              key={child.id}
-              req={child}
-              projectId={projectId}
-              depth={depth + 1}
-            />
+            <ChildNFRCard key={child.id} req={child} projectId={projectId} depth={depth + 1} />
           ))}
         </div>
       )}
@@ -172,9 +337,8 @@ function NonFunctionalRequirementDetailView() {
   const { editPermission } = useProject();
   const navigate = useNavigate();
 
-  const [createNonFunctionalRequirementDialogOpen,setCreateNonFunctionalRequirementDialogOpen]= useState(false);
+  const [createNFRDialogOpen, setCreateNFRDialogOpen] = useState(false);
   const [stakeholderDialogOpen, setStakeholderDialogOpen] = useState(false);
-  // const [nfrDialogOpen, setNfrDialogOpen] = useState(false);
   const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
 
@@ -197,21 +361,15 @@ function NonFunctionalRequirementDetailView() {
     refresh,
   } = useBackendResource<NonFunctionalRequirement>({ fetcher });
 
-  // ─── Unlink helpers ───────────────────────────────────────────────────────
-
   const unlink = async (path: string, id: number) => {
     setRemovingId(id);
     try {
-      await fetch(`${API_BASE_URL}${path}`, 
-        { 
-          method: "POST", 
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(id),
-        });
+      await fetch(`${API_BASE_URL}${path}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(id),
+      });
       refresh();
     } finally {
       setRemovingId(null);
@@ -224,19 +382,11 @@ function NonFunctionalRequirementDetailView() {
       stakeholderId
     );
 
-  // const unlinkNfr = (linkedNfrId: number) =>
-  //   unlink(
-  //     `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/nonFunctionalRequirements/${linkedNfrId}`,
-  //     linkedNfrId
-  //   );
-
   const unlinkDocument = (docId: number) =>
     unlink(
       `/projects/${projectId}/nonFunctionalRequirements/${nfrId}/unlinkDocument`,
       docId
     );
-
-  // ─────────────────────────────────────────────────────────────────────────
 
   if (loading) return <LoadingSpinner text="Loading requirement..." />;
 
@@ -273,51 +423,40 @@ function NonFunctionalRequirementDetailView() {
       </nav>
 
       {/* Header */}
-      <header className="flex items-start justify-between gap-6">
-        <div className="space-y-3 flex-1">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-            Non-Functional Requirement
-          </p>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-violet-100 text-violet-700 rounded-xl">
-              <ShieldCheck className="h-8 w-8" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-black tracking-tight">{requirement.name}</h1>
-              <p className="text-xs font-mono text-slate-400 pt-2">{requirement.entityIdentifier}</p>
-            </div>
+      <header className="space-y-4">
+        <div className="flex items-start gap-5">
+          <div className="p-3 bg-violet-100 text-violet-700 rounded-xl shrink-0">
+            <ShieldCheck className="h-8 w-8" />
           </div>
-          {requirement.description && (
-            <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
-              {requirement.description}
+          <div className="flex-1 min-w-0 space-y-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Non-Functional Requirement
             </p>
-          )}
-          <div className="flex items-center gap-3 pt-1 flex-wrap">
-            <RequirementStateBadge state={requirement.state} />
-            {requirement.measurementUnit && (
-              <Badge variant="outline" className="text-xs font-mono text-slate-400">
-                {requirement.measurementUnit}
-              </Badge>
-            )}
+            <h1 className="text-4xl font-black tracking-tight leading-tight">
+              {requirement.name}
+            </h1>
+            <p className="text-xs font-mono text-slate-400">{requirement.entityIdentifier}</p>
           </div>
         </div>
 
-        {/* Metric stats */}
-        <div className="flex gap-3 shrink-0 flex-wrap justify-end">
-          {[
-            { label: "Threshold", value: requirement.thresholdValue },
-            { label: "Target", value: requirement.targetValue },
-            { label: "Actual", value: requirement.actualValue },
-          ].map(({ label, value }) => (
-            <div
-              key={label}
-              className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-center min-w-[80px]"
-            >
-              <p className="text-2xl font-extrabold text-slate-900">{value ?? "—"}</p>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">{label}</p>
-            </div>
-          ))}
+        {requirement.description && (
+          <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
+            {requirement.description}
+          </p>
+        )}
+
+        {/* State + unit badges — RequirementState is separate from passing/failing */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <RequirementStateBadge state={requirement.state} />
+          {requirement.measurementUnit && (
+            <Badge variant="outline" className="text-xs font-mono text-slate-400">
+              {requirement.measurementUnit}
+            </Badge>
+          )}
         </div>
+
+        {/* Semantic metric expression */}
+        <MetricExpression req={requirement} />
       </header>
 
       {/* Children */}
@@ -329,7 +468,7 @@ function NonFunctionalRequirementDetailView() {
           count={requirement.children?.length ?? 0}
           editPermission={editPermission}
           addLabel="Add Child NFR"
-          onAdd={() => setCreateNonFunctionalRequirementDialogOpen(true)}
+          onAdd={() => setCreateNFRDialogOpen(true)}
         >
           {requirement.children?.length === 0 ? (
             <p className="text-center text-slate-400 italic py-6">No child requirements.</p>
@@ -369,9 +508,7 @@ function NonFunctionalRequirementDetailView() {
                       <Users className="h-4 w-4" />
                     </div>
                     <CardTitle className="text-sm flex-1 truncate">{s.name}</CardTitle>
-                    {s.state && (
-                      <EntityStateBadge state={s.state}/>
-                    )}
+                    {s.state && <EntityStateBadge state={s.state} />}
                     {editPermission && (
                       <RemoveButton
                         onClick={() => unlinkStakeholder(s.id)}
@@ -389,48 +526,6 @@ function NonFunctionalRequirementDetailView() {
           </div>
         )}
       </SectionCard>
-
-      {/* Observed NFRs */}
-      {/* <SectionCard
-        title="Observed Non-Functional Requirements"
-        description="Other NFRs that this requirement observes or depends on."
-        icon={<ShieldCheck className="h-4 w-4" />}
-        count={requirement.observedNFRequirements?.length ?? 0}
-        isAdmin={isAdmin}
-        addLabel="Link NFR"
-        onAdd={() => setNfrDialogOpen(true)}
-      >
-        {requirement.observedNFRequirements?.length === 0 ? (
-          <p className="text-center text-slate-400 italic py-6">No NFRs linked.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {requirement.observedNFRequirements.map((n) => (
-              <Card
-                key={n.id}
-                className="hover:border-violet-300 transition-colors cursor-pointer"
-                onClick={() => navigate(`/project/${projectId}/nfr/${n.id}`)}
-              >
-                <CardHeader className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Badge className="bg-green-50 text-green-700 border border-green-200 text-[10px] font-semibold shrink-0">
-                      NFR
-                    </Badge>
-                    <CardTitle className="text-sm flex-1 truncate">{n.name}</CardTitle>
-                    {n.state && <RequirementStateBadge state={n.state} />}
-                    {isAdmin && (
-                      <RemoveButton
-                        onClick={() => unlinkNfr(n.id)}
-                        loading={removingId === n.id}
-                      />
-                    )}
-                    <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        )}
-      </SectionCard> */}
 
       {/* Documents */}
       <SectionCard
@@ -450,10 +545,7 @@ function NonFunctionalRequirementDetailView() {
               <Card
                 key={doc.id}
                 className="hover:border-blue-300 transition-colors cursor-pointer"
-                onClick={() =>
-                  navigate(
-                    `/project/${projectId}/documents/${doc.id}`
-                  )}
+                onClick={() => navigate(`/project/${projectId}/documents/${doc.id}`)}
               >
                 <CardHeader className="p-4">
                   <div className="flex items-center gap-3">
@@ -479,7 +571,7 @@ function NonFunctionalRequirementDetailView() {
         )}
       </SectionCard>
 
-      {/* Observer FRs — read-only, no dialog */}
+      {/* Observer FRs — read-only */}
       <SectionCard
         title="Observer Functional Requirements"
         description="Functional requirements that observe or are constrained by this NFR."
@@ -524,11 +616,11 @@ function NonFunctionalRequirementDetailView() {
 
       {/* Dialogs */}
       <CreateNonFunctionalRequirementDialog
-        open={createNonFunctionalRequirementDialogOpen}
-        onOpenChange={setCreateNonFunctionalRequirementDialogOpen}
+        open={createNFRDialogOpen}
+        onOpenChange={setCreateNFRDialogOpen}
         projectId={projectId!}
         parentId={nfrId}
-        siblingRequirements={sortByOrderValue(requirement.children ?? [])}  
+        siblingRequirements={sortByOrderValue(requirement.children ?? [])}
         onSuccess={refresh}
       />
       <ObserveStakeholderDialog
@@ -540,15 +632,6 @@ function NonFunctionalRequirementDetailView() {
         requirementType="NFR"
         onSuccess={refresh}
       />
-      {/* <ObserveNFRDialog
-        open={nfrDialogOpen}
-        onOpenChange={setNfrDialogOpen}
-        projectId={projectId!}
-        functionalityId=""
-        requirementType="NFR"
-        requirementId={nfrId!}
-        onSuccess={refresh}
-      /> */}
       <ObserveDocumentDialog
         open={documentDialogOpen}
         onOpenChange={setDocumentDialogOpen}
