@@ -100,4 +100,15 @@ public class NonFunctionalRequirementMapper {
     public List<NonFunctionalRequirementDTO> toDtoList(List<NonFunctionalRequirement> nfrs) {
         return nfrs.stream().map(this::toDto).collect(Collectors.toList());
     }
+
+    public void patchEntity(NonFunctionalRequirementDTO patch, NonFunctionalRequirement requirement) {
+        if (patch == null) return;
+        if (patch.name()!=null && !patch.name().isBlank()) requirement.setName(patch.name());
+        if (patch.description()!=null && !patch.description().isBlank()) requirement.setDescription(patch.description());
+        if (patch.measurementUnit()!=null && !patch.measurementUnit().isBlank()) requirement.setMeasurementUnit(patch.measurementUnit());
+        if (patch.operator()!=null && !patch.operator().isBlank()) requirement.setOperator(ComparisonOperator.valueOf(patch.operator()));
+        if (patch.actualValue()!=null) requirement.setActualValue(patch.actualValue());
+        if (patch.thresholdValue()!=null) requirement.setThresholdValue(patch.thresholdValue());
+        if (patch.targetValue()!=null) requirement.setTargetValue(patch.targetValue());
+    }
 }

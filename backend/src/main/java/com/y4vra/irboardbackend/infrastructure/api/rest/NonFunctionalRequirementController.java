@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
+import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.services.NonFunctionalRequirementService;
@@ -30,7 +31,20 @@ public class NonFunctionalRequirementController {
     public ResponseEntity<List<NonFunctionalRequirementDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
         return ResponseEntity.ok(nonFunctionalRequirementService.findObservableNfRequirementsForRequirement(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
     }
-
+    @GetMapping("/{nonFunctionalRequirementId}/requestEdit")
+    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long nonFunctionalRequirementId) {
+        User user = (User) authentication.getPrincipal();
+        nonFunctionalRequirementService.requestEdit(user,projectId,nonFunctionalRequirementId);
+        return ResponseEntity.ok().build();
+    }
+    @PatchMapping("/{nonFunctionalRequirementId}/modify")
+    public ResponseEntity<NonFunctionalRequirementDTO> modify(Authentication authentication,
+                                                           @PathVariable Long projectId,
+                                                           @PathVariable Long nonFunctionalRequirementId,
+                                                           @RequestBody NonFunctionalRequirementDTO patch) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(nonFunctionalRequirementService.patch(user,projectId,nonFunctionalRequirementId,patch));
+    }
     @PatchMapping("/{nonFunctionalRequirementId}/reorder")
     public ResponseEntity<Void> reorderNonFunctionalRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long nonFunctionalRequirementId, @RequestBody Long orderValue) {
         nonFunctionalRequirementService.reorderRequirement(((User) authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementId,orderValue);

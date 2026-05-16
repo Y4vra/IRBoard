@@ -36,13 +36,8 @@ public class StakeholderController {
     @GetMapping("/{stakeholderId}/requestEdit")
     public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long stakeholderId) {
         User user = (User) authentication.getPrincipal();
-        try {
-            stakeholderService.requestEdit(user,projectId,stakeholderId);
-            return ResponseEntity.ok().build();
-        } catch (LockableEntityException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        stakeholderService.requestEdit(user,projectId,stakeholderId);
+        return ResponseEntity.ok().build();
     }
     @PatchMapping("/{stakeholderId}/modify")
     public ResponseEntity<StakeholderDTO> modify(Authentication authentication,

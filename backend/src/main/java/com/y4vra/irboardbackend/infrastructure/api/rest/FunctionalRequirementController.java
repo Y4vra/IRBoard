@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.application.dtos.ReorderRequest;
 import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.services.FunctionalRequirementService;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
 import io.minio.Http;
 import org.springframework.http.HttpStatus;
@@ -25,23 +26,36 @@ public class FunctionalRequirementController {
         this.functionalRequirementService = functionalRequirementService;
     }
 
-    @GetMapping("/{functionalRequirementId}")
-    public ResponseEntity<FunctionalRequirementDTO> getFunctionalRequirementById(Authentication authentication,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
-        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementById(((User) authentication.getPrincipal()).getOryId(),functionalityId, functionalRequirementId));
-    }
     @GetMapping("/")
     public ResponseEntity<List<FunctionalRequirementDTO>> getFunctionalRequirementOfFunctionality(Authentication authentication, @PathVariable Long functionalityId) {
         return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementsOfFunctionality(((User) authentication.getPrincipal()).getOryId(),functionalityId));
     }
-
-    @PatchMapping("/{functionalRequirementId}/reorder")
-    public ResponseEntity<Void> reorderFunctionalRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody Long orderValue) {
-        functionalRequirementService.reorderRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,orderValue);
+    @GetMapping("/{functionalRequirementId}")
+    public ResponseEntity<FunctionalRequirementDTO> getFunctionalRequirementById(Authentication authentication,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
+        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementById(((User) authentication.getPrincipal()).getOryId(),functionalityId, functionalRequirementId));
+    }
+    @GetMapping("/{functionalRequirementId}/requestEdit")
+    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
+        User user = (User) authentication.getPrincipal();
+        functionalRequirementService.requestEdit(user,projectId,functionalityId,functionalRequirementId);
         return ResponseEntity.ok().build();
+    }
+    @PatchMapping("/{functionalRequirementId}/modify")
+    public ResponseEntity<FunctionalRequirementDTO> modify(Authentication authentication,
+                                                 @PathVariable Long projectId,
+                                                 @PathVariable Long functionalRequirementId,
+                                                 @RequestBody FunctionalRequirementDTO patch) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(functionalRequirementService.patch(user,projectId,functionalRequirementId,patch));
     }
     @PatchMapping("/{functionalRequirementId}/changeParent")
     public ResponseEntity<Void> changeParentFunctionalRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody(required = false) Long newParentId) {
         functionalRequirementService.changeParent(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,newParentId);
+        return ResponseEntity.ok().build();
+    }
+    @PatchMapping("/{functionalRequirementId}/reorder")
+    public ResponseEntity<Void> reorderFunctionalRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody Long orderValue) {
+        functionalRequirementService.reorderRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,orderValue);
         return ResponseEntity.ok().build();
     }
 

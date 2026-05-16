@@ -27,13 +27,8 @@ public class FunctionalityController {
     @GetMapping("/{functionalityId}/requestEdit")
     public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
         User user = (User) authentication.getPrincipal();
-        try {
-            functionalityService.requestEdit(user,projectId,functionalityId);
-            return ResponseEntity.ok().build();
-        } catch (LockableEntityException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        functionalityService.requestEdit(user,projectId,functionalityId);
+        return ResponseEntity.ok().build();
     }
     @PatchMapping("/{functionalityId}/modify")
     public ResponseEntity<FunctionalityDTO> modify(Authentication authentication,

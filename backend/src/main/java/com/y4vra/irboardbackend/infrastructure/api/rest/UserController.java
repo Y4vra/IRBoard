@@ -68,13 +68,8 @@ public class UserController {
     @GetMapping("/{id}/requestEdit")
     public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long id) {
         User user = (User) authentication.getPrincipal();
-        try {
-            userService.requestEdit(id, user);
-            return ResponseEntity.ok().build();
-        } catch (LockableEntityException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+        userService.requestEdit(id, user);
+        return ResponseEntity.ok().build();
     }
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{id}/modify")

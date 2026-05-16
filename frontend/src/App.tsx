@@ -24,6 +24,7 @@ import DocumentsView from './pages/Project/document/DocumentsView'
 import StakeholderEdit from './pages/Project/stakeholder/StakeholderEdit'
 import DocumentDetailView from './pages/Project/document/DocumentDetailView'
 import { FunctionalitiesProviderWrapper } from './components/wrappers/FunctionalitiesProviderWrapper'
+import FunctionalRequirementEdit from './pages/Project/fr/FunctionalRequirementEdit'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -67,6 +68,7 @@ function App() {
 
                 <Route path="/project/:projectId/functionalities/:functionalityId" element={<FunctionalityView/>}/>
                 <Route path="/project/:projectId/functionalities/:functionalityId/functionalRequirements/:frId" element={<FunctionalRequirementDetailView/>}/>
+                <Route path="/project/:projectId/functionalities/:functionalityId/functionalRequirements/:functionalRequirementId/edit" element={<FunctionalRequirementEdit/>}/>
                 
                 <Route path="/project/:projectId/stakeholders" element={<StakeholdersView/>}/>
                 <Route path="/project/:projectId/stakeholders/:stakeholderId" element={<StakeholderDetailView/>}/>

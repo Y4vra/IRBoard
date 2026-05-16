@@ -69,7 +69,7 @@ class NonFunctionalRequirementMapperTest {
     @Test
     void toEntity_mapsAllFields() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
-                9L, "Availability", "Must be highly available",100L, RequirementState.PENDING_APPROVAL.name(),"percent",
+                9L, "identifier", "Availability", "Must be highly available",100L, RequirementState.PENDING_APPROVAL.name(),"percent",
                 "GREATER_THAN", 99.0, 99.9, 99.5, 1L, null, null,
                 List.of(),List.of(),List.of(),List.of()
         );
@@ -89,7 +89,7 @@ class NonFunctionalRequirementMapperTest {
     @Test
     void toEntity_throwsOnInvalidOperator() {
         NonFunctionalRequirementDTO dto = new NonFunctionalRequirementDTO(
-                1L, "Name", "desc",100L, RequirementState.PENDING_APPROVAL.name(), "ms", "NOT_AN_OPERATOR",
+                1L, "identifier", "Name", "desc",100L, RequirementState.PENDING_APPROVAL.name(), "ms", "NOT_AN_OPERATOR",
                 1.0, 2.0, 1.5, 1L,null, null,List.of(),List.of(),List.of(),List.of()
         );
 

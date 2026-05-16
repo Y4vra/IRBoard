@@ -67,7 +67,7 @@ class DocumentMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        DocumentDTO dto = new DocumentDTO(7L, "report.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 2048L, 3L, "url", List.of());
+        DocumentDTO dto = new DocumentDTO(7L, "identifier","report.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 2048L, 3L, "url", List.of());
 
         Document entity = mapper.toEntity(dto);
 

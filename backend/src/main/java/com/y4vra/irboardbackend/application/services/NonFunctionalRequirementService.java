@@ -1,13 +1,16 @@
 package com.y4vra.irboardbackend.application.services;
 
+import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -33,8 +36,8 @@ public class NonFunctionalRequirementService extends RequirementService {
     public NonFunctionalRequirementService(NonFunctionalRequirementRepository nfrRepository,
                                            DocumentRepository documentRepository, StakeholderRepository stakeholderRepository,RequirementRepository rRepository,
                                            NonFunctionalRequirementMapper nfrMapper,
-                                           PermissionService permService, ProjectRepository projectRepository) {
-        super(permService,stakeholderRepository,documentRepository,nfrRepository,rRepository);
+                                           PermissionService permService, ProjectRepository projectRepository, EntityLockService lockService) {
+        super(permService,stakeholderRepository,documentRepository,nfrRepository,rRepository,lockService);
         this.projectRepository = projectRepository;
         this.nfrMapper = nfrMapper;
     }
@@ -176,5 +179,19 @@ public class NonFunctionalRequirementService extends RequirementService {
                 throw new EntityNotFoundException("Parent project id does not match current requirement's project id");
             Associations.link(newParent, nfr);
         }
+    }
+    @Transactional
+    public NonFunctionalRequirementDTO patch(User user, Long projectId, Long requirementId, NonFunctionalRequirementDTO patch) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
+            throw new AccessDeniedException("User not authorized to edit requirements of this project");
+        }
+        NonFunctionalRequirement requirement = nfrRepository.findById(requirementId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
+        if(!entityLockService.isLockedByUser(requirement, user)) {
+            throw new LockableEntityException("You do not hold the lock for this project");
+        }
+        nfrMapper.patchEntity(patch, requirement);
+        entityLockService.unlock(requirement,user);
+        requirement.notifyObservers();
+        return nfrMapper.toDto(nfrRepository.save(requirement));
     }
 }

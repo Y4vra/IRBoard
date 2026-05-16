@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalRequirementMapper;
 import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
@@ -37,8 +38,8 @@ public class FunctionalRequirementService extends RequirementService {
                                         NonFunctionalRequirementRepository nfrRepository, DocumentRepository documentRepository, StakeholderRepository stakeholderRepository, RequirementRepository requirementRepository,
                                         FunctionalRequirementMapper frMapper,
                                         FunctionalityRepository functionalityRepository,
-                                        PermissionService permService, FunctionalityMapper functionalityMapper, FunctionalityService functionalityService, ProjectRepository projectRepository) {
-        super(permService,stakeholderRepository,documentRepository,nfrRepository,requirementRepository);
+                                        PermissionService permService, FunctionalityMapper functionalityMapper, FunctionalityService functionalityService, ProjectRepository projectRepository, EntityLockService lockService) {
+        super(permService,stakeholderRepository,documentRepository,nfrRepository,requirementRepository,lockService);
         this.frRepository = frRepository;
         this.frMapper = frMapper;
         this.functionalityRepository = functionalityRepository;
@@ -251,5 +252,27 @@ public class FunctionalRequirementService extends RequirementService {
                 throw new EntityNotFoundException("Functionality id does not match functionality id");
             Associations.link(newParent, fr);
         }
+    }
+
+    @Transactional
+    public void requestEdit(User user,Long projectId,Long functionalityId,Long requirementId) {
+        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", user.getOryId())) {
+            throw new AccessDeniedException("User not authorized to edit requirements of this functionality");
+        }
+        super.requestEdit(user,projectId,requirementId);
+    }
+    @Transactional
+    public FunctionalRequirementDTO patch(User user, Long projectId, Long requirementId, FunctionalRequirementDTO patch) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
+            throw new AccessDeniedException("User not authorized to edit requirements of this project");
+        }
+        FunctionalRequirement requirement = frRepository.findById(requirementId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
+        if(!entityLockService.isLockedByUser(requirement, user)) {
+            throw new LockableEntityException("You do not hold the lock for this project");
+        }
+        frMapper.patchEntity(patch, requirement);
+        entityLockService.unlock(requirement,user);
+        requirement.notifyObservers();
+        return frMapper.toDto(frRepository.save(requirement));
     }
 }

@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest.errors;
 
 import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -73,6 +74,17 @@ public class GlobalExceptionHandler {
         body.put("error", "Forbidden");
         body.put("message", ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
+    @ExceptionHandler(LockableEntityException.class)
+    public ResponseEntity<Object> handleAccessDenied(LockableEntityException ex) {
+        log.error("LockableEntityException exception", ex);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Forbidden");
+        body.put("message", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

@@ -53,7 +53,7 @@ class StakeholderMapperTest {
     @Test
     void toEntity_mapsAllFields() {
         List emptyList = List.of();
-        StakeholderDTO dto = new StakeholderDTO(3L, "Admin", "System administrator", EntityState.PENDING_APPROVAL.name(), 2L,emptyList);
+        StakeholderDTO dto = new StakeholderDTO(3L, "identifier", "Admin", "System administrator", EntityState.PENDING_APPROVAL.name(), 2L,emptyList);
 
         Stakeholder entity = mapper.toEntity(dto);
 

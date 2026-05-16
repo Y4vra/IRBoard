@@ -80,10 +80,10 @@ class DocumentServiceTest {
         document.setProject(project);
 
         documentDTO = new DocumentDTO(
-                documentId, "spec.pdf", "application/pdf", 1024L, projectId, presignedUrl, List.of()
+                documentId, "identifier", "spec.pdf", "application/pdf", 1024L, projectId, presignedUrl, List.of()
         );
         inputDto = new DocumentDTO(
-                null, "spec.pdf", "application/pdf", 1024L, projectId, null, List.of()
+                null, "identifier", "spec.pdf", "application/pdf", 1024L, projectId, null, List.of()
         );
     }
 

@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.application.mappers;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
+import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.domain.model.*;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -79,5 +80,13 @@ public class FunctionalRequirementMapper {
 
     public List<FunctionalRequirementDTO> toDtoList(List<FunctionalRequirement> roots) {
         return roots.stream().map(this::toDto).toList();
+    }
+
+    public void patchEntity(FunctionalRequirementDTO patch, FunctionalRequirement requirement) {
+        if (patch == null) return;
+        if (patch.name()!=null && !patch.name().isBlank()) requirement.setName(patch.name());
+        if (patch.description()!=null && !patch.description().isBlank()) requirement.setDescription(patch.description());
+        if (patch.stability()!=null && !patch.stability().isBlank()) requirement.setStability(patch.stability());
+        if (patch.priority()!=null && !patch.priority().isBlank()) requirement.setPriority(patch.priority());
     }
 }
