@@ -25,6 +25,7 @@ import StakeholderEdit from './pages/Project/stakeholder/StakeholderEdit'
 import DocumentDetailView from './pages/Project/document/DocumentDetailView'
 import { FunctionalitiesProviderWrapper } from './components/wrappers/FunctionalitiesProviderWrapper'
 import FunctionalRequirementEdit from './pages/Project/fr/FunctionalRequirementEdit'
+import NonFunctionalRequirementEdit from './pages/Project/nfr/NonFunctionalRequirementEdit'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -79,6 +80,7 @@ function App() {
                 
                 <Route path="/project/:projectId/nfr" element={<NonFunctionalRequirementsView/>}/>
                 <Route path="/project/:projectId/nfr/:nfrId" element={<NonFunctionalRequirementDetailView/>}/>
+                <Route path="/project/:projectId/nfr/:nfrId/edit" element={<NonFunctionalRequirementEdit/>} />
               </Route>
               </Route>
               </Route>

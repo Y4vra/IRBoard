@@ -264,8 +264,10 @@ function NonFunctionalRequirementDetailView() {
           </Link>
         </Button>
         {editPermission && (
-          <Button variant="outline" size="sm">
-            <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
+            </Link>
           </Button>
         )}
       </nav>
