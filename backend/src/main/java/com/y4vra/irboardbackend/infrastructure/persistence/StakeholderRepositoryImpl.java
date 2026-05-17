@@ -2,8 +2,10 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
@@ -45,6 +47,22 @@ interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
         )
     """)
     List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId);
+    @Query("""
+   SELECT COUNT(s) = :expectedCount
+   FROM Stakeholder s
+   WHERE s.project.id = :projectId
+   AND s.id IN :stakeholderIds
+   """)
+    boolean existsAllInProject(Long projectId,List<Long> stakeholderIds,long expectedCount);
+    @Modifying
+    @Query("""
+   UPDATE Stakeholder s
+   SET s.state = :newState
+   WHERE s.id IN :stakeholderIds
+   AND s.project.id = :projectId
+   AND s.state = :oldState
+   """)
+    int updateStateByIdsAndProject(List<Long> stakeholderIds, Long projectId, EntityState newState, EntityState oldState);
 }
 
 @Component
@@ -93,9 +111,18 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     public List<Stakeholder> findAllObservedByRequirement(Long requirementId) {
         return jpaRepository.findAllObservedByRequirement(requirementId);
     }
-
     @Override
     public List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId) {
         return jpaRepository.findObservableStakeholdersForRequirement(projectId,requirementId);
+    }
+
+    @Override
+    public boolean allStakeholdersBelongToProject(Long projectId, List<Long> stakeholderIds) {
+        return jpaRepository.existsAllInProject(projectId,stakeholderIds,stakeholderIds.size());
+    }
+
+    @Override
+    public int updateStateByIdsAndProject(List<Long> stakeholderIds, Long projectId, EntityState newState, EntityState oldState) {
+        return jpaRepository.updateStateByIdsAndProject(stakeholderIds, projectId, newState, oldState);
     }
 }

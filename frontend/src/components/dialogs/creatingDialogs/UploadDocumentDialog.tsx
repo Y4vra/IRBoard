@@ -106,7 +106,7 @@ export function UploadDocumentDialog({ projectId, onSuccess }: UploadDocumentDia
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
       <DialogTrigger asChild>
-        <Button size="sm" className="shadow-md">
+        <Button size="sm" variant="outline">
           <Upload className="mr-2 h-4 w-4" /> Upload Document
         </Button>
       </DialogTrigger>

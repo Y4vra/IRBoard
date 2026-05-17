@@ -440,17 +440,17 @@ function NonFunctionalRequirementsView() {
                   onSuccess={refresh}
                   siblingRequirements={requirements}
                   />
-                {isManager && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={pendingNFRIds.length===0?true:approving}
-                    onClick={() => approveNFRequirements(pendingNFRIds)}
-                  >
-                    {approving ? "Approving..." : `Approve All (${pendingNFRIds.length})`}
-                  </Button>
-                )}
               </>
+            )}
+            {isManager && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={pendingNFRIds.length===0?true:approving}
+                onClick={() => approveNFRequirements(pendingNFRIds)}
+              >
+                {approving ? "Approving..." : `Approve All (${pendingNFRIds.length})`}
+              </Button>
             )}
           </div>
         </div>

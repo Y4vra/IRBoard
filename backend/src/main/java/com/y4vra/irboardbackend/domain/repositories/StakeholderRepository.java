@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.domain.repositories;
 
 import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,4 +19,7 @@ public interface StakeholderRepository {
     List<Stakeholder> findAllObservedByRequirement(Long requirementId);
 
     List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId);
+
+    boolean allStakeholdersBelongToProject(Long projectId, List<Long> stakeholderIds);
+    int updateStateByIdsAndProject(List<Long> stakeholderIds, Long projectId, EntityState newState, EntityState oldState);
 }

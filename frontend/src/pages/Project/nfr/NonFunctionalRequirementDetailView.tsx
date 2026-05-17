@@ -33,6 +33,9 @@ import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
 import { sortByOrderValue } from "@/lib/reorderUtils";
 import { useApproveNFRequirements } from "@/hooks/useApproveRequirements";
+import { LockIndicator } from "@/components/LockIndicator";
+import { useLocks } from "@/hooks/useLocks";
+import { EntityType } from "@/lib/lockUtils";
 
 // ─── Operator helpers ─────────────────────────────────────────────────────────
 
@@ -337,6 +340,10 @@ function NonFunctionalRequirementDetailView() {
   const { editPermission, isManager } = useProject();
   const navigate = useNavigate();
 
+  const { getLock } = useLocks();
+  const lock = getLock(EntityType.NON_FUNCTIONAL_REQUIREMENT, Number(nfrId));
+  const isLocked = !!lock;
+
   const [createNFRDialogOpen, setCreateNFRDialogOpen] = useState(false);
   const [stakeholderDialogOpen, setStakeholderDialogOpen] = useState(false);
   const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
@@ -428,16 +435,12 @@ function NonFunctionalRequirementDetailView() {
               Non-Functional Requirement
             </p>
             <div>
-              <h1 className="text-4xl font-black tracking-tight leading-tight">
-                {requirement.name}
-              </h1>
+              <h1 className="text-4xl font-black tracking-tight leading-tight">{requirement.name}</h1>
               <p className="text-xs font-mono text-slate-400">{requirement.entityIdentifier}</p>
             </div>
-            {requirement.description && (
-              <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
-                {requirement.description}
-              </p>
-            )}
+            {requirement.description && 
+              <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{requirement.description}</p>
+            }
             <div className="flex items-center gap-3 flex-wrap">
               <RequirementStateBadge state={requirement.state} />
               {requirement.measurementUnit && (
@@ -449,22 +452,28 @@ function NonFunctionalRequirementDetailView() {
           </div>
         </div>
         <div className="flex flex-col gap-3">
-            {editPermission && (
-              <Button asChild variant="outline" size="sm">
-                <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
-                </Link>
-              </Button>
-            )}
-            {isManager &&
-              <Button variant="outline" size="sm" 
-                disabled={requirement.state === "PENDING_APPROVAL"?approving:true}
-                onClick={() => approveNFRequirements([requirement.id])}
-                >
-                {approving ? "Approving..." : "Approve Requirement"}
-              </Button>
-            }
-          </div>
+          <LockIndicator lock={lock} />
+          {editPermission && (
+            <Button asChild 
+              variant="outline" 
+              size="sm" 
+              disabled={isLocked}
+              title={isLocked ? "This nfr is currently being edited by another user" : undefined}
+              >
+              <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
+                <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
+              </Link>
+            </Button>
+          )}
+          {isManager &&
+            <Button variant="outline" size="sm" 
+              disabled={requirement.state === "PENDING_APPROVAL"?approving:true}
+              onClick={() => approveNFRequirements([requirement.id])}
+              >
+              {approving ? "Approving..." : "Approve Requirement"}
+            </Button>
+          }
+        </div>
       </header>
 
       {/* Semantic metric expression */}

@@ -1,6 +1,5 @@
 package com.y4vra.irboardbackend.application.services;
 
-import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.dtos.NonFunctionalRequirementDTO;
 import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
@@ -10,7 +9,6 @@ import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -183,10 +181,10 @@ public class NonFunctionalRequirementService extends RequirementService {
         return nfrMapper.toDto(nfrRepository.save(requirement));
     }
     @Transactional
-    public void approveRequirements(String oryId, Long projectId, List<Long> functionalRequirementIds) {
+    public void approveRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
-        if (!nfrRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalRequirementIds))
+        if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
-        nfrRepository.updateStateByIdsAndFunctionalityAndProject(functionalRequirementIds,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
+        nfrRepository.updateStateByIdsAndProject(nonFunctionalRequirementIds,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
     }
 }

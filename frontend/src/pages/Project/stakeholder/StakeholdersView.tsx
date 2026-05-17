@@ -1,9 +1,8 @@
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../../lib/globalVars"
 import { Button } from "../../../components/ui/button"
 import { AlertCircle, ChevronRight } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
   Table,
@@ -25,6 +24,7 @@ import { EntityStateBadge } from "@/components/badges/EntityStateBadge"
 import { StatsChart } from "@/components/graphics/StatsChart"
 import { useProject } from "@/hooks/useProject"
 import { BackToProjectButton } from "@/components/BackToProjectButton"
+import { useApproveStakeholders } from "@/hooks/useApproveRequirements"
 
 
 function StakeholdersView() {
@@ -32,19 +32,28 @@ function StakeholdersView() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const {stakeholderStats, editPermission } = useProject();
+  const {stakeholderStats, editPermission, isManager } = useProject();
 
   const fetchStakeholders = useCallback(() =>
   fetch(`${API_BASE_URL}/projects/${projectId}/stakeholders`, { credentials: 'include' })
     .then(r => { if (!r.ok) throw new Error('Failed to fetch stakeholders'); return r.json(); }),
   [projectId]
-);
+  );
 
-const { data, loading, error, refresh } = useBackendResource<Stakeholder[]>({
-  fetcher: fetchStakeholders,
-  enabled: isAuthenticated,
-});
-const stakeholders = data ?? [];
+  const { data:stakeholders, loading, error, refresh } = useBackendResource<Stakeholder[]>({
+    fetcher: fetchStakeholders,
+    enabled: isAuthenticated,
+  });
+
+  const { approveStakeholders, loading: approving } = useApproveStakeholders({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+
+  const pendingIds = useMemo(
+    () => stakeholders?.filter(s => s.state === "PENDING_APPROVAL").map(s => s.id),
+    [stakeholders]
+  )
 
   if (loading) return <LoadingSpinner text="Loading Stakeholders..."/>;
 
@@ -60,18 +69,32 @@ const stakeholders = data ?? [];
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
       <BackToProjectButton className="mb-0" projectId={projectId!}/>
+      
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Stakeholders</h1>
           <p className="text-slate-500 mt-1">Manage project actors and interest groups.</p>
         </div>
-        {editPermission && <CreateStakeholderDialog projectId={projectId!} onSuccess={refresh}/>}
+        <div className="flex items-stretch gap-3">
+          {stakeholderStats && (
+            <Card className="p-4">
+              <StatsChart stats={stakeholderStats} title="Stakeholder States" size={100} />
+            </Card>
+          )}
+          <div className="flex flex-col gap-3">
+            {editPermission && 
+              <CreateStakeholderDialog projectId={projectId!} onSuccess={refresh}/>
+            }
+            {isManager && 
+              <Button size="sm" variant="outline" 
+              disabled={pendingIds?.length===0?true:approving} 
+              onClick={() => approveStakeholders(pendingIds!)}>
+                {approving ? "Approving..." : `Approve All (${pendingIds?.length})`}
+              </Button>
+            }
+          </div>
+        </div>
       </header>
-      {stakeholderStats && (
-        <Card className="p-4">
-          <StatsChart stats={stakeholderStats} title="Stakeholder States" size={110} />
-        </Card>
-      )}
 
       <Card>
         <CardHeader>
@@ -90,7 +113,7 @@ const stakeholders = data ?? [];
               </TableRow>
             </TableHeader>
             <TableBody>
-              {stakeholders.map((s) => (
+              {stakeholders?.map((s) => (
                 <TableRow 
                   key={s.id} 
                   className="cursor-pointer hover:bg-slate-50"
@@ -102,11 +125,6 @@ const stakeholders = data ?? [];
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <LockIndicator lock={getLock(EntityType.STAKEHOLDER, s.id)} />
-                      {s.pendingReview && (
-                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 uppercase text-[10px]">
-                          Pending Review
-                        </Badge>
-                      )}
                       <EntityStateBadge state={s.state} />
                     </div>
                   </TableCell>

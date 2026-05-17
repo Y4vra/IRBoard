@@ -110,3 +110,41 @@ export function useApproveNFRequirements({ projectId, onSuccess }: ApproveRequir
 
   return { approveNFRequirements, loading, error }
 }
+
+// ── Stakeholder approval ──────────────────────────────────────────────────────
+export function useApproveStakeholders({ projectId, onSuccess }: ApproveRequirementsOptions) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const approveStakeholders = useCallback(
+    async (stakeholderIds: number[]) => {
+      if (!stakeholderIds.length) return
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/projects/${projectId}/stakeholders/approve`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(stakeholderIds),
+          }
+        )
+        if (!res.ok) {
+          const err = await res.json().catch(() => null)
+          throw new Error(err?.message || "Failed to approve stakeholders")
+        }
+        onSuccess?.()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Unknown error")
+        throw e
+      } finally {
+        setLoading(false)
+      }
+    },
+    [projectId, onSuccess]
+  )
+
+  return { approveStakeholders, loading, error }
+}

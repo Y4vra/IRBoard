@@ -48,6 +48,11 @@ public class StakeholderController {
         return ResponseEntity.ok(stakeholderService.patch(user,projectId,stakeholderId,patch));
     }
 
+    @PostMapping("/approve")
+    public ResponseEntity<Void> approveFunctionalRequirementsOfFunctionality(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> stakeholderIds) {
+        stakeholderService.approveStakeholders(((User)authentication.getPrincipal()).getOryId(),projectId,stakeholderIds);
+        return ResponseEntity.ok().build();
+    }
     @PostMapping("/new")
     public ResponseEntity<StakeholderDTO> createStakeholder(@Validated @RequestBody StakeholderDTO stakeholderDTO, @PathVariable Long projectId, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(stakeholderService.createStakeholder(((User) authentication.getPrincipal()).getOryId(),stakeholderDTO,projectId));

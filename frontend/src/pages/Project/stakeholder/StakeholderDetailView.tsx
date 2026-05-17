@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../../lib/globalVars";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Pencil, User, FileText, AlertTriangle, ChevronRight } from "lucide-react";
+import { ArrowLeft, Pencil, FileText, ChevronRight } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import type { FunctionalRequirementSummaryDTO, RequirementSummaryDTO } from "@/types/RequirementSummaryDTO";
 import type { Stakeholder } from "@/types/Stakeholder";
@@ -13,6 +13,8 @@ import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
+import { useApproveStakeholders } from "@/hooks/useApproveRequirements";
+import { useBackendResource } from "@/hooks/useBackendResource";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -27,38 +29,45 @@ function requirementPath(r: RequirementSummaryDTO, projectId: string): string {
 
 function StakeholderDetailView() {
   const { projectId, stakeholderId } = useParams<{ projectId: string; stakeholderId: string }>();
-  const { editPermission } = useProject();
+  const { editPermission, isManager } = useProject();
   const navigate = useNavigate();
-  const [stakeholder, setStakeholder] = useState<Stakeholder | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const { getLock } = useLocks();
   const lock = getLock(EntityType.STAKEHOLDER, Number(stakeholderId));
   const isLocked = !!lock;
 
-  useEffect(() => {
-    const fetchStakeholder = async () => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/projects/${projectId}/stakeholders/${stakeholderId}`,
-          { method: "GET", credentials: "include" }
-        );
-        const data = await response.json();
-        setStakeholder(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStakeholder();
-  }, [projectId, stakeholderId]);
+  const fetcher = useCallback(
+    () => fetch(
+      `${API_BASE_URL}/projects/${projectId}/stakeholders/${stakeholderId}`,
+      { credentials: "include" }
+    ).then(r => {
+      if (!r.ok) throw new Error("Failed to fetch stakeholder");
+      return r.json();
+    }),
+    [projectId, stakeholderId]
+  );
+
+  const { data: stakeholder, loading, error, refresh } = useBackendResource<Stakeholder>({ fetcher });
+
+
+  const { approveStakeholders, loading: approving } = useApproveStakeholders({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
 
   if (loading) return <LoadingSpinner />;
-  if (!stakeholder) return <div className="p-8 text-center text-red-500">Stakeholder not found.</div>;
+  if (error || !stakeholder)
+    return (
+      <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center">
+        <p className="text-red-600 font-semibold">Stakeholder not found.</p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link to={`/project/${projectId}/stakeholders`}>Back to Stakeholders</Link>
+        </Button>
+      </div>
+    );
 
   const frRequirements = stakeholder.observers.filter(isFR);
-  const nfrRequirements = stakeholder.observers.filter((r) => !isFR(r));
+  const nfrRequirements = stakeholder.observers.filter((r:RequirementSummaryDTO) => !isFR(r));
 
   return (
     <div className="max-w-5xl mx-auto space-y-10 p-6 animate-in fade-in duration-500">
@@ -70,44 +79,45 @@ function StakeholderDetailView() {
         </Button>
       </nav>
 
-      <header className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-indigo-100 text-indigo-700 rounded-xl">
-              <User className="h-8 w-8" />
-            </div>
+      <header className="flex items-start justify-between gap-6">
+        <div className="space-y-3 flex-1">
+          <div className="flex-1 min-w-0 space-y-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Stakeholder
+            </p>
             <div>
               <h1 className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
               <p className="text-xs font-mono text-slate-400 pt-2">{stakeholder.entityIdentifier}</p>
             </div>
+            {stakeholder.description &&
+              <p className="text-xl text-muted-foreground leading-relaxed">{stakeholder.description}</p>
+            }
+            <EntityStateBadge state={stakeholder.state}/>
           </div>
-          <div className="flex items-center gap-2">
-            <LockIndicator lock={lock} />
-            
-            {editPermission && (
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                disabled={isLocked}
-                title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
+        </div>
+        <div className="flex flex-col gap-3">
+          <LockIndicator lock={lock} />
+          {editPermission && 
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              disabled={isLocked}
+              title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
               >
-                <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
-                </Link>
-              </Button>
-            )}
-          </div>
+              <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
+                <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
+              </Link>
+            </Button>
+          }
+          {isManager &&
+            <Button variant="outline" size="sm" 
+              disabled={stakeholder.state === "PENDING_APPROVAL"?approving:true}
+              onClick={() => approveStakeholders([stakeholder.id])}>
+              {approving ? "Approving..." : "Approve Stakeholder"}
+            </Button>
+          }
         </div>
-        <div className="flex gap-2">
-          {stakeholder.pendingReview && (
-            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-              <AlertTriangle className="h-3 w-3 mr-1" /> Pending Review
-            </Badge>
-          )}
-          <EntityStateBadge state={stakeholder.state}/>
-        </div>
-        <p className="text-xl text-muted-foreground leading-relaxed">{stakeholder.description}</p>
       </header>
 
       <section className="space-y-6">

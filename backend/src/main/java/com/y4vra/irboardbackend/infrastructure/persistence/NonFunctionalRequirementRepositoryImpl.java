@@ -133,12 +133,12 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     }
 
     @Override
-    public boolean allFunctionalRequirementsBelongToFunctionalityAndProject(Long projectId, List<Long> nonFunctionalRequirementIds) {
+    public boolean allNonFunctionalRequirementsBelongToProject(Long projectId, List<Long> nonFunctionalRequirementIds) {
         return jpaRepository.existsAllInProject(projectId,nonFunctionalRequirementIds,nonFunctionalRequirementIds.size());
     }
 
     @Override
-    public int updateStateByIdsAndFunctionalityAndProject(List<Long> nonFunctionalRequirementIds, Long projectId, RequirementState requirementState, RequirementState requirementState1) {
+    public int updateStateByIdsAndProject(List<Long> nonFunctionalRequirementIds, Long projectId, RequirementState requirementState, RequirementState requirementState1) {
         return jpaRepository.updateStateByIdsAndProject(nonFunctionalRequirementIds, projectId, requirementState, requirementState1);
     }
 }
