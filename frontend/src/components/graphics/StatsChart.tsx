@@ -17,18 +17,18 @@ interface StatsChartProps {
 // ─── Colour palettes ──────────────────────────────────────────────────────────
 
 const DEFAULT_STATE_COLORS: Record<string, string> = {
-  // Requirement / entity states
-  APPROVED: "#10b981",        // emerald-500
-  FINISHED: "#6366f1",        // indigo-500
-  PENDING_APPROVAL: "#f59e0b", // amber-500
-  DEACTIVATED: "#94a3b8",     // slate-400
-  REMOVED: "#f43f5e",         // rose-500
+  // Aligned with REQUIREMENT_STATE_CONFIG badge colors
+  PENDING_APPROVAL: "#f59e0b", // amber-500  → bg-amber-50 / text-amber-700
+  APPROVED:         "#3b82f6", // blue-500   → bg-blue-50  / text-blue-700
+  FINISHED:         "#10b981", // emerald-500→ bg-emerald-50/ text-emerald-700
+  DEACTIVATED:      "#94a3b8", // slate-400  → bg-slate-100/ text-slate-600
+  REMOVED:          "#ef4444", // red-500    → bg-red-50   / text-red-700
   // Fallback sequence for unknown keys
-  _0: "#3b82f6",
-  _1: "#8b5cf6",
-  _2: "#ec4899",
-  _3: "#14b8a6",
-  _4: "#f97316",
+  _0: "#8b5cf6",
+  _1: "#ec4899",
+  _2: "#14b8a6",
+  _3: "#f97316",
+  _4: "#6366f1",
 }
 
 /** Renders an SVG donut chart from percentage slices */

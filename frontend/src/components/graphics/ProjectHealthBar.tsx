@@ -3,11 +3,11 @@ import type { Project } from "@/types/Project"
 // ─── Colour tokens (shared with StatsChart) ───────────────────────────────────
 
 const STATE_COLORS: Record<string, { bar: string; dot: string; label: string }> = {
-  APPROVED:        { bar: "bg-emerald-500", dot: "bg-emerald-500", label: "text-emerald-600" },
-  FINISHED:        { bar: "bg-indigo-500",  dot: "bg-indigo-500",  label: "text-indigo-600"  },
-  PENDING_APPROVAL:{ bar: "bg-amber-400",   dot: "bg-amber-400",   label: "text-amber-600"   },
-  DEACTIVATED:     { bar: "bg-slate-300",   dot: "bg-slate-300",   label: "text-slate-400"   },
-  REMOVED:         { bar: "bg-rose-400",    dot: "bg-rose-400",    label: "text-rose-500"    },
+  APPROVED:         { bar: "bg-blue-500",    dot: "bg-blue-500",    label: "text-blue-600"    },
+  FINISHED:         { bar: "bg-emerald-500", dot: "bg-emerald-500", label: "text-emerald-600" },
+  PENDING_APPROVAL: { bar: "bg-amber-400",   dot: "bg-amber-400",   label: "text-amber-600"   },
+  DEACTIVATED:      { bar: "bg-slate-300",   dot: "bg-slate-300",   label: "text-slate-400"   },
+  REMOVED:          { bar: "bg-red-400",     dot: "bg-red-400",     label: "text-red-600"     },
 }
 
 function stateColor(key: string) {
