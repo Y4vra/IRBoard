@@ -558,7 +558,7 @@ A crucial process for the system is the updates triggered by modifications betwe
 )
 ==== Search and filtering
 #SF_List(
-  [The system must allow searching an entity by internal unique identifier.],
+  [The system must allow searching a project entity by its internal unique identifier.],
   (
     [The system must search lexically.],
     [The system must allow the user to see the details of the found entity.],
