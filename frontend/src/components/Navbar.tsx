@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Search,
   Folder,
@@ -11,29 +11,139 @@ import {
   FileText,
   ChevronRight,
   MoreHorizontal,
+  CornerDownLeft,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { API_BASE_URL } from "@/lib/globalVars";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface SearchResultDTO {
+  id: number;
+  name: string;
+  description?: string;
+  type: "FR" | "NFR" | "STAKEHOLDER" | "FUNCTIONALITY" | "DOCUMENT";
+  projectId: number;
+  functionalityId?: number;
+  entityIdentifier: string;
+}
+
+// ── Slug validation (mirrors backend EntitySlug.parse) ────────────────────────
+
+const SLUG_PATTERN = /^(\d+)-(FR|NFR|STKH|FUNC|DOC)-(.+)$/i;
+
+function isFullSlug(value: string): boolean {
+  return SLUG_PATTERN.test(value.trim());
+}
+
+// ── Result path resolution ────────────────────────────────────────────────────
+
+function resultPath(r: SearchResultDTO): string {
+  switch (r.type) {
+    case "FR":
+      return `/project/${r.projectId}/functionalities/${r.functionalityId}/functionalRequirements/${r.id}`;
+    case "NFR":
+      return `/project/${r.projectId}/nfr/${r.id}`;
+    case "STAKEHOLDER":
+      return `/project/${r.projectId}/stakeholders/${r.id}`;
+    case "FUNCTIONALITY":
+      return `/project/${r.projectId}/functionalities/${r.id}`;
+    case "DOCUMENT":
+      return `/project/${r.projectId}/documents/${r.id}`;
+  }
+}
+
+const TYPE_CONFIG: Record<string, { label: string; class: string }> = {
+  FR:            { label: "FR",   class: "bg-blue-50 text-blue-700 border-blue-200"       },
+  NFR:           { label: "NFR",  class: "bg-green-50 text-green-700 border-green-200"    },
+  STAKEHOLDER:   { label: "STKH", class: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+  FUNCTIONALITY: { label: "FUNC", class: "bg-slate-100 text-slate-600 border-slate-200"   },
+  DOCUMENT:      { label: "DOC",  class: "bg-amber-50 text-amber-700 border-amber-200"    },
+};
+
+// ── useGoTo hook ──────────────────────────────────────────────────────────────
+
+function useGoTo() {
+  const [result, setResult] = useState<SearchResultDTO | null>(null);
+  const [status, setStatus] = useState<"idle" | "loading" | "found" | "not_found" | "invalid">("idle");
+
+  const goTo = useCallback(async (slug: string) => {
+    const trimmed = slug.trim();
+
+    if (!trimmed) {
+      setResult(null);
+      setStatus("idle");
+      return;
+    }
+
+    if (!isFullSlug(trimmed)) {
+      setResult(null);
+      setStatus("invalid");
+      return;
+    }
+
+    setStatus("loading");
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/search?slug=${encodeURIComponent(trimmed)}`,
+        { credentials: "include" }
+      );
+      if (res.status === 404) {
+        setResult(null);
+        setStatus("not_found");
+      } else if (res.ok) {
+        const data: SearchResultDTO = await res.json();
+        setResult(data);
+        setStatus("found");
+      } else {
+        setResult(null);
+        setStatus("not_found");
+      }
+    } catch {
+      setResult(null);
+      setStatus("not_found");
+    }
+  }, []);
+
+  const reset = useCallback(() => {
+    setResult(null);
+    setStatus("idle");
+  }, []);
+
+  return { result, status, goTo, reset };
+}
+
+// ── NavBar ────────────────────────────────────────────────────────────────────
 
 export function NavBar() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [finishedOpening, setFinishedOpening] = useState(false);
+  const [slug, setSlug] = useState("");
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { result, status, goTo, reset } = useGoTo();
 
   useEffect(() => {
     let openingTimeout: ReturnType<typeof setTimeout>;
-    
     if (open) {
       openingTimeout = setTimeout(() => setFinishedOpening(true), 300);
-    } 
-    
-    return () => {
-      clearTimeout(openingTimeout);
-    };
+    }
+    return () => clearTimeout(openingTimeout);
   }, [open]);
+
+  // Debounce slug → API call (500ms — full slug so no need to rush)
+  useEffect(() => {
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => goTo(slug), 500);
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [slug, goTo]);
 
   const handleMouseEnter = () => {
     if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
@@ -44,7 +154,26 @@ export function NavBar() {
     closeTimeoutRef.current = setTimeout(() => {
       setOpen(false);
       setFinishedOpening(false);
+      setSlug("");
+      reset();
     }, 200);
+  };
+
+  const handleNavigate = () => {
+    if (!result) return;
+    navigate(resultPath(result));
+    setSlug("");
+    reset();
+    setOpen(false);
+    setFinishedOpening(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleNavigate();
+    if (e.key === "Escape") {
+      setSlug("");
+      reset();
+    }
   };
 
   if (!user) return null;
@@ -52,6 +181,8 @@ export function NavBar() {
   const projectMatch = pathname.match(/^(\/project\/[^/]+)/);
   const isProjectView = !!projectMatch;
   const projectBasePath = projectMatch?.[1] ?? "";
+
+  const showResult = slug.length > 0;
 
   return (
     <div
@@ -62,15 +193,16 @@ export function NavBar() {
       <div
         className={cn(
           "flex flex-col border border-slate-200 bg-slate-50/90 backdrop-blur-sm shadow-xl transition-all duration-300 ease-in-out overflow-hidden",
-          open 
-            ? "w-72 h-auto p-3 rounded-2xl gap-2" 
+          open
+            ? "w-72 h-auto p-3 rounded-2xl gap-2"
             : "w-16 h-16 p-0 rounded-xl justify-center items-center gap-0"
         )}
       >
+        {/* User row */}
         <div className={cn(
           "flex items-center transition-all duration-300 relative",
-          open 
-            ? "w-full p-1 justify-between rounded-xl border border-slate-200 bg-white" 
+          open
+            ? "w-full p-1 justify-between rounded-xl border border-slate-200 bg-white"
             : "w-full justify-center border-none bg-transparent"
         )}>
           <Link
@@ -84,7 +216,6 @@ export function NavBar() {
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 border border-slate-200">
               {open ? <User className="h-4 w-4 text-slate-500" /> : <MoreHorizontal className="h-5 w-5 text-slate-400" />}
             </div>
-            
             {open && (
               <div className="min-w-0 animate-in fade-in slide-in-from-left-2 duration-500">
                 <p className="truncate text-sm font-semibold text-slate-800 leading-tight">{user.name}</p>
@@ -94,15 +225,12 @@ export function NavBar() {
           </Link>
 
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              logout();
-            }}
+            onClick={(e) => { e.preventDefault(); logout(); }}
             className={cn(
-                "flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 px-2 py-1 rounded-lg hover:bg-red-50 shrink-0 transition-all duration-500 ease-in-out mr-1",
-                open && finishedOpening 
-                  ? "opacity-100 translate-x-0 visible" 
-                  : "opacity-0 -translate-x-4 invisible pointer-events-none absolute right-3"
+              "flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 px-2 py-1 rounded-lg hover:bg-red-50 shrink-0 transition-all duration-500 ease-in-out mr-1",
+              open && finishedOpening
+                ? "opacity-100 translate-x-0 visible"
+                : "opacity-0 -translate-x-4 invisible pointer-events-none absolute right-3"
             )}
           >
             <LogOut className="h-3.5 w-3.5" />
@@ -110,6 +238,7 @@ export function NavBar() {
           </button>
         </div>
 
+        {/* Expandable section */}
         <div className={cn(
           "grid transition-all duration-500 ease-in-out",
           open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
@@ -118,15 +247,56 @@ export function NavBar() {
             "flex flex-col gap-2 overflow-hidden transition-all duration-500",
             open ? "translate-y-0" : "-translate-y-4"
           )}>
+
+            {/* Search input */}
             <div className="relative mt-1 px-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               <input
-                placeholder="Search anything..."
+                placeholder="Go to slug… e.g. 1-FR-…"
                 disabled={!finishedOpening}
+                value={slug}
+                onChange={e => setSlug(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className="w-full pl-10 pr-3 h-10 rounded-xl border border-slate-200 bg-white text-sm placeholder:text-slate-400 outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all"
               />
             </div>
 
+            {/* Search feedback */}
+            {showResult && (
+              <div className="px-1">
+                {status === "loading" && (
+                  <p className="text-xs text-slate-400 px-2 py-1">Searching...</p>
+                )}
+                {status === "invalid" && (
+                  <p className="text-xs text-slate-400 italic px-2 py-1">
+                    Enter a full slug to navigate.
+                  </p>
+                )}
+                {status === "not_found" && (
+                  <p className="text-xs text-red-400 px-2 py-1">No entity found — check the slug or your access.</p>
+                )}
+                {status === "found" && result && (
+                  <button
+                    onClick={handleNavigate}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors text-left"
+                  >
+                    <span className={cn(
+                      "text-[10px] font-semibold border px-1.5 py-0.5 rounded shrink-0",
+                      TYPE_CONFIG[result.type]?.class
+                    )}>
+                      {TYPE_CONFIG[result.type]?.label}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-indigo-800 truncate">{result.name}</p>
+                      <p className="text-[10px] font-mono text-indigo-400 truncate">{result.entityIdentifier}</p>
+                    </div>
+                    <CornerDownLeft className="h-3.5 w-3.5 text-indigo-400 shrink-0" />
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Nav links */}
             <div className="px-1 flex flex-col gap-2">
               <NavItem icon={<Folder className="h-4 w-4" />} label="Projects" to="/home" active={isProjectView} disabled={!finishedOpening} />
 
@@ -152,7 +322,9 @@ export function NavBar() {
   );
 }
 
-function NavItem({ icon, label, to, active, disabled }: { icon: React.ReactNode; label: string; to: string; active?: boolean; disabled?: boolean }) {
+function NavItem({ icon, label, to, active, disabled }: {
+  icon: React.ReactNode; label: string; to: string; active?: boolean; disabled?: boolean;
+}) {
   return (
     <Link
       to={disabled ? "#" : to}

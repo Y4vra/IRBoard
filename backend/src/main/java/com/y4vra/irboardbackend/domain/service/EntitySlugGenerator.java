@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.domain.service;
 
 import com.y4vra.irboardbackend.domain.model.*;
+import com.y4vra.irboardbackend.domain.model.enums.EntitySlugType;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,22 +15,22 @@ public class EntitySlugGenerator {
     }
 
     public static void setSlug(NonFunctionalRequirement r, Long projectId) {
-        r.setEntityIdentifier(projectId + "-NFR-" + suffix());
+        r.setEntityIdentifier(projectId + "-"+ EntitySlugType.NFR.name() +"-" + suffix());
     }
 
     public static void setSlug(FunctionalRequirement r, Long projectId) {
-        r.setEntityIdentifier(projectId + "-FR-" + suffix());
+        r.setEntityIdentifier(projectId + "-"+ EntitySlugType.FR.name() +"-" + suffix());
     }
 
     public static void setSlug(Document d, Long projectId) {
-        d.setEntityIdentifier(projectId + "-DOC-" + suffix());
+        d.setEntityIdentifier(projectId + "-"+ EntitySlugType.DOC.name() +"-" + suffix());
     }
 
     public static void setSlug(Stakeholder s, Long projectId) {
-        s.setEntityIdentifier(projectId + "-STKH-" + suffix());
+        s.setEntityIdentifier(projectId + "-"+ EntitySlugType.STKH.name() +"-" + suffix());
     }
 
     public static void setSlug(Functionality f, Long projectId) {
-        f.setEntityIdentifier(projectId + "-FUNC-" + suffix());
+        f.setEntityIdentifier(projectId + "-"+ EntitySlugType.FUNC.name() +"-" + suffix());
     }
 }

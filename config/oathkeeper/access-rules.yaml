@@ -30,7 +30,7 @@
 - id: "api-backend-protected"
   match:
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
-    url: "http://api.irboard.local/v1/<(users|home|projects|whoami|locks).*>"
+    url: "http://api.irboard.local/v1/<(users|home|projects|whoami|locks|search).*>"
   authenticators:
     - handler: "cookie_session"
   authorizer:
