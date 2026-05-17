@@ -2,7 +2,7 @@ import { useCallback, useState, useRef, useMemo, Fragment } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "@/lib/globalVars"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, ChevronRight, ChevronDown, Plus, GripVertical } from "lucide-react"
+import { AlertCircle, ChevronRight, ChevronDown, Plus, GripVertical, Eye, EyeOff } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
@@ -321,6 +321,7 @@ function NonFunctionalRequirementsView() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const dragStateRef = useRef<number | null>(null)
   const [dropPreview, setDropPreview] = useState<DropPreview>(null)
+  const [showDeactivated, setShowDeactivated] = useState(false)
 
   const fetchRequirements = useCallback(
     () =>
@@ -378,6 +379,16 @@ function NonFunctionalRequirementsView() {
     [projectId]
   )
 
+  function filterDeactivated(reqs: NonFunctionalRequirement[]): NonFunctionalRequirement[] {
+    return reqs
+      .filter(r => r.state !== "DEACTIVATED")
+      .map(r => ({ ...r, children: filterDeactivated(r.children ?? []) }))
+  }
+  const displayedRequirements = useMemo(
+    () => showDeactivated ? requirements : filterDeactivated(requirements),
+    [requirements, showDeactivated]
+  )
+
   if (loading) return <LoadingSpinner text="Loading Non-Functional Requirements..." />
 
   if (error)
@@ -397,7 +408,7 @@ function NonFunctionalRequirementsView() {
     dragStateRef,
     dropPreview,
     setDropPreview,
-    siblings: requirements,
+    siblings: displayedRequirements,
     parentIdMap,
     onReorder: handleReorder,
     onChangeParent: handleChangeParent,
@@ -427,6 +438,20 @@ function NonFunctionalRequirementsView() {
             </Card>
           )}
           <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setShowDeactivated(v => !v)}
+              className={[
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
+                showDeactivated
+                  ? "border-slate-300 bg-slate-100 text-slate-600"
+                  : "border-slate-200 bg-white text-slate-400 hover:border-slate-300",
+              ].join(" ")}
+            >
+              {showDeactivated
+                ? <><Eye className="h-3 w-3" /> Showing deactivated</>
+                : <><EyeOff className="h-3 w-3" /> Hiding deactivated</>
+              }
+            </button>
             {editPermission && (
               <>
                 <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
@@ -469,11 +494,11 @@ function NonFunctionalRequirementsView() {
           ) : (
             <>
               <GapDropZone parentId={null} index={0} {...rootGapProps} />
-              {requirements.map((r, index) => (
+              {displayedRequirements.map((r, index) => (
                 <Fragment key={r.id}>
                   <NFRCard
                     requirement={r}
-                    siblings={requirements}
+                    siblings={displayedRequirements}
                     positionInSiblings={index}
                     projectId={projectId!}
                     label={`NFR.${index + 1}`}
