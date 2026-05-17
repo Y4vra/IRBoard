@@ -57,7 +57,6 @@ export function UpdateDocumentDialog({ projectId, document, onSuccess }: UpdateD
         mimeType: file.type || "application/octet-stream",
         fileSize: file.size,
         projectId: Number(projectId),
-        observers: document.observers,
       };
 
       const formData = new FormData();
