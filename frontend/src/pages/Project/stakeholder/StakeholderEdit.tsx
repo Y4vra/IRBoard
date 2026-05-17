@@ -61,14 +61,14 @@ export default function StakeholderEdit() {
           `${API_BASE_URL}/projects/${projectId}/stakeholders/${stakeholderId}/requestEdit`,
           { credentials: "include" }
         );
-        if (!res.ok) throw new Error("Server error requesting edit lock");
-        const granted: boolean = await res.json();
-        if (!granted) {
+        if (res.status === 409){
           navigate("/error", {
-            state: {
-              from: `/project/${projectId}/stakeholders/${stakeholderId}`,
-              errorType: "permission",
-            },
+            state: {from: `/project/${projectId}/stakeholders/${stakeholderId}`,errorType: "permission",},
+            replace: true,
+          });
+        }else if (!res.ok) {
+          navigate("/error", {
+            state: { from: `/project/${projectId}`, errorType: "server" },
             replace: true,
           });
         }
