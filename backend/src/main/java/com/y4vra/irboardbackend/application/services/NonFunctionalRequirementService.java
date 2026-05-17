@@ -42,13 +42,20 @@ public class NonFunctionalRequirementService extends RequirementService {
         this.nfrMapper = nfrMapper;
     }
 
-    @Transactional(readOnly = true)
-    public List<NonFunctionalRequirementDTO> findNonFunctionalRequirementsOfProject(String oryId,Long projectId) {
-        boolean hasProjectAccess = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
-
-        if (!hasProjectAccess) {
+    private void checkEditPermission(String oryId,String projectId){
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
+            throw new AccessDeniedException("User not authorized to edit nonFunctionalRequirements in this project");
+        }
+    }
+    private void checkViewPermission(String oryId,String projectId){
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)){
             throw new AccessDeniedException("User not authorized to view non functional requirements of this project");
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<NonFunctionalRequirementDTO> findNonFunctionalRequirementsOfProject(String oryId,Long projectId) {
+        checkViewPermission(oryId,String.valueOf(projectId));
         return nfrRepository.findAllByProjectId(projectId).stream()
                 .map(nfrMapper::toDto)
                 .collect(Collectors.toList());
@@ -64,9 +71,7 @@ public class NonFunctionalRequirementService extends RequirementService {
                 .orElseThrow(() -> new EntityNotFoundException("Project linked to root nfr parent not found")) != projectId){
             throw new EntityNotFoundException("NonFunctionalRequirement with id " + nonFunctionalRequirementId + " not found");
         }
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
-            throw new AccessDeniedException("User not authorized to view nonFunctionalRequirements of this project");
-        }
+        checkViewPermission(oryId,String.valueOf(projectId));
         return nfrMapper.toDetailedDto(nonFunctionalRequirement.get(),
                 stakeholderRepository.findAllObservedByRequirement(nonFunctionalRequirementId),
                 nfrRepository.findAllObservedByRequirement(nonFunctionalRequirementId),
@@ -76,9 +81,7 @@ public class NonFunctionalRequirementService extends RequirementService {
 
     @Transactional
     public NonFunctionalRequirementDTO createNonFunctionalRequirement(String oryId, NonFunctionalRequirementDTO dto, Long projectId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
-            throw new AccessDeniedException("User not authorized to add a nonFunctionalRequirements to this project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
@@ -104,49 +107,37 @@ public class NonFunctionalRequirementService extends RequirementService {
     // linking & unlinking
     @Transactional
     public void observeStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
-            throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         Associations.observe(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void observeDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
-            throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         Associations.observe(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
     public void unobserveStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
-            throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         Associations.unobserve(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void unobserveDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
-            throw new AccessDeniedException("User not authorized to modify a nonFunctionalRequirements on this project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         Associations.unobserve(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
 
     @Transactional(readOnly = true)
     public List<NonFunctionalRequirementDTO> findObservableNfRequirementsForRequirement(String oryId, Long projectId, Long requirementId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)){
-            throw new AccessDeniedException("User not authorized to view non functional requirements of this project");
-        }
+        checkViewPermission(oryId,String.valueOf(projectId));
         return nfrMapper.toDtoList(nfrRepository.findObservableNfRequirementsForRequirement(projectId,requirementId));
     }
     @Transactional
     public void reorderRequirement(String oryId, Long projectId, Long nonFunctionalRequirementId, Long orderValue) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)){
-            throw new AccessDeniedException("User not authorized to modify requirements in functionality");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         projectRepository.findById(projectId).orElseThrow(()-> new EntityNotFoundException("Could not find functionality"));
         NonFunctionalRequirement nfr = nfrRepository.findById(nonFunctionalRequirementId).orElseThrow(()-> new EntityNotFoundException("Could not find functional requirement"));
         if(!Objects.equals(nfr.getProject().getId(), projectId)){
@@ -156,9 +147,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     }
     @Transactional
     public void changeParent(String oryId, Long projectId, Long nonFunctionalRequirementId, Long newParentId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)){
-            throw new AccessDeniedException("User not authorized to modify requirements in project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find project"));
         NonFunctionalRequirement nfr = nfrRepository.findByIdWithParent(nonFunctionalRequirementId)
@@ -182,16 +171,22 @@ public class NonFunctionalRequirementService extends RequirementService {
     }
     @Transactional
     public NonFunctionalRequirementDTO patch(User user, Long projectId, Long requirementId, NonFunctionalRequirementDTO patch) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
-            throw new AccessDeniedException("User not authorized to edit requirements of this project");
-        }
+        checkEditPermission(user.getOryId(),String.valueOf(projectId));
         NonFunctionalRequirement requirement = nfrRepository.findById(requirementId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
         if(!entityLockService.isLockedByUser(requirement, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
         nfrMapper.patchEntity(patch, requirement);
         entityLockService.unlock(requirement,user);
+        requirement.setState(RequirementState.PENDING_APPROVAL);
         requirement.notifyObservers();
         return nfrMapper.toDto(nfrRepository.save(requirement));
+    }
+    @Transactional
+    public void approveRequirements(String oryId, Long projectId, List<Long> functionalRequirementIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!nfrRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalRequirementIds))
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        nfrRepository.updateStateByIdsAndFunctionalityAndProject(functionalRequirementIds,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
     }
 }

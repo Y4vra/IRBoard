@@ -120,6 +120,7 @@ public class StakeholderService {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
         stakeholderMapper.patchEntity(patch, stakeholder);
+        stakeholder.setState(EntityState.PENDING_APPROVAL);
         entityLockService.unlock(stakeholder,user);
         stakeholder.notifyObservers();
         return stakeholderMapper.toDto(stakeholderRepository.save(stakeholder));

@@ -22,6 +22,8 @@ import {
   midpointOrderValue,
   type DropPreview,
 } from "@/lib/reorderUtils"
+import { collectPendingNFRIds } from "@/lib/requirementUtils"
+import { useApproveNFRequirements } from "@/hooks/useApproveRequirements"
 
 // ---------------------------------------------------------------------------
 // API calls
@@ -314,7 +316,7 @@ function NFRCard({
 function NonFunctionalRequirementsView() {
   const { projectId } = useParams<{ projectId: string }>()
   const { isAuthenticated } = useAuth()
-  const { nonFunctionalRequirementStats, editPermission } = useProject()
+  const { nonFunctionalRequirementStats, editPermission, isManager } = useProject()
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const dragStateRef = useRef<number | null>(null)
@@ -337,6 +339,14 @@ function NonFunctionalRequirementsView() {
   })
 
   const requirements: NonFunctionalRequirement[] = sortByOrderValue(data ?? [])
+
+  const { approveNFRequirements, loading: approving } = useApproveNFRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+
+  const pendingNFRIds = useMemo(() => collectPendingNFRIds(requirements), [requirements])
+
 
   const parentIdMap = useMemo(() => {
     const map = new Map<number, number | null>()
@@ -410,28 +420,41 @@ function NonFunctionalRequirementsView() {
             </p>
           )}
         </div>
-        {editPermission && (
-          <>
-            <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add NFR
-            </Button>
-            <CreateNonFunctionalRequirementDialog
-              open={createDialogOpen}
-              onOpenChange={setCreateDialogOpen}
-              projectId={projectId!}
-              onSuccess={refresh}
-              siblingRequirements={requirements}
-            />
-          </>
-        )}
+        <div className="flex items-stretch gap-3">
+          {nonFunctionalRequirementStats && (
+            <Card className="bg-white border border-slate-200 rounded-xl p-4 min-w-[200px]">
+              <StatsChart stats={nonFunctionalRequirementStats} title="NFR States" size={100} />
+            </Card>
+          )}
+          <div className="flex flex-col gap-3">
+            {editPermission && (
+              <>
+                <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-1.5" />
+                  Add NFR
+                </Button>
+                <CreateNonFunctionalRequirementDialog
+                  open={createDialogOpen}
+                  onOpenChange={setCreateDialogOpen}
+                  projectId={projectId!}
+                  onSuccess={refresh}
+                  siblingRequirements={requirements}
+                  />
+                {isManager && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={pendingNFRIds.length===0?true:approving}
+                    onClick={() => approveNFRequirements(pendingNFRIds)}
+                  >
+                    {approving ? "Approving..." : `Approve All (${pendingNFRIds.length})`}
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </header>
-
-      {nonFunctionalRequirementStats && (
-        <Card className="p-4">
-          <StatsChart stats={nonFunctionalRequirementStats} title="NFR States" size={110} />
-        </Card>
-      )}
 
       <Card>
         <CardHeader>

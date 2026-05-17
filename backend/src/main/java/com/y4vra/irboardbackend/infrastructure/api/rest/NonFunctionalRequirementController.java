@@ -56,6 +56,12 @@ public class NonFunctionalRequirementController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/approve")
+    public ResponseEntity<Void> approveFunctionalRequirementsOfFunctionality(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> functionalRequirementIds) {
+        nonFunctionalRequirementService.approveRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/new")
     public ResponseEntity<NonFunctionalRequirementDTO> createNonFunctionalRequirement(@Validated @RequestBody NonFunctionalRequirementDTO nonFunctionalRequirementDTO, @PathVariable Long projectId, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(nonFunctionalRequirementService.createNonFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),nonFunctionalRequirementDTO,projectId));

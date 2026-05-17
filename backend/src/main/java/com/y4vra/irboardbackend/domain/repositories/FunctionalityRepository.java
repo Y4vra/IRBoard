@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.domain.repositories;
 
 import com.y4vra.irboardbackend.domain.model.Functionality;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 
 import java.util.*;

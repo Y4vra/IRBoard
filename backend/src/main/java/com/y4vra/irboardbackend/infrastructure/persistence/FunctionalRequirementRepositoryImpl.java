@@ -3,9 +3,11 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalRequirementRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
@@ -56,6 +58,24 @@ interface JpaFunctionalRequirementRepository extends JpaRepository<FunctionalReq
     Optional<FunctionalRequirement> findByIdWithParent(Long id);
     @Query("SELECT r FROM FunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :id")
     Optional<FunctionalRequirement> findByIdWithChildren(Long id);
+    @Query("""
+   SELECT COUNT(fr) = :expectedCount
+   FROM FunctionalRequirement fr
+   WHERE fr.functionality.id = :functionalityId
+   AND fr.functionality.project.id = :projectId
+   AND fr.id IN :functionalRequirementIds
+   """)
+    boolean existsAllInFunctionalityAndProject(Long functionalityId,Long projectId,List<Long> functionalRequirementIds,long expectedCount);
+    @Modifying
+    @Query("""
+   UPDATE FunctionalRequirement fr
+   SET fr.state = :newState
+   WHERE fr.id IN :functionalRequirementIds
+   AND fr.functionality.id = :functionalityId
+   AND fr.functionality.project.id = :projectId
+   AND fr.state = :oldState
+   """)
+    int updateStateByIdsAndFunctionalityAndProject(List<Long> functionalRequirementIds,Long functionalityId,Long projectId,RequirementState newState,RequirementState oldState);
 }
 
 @Component
@@ -123,5 +143,27 @@ public class FunctionalRequirementRepositoryImpl implements FunctionalRequiremen
     @Override
     public Optional<FunctionalRequirement> findByIdWithChildren(Long functionalRequirementId) {
         return jpaRepository.findByIdWithChildren(functionalRequirementId);
+    }
+    @Override
+    public boolean allFunctionalRequirementsBelongToFunctionalityAndProject(
+            Long functionalityId,
+            Long projectId,
+            List<Long> functionalRequirementIds) {
+        return jpaRepository.existsAllInFunctionalityAndProject(
+                functionalityId,
+                projectId,
+                functionalRequirementIds,
+                functionalRequirementIds.size()
+        );
+    }
+    @Override
+    public int updateStateByIdsAndFunctionalityAndProject(List<Long> functionalRequirementIds, Long functionalityId, Long projectId, RequirementState newState, RequirementState oldState) {
+        return jpaRepository.updateStateByIdsAndFunctionalityAndProject(
+                functionalRequirementIds,
+                functionalityId,
+                projectId,
+                newState,
+                oldState
+        );
     }
 }

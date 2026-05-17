@@ -46,7 +46,7 @@ public class FunctionalRequirementController {
                                                  @PathVariable Long functionalRequirementId,
                                                  @RequestBody FunctionalRequirementDTO patch) {
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(functionalRequirementService.patch(user,projectId,functionalRequirementId,patch));
+        return ResponseEntity.ok(functionalRequirementService.patch(user,functionalRequirementId,patch));
     }
     @PatchMapping("/{functionalRequirementId}/changeParent")
     public ResponseEntity<Void> changeParentFunctionalRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody(required = false) Long newParentId) {
@@ -56,6 +56,12 @@ public class FunctionalRequirementController {
     @PatchMapping("/{functionalRequirementId}/reorder")
     public ResponseEntity<Void> reorderFunctionalRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody Long orderValue) {
         functionalRequirementService.reorderRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,orderValue);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/approve")
+    public ResponseEntity<Void> approveFunctionalRequirementsOfFunctionality(Authentication authentication, @PathVariable Long projectId,@PathVariable Long functionalityId, @RequestBody List<Long> functionalRequirementIds) {
+        functionalRequirementService.approveRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementIds);
         return ResponseEntity.ok().build();
     }
 

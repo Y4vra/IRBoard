@@ -52,7 +52,7 @@ public class FunctionalityService {
         result.put("none", new ArrayList<>());
 
         for (Functionality f : allProjectFunctionalities) {
-            FunctionalityDTO dto = functionalityMapper.toDto(f,false);
+            FunctionalityDTO dto = functionalityMapper.toDto(f,canEditProject);
             String fId = String.valueOf(f.getId());
 
             if (canEditProject || permService.checkPermission("Functionality", fId, "editRequirements", oryId)) {

@@ -40,6 +40,7 @@ import {
   midpointOrderValue,
   type DropPreview,
 } from "@/lib/reorderUtils"
+import { useApproveRequirements } from "@/hooks/useApproveRequirements"
 
 // ---------------------------------------------------------------------------
 // API calls
@@ -349,7 +350,7 @@ function FunctionalityView() {
     projectId: string
     functionalityId: string
   }>()
-  const { priorityStyle, functionalRequirementStats } = useProject()
+  const { priorityStyle, functionalRequirementStats, isManager } = useProject()
   const { canEditFunctionality } = useFunctionalities()
   const canEdit = canEditFunctionality(functionalityId!)
 
@@ -393,6 +394,18 @@ function FunctionalityView() {
   const requirements:FunctionalRequirement[] = sortByOrderValue(requirementsData ?? [])
   const frStats = functionalRequirementStats?.[functionalityId!] ?? {}
   const functionalityPrefix = functionality?.label ?? "FR"
+
+  const { approveFunctionality, loading: approving } = useApproveRequirements({
+    projectId: projectId!,
+    onSuccess: refreshRequirements,
+  })
+  function collectPendingIds(reqs: FunctionalRequirement[]): number[] {
+    return reqs.flatMap((r) => [
+      ...(r.state === "PENDING_APPROVAL" ? [r.id] : []),
+      ...collectPendingIds(r.children ?? []),
+    ])
+  }
+  const pendingIds = collectPendingIds(requirements)
 
   const parentIdMap = useMemo(() => {
     const map = new Map<number, number | null>()
@@ -489,11 +502,23 @@ function FunctionalityView() {
               </Button>
             )}
             {functionality.isUserFunctionalityManager && (
-              <LinkUserToFunctionalityDialog
-                projectId={projectId!}
-                functionalityId={functionalityId!}
-                canManage={functionality.isUserFunctionalityManager}
-              />
+              <>
+                <LinkUserToFunctionalityDialog
+                  projectId={projectId!}
+                  functionalityId={functionalityId!}
+                  canManage={functionality.isUserFunctionalityManager}
+                  />
+                {isManager && (
+                  <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={pendingIds.length===0?true:approving}
+                  onClick={() => approveFunctionality(functionalityId!, pendingIds)}
+                  >
+                  {approving ? "Approving..." : `Approve All (${pendingIds.length})`}
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>

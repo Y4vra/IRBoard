@@ -17,7 +17,6 @@ import {
   ChevronDown,
   Pencil,
   Users,
-  ShieldCheck,
   FileText,
   GitBranch,
   Plus,
@@ -33,6 +32,7 @@ import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
 import { sortByOrderValue } from "@/lib/reorderUtils";
+import { useApproveNFRequirements } from "@/hooks/useApproveRequirements";
 
 // ─── Operator helpers ─────────────────────────────────────────────────────────
 
@@ -334,7 +334,7 @@ function NonFunctionalRequirementDetailView() {
     projectId: string;
     nfrId: string;
   }>();
-  const { editPermission } = useProject();
+  const { editPermission, isManager } = useProject();
   const navigate = useNavigate();
 
   const [createNFRDialogOpen, setCreateNFRDialogOpen] = useState(false);
@@ -360,6 +360,11 @@ function NonFunctionalRequirementDetailView() {
     error,
     refresh,
   } = useBackendResource<NonFunctionalRequirement>({ fetcher });
+  
+  const { approveNFRequirements, loading: approving } = useApproveNFRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
 
   const unlink = async (path: string, id: number) => {
     setRemovingId(id);
@@ -413,51 +418,57 @@ function NonFunctionalRequirementDetailView() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Non-Functional Requirements
           </Link>
         </Button>
-        {editPermission && (
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
-            </Link>
-          </Button>
-        )}
       </nav>
 
       {/* Header */}
-      <header className="space-y-4">
-        <div className="flex items-start gap-5">
-          <div className="p-3 bg-violet-100 text-violet-700 rounded-xl shrink-0">
-            <ShieldCheck className="h-8 w-8" />
-          </div>
+      <header className="flex items-start justify-between gap-6">
+        <div className="space-y-3 flex-1">
           <div className="flex-1 min-w-0 space-y-1">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
               Non-Functional Requirement
             </p>
-            <h1 className="text-4xl font-black tracking-tight leading-tight">
-              {requirement.name}
-            </h1>
-            <p className="text-xs font-mono text-slate-400">{requirement.entityIdentifier}</p>
+            <div>
+              <h1 className="text-4xl font-black tracking-tight leading-tight">
+                {requirement.name}
+              </h1>
+              <p className="text-xs font-mono text-slate-400">{requirement.entityIdentifier}</p>
+            </div>
+            {requirement.description && (
+              <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
+                {requirement.description}
+              </p>
+            )}
+            <div className="flex items-center gap-3 flex-wrap">
+              <RequirementStateBadge state={requirement.state} />
+              {requirement.measurementUnit && (
+                <Badge variant="outline" className="text-xs font-mono text-slate-400">
+                  {requirement.measurementUnit}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
-
-        {requirement.description && (
-          <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
-            {requirement.description}
-          </p>
-        )}
-
-        {/* State + unit badges — RequirementState is separate from passing/failing */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <RequirementStateBadge state={requirement.state} />
-          {requirement.measurementUnit && (
-            <Badge variant="outline" className="text-xs font-mono text-slate-400">
-              {requirement.measurementUnit}
-            </Badge>
-          )}
-        </div>
-
-        {/* Semantic metric expression */}
-        <MetricExpression req={requirement} />
+        <div className="flex flex-col gap-3">
+            {editPermission && (
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
+                </Link>
+              </Button>
+            )}
+            {isManager &&
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "PENDING_APPROVAL"?approving:true}
+                onClick={() => approveNFRequirements([requirement.id])}
+                >
+                {approving ? "Approving..." : "Approve Requirement"}
+              </Button>
+            }
+          </div>
       </header>
+
+      {/* Semantic metric expression */}
+      <MetricExpression req={requirement} />
 
       {/* Children */}
       {(requirement.children?.length > 0 || editPermission) && (

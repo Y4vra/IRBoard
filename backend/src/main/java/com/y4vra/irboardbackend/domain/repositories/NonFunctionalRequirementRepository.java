@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.domain.repositories;
 
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,4 +21,8 @@ public interface NonFunctionalRequirementRepository {
 
     Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId);
     Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId);
+
+    boolean allFunctionalRequirementsBelongToFunctionalityAndProject(Long projectId, List<Long> functionalRequirementIds);
+
+    int updateStateByIdsAndFunctionalityAndProject(List<Long> functionalRequirementIds, Long projectId, RequirementState requirementState, RequirementState requirementState1);
 }

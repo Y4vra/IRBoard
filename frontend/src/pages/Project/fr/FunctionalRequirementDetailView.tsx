@@ -37,6 +37,7 @@ import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { sortByOrderValue } from "@/lib/reorderUtils";
+import { useApproveRequirements } from "@/hooks/useApproveRequirements";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -234,6 +235,11 @@ function FunctionalRequirementDetailView() {
     refresh,
   } = useBackendResource<FunctionalRequirement>({ fetcher });
 
+  const { approveFunctionalRequirements, loading: approving } = useApproveRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+
   const unlink = async (path: string, id: number) => {
     setRemovingId(id);
     try {
@@ -301,13 +307,6 @@ function FunctionalRequirementDetailView() {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Functionality
           </Link>
         </Button>
-        {canEdit && (
-          <Button asChild variant="outline" size="sm">
-            <Link to={`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirement.id}/edit`}>
-              <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
-            </Link>
-          </Button>
-        )}
       </nav>
 
       {/* Header */}
@@ -337,21 +336,40 @@ function FunctionalRequirementDetailView() {
         </div>
 
         {/* Stats */}
-        <div className="flex gap-3 shrink-0 flex-wrap justify-end">
-          {[
-            { label: "Children", value: requirement.children?.length ?? 0 },
-            { label: "Stakeholders", value: requirement.observedStakeholders?.length ?? 0 },
-            { label: "NFRs", value: requirement.observedNFRequirements?.length ?? 0 },
-            { label: "Docs", value: requirement.observedDocuments?.length ?? 0 },
-          ].map(({ label, value }) => (
-            <div
+        <div className="flex items-stretch gap-3">
+          {/* <div className="bg-white border border-slate-200 rounded-xl p-4 min-w-[200px]">
+            {[
+              { label: "Children", value: requirement.children?.length ?? 0 },
+              { label: "Stakeholders", value: requirement.observedStakeholders?.length ?? 0 },
+              { label: "NFRs", value: requirement.observedNFRequirements?.length ?? 0 },
+              { label: "Docs", value: requirement.observedDocuments?.length ?? 0 },
+            ].map(({ label, value }) => (
+              <div
               key={label}
-              className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-center min-w-[72px]"
-            >
-              <p className="text-2xl font-extrabold text-slate-900">{value}</p>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">{label}</p>
-            </div>
-          ))}
+                className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-center min-w-[72px]"
+                >
+                <p className="text-2xl font-extrabold text-slate-900">{value}</p>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">{label}</p>
+              </div>
+            ))}
+          </div> */}
+          <div className="flex flex-col gap-3">
+            {canEdit && (
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirement.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
+                </Link>
+              </Button>
+            )}
+            {project.isManager &&
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "PENDING_APPROVAL"?approving:true}
+                onClick={() => approveFunctionalRequirements(functionalityId!, [requirement.id])}
+                >
+                {approving ? "Approving..." : "Approve Requirement"}
+              </Button>
+            }
+          </div>
         </div>
       </header>
 

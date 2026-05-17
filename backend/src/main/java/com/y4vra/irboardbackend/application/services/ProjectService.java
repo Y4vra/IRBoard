@@ -45,7 +45,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public List<ProjectDTO> findProjectsForUser(String oryId) {
-        List<String> stringIds = permService.getAuthorizedObjects(oryId, "Project", "view");
+        List<String> stringIds = permService.getAuthorizedObjects(oryId, "Project", "view");//TODO fix this query, it now returns empty
 
         List<Long> longIds = stringIds.stream()
                 .map(Long::valueOf)

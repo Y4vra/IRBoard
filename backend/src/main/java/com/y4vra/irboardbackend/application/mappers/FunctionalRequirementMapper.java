@@ -30,9 +30,13 @@ public class FunctionalRequirementMapper {
         if (entity == null) return null;
 
         Long functionalityId = null;
+        Long parentId = null;
 
         if (entity.getFunctionality() != null) {
             functionalityId = entity.getFunctionality().getId();
+        }
+        if (entity.getParent() != null) {
+            parentId = entity.getParent().getId();
         }
 
         List<FunctionalRequirementDTO> childDtos = entity.getChildren().stream()
@@ -52,7 +56,7 @@ public class FunctionalRequirementMapper {
                 entity.getPriority(),
                 entity.getStability(),
                 functionalityId,
-                entity.getParent() != null ? entity.getParent().getId() : null,
+                parentId,
                 entity.getOrderValue(),
                 entity.getState().name(),
                 childDtos,
@@ -87,6 +91,6 @@ public class FunctionalRequirementMapper {
         if (patch.name()!=null && !patch.name().isBlank()) requirement.setName(patch.name());
         if (patch.description()!=null && !patch.description().isBlank()) requirement.setDescription(patch.description());
         if (patch.stability()!=null && !patch.stability().isBlank()) requirement.setStability(patch.stability());
-        if (patch.priority()!=null && !patch.priority().isBlank()) requirement.setPriority(patch.priority());
+        //priority is set on service
     }
 }

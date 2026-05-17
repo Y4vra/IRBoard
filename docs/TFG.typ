@@ -372,7 +372,7 @@ A crucial process for the system is the updates triggered by modifications betwe
   ),
   [The system must allow a project manager or requirement engineer to modify a stakeholder.],
   (
-    [The system must flag as pending review linked entities upon saving with changes.],
+    [The system must flag as pending review linked entities upon saving.],
   ),
 )
 ==== Requirement management

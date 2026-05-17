@@ -1,12 +1,16 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.Functionality;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -73,4 +77,5 @@ public class FunctionalityRepositoryImpl implements FunctionalityRepository {
     public List<ProjectFunctionalityProjection> groupByIdsGroupedByProject(List<Long> functionalityIds){
         return jpaRepository.groupByIdsGroupedByProject(functionalityIds);
     }
+
 }

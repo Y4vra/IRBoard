@@ -14,8 +14,8 @@ import java.util.Map;
 @Component
 public class FunctionalityMapper {
 
-    public FunctionalityDTO toDto(Functionality entity,Boolean isUserManager) {
-        return toDtoWithRequirements(entity,isUserManager,List.of());
+    public FunctionalityDTO toDto(Functionality entity,Boolean isUserFunctionalityManager) {
+        return toDtoWithRequirements(entity,isUserFunctionalityManager,List.of());
     }
 
     public Functionality toEntity(FunctionalityDTO dto) {

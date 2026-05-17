@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.domain.repositories;
 
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +25,6 @@ public interface FunctionalRequirementRepository {
     Optional<FunctionalRequirement> findByIdWithParent(Long functionalRequirementId);
 
     Optional<FunctionalRequirement> findByIdWithChildren(Long functionalRequirementId);
+    boolean allFunctionalRequirementsBelongToFunctionalityAndProject(Long functionalityId,Long projectId,List<Long> functionalRequirementIds);
+    int updateStateByIdsAndFunctionalityAndProject(List<Long> functionalRequirementIds, Long functionalityId, Long projectId, RequirementState newState, RequirementState oldState);
 }

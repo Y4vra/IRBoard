@@ -3,9 +3,11 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.FunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
@@ -51,6 +53,22 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
     Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId);
     @Query("SELECT r FROM NonFunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :nonFunctionalRequirementId")
     Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId);
+    @Query("""
+   SELECT COUNT(nfr) = :expectedCount
+   FROM NonFunctionalRequirement nfr
+   WHERE nfr.project.id = :projectId
+   AND nfr.id IN :nonFunctionalRequirementIds
+   """)
+    boolean existsAllInProject(Long projectId,List<Long> nonFunctionalRequirementIds,long expectedCount);
+    @Modifying
+    @Query("""
+   UPDATE NonFunctionalRequirement nfr
+   SET nfr.state = :newState
+   WHERE nfr.id IN :nonFunctionalRequirementIds
+   AND nfr.project.id = :projectId
+   AND nfr.state = :oldState
+   """)
+    int updateStateByIdsAndProject(List<Long> nonFunctionalRequirementIds, Long projectId, RequirementState newState, RequirementState oldState);
 }
 
 @Component
@@ -74,11 +92,7 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
 
     @Override
     public List<NonFunctionalRequirement> findAllByProjectId(Long projectId) {
-        List<NonFunctionalRequirement> requirements = jpaRepository.findAllByProjectId(projectId);
-        System.err.println("projectId: "+projectId);
-        System.err.println("requirement amount: "+requirements.size());
-        System.err.println("requirement actual amount: "+jpaRepository.findAll().size());
-        return requirements;
+        return jpaRepository.findAllByProjectId(projectId);
     }
 
     @Override
@@ -116,5 +130,15 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     @Override
     public Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId) {
         return jpaRepository.findByIdWithChildren(nonFunctionalRequirementId);
+    }
+
+    @Override
+    public boolean allFunctionalRequirementsBelongToFunctionalityAndProject(Long projectId, List<Long> nonFunctionalRequirementIds) {
+        return jpaRepository.existsAllInProject(projectId,nonFunctionalRequirementIds,nonFunctionalRequirementIds.size());
+    }
+
+    @Override
+    public int updateStateByIdsAndFunctionalityAndProject(List<Long> nonFunctionalRequirementIds, Long projectId, RequirementState requirementState, RequirementState requirementState1) {
+        return jpaRepository.updateStateByIdsAndProject(nonFunctionalRequirementIds, projectId, requirementState, requirementState1);
     }
 }

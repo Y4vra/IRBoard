@@ -15,7 +15,7 @@ public class ProjectMapper {
     public ProjectDTO toDto(Project project) {
         return toDto(project,false,null,null,null);
     }
-    public ProjectDTO toDto(Project project,Boolean permission, Map<String,Long> stakeholderStats, Map<String,Long> nonFunctionalRequirementStats, Map<String,Map<String,Long>> functionalRequirementStats) {
+    public ProjectDTO toDto(Project project,Boolean editPermission, Map<String,Long> stakeholderStats, Map<String,Long> nonFunctionalRequirementStats, Map<String,Map<String,Long>> functionalRequirementStats) {
         if (project == null) return null;
 
         ProjectDTO dto = new ProjectDTO(
@@ -24,7 +24,7 @@ public class ProjectMapper {
                 project.getDescription(),
                 project.getPriorityStyle() != null ? project.getPriorityStyle().toString() : null,
                 project.getState() != null ? project.getState().toString() : null,
-                permission,
+                editPermission,
                 stakeholderStats,nonFunctionalRequirementStats,functionalRequirementStats
         );
 

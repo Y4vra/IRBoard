@@ -123,6 +123,7 @@ function ProjectView() {
   const { user } = useAuth();
   const { functionalities, loading, error, refresh } = useFunctionalities();
 
+
   if (error || !project)
     return (
       <div className="p-8 text-center">
@@ -200,16 +201,29 @@ function ProjectView() {
 
         <div className="flex flex-col items-end gap-4 shrink-0 pt-1">
           <ProjectHealthBar project={project} />
-          {user?.isAdmin && (
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link to={`/project/${project.id}/edit`}>
-                  <Settings className="mr-2 h-4 w-4" /> Edit Project
-                </Link>
+          <div className="flex items-center gap-2">
+            {user?.isAdmin && (
+              <>
+                <Button asChild variant="outline" size="sm">
+                  <Link to={`/project/${project.id}/edit`}>
+                    <Settings className="mr-2 h-4 w-4" /> Edit Project
+                  </Link>
+                </Button>
+                <LinkUserToProjectDialog projectId={project.id!} onSuccess={project.refresh}/>
+              </>
+            )}
+            {/* {project.editPermission && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={approving || Object.keys(pendingMap).length === 0}
+                onClick={() => approveAllInProject(pendingMap)}
+              >
+                {approving ? "Approving..." : "Approve All Pending"}
               </Button>
-              <LinkUserToProjectDialog projectId={project.id!} onSuccess={project.refresh}/>
-            </div>
-          )}
+            )} */}
+          </div>
+          
         </div>
       </header>
 

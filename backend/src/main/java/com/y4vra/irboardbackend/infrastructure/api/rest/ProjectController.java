@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.*;
+import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.application.services.*;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
@@ -25,14 +26,16 @@ public class ProjectController {
     private final DocumentService documentService;
 
     private final FunctionalRequirementService functionalRequirementService;
+    private final PermissionService permissionService;
 
-    public ProjectController(ProjectService projectService, FunctionalityService functionalityService, StakeholderService stakeholderService, NonFunctionalRequirementService nonFunctionalRequirementService, DocumentService documentService, FunctionalRequirementService functionalRequirementService) {
+    public ProjectController(ProjectService projectService, FunctionalityService functionalityService, StakeholderService stakeholderService, NonFunctionalRequirementService nonFunctionalRequirementService, DocumentService documentService, FunctionalRequirementService functionalRequirementService, PermissionService permissionService) {
         this.projectService = projectService;
         this.functionalityService = functionalityService;
         this.stakeholderService = stakeholderService;
         this.nonFunctionalRequirementService = nonFunctionalRequirementService;
         this.documentService = documentService;
         this.functionalRequirementService = functionalRequirementService;
+        this.permissionService = permissionService;
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -44,6 +47,10 @@ public class ProjectController {
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDTO> getProjectById(Authentication authentication, @PathVariable Long id) {
         return ResponseEntity.ok(projectService.findById(((User) authentication.getPrincipal()).getOryId(), id));
+    }
+    @GetMapping("/{projectId}/isManager")
+    public ResponseEntity<Boolean> getCurrentUser(Authentication authentication, @PathVariable Long projectId) {
+        return ResponseEntity.ok(permissionService.checkPermission("Project",String.valueOf(projectId),"editProject",((User)authentication.getPrincipal()).getOryId()));
     }
 
     @GetMapping("/{id}/functionalities")
