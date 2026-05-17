@@ -1,4 +1,4 @@
-import { Namespace, SubjectSet, Context } from "@ory/keto-namespace-types"
+import { Namespace, Context } from "@ory/keto-namespace-types"
 
 class User implements Namespace {}
 
@@ -25,6 +25,9 @@ class Project implements Namespace {
   permits = {
     editProject: (ctx: Context) =>
       this.related.managers.includes(ctx.subject),
+    viewProject: (ctx: Context) =>
+      this.related.managers.includes(ctx.subject)||
+      this.related.parent_system.traverse((s)=>s.permits.viewAll(ctx)),
 
     edit: (ctx: Context) =>
       this.related.managers.includes(ctx.subject)||
@@ -58,11 +61,11 @@ class Functionality implements Namespace {
     
     editRequirements: (ctx: Context) =>
       this.permits.edit(ctx) ||
-      this.related.project.traverse((p)=>p.permits.edit(ctx)),
+      this.related.project.traverse((p)=>p.permits.editProject(ctx)),
 
     viewRequirements: (ctx: Context) =>
       this.permits.view(ctx) ||
-      this.related.project.traverse((p)=>p.permits.view(ctx)),
+      this.related.project.traverse((p)=>p.permits.viewProject(ctx)),
 
     approveAll: (ctx: Context) =>
       this.related.project.traverse((p)=>p.permits.editProject(ctx)),
