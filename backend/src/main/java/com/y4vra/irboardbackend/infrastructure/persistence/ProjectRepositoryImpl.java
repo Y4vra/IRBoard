@@ -42,6 +42,9 @@ interface JpaProjectRepository extends JpaRepository<Project, Long> {
         AND r.state = :oldState
         """)
     void changeStateAllFunctionalRequirements(Long projectId, RequirementState newState, RequirementState oldState);
+
+    @Query("SELECT p.id FROM Project p")
+    List<Long> findAllIds();
 }
 
 @Component
@@ -84,5 +87,10 @@ public class ProjectRepositoryImpl implements ProjectRepository {
         jpaRepository.changeStateAllStakeholders(projectId,EntityState.APPROVED,EntityState.PENDING_APPROVAL);
         jpaRepository.changeStateAllNonFunctionalRequirements(projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
         jpaRepository.changeStateAllFunctionalRequirements(projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
+    }
+
+    @Override
+    public List<Long> findAllIds() {
+        return jpaRepository.findAllIds();
     }
 }

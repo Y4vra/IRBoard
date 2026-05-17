@@ -9,6 +9,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class KetoClient implements PermissionService {
@@ -146,5 +147,13 @@ public class KetoClient implements PermissionService {
         } catch (Exception e) {
             return List.of();
         }
+    }
+
+    @Override
+    public List<String> filterAuthorizedObjects(String subjectId, String namespace,
+                                                String relation, List<String> candidateIds) {
+        return candidateIds.parallelStream()
+                .filter(id -> checkPermission(namespace, id, relation, subjectId))
+                .collect(Collectors.toList());
     }
 }

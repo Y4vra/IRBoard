@@ -56,12 +56,18 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public List<ProjectDTO> findProjectsForUser(String oryId) {
-        List<String> stringIds = permService.getAuthorizedObjects(oryId, "Project", "view");//TODO fix this query, it now returns empty
-
-        List<Long> longIds = stringIds.stream()
-                .map(Long::valueOf)
+        List<String> allProjectIds = projectRepository.findAllIds()
+                .stream()
+                .map(String::valueOf)
                 .toList();
-        return projectRepository.findAllById(longIds).stream()
+
+        List<String> authorizedIds = permService.filterAuthorizedObjects(
+                oryId, "Project", "view", allProjectIds
+        );
+
+        return projectRepository.findAllById(
+                        authorizedIds.stream().map(Long::valueOf).toList()
+                ).stream()
                 .map(projectMapper::toDto)
                 .collect(Collectors.toList());
     }
