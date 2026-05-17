@@ -17,6 +17,11 @@ import {
   ChevronDown,
   Plus,
   GripVertical,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  EyeOff,
+  Eye,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge"
@@ -43,53 +48,189 @@ import {
 import { useApproveRequirements } from "@/hooks/useApproveRequirements"
 
 // ---------------------------------------------------------------------------
-// API calls
+// Filter/sort types
 // ---------------------------------------------------------------------------
 
-async function apiReorder(
-  projectId: string,
-  functionalityId: string,
-  requirementId: number,
-  newOrderValue: number
-): Promise<void> {
+type SortField = "priority" | "state"
+type SortDir = "asc" | "desc"
+
+interface SortConfig {
+  field: SortField | null
+  dir: SortDir
+}
+
+const PRIORITY_ORDER_MOSCOW = ["MUST", "SHOULD", "COULD", "WONT"]
+const PRIORITY_ORDER_TERNARY = ["HIGH", "NORMAL", "LOW"]
+const STATE_ORDER = ["PENDING_APPROVAL", "APPROVED", "FINISHED", "DEACTIVATED", "REMOVED"]
+
+function priorityRank(priority: string | null | undefined, priorityStyle: PriorityStyle): number {
+  const order = priorityStyle === "MOSCOW" ? PRIORITY_ORDER_MOSCOW : PRIORITY_ORDER_TERNARY
+  const idx = order.indexOf(priority ?? "")
+  return idx === -1 ? 999 : idx
+}
+
+function stateRank(state: string | null | undefined): number {
+  const idx = STATE_ORDER.indexOf(state ?? "")
+  return idx === -1 ? 999 : idx
+}
+
+// ---------------------------------------------------------------------------
+// Filter toolbar
+// ---------------------------------------------------------------------------
+
+function SortButton({
+  label,
+  field,
+  sort,
+  onToggle,
+}: {
+  label: string
+  field: SortField
+  sort: SortConfig
+  onToggle: (field: SortField) => void
+}) {
+  const active = sort.field === field
+  return (
+    <button
+      onClick={() => onToggle(field)}
+      className={[
+        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
+        active
+          ? "border-indigo-300 bg-indigo-50 text-indigo-700"
+          : "border-slate-200 bg-white text-slate-500 hover:border-indigo-200 hover:text-indigo-600",
+      ].join(" ")}
+    >
+      {label}
+      {!active && <ArrowUpDown className="h-3 w-3 opacity-50" />}
+      {active && sort.dir === "asc" && <ArrowUp className="h-3 w-3" />}
+      {active && sort.dir === "desc" && <ArrowDown className="h-3 w-3" />}
+    </button>
+  )
+}
+
+interface FilterBarProps {
+  showDeactivated: boolean
+  onToggleDeactivated: () => void
+  sort: SortConfig
+  onClearSort: () => void
+  onToggleSort: (field: SortField) => void
+  totalHidden: number
+}
+
+function FilterBar({ showDeactivated, onToggleDeactivated, sort, onClearSort, onToggleSort, totalHidden }: FilterBarProps) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 mr-1">
+        Filters
+      </span>
+
+      {/* Deactivated toggle */}
+      <button
+        onClick={onToggleDeactivated}
+        className={[
+          "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
+          showDeactivated
+            ? "border-slate-300 bg-slate-100 text-slate-600"
+            : "border-slate-200 bg-white text-slate-400 hover:border-slate-300",
+        ].join(" ")}
+      >
+        {showDeactivated
+          ? <><Eye className="h-3 w-3" /> Showing deactivated</>
+          : <><EyeOff className="h-3 w-3" /> Hiding deactivated</>
+        }
+      </button>
+
+      <div className="h-4 w-px bg-slate-200" />
+
+      <span className="text-xs text-slate-400">Sort by</span>
+      <SortButton label="Priority" field="priority" sort={sort} onToggle={onToggleSort} />
+      <SortButton label="State" field="state" sort={sort} onToggle={onToggleSort} />
+
+      {sort.field && (
+        <button
+          onClick={onClearSort}
+          className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2"
+        >
+          Clear sort
+        </button>
+      )}
+
+      {totalHidden > 0 && (
+        <span className="ml-auto text-xs text-slate-400 italic">
+          {totalHidden} hidden
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Filtering & sorting logic (applied recursively)
+// ---------------------------------------------------------------------------
+
+function applyFiltersAndSort(
+  reqs: FunctionalRequirement[],
+  showDeactivated: boolean,
+  sort: SortConfig,
+  priorityStyle: PriorityStyle
+): FunctionalRequirement[] {
+  let result = reqs
+    .filter(r => showDeactivated || r.state !== "DEACTIVATED")
+    .map(r => ({
+      ...r,
+      children: applyFiltersAndSort(r.children ?? [], showDeactivated, sort, priorityStyle),
+    }))
+
+  if (sort.field === "priority") {
+    result = result.sort((a, b) => {
+      const diff = priorityRank(a.priority, priorityStyle) - priorityRank(b.priority, priorityStyle)
+      return sort.dir === "asc" ? diff : -diff
+    })
+  } else if (sort.field === "state") {
+    result = result.sort((a, b) => {
+      const diff = stateRank(a.state) - stateRank(b.state)
+      return sort.dir === "asc" ? diff : -diff
+    })
+  }
+
+  return result
+}
+
+function countHidden(
+  original: FunctionalRequirement[],
+  filtered: FunctionalRequirement[]
+): number {
+  const originalTotal = countAll(original)
+  const filteredTotal = countAll(filtered)
+  return originalTotal - filteredTotal
+}
+
+function countAll(reqs: FunctionalRequirement[]): number {
+  return reqs.reduce((acc, r) => acc + 1 + countAll(r.children ?? []), 0)
+}
+
+// ---------------------------------------------------------------------------
+// API calls (unchanged)
+// ---------------------------------------------------------------------------
+
+async function apiReorder(projectId: string, functionalityId: string, requirementId: number, newOrderValue: number): Promise<void> {
   const res = await fetch(
     `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/reorder`,
-    {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newOrderValue),
-    }
+    { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newOrderValue) }
   )
-  if (!res.ok) {
-    const err = await res.json().catch(() => null)
-    throw new Error(err?.message || "Failed to reorder requirement")
-  }
+  if (!res.ok) { const err = await res.json().catch(() => null); throw new Error(err?.message || "Failed to reorder requirement") }
 }
 
-async function apiChangeParent(
-  projectId: string,
-  functionalityId: string,
-  requirementId: number,
-  newParentId: number | null
-): Promise<void> {
+async function apiChangeParent(projectId: string, functionalityId: string, requirementId: number, newParentId: number | null): Promise<void> {
   const res = await fetch(
     `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirementId}/changeParent`,
-    {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newParentId),
-    }
+    { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(newParentId) }
   )
-  if (!res.ok) {
-    const err = await res.json().catch(() => null)
-    throw new Error(err?.message || "Failed to change parent")
-  }
+  if (!res.ok) { const err = await res.json().catch(() => null); throw new Error(err?.message || "Failed to change parent") }
 }
 
 // ---------------------------------------------------------------------------
-// FunctionalRequirementCard
+// FunctionalRequirementCard (unchanged)
 // ---------------------------------------------------------------------------
 
 interface FunctionalRequirementCardProps {
@@ -112,22 +253,9 @@ interface FunctionalRequirementCardProps {
 }
 
 function FunctionalRequirementCard({
-  requirement: r,
-  siblings,
-  positionInSiblings,
-  projectId,
-  functionalityId,
-  priorityStyle,
-  label,
-  depth = 0,
-  canEdit,
-  onRefetch,
-  dragStateRef,
-  dropPreview,
-  setDropPreview,
-  onReorder,
-  parentIdMap,
-  onChangeParent,
+  requirement: r, siblings, positionInSiblings, projectId, functionalityId,
+  priorityStyle, label, depth = 0, canEdit, onRefetch, dragStateRef,
+  dropPreview, setDropPreview, onReorder, parentIdMap, onChangeParent,
 }: FunctionalRequirementCardProps) {
   const { getLock } = useLocks()
   const navigate = useNavigate()
@@ -135,202 +263,111 @@ function FunctionalRequirementCard({
   const [collapsed, setCollapsed] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [reorderError, setReorderError] = useState<string | null>(null)
-
   const parentId = (r.parentId as number | null | undefined) ?? null
-  const sortedChildren:FunctionalRequirement[] = sortByOrderValue(r.children ?? [])
+  const sortedChildren: FunctionalRequirement[] = sortByOrderValue(r.children ?? [])
 
-  const handleDragStart = (e: React.DragEvent) => {
-    if (!canEdit) return
-    dragStateRef.current = r.id
-    e.dataTransfer.effectAllowed = "move"
-    e.stopPropagation()
-  }
-
-  const handleDragEnd = () => {
-    dragStateRef.current = null
-    setDropPreview(null)
-  }
-
+  const handleDragStart = (e: React.DragEvent) => { if (!canEdit) return; dragStateRef.current = r.id; e.dataTransfer.effectAllowed = "move"; e.stopPropagation() }
+  const handleDragEnd = () => { dragStateRef.current = null; setDropPreview(null) }
   const handleDragOver = (e: React.DragEvent) => {
     const draggingId = dragStateRef.current
     if (!canEdit || !draggingId || draggingId === r.id) return
-    e.preventDefault()
-    e.stopPropagation()
-
+    e.preventDefault(); e.stopPropagation()
     const headerEl = (e.currentTarget as HTMLElement).firstElementChild as HTMLElement
-    const rect = headerEl
-      ? headerEl.getBoundingClientRect()
-      : (e.currentTarget as HTMLElement).getBoundingClientRect()
-
+    const rect = headerEl ? headerEl.getBoundingClientRect() : (e.currentTarget as HTMLElement).getBoundingClientRect()
     if (e.clientY > rect.bottom) return
-
     const ratio = (e.clientY - rect.top) / rect.height
-    if (ratio < 0.3) {
-      setDropPreview({ type: "between", parentId, index: positionInSiblings })
-    } else if (ratio > 0.7) {
-      setDropPreview({ type: "between", parentId, index: positionInSiblings + 1 })
-    } else {
-      setDropPreview({ type: "child", parentId: r.id })
-    }
+    if (ratio < 0.3) setDropPreview({ type: "between", parentId, index: positionInSiblings })
+    else if (ratio > 0.7) setDropPreview({ type: "between", parentId, index: positionInSiblings + 1 })
+    else setDropPreview({ type: "child", parentId: r.id })
   }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    if ((e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) return
-    setDropPreview(null)
-  }
-
+  const handleDragLeave = (e: React.DragEvent) => { if ((e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) return; setDropPreview(null) }
   const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    const draggingId = dragStateRef.current
-    const preview = dropPreview
-    setDropPreview(null)
-    setReorderError(null)
-
+    e.preventDefault(); e.stopPropagation()
+    const draggingId = dragStateRef.current; const preview = dropPreview
+    setDropPreview(null); setReorderError(null)
     if (!canEdit || !draggingId || draggingId === r.id || !preview) return
-
     try {
-      if (preview.type === "child") {
-        await onChangeParent(draggingId, r.id)
-        onRefetch()
-      } else {
+      if (preview.type === "child") { await onChangeParent(draggingId, r.id); onRefetch() }
+      else {
         const draggingCurrentParent = parentIdMap.get(draggingId) ?? null
-        if (draggingCurrentParent !== preview.parentId) {
-          await onChangeParent(draggingId, preview.parentId)
-        }
-        await onReorder(draggingId, siblings, preview.index)
-        onRefetch()
+        if (draggingCurrentParent !== preview.parentId) await onChangeParent(draggingId, preview.parentId)
+        await onReorder(draggingId, siblings, preview.index); onRefetch()
       }
-    } catch (err) {
-      setReorderError(err instanceof Error ? err.message : "Operation failed")
-    }
+    } catch (err) { setReorderError(err instanceof Error ? err.message : "Operation failed") }
   }
 
   const isChildTarget = dropPreview?.type === "child" && dropPreview.parentId === r.id
-
-  const gapProps = {
-    canEdit,
-    dragStateRef,
-    dropPreview,
-    setDropPreview,
-    siblings: sortedChildren,
-    parentIdMap,
-    onReorder,
-    onChangeParent,
-    onRefetch,
-  }
+  const gapProps = { canEdit, dragStateRef, dropPreview, setDropPreview, siblings: sortedChildren, parentIdMap, onReorder, onChangeParent, onRefetch }
 
   return (
     <div
-      className={[
-        "rounded-xl border bg-white shadow-sm transition-all select-none",
+      className={["rounded-xl border bg-white shadow-sm transition-all select-none",
         depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : "",
+        r.state === "DEACTIVATED" ? "opacity-50" : "",
         isChildTarget ? "ring-2 ring-blue-400 bg-blue-50/40 shadow-md" : "hover:shadow-md",
       ].join(" ")}
-      draggable={canEdit}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      draggable={canEdit} onDragStart={handleDragStart} onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
     >
       {isChildTarget && (
         <div className="text-center text-xs text-blue-500 font-semibold pt-1.5 pointer-events-none">
           ↳ Nest inside "{r.name}"
         </div>
       )}
-
-      <div
-        className="flex items-center gap-4 px-5 py-4 cursor-pointer"
-        onClick={() =>
-          navigate(
-            `/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`
-          )
-        }
-      >
+      <div className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+        onClick={() => navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`)}>
         {canEdit && (
-          <span
-            className="shrink-0 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
+          <span className="shrink-0 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
+            onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
             <GripVertical className="h-4 w-4" />
           </span>
         )}
-
         {hasChildren ? (
-          <button
-            className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+          <button className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
             onClick={(e) => { e.stopPropagation(); setCollapsed((c) => !c) }}
-            aria-label={collapsed ? "Expand" : "Collapse"}
-          >
+            aria-label={collapsed ? "Expand" : "Collapse"}>
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
-        ) : (
-          <span className="w-4 shrink-0" />
-        )}
-
+        ) : <span className="w-4 shrink-0" />}
         <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
-
         <div className="flex-1 min-w-0">
           {r.name && <p className="text-sm font-semibold truncate">{r.name}</p>}
-          {r.description && (
-            <p className="text-sm text-slate-500 truncate mt-0.5">{r.description}</p>
-          )}
+          {r.description && <p className="text-sm text-slate-500 truncate mt-0.5">{r.description}</p>}
           {reorderError && <p className="text-xs text-red-500 mt-0.5">{reorderError}</p>}
         </div>
-
         <div className="shrink-0 flex items-center gap-3">
           <LockIndicator lock={getLock(EntityType.FUNCTIONAL_REQUIREMENT, r.id)} />
           <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
           <RequirementStateBadge state={r.state} />
         </div>
-
         {canEdit && (
           <div onClick={(e) => e.stopPropagation()} className="shrink-0">
             <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-1.5" />
-              Add Child FR
+              <Plus className="h-4 w-4 mr-1.5" /> Add Child FR
             </Button>
             <CreateFunctionalRequirementDialog
-              open={createDialogOpen}
-              onOpenChange={setCreateDialogOpen}
-              projectId={projectId}
-              functionalityId={functionalityId}
-              parentId={r.id}
-              priorityStyle={priorityStyle}
-              siblingRequirements={sortedChildren}
-              onSuccess={onRefetch}
+              open={createDialogOpen} onOpenChange={setCreateDialogOpen}
+              projectId={projectId} functionalityId={functionalityId}
+              parentId={r.id} priorityStyle={priorityStyle}
+              siblingRequirements={sortedChildren} onSuccess={onRefetch}
             />
           </div>
         )}
-
         <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
       </div>
-
       {hasChildren && !collapsed && (
         <div className="px-5 pb-4">
           <GapDropZone parentId={r.id} index={0} {...gapProps} />
           {sortedChildren.map((child, index) => (
             <Fragment key={child.id}>
               <FunctionalRequirementCard
-                requirement={child}
-                siblings={sortedChildren}
-                positionInSiblings={index}
-                projectId={projectId}
-                functionalityId={functionalityId}
-                priorityStyle={priorityStyle}
-                label={`${label}.${index + 1}`}
-                depth={depth + 1}
-                canEdit={canEdit}
-                onRefetch={onRefetch}
-                dragStateRef={dragStateRef}
-                dropPreview={dropPreview}
-                setDropPreview={setDropPreview}
-                onReorder={onReorder}
-                parentIdMap={parentIdMap}
-                onChangeParent={onChangeParent}
+                requirement={child} siblings={sortedChildren} positionInSiblings={index}
+                projectId={projectId} functionalityId={functionalityId}
+                priorityStyle={priorityStyle} label={`${label}.${index + 1}`}
+                depth={depth + 1} canEdit={canEdit} onRefetch={onRefetch}
+                dragStateRef={dragStateRef} dropPreview={dropPreview}
+                setDropPreview={setDropPreview} onReorder={onReorder}
+                parentIdMap={parentIdMap} onChangeParent={onChangeParent}
               />
               <GapDropZone parentId={r.id} index={index + 1} {...gapProps} />
             </Fragment>
@@ -346,10 +383,7 @@ function FunctionalRequirementCard({
 // ---------------------------------------------------------------------------
 
 function FunctionalityView() {
-  const { projectId, functionalityId } = useParams<{
-    projectId: string
-    functionalityId: string
-  }>()
+  const { projectId, functionalityId } = useParams<{ projectId: string; functionalityId: string }>()
   const { priorityStyle, functionalRequirementStats, isManager } = useProject()
   const { canEditFunctionality } = useFunctionalities()
   const canEdit = canEditFunctionality(functionalityId!)
@@ -358,40 +392,50 @@ function FunctionalityView() {
   const dragStateRef = useRef<number | null>(null)
   const [dropPreview, setDropPreview] = useState<DropPreview>(null)
 
+  // ── Filter/sort state ────────────────────────────────────────────────────
+  const [showDeactivated, setShowDeactivated] = useState(false)
+  const [sort, setSort] = useState<SortConfig>({ field: null, dir: "asc" })
+
+  const handleToggleSort = useCallback((field: SortField | "_clear") => {
+    if (field === "_clear") {
+      setSort({ field: null, dir: "asc" })
+      return
+    }
+    setSort(prev => {
+      if (prev.field !== field) return { field, dir: "asc" }
+      if (prev.dir === "asc") return { field, dir: "desc" }
+      return { field: null, dir: "asc" } // third click clears
+    })
+  }, [])
+
   const fetchFunctionality = useCallback(
-    () =>
-      fetch(`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}`, {
-        credentials: "include",
-      }).then((r) => {
-        if (!r.ok) throw new Error("Failed to fetch functionality")
-        return r.json()
-      }),
+    () => fetch(`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}`, { credentials: "include" })
+      .then((r) => { if (!r.ok) throw new Error("Failed to fetch functionality"); return r.json() }),
     [projectId, functionalityId]
   )
 
   const fetchRequirements = useCallback(
-    () =>
-      fetch(
-        `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/`,
-        { credentials: "include" }
-      ).then((r) => {
-        if (!r.ok) throw new Error("Failed to fetch requirements")
-        return r.json()
-      }),
+    () => fetch(`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/`, { credentials: "include" })
+      .then((r) => { if (!r.ok) throw new Error("Failed to fetch requirements"); return r.json() }),
     [projectId, functionalityId]
   )
 
-  const { data: functionality, loading: funcLoading, error: funcError } =
-    useBackendResource<Functionality>({ fetcher: fetchFunctionality })
+  const { data: functionality, loading: funcLoading, error: funcError } = useBackendResource<Functionality>({ fetcher: fetchFunctionality })
+  const { data: requirementsData, loading: reqLoading, error: reqError, refresh: refreshRequirements } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
 
-  const {
-    data: requirementsData,
-    loading: reqLoading,
-    error: reqError,
-    refresh: refreshRequirements,
-  } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
+  const requirements: FunctionalRequirement[] = sortByOrderValue(requirementsData ?? [])
 
-  const requirements:FunctionalRequirement[] = sortByOrderValue(requirementsData ?? [])
+  // ── Filtered + sorted view (memoized) ───────────────────────────────────
+  const displayedRequirements = useMemo(
+    () => applyFiltersAndSort(requirements, showDeactivated, sort, priorityStyle),
+    [requirements, showDeactivated, sort, priorityStyle]
+  )
+
+  const totalHidden = useMemo(
+    () => countHidden(requirements, displayedRequirements),
+    [requirements, displayedRequirements]
+  )
+
   const frStats = functionalRequirementStats?.[functionalityId!] ?? {}
   const functionalityPrefix = functionality?.label ?? "FR"
 
@@ -399,6 +443,7 @@ function FunctionalityView() {
     projectId: projectId!,
     onSuccess: refreshRequirements,
   })
+
   function collectPendingIds(reqs: FunctionalRequirement[]): number[] {
     return reqs.flatMap((r) => [
       ...(r.state === "PENDING_APPROVAL" ? [r.id] : []),
@@ -410,10 +455,7 @@ function FunctionalityView() {
   const parentIdMap = useMemo(() => {
     const map = new Map<number, number | null>()
     function walk(items: FunctionalRequirement[], parentId: number | null) {
-      for (const item of items) {
-        map.set(item.id, parentId)
-        if (item.children?.length) walk(item.children, item.id)
-      }
+      for (const item of items) { map.set(item.id, parentId); if (item.children?.length) walk(item.children, item.id) }
     }
     walk(requirements, null)
     return map
@@ -438,29 +480,20 @@ function FunctionalityView() {
   )
 
   if (funcLoading) return <LoadingSpinner text="Loading functionality..." />
-
   if (funcError || !functionality)
     return (
       <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center">
         <AlertCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
         <p className="text-red-600 font-semibold">Could not load functionality</p>
         <p className="text-red-500 text-sm mt-1">{funcError}</p>
-        <Button asChild variant="outline" className="mt-4">
-          <Link to={`/project/${projectId}`}>Back to Project</Link>
-        </Button>
+        <Button asChild variant="outline" className="mt-4"><Link to={`/project/${projectId}`}>Back to Project</Link></Button>
       </div>
     )
 
   const rootGapProps = {
-    canEdit,
-    dragStateRef,
-    dropPreview,
-    setDropPreview,
-    siblings: requirements,
-    parentIdMap,
-    onReorder: handleReorder,
-    onChangeParent: handleChangeParent,
-    onRefetch: refreshRequirements,
+    canEdit, dragStateRef, dropPreview, setDropPreview,
+    siblings: displayedRequirements, parentIdMap,
+    onReorder: handleReorder, onChangeParent: handleChangeParent, onRefetch: refreshRequirements,
   }
 
   return (
@@ -475,9 +508,7 @@ function FunctionalityView() {
           <h1 className="text-4xl font-black tracking-tight">{functionality.name}</h1>
           <p className="text-xs font-mono text-slate-400 pt-2">{functionality.entityIdentifier}</p>
           {functionality.description && (
-            <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
-              {functionality.description}
-            </p>
+            <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{functionality.description}</p>
           )}
           <div className="flex items-center gap-3 pt-1">
             {functionality.state && (
@@ -485,9 +516,7 @@ function FunctionalityView() {
                 {functionality.state}
               </Badge>
             )}
-            <Badge variant="outline" className="text-xs font-mono text-slate-400">
-              {priorityStyle}
-            </Badge>
+            <Badge variant="outline" className="text-xs font-mono text-slate-400">{priorityStyle}</Badge>
           </div>
         </div>
 
@@ -504,18 +533,14 @@ function FunctionalityView() {
             {functionality.isUserFunctionalityManager && (
               <>
                 <LinkUserToFunctionalityDialog
-                  projectId={projectId!}
-                  functionalityId={functionalityId!}
+                  projectId={projectId!} functionalityId={functionalityId!}
                   canManage={functionality.isUserFunctionalityManager}
-                  />
+                />
                 {isManager && (
-                  <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={pendingIds.length===0?true:approving}
-                  onClick={() => approveFunctionality(functionalityId!, pendingIds)}
-                  >
-                  {approving ? "Approving..." : `Approve All (${pendingIds.length})`}
+                  <Button size="sm" variant="outline"
+                    disabled={pendingIds.length === 0 || approving}
+                    onClick={() => approveFunctionality(functionalityId!, pendingIds)}>
+                    {approving ? "Approving..." : `Approve All (${pendingIds.length})`}
                   </Button>
                 )}
               </>
@@ -532,26 +557,18 @@ function FunctionalityView() {
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
               Manage hierarchical functional requirements.{" "}
-              {canEdit && (
-                <span className="text-slate-400">
-                  Drag to reorder · drag to the middle of a card to nest inside it.
-                </span>
-              )}
+              {canEdit && <span className="text-slate-400">Drag to reorder · drag to the middle of a card to nest inside it.</span>}
             </p>
           </div>
           {canEdit && (
             <>
               <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-1.5" />
-                Add FR
+                <Plus className="h-4 w-4 mr-1.5" /> Add FR
               </Button>
               <CreateFunctionalRequirementDialog
-                open={createDialogOpen}
-                onOpenChange={setCreateDialogOpen}
-                projectId={projectId!}
-                functionalityId={functionalityId!}
-                onSuccess={refreshRequirements}
-                priorityStyle={priorityStyle}
+                open={createDialogOpen} onOpenChange={setCreateDialogOpen}
+                projectId={projectId!} functionalityId={functionalityId!}
+                onSuccess={refreshRequirements} priorityStyle={priorityStyle}
                 siblingRequirements={requirements}
               />
             </>
@@ -561,51 +578,51 @@ function FunctionalityView() {
         <Card>
           <CardHeader>
             <CardTitle>Functional Requirements</CardTitle>
-            <CardDescription>
-              Listed functional requirements for this functionality, ordered by priority.
-            </CardDescription>
+            <CardDescription>Listed functional requirements for this functionality, ordered by priority.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-0">
-            {reqLoading ? (
-              <div className="py-16 flex justify-center">
-                <LoadingSpinner text="Loading requirements..." />
-              </div>
-            ) : reqError ? (
-              <div className="py-10 text-center">
-                <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-                <p className="text-red-500 text-sm">{reqError}</p>
-              </div>
-            ) : requirements.length === 0 ? (
-              <p className="text-center text-slate-400 italic py-8">
-                No functional requirements found.
-              </p>
-            ) : (
-              <>
-                <GapDropZone parentId={null} index={0} {...rootGapProps} />
-                {requirements.map((r, index) => (
-                  <Fragment key={r.id}>
-                    <FunctionalRequirementCard
-                      requirement={r}
-                      siblings={requirements}
-                      positionInSiblings={index}
-                      projectId={projectId!}
-                      functionalityId={functionalityId!}
-                      priorityStyle={priorityStyle}
-                      label={`${functionalityPrefix}.${index + 1}`}
-                      canEdit={canEdit}
-                      onRefetch={refreshRequirements}
-                      dragStateRef={dragStateRef}
-                      dropPreview={dropPreview}
-                      setDropPreview={setDropPreview}
-                      onReorder={handleReorder}
-                      parentIdMap={parentIdMap}
-                      onChangeParent={handleChangeParent}
-                    />
-                    <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
-                  </Fragment>
-                ))}
-              </>
-            )}
+          <CardContent className="space-y-3">
+            {/* Filter bar */}
+            <FilterBar
+              showDeactivated={showDeactivated}
+              onToggleDeactivated={() => setShowDeactivated(v => !v)}
+              sort={sort}
+              onClearSort={() => setSort({ field: null, dir: "asc" })}
+              onToggleSort={handleToggleSort}
+              totalHidden={totalHidden}
+            />
+
+            <div className="border-t border-slate-100 pt-3">
+              {reqLoading ? (
+                <div className="py-16 flex justify-center"><LoadingSpinner text="Loading requirements..." /></div>
+              ) : reqError ? (
+                <div className="py-10 text-center">
+                  <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
+                  <p className="text-red-500 text-sm">{reqError}</p>
+                </div>
+              ) : displayedRequirements.length === 0 ? (
+                <p className="text-center text-slate-400 italic py-8">
+                  {requirements.length === 0 ? "No functional requirements found." : "No requirements match the current filters."}
+                </p>
+              ) : (
+                <>
+                  <GapDropZone parentId={null} index={0} {...rootGapProps} />
+                  {displayedRequirements.map((r, index) => (
+                    <Fragment key={r.id}>
+                      <FunctionalRequirementCard
+                        requirement={r} siblings={displayedRequirements} positionInSiblings={index}
+                        projectId={projectId!} functionalityId={functionalityId!}
+                        priorityStyle={priorityStyle} label={`${functionalityPrefix}.${index + 1}`}
+                        canEdit={canEdit} onRefetch={refreshRequirements}
+                        dragStateRef={dragStateRef} dropPreview={dropPreview}
+                        setDropPreview={setDropPreview} onReorder={handleReorder}
+                        parentIdMap={parentIdMap} onChangeParent={handleChangeParent}
+                      />
+                      <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
+                    </Fragment>
+                  ))}
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
       </section>
