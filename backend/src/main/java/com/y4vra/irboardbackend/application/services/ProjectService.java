@@ -35,6 +35,17 @@ public class ProjectService {
         this.statisticsRepository = statisticsRepository;
     }
 
+    private void checkEditPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "edit", oryId)) {
+            throw new AccessDeniedException("User not authorized to edit this project");
+        }
+    }
+    private void checkViewPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "view", oryId)) {
+            throw new AccessDeniedException("User not authorized to view this project");
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<ProjectDTO> findAllProjects() {
         return projectRepository.findAll()
@@ -67,9 +78,7 @@ public class ProjectService {
 
     @Transactional(readOnly = true)
     public ProjectDTO findById(String oryId, long projectId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
-            throw new AccessDeniedException("User not authorized to view this project");
-        }
+        checkViewPermission(oryId,String.valueOf(projectId));
         Project project =projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
@@ -98,5 +107,10 @@ public class ProjectService {
         projectMapper.patchEntity(patch,project);
         entityLockService.unlock(project,user);
         return projectMapper.toDto(projectRepository.save(project));
+    }
+    @Transactional
+    public void approveAllElements(String oryId, Long projectId) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.approveAllElementsInProject(projectId);
     }
 }

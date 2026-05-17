@@ -10,4 +10,6 @@ public interface ProjectRepository {
     Optional<Project> findById(Long id);
     Project save(Project project);
     void deleteById(Long id);
+
+    void approveAllElementsInProject(Long projectId);
 }

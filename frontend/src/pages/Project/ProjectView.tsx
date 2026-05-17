@@ -26,6 +26,7 @@ import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { ProjectStatsSection } from "@/components/graphics/ProjectStatsSectionGraph";
 import { ProjectHealthBar } from "@/components/graphics/ProjectHealthBar";
 import { LinkUserToProjectDialog } from "@/components/dialogs/userLinking/LinkUserToProjectDialog";
+import { useApproveAll } from "@/hooks/useApproveRequirements";
 
 const permissionConfig: Record<
   Permission,
@@ -122,7 +123,13 @@ function ProjectView() {
   const project = useProject();
   const { user } = useAuth();
   const { functionalities, loading, error, refresh } = useFunctionalities();
-
+  const { approveAll, loading: approving } = useApproveAll({
+    projectId: project.id!,
+    onSuccess: ()=>{
+      refresh()
+      project.refresh()
+    },
+  })
 
   if (error || !project)
     return (
@@ -194,7 +201,7 @@ function ProjectView() {
               {project.state}
             </div>
             <div className="font-mono opacity-50">
-              REF: {project.id.toString().slice(0, 12)}
+              REF: {project.id}
             </div>
           </div>
         </div>
@@ -206,22 +213,22 @@ function ProjectView() {
               <>
                 <Button asChild variant="outline" size="sm">
                   <Link to={`/project/${project.id}/edit`}>
-                    <Settings className="mr-2 h-4 w-4" /> Edit Project
+                    <Settings className="mr-2 h-4 w-4" /> Edit project
                   </Link>
                 </Button>
                 <LinkUserToProjectDialog projectId={project.id!} onSuccess={project.refresh}/>
               </>
             )}
-            {/* {project.editPermission && (
+            {project.isManager && (
               <Button
                 size="sm"
                 variant="outline"
-                disabled={approving || Object.keys(pendingMap).length === 0}
-                onClick={() => approveAllInProject(pendingMap)}
+                disabled={approving}
+                onClick={approveAll}
               >
-                {approving ? "Approving..." : "Approve All Pending"}
+                {approving ? "Approving..." : "Approve all entities"}
               </Button>
-            )} */}
+            )}
           </div>
           
         </div>

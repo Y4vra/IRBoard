@@ -44,51 +44,56 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(projectDTO,((User) authentication.getPrincipal()).getOryId()));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProjectDTO> getProjectById(Authentication authentication, @PathVariable Long id) {
-        return ResponseEntity.ok(projectService.findById(((User) authentication.getPrincipal()).getOryId(), id));
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectDTO> getProjectById(Authentication authentication, @PathVariable Long projectId) {
+        return ResponseEntity.ok(projectService.findById(((User) authentication.getPrincipal()).getOryId(), projectId));
     }
     @GetMapping("/{projectId}/isManager")
     public ResponseEntity<Boolean> getCurrentUser(Authentication authentication, @PathVariable Long projectId) {
         return ResponseEntity.ok(permissionService.checkPermission("Project",String.valueOf(projectId),"editProject",((User)authentication.getPrincipal()).getOryId()));
     }
 
-    @GetMapping("/{id}/functionalities")
-    public ResponseEntity<Map<String, List<FunctionalityDTO>>> getFunctionalities(Authentication authentication, @PathVariable Long id) {
-        return ResponseEntity.ok(functionalityService.findFunctionalitiesOfProjectForUser(((User) authentication.getPrincipal()).getOryId(),id));
-    }
-
-    @GetMapping("/{id}/stakeholders")
-    public ResponseEntity<List<StakeholderDTO>> getStakeholders(Authentication authentication, @PathVariable Long id) {
-        return ResponseEntity.ok(stakeholderService.findStakeholdersOfProject(((User) authentication.getPrincipal()).getOryId(),id));
-    }
-
-    @GetMapping("/{id}/nonFunctionalRequirements")
-    public ResponseEntity<List<NonFunctionalRequirementDTO>> getNonFunctionalRequirements(Authentication authentication,@PathVariable Long id) {
-        return ResponseEntity.ok(nonFunctionalRequirementService.findNonFunctionalRequirementsOfProject(((User) authentication.getPrincipal()).getOryId(),id));
-    }
-
-    @GetMapping("/{id}/documents")
-    public ResponseEntity<List<DocumentDTO>> getDocuments(Authentication authentication,@PathVariable Long id) {
-        return ResponseEntity.ok(documentService.findDocumentsOfProject(((User) authentication.getPrincipal()).getOryId(),id));
-    }
-
-    @GetMapping("/{id}/requestEdit")
-    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long id) {
-        User user = (User) authentication.getPrincipal();
-        projectService.requestEdit(id, user);
-        return ResponseEntity.ok().build();
-    }
-
-    @PatchMapping("/{id}/modify")
-    public ResponseEntity<ProjectDTO> modify(Authentication authentication,
-                                             @PathVariable Long id,
-                                             @RequestBody ProjectDTO patch) {
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(projectService.patch(id, patch, user));
+    @GetMapping("/{projectId}/functionalities")
+    public ResponseEntity<Map<String, List<FunctionalityDTO>>> getFunctionalities(Authentication authentication, @PathVariable Long projectId) {
+        return ResponseEntity.ok(functionalityService.findFunctionalitiesOfProjectForUser(((User) authentication.getPrincipal()).getOryId(),projectId));
     }
     @GetMapping("/{projectId}/functionalRequirements/observable/{requirementId}")
     public ResponseEntity<List<FunctionalityDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
         return ResponseEntity.ok(functionalRequirementService.findObservableFRequirementsGroupedByFunctionality(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
+    }
+
+    @GetMapping("/{projectId}/stakeholders")
+    public ResponseEntity<List<StakeholderDTO>> getStakeholders(Authentication authentication, @PathVariable Long projectId) {
+        return ResponseEntity.ok(stakeholderService.findStakeholdersOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+    }
+
+    @GetMapping("/{projectId}/nonFunctionalRequirements")
+    public ResponseEntity<List<NonFunctionalRequirementDTO>> getNonFunctionalRequirements(Authentication authentication,@PathVariable Long projectId) {
+        return ResponseEntity.ok(nonFunctionalRequirementService.findNonFunctionalRequirementsOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+    }
+
+    @GetMapping("/{projectId}/documents")
+    public ResponseEntity<List<DocumentDTO>> getDocuments(Authentication authentication,@PathVariable Long projectId) {
+        return ResponseEntity.ok(documentService.findDocumentsOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+    }
+
+    @GetMapping("/{projectId}/requestEdit")
+    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId) {
+        User user = (User) authentication.getPrincipal();
+        projectService.requestEdit(projectId, user);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{projectId}/modify")
+    public ResponseEntity<ProjectDTO> modify(Authentication authentication,
+                                             @PathVariable Long projectId,
+                                             @RequestBody ProjectDTO patch) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(projectService.patch(projectId, patch, user));
+    }
+    @PostMapping("/{projectId}/approveAll")
+    public ResponseEntity<Void> approveAllElements(Authentication authentication, @PathVariable Long projectId) {
+        projectService.approveAllElements(((User) authentication.getPrincipal()).getOryId(),projectId);
+        return ResponseEntity.ok().build();
     }
 }

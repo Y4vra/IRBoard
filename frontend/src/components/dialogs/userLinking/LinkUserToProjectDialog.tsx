@@ -96,7 +96,7 @@ export function LinkUserToProjectDialog({ projectId, onSuccess }: LinkUserToProj
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Users className="mr-2 h-4 w-4" />
-          Manage Members
+          Manage members
         </Button>
       </DialogTrigger>
 

@@ -50,26 +50,7 @@ export function useApproveRequirements({ projectId, onSuccess }: ApproveRequirem
     [approveFunctionalRequirements]
   )
 
-  // pendingMap: { [functionalityId]: number[] }
-  const approveAllInProject = useCallback(
-    async (pendingMap: Record<string, number[]>) => {
-      const entries = Object.entries(pendingMap).filter(([, ids]) => ids.length > 0)
-      if (!entries.length) return
-      setLoading(true)
-      setError(null)
-      try {
-        await Promise.all(entries.map(([funcId, ids]) => approveFunctionalRequirements(funcId, ids)))
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Unknown error")
-        throw e
-      } finally {
-        setLoading(false)
-      }
-    },
-    [approveFunctionalRequirements]
-  )
-
-  return { approveFunctionalRequirements, approveFunctionality, approveAllInProject, loading, error }
+  return { approveFunctionalRequirements, approveFunctionality, loading, error }
 }
 
 // ── NFR approval ──────────────────────────────────────────────────────────────
@@ -147,4 +128,36 @@ export function useApproveStakeholders({ projectId, onSuccess }: ApproveRequirem
   )
 
   return { approveStakeholders, loading, error }
+}
+// ── Project-wide approval ─────────────────────────────────────────────────────
+export function useApproveAll({ projectId, onSuccess }: ApproveRequirementsOptions) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const approveAll = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/projects/${projectId}/approveAll`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      )
+      if (!res.ok) {
+        const err = await res.json().catch(() => null)
+        throw new Error(err?.message || "Failed to approve all elements")
+      }
+      onSuccess?.()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error")
+      throw e
+    } finally {
+      setLoading(false)
+    }
+  }, [projectId, onSuccess])
+
+  return { approveAll, loading, error }
 }
