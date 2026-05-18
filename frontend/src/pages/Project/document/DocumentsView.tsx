@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../../lib/globalVars"
 import { Button } from "../../../components/ui/button"
@@ -20,12 +20,15 @@ import type { DocumentDTO } from "@/types/Document"
 import { UploadDocumentDialog } from "@/components/dialogs/creatingDialogs/UploadDocumentDialog"
 import { BackToProjectButton } from "@/components/BackToProjectButton"
 import { useProject } from "@/hooks/useProject"
+import { StatsChart } from "@/components/graphics/StatsChart"
+import { EntityStateBadge } from "@/components/badges/EntityStateBadge"
+import { useApproveDocuments } from "@/hooks/useApproveRequirements"
 
 function DocumentsView() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated} = useAuth();
-  const { editPermission } = useProject();
+  const { isAuthenticated } = useAuth();
+  const { editPermission, documentStats, isManager } = useProject();
 
   const fetchDocuments = useCallback(() =>
     fetch(`${API_BASE_URL}/projects/${projectId}/documents`, { credentials: "include" })
@@ -33,11 +36,10 @@ function DocumentsView() {
     [projectId]
   );
 
-  const { data, loading, error, refresh } = useBackendResource<DocumentDTO[]>({
+  const { data:documents, loading, error, refresh } = useBackendResource<DocumentDTO[]>({
     fetcher: fetchDocuments,
     enabled: isAuthenticated,
   });
-  const documents = data ?? [];
 
   const formatBytes = (bytes?: number) => {
     if (!bytes) return "—";
@@ -45,6 +47,16 @@ function DocumentsView() {
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
+
+  const { approveDocuments, loading: approving } = useApproveDocuments({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+
+  const pendingIds = useMemo(
+    () => documents?.filter(d => d.state === "PENDING_APPROVAL").map(d => d.id),
+    [documents]
+  )
 
   if (loading) return <LoadingSpinner text="Loading Documents..." />;
 
@@ -59,15 +71,32 @@ function DocumentsView() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
-      <BackToProjectButton className="mb-0" projectId={projectId!}/>
-      <header className="flex items-center justify-between gap-4">
-        <div className="flex-1 min-w-0">
+      <BackToProjectButton className="mb-0" projectId={projectId!} />
+
+      <header className="flex items-center justify-between">
+        <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Documents</h1>
           <p className="text-slate-500 mt-1">Manage project files and references.</p>
         </div>
-        {editPermission && (
-          <UploadDocumentDialog projectId={projectId!} onSuccess={refresh} />
-        )}
+        <div className="flex items-stretch gap-3">
+          {documentStats && (
+            <Card className="p-4">
+              <StatsChart stats={documentStats} title="Document States" size={100} />
+            </Card>
+          )}
+          <div className="flex flex-col gap-3">
+            {editPermission && (
+              <UploadDocumentDialog projectId={projectId!} onSuccess={refresh} />
+            )}
+            {isManager && 
+              <Button size="sm" variant="outline" 
+              disabled={pendingIds?.length===0?true:approving} 
+              onClick={() => approveDocuments(pendingIds!)}>
+                {approving ? "Approving..." : `Approve All (${pendingIds?.length})`}
+              </Button>
+            }
+          </div>
+        </div>
       </header>
 
       <Card>
@@ -76,7 +105,7 @@ function DocumentsView() {
           <CardDescription>Uploaded files and resources for this project.</CardDescription>
         </CardHeader>
         <CardContent>
-          {documents.length === 0 ? (
+          {documents?.length === 0 ? (
             <div className="py-16 text-center">
               <FileText className="h-10 w-10 text-slate-300 mx-auto mb-3" />
               <p className="text-slate-400 italic">No documents uploaded yet.</p>
@@ -89,13 +118,14 @@ function DocumentsView() {
                   <TableHead>File Name</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Size</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Observers</TableHead>
                   <TableHead>Access</TableHead>
                   <TableHead className="text-right">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {documents.map((doc) => (
+                {documents?.map((doc) => (
                   <TableRow
                     key={doc.id}
                     className="cursor-pointer hover:bg-slate-50"
@@ -123,6 +153,9 @@ function DocumentsView() {
                     </TableCell>
                     <TableCell className="text-slate-500 text-sm">
                       {formatBytes(doc.fileSize)}
+                    </TableCell>
+                    <TableCell>
+                      <EntityStateBadge state={doc.state} />
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="font-mono text-xs">

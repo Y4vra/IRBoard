@@ -7,6 +7,7 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -80,10 +81,10 @@ class DocumentServiceTest {
         document.setProject(project);
 
         documentDTO = new DocumentDTO(
-                documentId, "identifier", "spec.pdf", "application/pdf", 1024L, projectId, presignedUrl, List.of()
+                documentId, "identifier", "spec.pdf", "application/pdf", 1024L, EntityState.PENDING_APPROVAL.name(), projectId, presignedUrl, List.of()
         );
         inputDto = new DocumentDTO(
-                null, "identifier", "spec.pdf", "application/pdf", 1024L, projectId, null, List.of()
+                null, "identifier", "spec.pdf", "application/pdf", 1024L, EntityState.PENDING_APPROVAL.name(), projectId, null, List.of()
         );
     }
 

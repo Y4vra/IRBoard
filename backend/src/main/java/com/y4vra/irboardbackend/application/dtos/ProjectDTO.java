@@ -22,6 +22,7 @@ public record ProjectDTO(
         String state,
         Boolean editPermission,
         Map<String,Long> stakeholderStats,
+        Map<String,Long> documentStats,
         Map<String,Long> nonFunctionalRequirementStats,
         Map<String,Map<String,Long>> functionalRequirementStats
 ) implements Serializable {}

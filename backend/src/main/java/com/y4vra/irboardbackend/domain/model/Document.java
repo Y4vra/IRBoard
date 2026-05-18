@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
 
@@ -24,6 +25,9 @@ public class Document extends ProjectElement {
     private String s3Key;
 
     private Long fileSize;
+
+    @Enumerated(EnumType.STRING)
+    private EntityState state;
 
     @ManyToMany()
     @JoinTable(
@@ -51,6 +55,9 @@ public class Document extends ProjectElement {
 
     public Long getFileSize() { return fileSize; }
     public void setFileSize(Long fileSize) { this.fileSize = fileSize; }
+
+    public EntityState getState() { return state; }
+    public void setState(EntityState state) { this.state = state; }
 
     public Set<Requirement> getObserverRequirements() { return Set.copyOf(observerRequirements); }
     protected Set<Requirement> _getObserverRequirements() { return observerRequirements; }

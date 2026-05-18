@@ -1,3 +1,4 @@
+import type { EntityState } from "./enum/EntityState";
 import type { RequirementSummaryDTO } from "./RequirementSummaryDTO";
 
 export interface DocumentDTO {
@@ -7,6 +8,7 @@ export interface DocumentDTO {
   fileName: string;
   mimeType: string;
   fileSize: number;
+  state: EntityState;
 
   accessUrl?: string;
   observers: RequirementSummaryDTO[];

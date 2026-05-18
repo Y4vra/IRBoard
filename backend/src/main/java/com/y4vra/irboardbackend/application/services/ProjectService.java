@@ -91,6 +91,7 @@ public class ProjectService {
         return projectMapper.toDto(project,
                 permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId),
                 statisticsRepository.getStakeholderStatistics(projectId),
+                statisticsRepository.getDocumentStatistics(projectId),
                 statisticsRepository.getNonFunctionalRequirementStatistics(projectId),
                 statisticsRepository.getFunctionalitiesStatistics(projectId));
     }

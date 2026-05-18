@@ -3,8 +3,10 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -42,6 +44,22 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
         )
     """)
     List<Requirement> findFilteredRequirementsForDocument(Long documentId, Set<Long> viewableFunctionalities);
+    @Query("""
+   SELECT COUNT(d) = :expectedCount
+   FROM Document d
+   WHERE d.project.id = :projectId
+   AND d.id IN :documentIds
+   """)
+    boolean existsAllInProject(Long projectId,List<Long> documentIds,long expectedCount);
+    @Modifying
+    @Query("""
+   UPDATE Document d
+   SET d.state = :newState
+   WHERE d.id IN :documentIds
+   AND d.project.id = :projectId
+   AND d.state = :oldState
+   """)
+    int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState);
 }
 
 @Component
@@ -95,5 +113,15 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     @Override
     public List<Requirement> findFilteredRequirementsForDocument(Long documentId, Set<Long> viewableFunctionalities) {
         return jpaRepository.findFilteredRequirementsForDocument(documentId, viewableFunctionalities);
+    }
+
+    @Override
+    public boolean allDocumentsBelongToProject(Long projectId, List<Long> documentIds) {
+        return jpaRepository.existsAllInProject(projectId,documentIds,documentIds.size());
+    }
+
+    @Override
+    public int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState) {
+        return jpaRepository.updateStateByIdsAndProject(documentIds,projectId,newState,oldState);
     }
 }

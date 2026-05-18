@@ -93,6 +93,7 @@ export function useApproveNFRequirements({ projectId, onSuccess }: ApproveRequir
 }
 
 // ── Stakeholder approval ──────────────────────────────────────────────────────
+
 export function useApproveStakeholders({ projectId, onSuccess }: ApproveRequirementsOptions) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -129,7 +130,48 @@ export function useApproveStakeholders({ projectId, onSuccess }: ApproveRequirem
 
   return { approveStakeholders, loading, error }
 }
+
+// ── Document approval ─────────────────────────────────────────────────────────
+
+export function useApproveDocuments({ projectId, onSuccess }: ApproveRequirementsOptions) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const approveDocuments = useCallback(
+    async (documentIds: number[]) => {
+      if (!documentIds.length) return
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/projects/${projectId}/documents/approve`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(documentIds),
+          }
+        )
+        if (!res.ok) {
+          const err = await res.json().catch(() => null)
+          throw new Error(err?.message || "Failed to approve documents")
+        }
+        onSuccess?.()
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Unknown error")
+        throw e
+      } finally {
+        setLoading(false)
+      }
+    },
+    [projectId, onSuccess]
+  )
+
+  return { approveDocuments, loading, error }
+}
+
 // ── Project-wide approval ─────────────────────────────────────────────────────
+
 export function useApproveAll({ projectId, onSuccess }: ApproveRequirementsOptions) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

@@ -7,6 +7,7 @@ export interface Project {
   editPermission: boolean,
   
   stakeholderStats?: Record<string, number>;
+  documentStats?: Record<string, number>;
   nonFunctionalRequirementStats?: Record<string, number>;
   functionalRequirementStats?: Record<string, Record<string, number>>;
 }

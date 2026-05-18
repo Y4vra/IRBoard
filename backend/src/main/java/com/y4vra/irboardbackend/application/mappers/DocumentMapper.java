@@ -26,6 +26,7 @@ public class DocumentMapper {
                 entity.getFileName(),
                 entity.getMimeType(),
                 entity.getFileSize(),
+                entity.getState().name(),
                 entity.getProject() != null? entity.getProject().getId():null,
                 accessUrl,
                 SummaryMapper.toRequirementSummaries(observers)

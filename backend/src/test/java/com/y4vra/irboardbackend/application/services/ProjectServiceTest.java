@@ -52,7 +52,7 @@ class ProjectServiceTest {
         project = new Project("IR-Board", "Description", "TERNARY");
         project.setId(1L);
 
-        projectDTO = new ProjectDTO(1L, "IR-Board", "Description", "TERNARY", "ACTIVE", false, null, null, null);
+        projectDTO = new ProjectDTO(1L, "IR-Board", "Description", "TERNARY", "ACTIVE", false, null, null,null, null);
     }
 
     @Test
@@ -123,12 +123,12 @@ class ProjectServiceTest {
         when(statisticsRepository.getStakeholderStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getNonFunctionalRequirementStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getFunctionalitiesStatistics(1L)).thenReturn(null);
-        when(projectMapper.toDto(project, false, null, null, null)).thenReturn(projectDTO);
+        when(projectMapper.toDto(project, false, null, null, null, null)).thenReturn(projectDTO);
 
         ProjectDTO result = projectService.findById(oryId, 1L);
 
         assertThat(result).isEqualTo(projectDTO);
-        verify(projectMapper).toDto(project, false, null, null, null);
+        verify(projectMapper).toDto(project, false, null, null, null, null);
     }
 
     @Test
@@ -140,7 +140,7 @@ class ProjectServiceTest {
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(projectRepository, never()).findById(any());
-        verify(projectMapper, never()).toDto(any(), anyBoolean(), any(), any(), any());
+        verify(projectMapper, never()).toDto(any(), anyBoolean(), any(), any(), any(), any());
     }
 
     @Test

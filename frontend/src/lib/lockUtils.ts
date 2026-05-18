@@ -9,6 +9,7 @@ export const EntityType = {
   PROJECT: "Project",
   USER: "User",
   STAKEHOLDER: "Stakeholder",
+  DOCUMENT: "Document",
   FUNCTIONALITY: "Functionality",
   FUNCTIONAL_REQUIREMENT: "FunctionalRequirement",
   NON_FUNCTIONAL_REQUIREMENT: "NonFunctionalRequirement",

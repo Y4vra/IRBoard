@@ -32,6 +32,12 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.findObservableDocumentsForRequirement(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
     }
 
+    @PostMapping("/approve")
+    public ResponseEntity<Void> approveFunctionalRequirementsOfFunctionality(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> documentIds) {
+        documentService.approveDocuments(((User)authentication.getPrincipal()).getOryId(),projectId,documentIds);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentDTO> createDocument(
             @RequestPart("file") MultipartFile file,

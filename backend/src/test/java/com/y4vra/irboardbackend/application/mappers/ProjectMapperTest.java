@@ -57,7 +57,7 @@ class ProjectMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        ProjectDTO dto = new ProjectDTO(5L, "My Project", "desc", "MOSCOW", "FINISHED",false,null,null,null);
+        ProjectDTO dto = new ProjectDTO(5L, "My Project", "desc", "MOSCOW", "FINISHED",false,null, null,null,null);
 
         Project project = mapper.toEntity(dto);
 

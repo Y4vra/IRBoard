@@ -12,6 +12,11 @@ import type { DocumentDTO } from "@/types/Document";
 import type { FunctionalRequirementSummaryDTO, RequirementSummaryDTO } from "@/types/RequirementSummaryDTO";
 import { UpdateDocumentDialog } from "@/components/dialogs/updatingDialogs/UpdateDocumentDialog";
 import { useProject } from "@/hooks/useProject";
+import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
+import { LockIndicator } from "@/components/LockIndicator";
+import { useLocks } from "@/hooks/useLocks";
+import { EntityType } from "@/lib/lockUtils";
+import { useApproveDocuments } from "@/hooks/useApproveRequirements";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -35,7 +40,11 @@ function DocumentDetailView() {
   const { projectId, documentId } = useParams<{ projectId: string; documentId: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { editPermission } = useProject();
+  const { editPermission, isManager } = useProject();
+
+  const { getLock } = useLocks();
+  const lock = getLock(EntityType.DOCUMENT, Number(documentId));
+  const isLocked = !!lock;
 
   const fetchDocument = useCallback(
     () =>
@@ -48,10 +57,15 @@ function DocumentDetailView() {
     [projectId, documentId]
   );
 
-  const { data: document, loading, error,refresh } = useBackendResource<DocumentDTO>({
+  const { data: document, loading, error, refresh } = useBackendResource<DocumentDTO>({
     fetcher: fetchDocument,
     enabled: isAuthenticated,
   });
+
+  const { approveDocuments, loading: approving } = useApproveDocuments({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
 
   if (loading) return <LoadingSpinner />;
 
@@ -80,43 +94,63 @@ function DocumentDetailView() {
         </Button>
       </nav>
 
-      <header className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-100 text-blue-700 rounded-xl">
-              <FileText className="h-8 w-8" />
+      <header className="flex items-start justify-between gap-6">
+        <div className="space-y-3 flex-1">
+          <div className="flex-1 min-w-0 space-y-1">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+              Document
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-100 text-blue-700 rounded-xl shrink-0">
+                <FileText className="h-8 w-8" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-black tracking-tight">{document.fileName}</h1>
+                <p className="text-xs font-mono text-slate-400 pt-2">{document.entityIdentifier}</p>
+                <p className="text-sm text-muted-foreground mt-1 font-mono">{document.mimeType}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-black tracking-tight">{document.fileName}</h1>
-              <p className="text-xs font-mono text-slate-400 pt-2">{document.entityIdentifier}</p>
-              <p className="text-sm text-muted-foreground mt-1 font-mono">{document.mimeType}</p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                {formatBytes(document.fileSize)}
+              </Badge>
+              <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                {document.observers.length} linked requirement{document.observers.length !== 1 ? "s" : ""}
+              </Badge>
+              <EntityStateBadge state={document.state} />
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-3">
-            {document.accessUrl && (
-              <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(document.accessUrl, "_blank")}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" /> Open File
-              </Button>
-            )}
-            
-            {editPermission && (
-              <UpdateDocumentDialog projectId={projectId!} document={document} onSuccess={refresh} />
-            )}
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
-            {formatBytes(document.fileSize)}
-          </Badge>
-          <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
-            {document.observers.length} linked requirement{document.observers.length !== 1 ? "s" : ""}
-          </Badge>
+        <div className="flex flex-col gap-3">
+          {document.accessUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(document.accessUrl, "_blank")}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" /> Open File
+            </Button>
+          )}
+          
+          <div className="flex flex-col gap-3">
+            <LockIndicator lock={lock} />
+            {editPermission && (
+              <UpdateDocumentDialog 
+                projectId={projectId!} 
+                document={document}
+                disabled={isLocked}
+                onSuccess={refresh} 
+                />
+            )}
+            {isManager &&
+              <Button variant="outline" size="sm" 
+                disabled={document.state === "PENDING_APPROVAL"?approving:true}
+                onClick={() => approveDocuments([document.id])}>
+                {approving ? "Approving..." : "Approve document"}
+              </Button>
+            }
+          </div>
         </div>
       </header>
 

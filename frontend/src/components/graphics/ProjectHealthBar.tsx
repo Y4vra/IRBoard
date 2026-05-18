@@ -132,11 +132,14 @@ export function ProjectHealthBar({ project }: ProjectHealthBarProps) {
       {project.stakeholderStats && sumMap(project.stakeholderStats) > 0 && (
         <StatPill label="Stakeholders" stats={project.stakeholderStats} />
       )}
+      {project.documentStats && sumMap(project.documentStats) > 0 && (
+        <StatPill label="Documents" stats={project.documentStats} />
+      )}
       {project.nonFunctionalRequirementStats && sumMap(project.nonFunctionalRequirementStats) > 0 && (
         <StatPill label="NFR" stats={project.nonFunctionalRequirementStats} />
       )}
       {sumMap(frStats) > 0 && (
-        <StatPill label="Requirements" stats={frStats} />
+        <StatPill label="F.Requirements" stats={frStats} />
       )}
     </div>
   )

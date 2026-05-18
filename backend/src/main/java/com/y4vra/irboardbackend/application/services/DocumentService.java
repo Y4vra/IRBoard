@@ -9,6 +9,7 @@ import com.y4vra.irboardbackend.domain.model.Associations;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Requirement;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -43,13 +44,20 @@ public class DocumentService {
         this.projectRepository = projectRepository;
     }
 
+    private void checkEditPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "edit", oryId)) {
+            throw new AccessDeniedException("User not authorized to update documents for this project");
+        }
+    }
+    private void checkViewPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "view", oryId)) {
+            throw new AccessDeniedException("User not authorized to view documents for this project");
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<DocumentDTO> findDocumentsOfProject(String oryId, Long projectId) {
-        boolean hasProjectAccess = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
-
-        if (!hasProjectAccess) {
-            throw new AccessDeniedException("User not authorized to view documents of this project");
-        }
+        checkViewPermission(oryId,String.valueOf(projectId));
         return documentRepository.findAllByProjectId(projectId).stream()
                 .map(doc -> {
                     String url = objStorageService.getDownloadUrl(doc.getS3Key());
@@ -82,11 +90,12 @@ public class DocumentService {
         }
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found"));
         Document document = documentMapper.toEntity(dto);
+        document.setState(EntityState.PENDING_APPROVAL);
         Associations.link(project,document);
         EntitySlugGenerator.setSlug(document, projectId); // generates slug e.g. "1-DOC-20260505-113422-A3F9"
 
         // Reuse the slug as the S3 key — it's already unique
-        String objectKey = projectId + "/" + document.getEntityIdentifier();//error, debería ser projectId/file.getOriginalFilename()
+        String objectKey = projectId + "/" + document.getEntityIdentifier();
         document.setS3Key(objectKey);
 
         try {
@@ -116,9 +125,7 @@ public class DocumentService {
 
     @Transactional
     public DocumentDTO updateDocument(MultipartFile file, DocumentDTO dto, Long projectId, Long documentId, String oryId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
-            throw new AccessDeniedException("User not authorized to update documents for this project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
 
         Document existing = documentRepository.findById(documentId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
@@ -149,10 +156,19 @@ public class DocumentService {
         documentMapper.patch(existing, dto);
         existing.setS3Key(objectKey);
 
+        existing.setState(EntityState.PENDING_APPROVAL);
         Document saved = documentRepository.save(existing);
         saved.notifyObservers();
 
         String url = objStorageService.getDownloadUrl(objectKey);
         return documentMapper.toDtoDetailed(saved, url);
+    }
+
+    @Transactional
+    public void approveDocuments(String oryId, Long projectId, List<Long> documentIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds))
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.APPROVED,EntityState.PENDING_APPROVAL);
     }
 }

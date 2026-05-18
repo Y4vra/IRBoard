@@ -78,6 +78,7 @@ interface ProjectStatsSectionProps {
  * Shows:
  *  • Stakeholder state distribution (donut)
  *  • NFR state distribution (donut)
+ *  • Document state distribution (donut)
  *  • Per-functionality requirement breakdown (stacked bar chart)
  */
 export function ProjectStatsSection({ project }: ProjectStatsSectionProps) {
@@ -85,6 +86,7 @@ export function ProjectStatsSection({ project }: ProjectStatsSectionProps) {
     stakeholderStats,
     nonFunctionalRequirementStats,
     functionalRequirementStats,
+    documentStats,
   } = project
 
   // Aggregate all FR stats into a single map for a global donut
@@ -121,7 +123,10 @@ export function ProjectStatsSection({ project }: ProjectStatsSectionProps) {
     nonFunctionalRequirementStats &&
     Object.values(nonFunctionalRequirementStats).some((v) => v > 0)
 
-  if (!hasStakeholderData && !hasNFRData && !hasFRData) return null
+  const hasDocumentData =
+    documentStats && Object.values(documentStats).some((v) => v > 0)
+
+  if (!hasStakeholderData && !hasNFRData && !hasFRData && !hasDocumentData) return null
 
   return (
     <section className="space-y-4">
@@ -165,6 +170,19 @@ export function ProjectStatsSection({ project }: ProjectStatsSectionProps) {
             </CardHeader>
             <CardContent>
               <StatsChart stats={aggregatedFRStats} size={110} />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Documents */}
+        {hasDocumentData && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-bold">Documents</CardTitle>
+              <CardDescription>State distribution</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StatsChart stats={documentStats!} size={110} />
             </CardContent>
           </Card>
         )}

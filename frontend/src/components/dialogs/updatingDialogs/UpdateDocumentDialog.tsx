@@ -16,12 +16,13 @@ import type { DocumentDTO } from "@/types/Document";
 interface UpdateDocumentDialogProps {
   projectId: string;
   document: DocumentDTO;
+  disabled: boolean;
   onSuccess: () => void;
 }
 
 type UploadStep = "idle" | "uploading" | "done";
 
-export function UpdateDocumentDialog({ projectId, document, onSuccess }: UpdateDocumentDialogProps) {
+export function UpdateDocumentDialog({ projectId, document, disabled, onSuccess }: UpdateDocumentDialogProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<UploadStep>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +108,7 @@ export function UpdateDocumentDialog({ projectId, document, onSuccess }: UpdateD
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" disabled={disabled} variant="outline">
           <Pencil className="mr-2 h-4 w-4" /> Replace File
         </Button>
       </DialogTrigger>

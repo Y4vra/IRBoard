@@ -3,6 +3,7 @@ package com.y4vra.irboardbackend.application.mappers;
 import com.y4vra.irboardbackend.application.dtos.DocumentDTO;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +68,7 @@ class DocumentMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        DocumentDTO dto = new DocumentDTO(7L, "identifier","report.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 2048L, 3L, "url", List.of());
+        DocumentDTO dto = new DocumentDTO(7L, "identifier","report.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 2048L, EntityState.PENDING_APPROVAL.name(),3L, "url", List.of());
 
         Document entity = mapper.toEntity(dto);
 

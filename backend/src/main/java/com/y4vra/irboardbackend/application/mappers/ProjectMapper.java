@@ -13,9 +13,9 @@ import java.util.Map;
 public class ProjectMapper {
 
     public ProjectDTO toDto(Project project) {
-        return toDto(project,false,null,null,null);
+        return toDto(project,false,null,null,null,null);
     }
-    public ProjectDTO toDto(Project project,Boolean editPermission, Map<String,Long> stakeholderStats, Map<String,Long> nonFunctionalRequirementStats, Map<String,Map<String,Long>> functionalRequirementStats) {
+    public ProjectDTO toDto(Project project,Boolean editPermission, Map<String,Long> stakeholderStats, Map<String,Long> documentStats, Map<String,Long> nonFunctionalRequirementStats, Map<String,Map<String,Long>> functionalRequirementStats) {
         if (project == null) return null;
 
         ProjectDTO dto = new ProjectDTO(
@@ -25,7 +25,7 @@ public class ProjectMapper {
                 project.getPriorityStyle() != null ? project.getPriorityStyle().toString() : null,
                 project.getState() != null ? project.getState().toString() : null,
                 editPermission,
-                stakeholderStats,nonFunctionalRequirementStats,functionalRequirementStats
+                stakeholderStats,documentStats,nonFunctionalRequirementStats,functionalRequirementStats
         );
 
         return dto;

@@ -16,6 +16,7 @@ public record DocumentDTO(
     String fileName,
     String mimeType,
     Long fileSize,
+    String state,
     @NotNull(message = "The project ID is mandatory")
     Long projectId,
 

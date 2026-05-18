@@ -25,13 +25,14 @@ interface JpaStatisticsRepository extends JpaRepository<Project, Long> {
         """)
     List<Object[]> countStakeholdersByState(@Param("projectId") Long projectId);
 
-//    @Query("""
-//        SELECT d.state, COUNT(d)
-//        FROM Document d
-//        WHERE d.project.id = :projectId
-//        GROUP BY d.state
-//        """)
-//    List<Object[]> countDocumentsByState(@Param("projectId") Long projectId);
+    @Query("""
+        SELECT d.state, COUNT(d)
+        FROM Document d
+        WHERE d.project.id = :projectId
+        AND d.state <> 'DEACTIVATED'
+        GROUP BY d.state
+        """)
+    List<Object[]> countDocumentsByState(@Param("projectId") Long projectId);
 
     @Query("""
         SELECT r.state, COUNT(r)
@@ -95,10 +96,10 @@ public class StatisticsRepositoryImpl implements StatisticsRepository {
         return toMap(jpaRepository.countStakeholdersByState(projectId));
     }
 
-//    @Override
-//    public Map<String, Long> getDocumentStatistics(Long projectId) {
-//        return toMap(jpaRepository.countDocumentsByState(projectId));
-//    }
+    @Override
+    public Map<String, Long> getDocumentStatistics(Long projectId) {
+        return toMap(jpaRepository.countDocumentsByState(projectId));
+    }
 
     @Override
     public Map<String, Long> getNonFunctionalRequirementStatistics(Long projectId) {
