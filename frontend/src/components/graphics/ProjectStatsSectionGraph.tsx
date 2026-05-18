@@ -9,13 +9,11 @@ import { StatsChart } from "./StatsChart"
 interface StackedBarProps {
   functionalityId: string
   statsByState: Record<string, number>
-  maxTotal: number
 }
 
-function StackedBar({ functionalityId, statsByState, maxTotal }: StackedBarProps) {
+function StackedBar({ functionalityId, statsByState }: StackedBarProps) {
   const slices = buildSlices(statsByState)
   const total = Object.values(statsByState).reduce((s, v) => s + v, 0)
-  const widthPct = maxTotal > 0 ? (total / maxTotal) * 100 : 0
 
   return (
     <div className="flex items-center gap-3 group">
@@ -24,10 +22,7 @@ function StackedBar({ functionalityId, statsByState, maxTotal }: StackedBarProps
       </span>
 
       <div className="flex-1 h-5 bg-slate-100 rounded-full overflow-hidden relative">
-        <div
-          className="h-full flex rounded-full overflow-hidden transition-all duration-500"
-          style={{ width: `${widthPct}%` }}
-        >
+        <div className="h-full flex rounded-full overflow-hidden">
           {slices.map((s) => (
             <div
               key={s.key}
@@ -79,7 +74,7 @@ interface ProjectStatsSectionProps {
  *  • Stakeholder state distribution (donut)
  *  • NFR state distribution (donut)
  *  • Document state distribution (donut)
- *  • Per-functionality requirement breakdown (stacked bar chart)
+ *  • Per-functionality requirement breakdown (stacked bar chart, relative/100%)
  */
 export function ProjectStatsSection({ project }: ProjectStatsSectionProps) {
   const {
@@ -99,17 +94,6 @@ export function ProjectStatsSection({ project }: ProjectStatsSectionProps) {
       })
     })
     return acc
-  }, [functionalRequirementStats])
-
-  // Max total across functionalities (for proportional bar widths)
-  const maxFRTotal = useMemo(() => {
-    if (!functionalRequirementStats) return 1
-    return Math.max(
-      1,
-      ...Object.values(functionalRequirementStats).map((m) =>
-        Object.values(m).reduce((s, v) => s + v, 0)
-      )
-    )
   }, [functionalRequirementStats])
 
   const hasFRData =
@@ -188,26 +172,24 @@ export function ProjectStatsSection({ project }: ProjectStatsSectionProps) {
         )}
       </div>
 
-      {/* Per-functionality stacked bar breakdown */}
+      {/* Per-functionality stacked bar breakdown — relative (100%) */}
       {hasFRData && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-bold">Requirements by Functionality</CardTitle>
             <CardDescription>
-              Each bar represents the total requirements of a functionality, coloured by state.
+              Each bar shows the state distribution as a proportion of that functionality's total.
+              The count is shown on the right.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2.5">
-            {Object.entries(functionalRequirementStats!).map(
-              ([funcId, stateMap]) => (
-                <StackedBar
-                  key={funcId}
-                  functionalityId={funcId}
-                  statsByState={stateMap}
-                  maxTotal={maxFRTotal}
-                />
-              )
-            )}
+            {Object.entries(functionalRequirementStats!).map(([funcId, stateMap]) => (
+              <StackedBar
+                key={funcId}
+                functionalityId={funcId}
+                statsByState={stateMap}
+              />
+            ))}
             <MiniLegend stats={aggregatedFRStats} />
           </CardContent>
         </Card>
