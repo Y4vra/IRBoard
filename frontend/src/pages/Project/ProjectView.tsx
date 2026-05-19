@@ -26,7 +26,7 @@ import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { ProjectStatsSection } from "@/components/graphics/ProjectStatsSectionGraph";
 import { ProjectHealthBar } from "@/components/graphics/ProjectHealthBar";
 import { LinkUserToProjectDialog } from "@/components/dialogs/userLinking/LinkUserToProjectDialog";
-import { useApproveAll } from "@/hooks/useApproveRequirements";
+import { useApproveAll } from "@/hooks/useApproveActions";
 
 const permissionConfig: Record<
   Permission,

@@ -16,7 +16,7 @@ import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { LockIndicator } from "@/components/LockIndicator";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
-import { useApproveDocuments } from "@/hooks/useApproveRequirements";
+import { useApproveDocuments } from "@/hooks/useApproveActions";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";

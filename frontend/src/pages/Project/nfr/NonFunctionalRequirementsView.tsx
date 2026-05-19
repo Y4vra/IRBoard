@@ -23,7 +23,7 @@ import {
   type DropPreview,
 } from "@/lib/reorderUtils"
 import { collectPendingNFRIds } from "@/lib/requirementUtils"
-import { useApproveNFRequirements } from "@/hooks/useApproveRequirements"
+import { useApproveNFRequirements } from "@/hooks/useApproveActions"
 
 // ---------------------------------------------------------------------------
 // API calls

@@ -45,7 +45,7 @@ import {
   midpointOrderValue,
   type DropPreview,
 } from "@/lib/reorderUtils"
-import { useApproveRequirements } from "@/hooks/useApproveRequirements"
+import { useApproveRequirements } from "@/hooks/useApproveActions"
 
 // ---------------------------------------------------------------------------
 // Filter/sort types

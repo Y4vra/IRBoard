@@ -19,6 +19,8 @@ import java.util.Set;
 interface JpaDocumentRepository extends JpaRepository<Document, Long> {
     Optional<Document> findByIdAndProjectId(Long id, Long projectId);
     List<Document> findAllByProjectId(Long projectId);
+    List<Document> findAllByProjectIdAndState(Long projectId, EntityState state);
+    List<Document> findAllByProjectIdAndStateNot(Long projectId, EntityState state);
     @Query("""
         SELECT d FROM Document d JOIN d.observerRequirements r WHERE r.id = :requirementId
     """)
@@ -92,8 +94,12 @@ public class DocumentRepositoryImpl implements DocumentRepository {
 //    }
 
     @Override
-    public List<Document> findAllByProjectId(Long projectId) {
-        return jpaRepository.findAllByProjectId(projectId);
+    public List<Document> findAllByProjectIdNotRemoved(Long projectId) {
+        return jpaRepository.findAllByProjectIdAndStateNot(projectId,EntityState.REMOVED);
+    }
+    @Override
+    public List<Document> findAllByProjectIdRemoved(Long projectId) {
+        return jpaRepository.findAllByProjectIdAndState(projectId,EntityState.REMOVED);
     }
 
     @Override

@@ -37,7 +37,7 @@ import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { sortByOrderValue } from "@/lib/reorderUtils";
-import { useApproveRequirements } from "@/hooks/useApproveRequirements";
+import { useApproveRequirements } from "@/hooks/useApproveActions";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────

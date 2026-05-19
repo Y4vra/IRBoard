@@ -18,16 +18,18 @@ state Removed: Archived, hidden from view
 [*] -down-> PendingApproval : Requirement is created and saved
 
 PendingApproval -right-> Approved 
-Approved -up-> PendingApproval : modified
+Approved --> PendingApproval : modified
 
 Approved -right-> Finished : completed
-Finished -left-> PendingApproval : modified
+Finished ---> PendingApproval : modified
 
-PendingApproval -down-> Deactivated 
-Deactivated -up-> PendingApproval
+PendingApproval -> Deactivated 
+Approved --> Deactivated 
+Finished ---> Deactivated 
+Deactivated --> PendingApproval
 
 Deactivated -down-> Removed
-Removed -up-> Deactivated
+Removed --> Deactivated
 
 Removed -down->[*]
 

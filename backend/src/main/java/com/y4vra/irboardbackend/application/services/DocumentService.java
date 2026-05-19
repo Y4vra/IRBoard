@@ -56,9 +56,19 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public List<DocumentDTO> findDocumentsOfProject(String oryId, Long projectId) {
+    public List<DocumentDTO> findDocumentsNotRemovedOfProject(String oryId, Long projectId) {
         checkViewPermission(oryId,String.valueOf(projectId));
-        return documentRepository.findAllByProjectId(projectId).stream()
+        return documentRepository.findAllByProjectIdNotRemoved(projectId).stream()
+                .map(doc -> {
+                    String url = objStorageService.getDownloadUrl(doc.getS3Key());
+                    return documentMapper.toDtoDetailed(doc, url);
+                })
+                .toList();
+    }
+    @Transactional(readOnly = true)
+    public List<DocumentDTO> findDocumentsRemovedOfProject(String oryId, Long projectId) {
+        checkViewPermission(oryId,String.valueOf(projectId));
+        return documentRepository.findAllByProjectIdRemoved(projectId).stream()
                 .map(doc -> {
                     String url = objStorageService.getDownloadUrl(doc.getS3Key());
                     return documentMapper.toDtoDetailed(doc, url);
@@ -173,7 +183,7 @@ public class DocumentService {
         if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
-        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.DEACTIVATED,List.of(EntityState.PENDING_APPROVAL,EntityState.REMOVED));
+        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.DEACTIVATED,List.of(EntityState.PENDING_APPROVAL,EntityState.APPROVED,EntityState.REMOVED));
     }
     @Transactional
     public void enableDocuments(String oryId, Long projectId, List<Long> documentIds) {

@@ -9,7 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface DocumentRepository {
-    List<Document> findAllByProjectId(Long projectId);
+    List<Document> findAllByProjectIdNotRemoved(Long projectId);
+    List<Document> findAllByProjectIdRemoved(Long projectId);
     Optional<Document> findByIdAndProjectId(Long id,Long projectId);
     Document save(Document doc);
 //    void deleteById(Long id);

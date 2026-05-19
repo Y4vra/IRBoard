@@ -32,7 +32,7 @@ import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
 import { sortByOrderValue } from "@/lib/reorderUtils";
-import { useApproveNFRequirements } from "@/hooks/useApproveRequirements";
+import { useApproveNFRequirements } from "@/hooks/useApproveActions";
 import { LockIndicator } from "@/components/LockIndicator";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";

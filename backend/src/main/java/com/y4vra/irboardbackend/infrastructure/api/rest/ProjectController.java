@@ -74,7 +74,11 @@ public class ProjectController {
 
     @GetMapping("/{projectId}/documents")
     public ResponseEntity<List<DocumentDTO>> getDocuments(Authentication authentication,@PathVariable Long projectId) {
-        return ResponseEntity.ok(documentService.findDocumentsOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+        return ResponseEntity.ok(documentService.findDocumentsNotRemovedOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+    }
+    @GetMapping("/{projectId}/documents/removed")
+    public ResponseEntity<List<DocumentDTO>> getRemovedDocuments(Authentication authentication,@PathVariable Long projectId) {
+        return ResponseEntity.ok(documentService.findDocumentsRemovedOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
     }
 
     @GetMapping("/{projectId}/requestEdit")

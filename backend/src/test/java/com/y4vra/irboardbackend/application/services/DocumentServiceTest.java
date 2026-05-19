@@ -93,11 +93,11 @@ class DocumentServiceTest {
     @Test
     void findDocumentsOfProject_returnsDocumentsWithPresignedUrls() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(documentRepository.findAllByProjectId(projectId)).thenReturn(List.of(document));
+        when(documentRepository.findAllByProjectIdNotRemoved(projectId)).thenReturn(List.of(document));
         when(objStorageService.getDownloadUrl(projectId + "/" + document.getEntityIdentifier())).thenReturn(presignedUrl);
         when(documentMapper.toDtoDetailed(document, presignedUrl)).thenReturn(documentDTO);
 
-        List<DocumentDTO> result = documentService.findDocumentsOfProject(oryId, projectId);
+        List<DocumentDTO> result = documentService.findDocumentsNotRemovedOfProject(oryId, projectId);
 
         assertThat(result).hasSize(1).containsExactly(documentDTO);
     }
@@ -106,10 +106,10 @@ class DocumentServiceTest {
     void findDocumentsOfProject_throwsAccessDeniedWhenNotAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
 
-        assertThatThrownBy(() -> documentService.findDocumentsOfProject(oryId, projectId))
+        assertThatThrownBy(() -> documentService.findDocumentsNotRemovedOfProject(oryId, projectId))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(documentRepository, never()).findAllByProjectId(any());
+        verify(documentRepository, never()).findAllByProjectIdNotRemoved(any());
     }
 
     // ─── findDocumentById ─────────────────────────────────────────────────────

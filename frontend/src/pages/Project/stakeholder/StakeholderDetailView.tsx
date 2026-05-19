@@ -13,7 +13,7 @@ import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
-import { useApproveStakeholders } from "@/hooks/useApproveRequirements";
+import { useApproveStakeholders } from "@/hooks/useApproveActions";
 import { useBackendResource } from "@/hooks/useBackendResource";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
