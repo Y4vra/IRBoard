@@ -530,6 +530,11 @@ A crucial process for the system is the updates triggered by modifications betwe
 #DMM_List(
   [The system must allow users linked to a project access to documents of that project.],
   (
+    [The system must show documents not removed.],
+    [The system must show entities linked to the document.],
+  ),
+  [The system must allow a project manager to access removed documents of that project.],
+  (
     [The system must show entities linked to the document.],
   ),
   [The system must allow a project manager or a requirement engineer to add document to a project.],
@@ -545,11 +550,21 @@ A crucial process for the system is the updates triggered by modifications betwe
     [The user must be linked to the project the document is on.],
     [The system must flag as pending a review any requirements linked to the document.],
   ),
-  [The system must allow a project manager to disable a document.],
+  [The system must allow a project manager or requirement engineer to disable a document.],
   (
     [The system must flag as pending a review any requirements linked to the document.],
   ),
-  [The system must allow a requirement engineer to model diagrams using a Draw.io integration.],
+  [The system must allow a project manager or requirement engineer to enable a disabled document.],
+  (
+    [The system must flag as pending a review any requirements linked to the document.],
+  ),
+  [The system must allow a project manager or requirement engineer to remove a disabled document.],
+  (
+    [The system must flag as pending a review any requirements linked to the document.],
+    [The system must unlink any requirements linked to the document.],
+  ),
+  [The system must allow a project manager to delete permanently a removed document.],
+  [The system must allow a project manager or requirement engineer to model diagrams using a Draw.io integration.],
 )
 ==== Concurrency
 #C_List(
