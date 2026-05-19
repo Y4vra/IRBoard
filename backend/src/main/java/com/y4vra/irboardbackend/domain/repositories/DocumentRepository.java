@@ -22,6 +22,7 @@ public interface DocumentRepository {
     boolean allDocumentsBelongToProject(Long projectId, List<Long> documentIds);
 
     int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState);
+    int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, List<EntityState> oldStates);
 
     int deleteRemovedByIdsAndProject(List<Long> documentIds, Long projectId);
 }

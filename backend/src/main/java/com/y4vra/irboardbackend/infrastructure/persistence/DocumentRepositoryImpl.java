@@ -54,13 +54,22 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
     boolean existsAllInProject(Long projectId,List<Long> documentIds,long expectedCount);
     @Modifying
     @Query("""
-   UPDATE Document d
-   SET d.state = :newState
-   WHERE d.id IN :documentIds
-   AND d.project.id = :projectId
-   AND d.state = :oldState
-   """)
+       UPDATE Document d
+       SET d.state = :newState
+       WHERE d.id IN :documentIds
+       AND d.project.id = :projectId
+       AND d.state = :oldState
+       """)
     int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState);
+    @Modifying
+    @Query("""
+       UPDATE Document d
+       SET d.state = :newState
+       WHERE d.id IN :documentIds
+       AND d.project.id = :projectId
+       AND d.state IN :oldStates
+       """)
+    int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, List<EntityState> oldStates);
 }
 
 @Component
@@ -124,6 +133,10 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     @Override
     public int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState) {
         return jpaRepository.updateStateByIdsAndProject(documentIds,projectId,newState,oldState);
+    }
+    @Override
+    public int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, List<EntityState> oldStates) {
+        return jpaRepository.updateStateByIdsAndProject(documentIds,projectId,newState,oldStates);
     }
 
     @Override

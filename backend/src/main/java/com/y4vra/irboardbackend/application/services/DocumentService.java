@@ -173,7 +173,7 @@ public class DocumentService {
         if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
-        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.DEACTIVATED,EntityState.PENDING_APPROVAL);
+        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.DEACTIVATED,List.of(EntityState.PENDING_APPROVAL,EntityState.REMOVED));
     }
     @Transactional
     public void enableDocuments(String oryId, Long projectId, List<Long> documentIds) {
