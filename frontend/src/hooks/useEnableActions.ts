@@ -6,20 +6,20 @@ interface ActionOptions {
   onSuccess?: () => void
 }
 
-// ── Disable Documents ─────────────────────────────────────────────────────────
+// ── Enable Documents ──────────────────────────────────────────────────────────
 
-export function useDisableDocuments({ projectId, onSuccess }: ActionOptions) {
+export function useEnableDocuments({ projectId, onSuccess }: ActionOptions) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const disableDocuments = useCallback(
+  const enableDocuments = useCallback(
     async (documentIds: number[]) => {
       if (!documentIds.length) return
       setLoading(true)
       setError(null)
       try {
         const res = await fetch(
-          `${API_BASE_URL}/projects/${projectId}/documents/disable`,
+          `${API_BASE_URL}/projects/${projectId}/documents/enable`,
           {
             method: "POST",
             credentials: "include",
@@ -29,7 +29,7 @@ export function useDisableDocuments({ projectId, onSuccess }: ActionOptions) {
         )
         if (!res.ok) {
           const err = await res.json().catch(() => null)
-          throw new Error(err?.message || "Failed to disable documents")
+          throw new Error(err?.message || "Failed to enable documents")
         }
         onSuccess?.()
       } catch (e) {
@@ -42,23 +42,23 @@ export function useDisableDocuments({ projectId, onSuccess }: ActionOptions) {
     [projectId, onSuccess]
   )
 
-  return { disableDocuments, loading, error }
+  return { enableDocuments, loading, error }
 }
 
-// ── Disable Stakeholders ──────────────────────────────────────────────────────
+// ── Enable Stakeholders ───────────────────────────────────────────────────────
 
-export function useDisableStakeholders({ projectId, onSuccess }: ActionOptions) {
+export function useEnableStakeholders({ projectId, onSuccess }: ActionOptions) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const disableStakeholders = useCallback(
+  const enableStakeholders = useCallback(
     async (stakeholderIds: number[]) => {
       if (!stakeholderIds.length) return
       setLoading(true)
       setError(null)
       try {
         const res = await fetch(
-          `${API_BASE_URL}/projects/${projectId}/stakeholders/disable`,
+          `${API_BASE_URL}/projects/${projectId}/stakeholders/enable`,
           {
             method: "POST",
             credentials: "include",
@@ -68,7 +68,7 @@ export function useDisableStakeholders({ projectId, onSuccess }: ActionOptions) 
         )
         if (!res.ok) {
           const err = await res.json().catch(() => null)
-          throw new Error(err?.message || "Failed to disable stakeholders")
+          throw new Error(err?.message || "Failed to enable stakeholders")
         }
         onSuccess?.()
       } catch (e) {
@@ -81,23 +81,23 @@ export function useDisableStakeholders({ projectId, onSuccess }: ActionOptions) 
     [projectId, onSuccess]
   )
 
-  return { disableStakeholders, loading, error }
+  return { enableStakeholders, loading, error }
 }
 
-// ── Disable Non-Functional Requirements ──────────────────────────────────────
+// ── Enable Non-Functional Requirements ───────────────────────────────────────
 
-export function useDisableNFRequirements({ projectId, onSuccess }: ActionOptions) {
+export function useEnableNFRequirements({ projectId, onSuccess }: ActionOptions) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const disableNFRequirements = useCallback(
+  const enableNFRequirements = useCallback(
     async (nfrIds: number[]) => {
       if (!nfrIds.length) return
       setLoading(true)
       setError(null)
       try {
         const res = await fetch(
-          `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/disable`,
+          `${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/enable`,
           {
             method: "POST",
             credentials: "include",
@@ -107,7 +107,7 @@ export function useDisableNFRequirements({ projectId, onSuccess }: ActionOptions
         )
         if (!res.ok) {
           const err = await res.json().catch(() => null)
-          throw new Error(err?.message || "Failed to disable non-functional requirements")
+          throw new Error(err?.message || "Failed to enable non-functional requirements")
         }
         onSuccess?.()
       } catch (e) {
@@ -120,23 +120,23 @@ export function useDisableNFRequirements({ projectId, onSuccess }: ActionOptions
     [projectId, onSuccess]
   )
 
-  return { disableNFRequirements, loading, error }
+  return { enableNFRequirements, loading, error }
 }
 
-// ── Disable Functional Requirements ──────────────────────────────────────────
+// ── Enable Functional Requirements ───────────────────────────────────────────
 
-export function useDisableFunctionalRequirements({ projectId, onSuccess }: ActionOptions) {
+export function useEnableFunctionalRequirements({ projectId, onSuccess }: ActionOptions) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const disableFunctionalRequirements = useCallback(
+  const enableFunctionalRequirements = useCallback(
     async (functionalityId: string, functionalRequirementIds: number[]) => {
       if (!functionalRequirementIds.length) return
       setLoading(true)
       setError(null)
       try {
         const res = await fetch(
-          `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/disable`,
+          `${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/enable`,
           {
             method: "POST",
             credentials: "include",
@@ -146,7 +146,7 @@ export function useDisableFunctionalRequirements({ projectId, onSuccess }: Actio
         )
         if (!res.ok) {
           const err = await res.json().catch(() => null)
-          throw new Error(err?.message || "Failed to disable functional requirements")
+          throw new Error(err?.message || "Failed to enable functional requirements")
         }
         onSuccess?.()
       } catch (e) {
@@ -159,5 +159,5 @@ export function useDisableFunctionalRequirements({ projectId, onSuccess }: Actio
     [projectId, onSuccess]
   )
 
-  return { disableFunctionalRequirements, loading, error }
+  return { enableFunctionalRequirements, loading, error }
 }
