@@ -9,12 +9,10 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface DocumentRepository {
-    List<Document> findAll();
-    List<Document> findAllById(Iterable<Long> ids);
     List<Document> findAllByProjectId(Long projectId);
-    Optional<Document> findById(Long id);
+    Optional<Document> findByIdAndProjectId(Long id,Long projectId);
     Document save(Document doc);
-    void deleteById(Long id);
+//    void deleteById(Long id);
 
     List<Document> findAllObservedByRequirement(Long requirementId);
     List<Document> findObservableDocumentsForRequirement(Long projectId,Long requirementId);
@@ -24,4 +22,6 @@ public interface DocumentRepository {
     boolean allDocumentsBelongToProject(Long projectId, List<Long> documentIds);
 
     int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState);
+
+    int deleteRemovedByIdsAndProject(List<Long> documentIds, Long projectId);
 }

@@ -57,13 +57,10 @@ public class UserService {
                 "Project", String.valueOf(projectId), "managers"
         );
 
-        Set<String> managerSet = new HashSet<>(managerOryIds);
-
         List<UserDTO> managers = userRepository.findByOryIdIn(managerOryIds)
                 .stream()
                 .map(userMapper::toDto)
                 .toList();
-
         List<UserDTO> notManagers = userRepository.findByOryIdNotIn(managerOryIds)
                 .stream()
                 .map(userMapper::toDto)

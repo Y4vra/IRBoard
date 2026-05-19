@@ -119,7 +119,7 @@ class DocumentServiceTest {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(functionalityService.getViewableFunctionalityIds(oryId, projectId))
                 .thenReturn(viewableFunctionalities);
-        when(documentRepository.findById(documentId)).thenReturn(Optional.of(document));
+        when(documentRepository.findByIdAndProjectId(documentId,projectId)).thenReturn(Optional.of(document));
         when(objStorageService.getDownloadUrl(projectId + "/" + document.getEntityIdentifier())).thenReturn(presignedUrl);
         when(documentRepository.findFilteredRequirementsForDocument(documentId, viewableFunctionalities))
                 .thenReturn(List.of());
@@ -134,13 +134,11 @@ class DocumentServiceTest {
     @Test
     void findDocumentById_throwsAccessDeniedWhenNotAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
-        when(functionalityService.getViewableFunctionalityIds(oryId, projectId))
-                .thenReturn(viewableFunctionalities);
 
         assertThatThrownBy(() -> documentService.findDocumentById(oryId, projectId, documentId))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(documentRepository, never()).findById(any());
+        verify(documentRepository, never()).findByIdAndProjectId(any(),any());
     }
 
     @Test
@@ -148,7 +146,7 @@ class DocumentServiceTest {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(functionalityService.getViewableFunctionalityIds(oryId, projectId))
                 .thenReturn(viewableFunctionalities);
-        when(documentRepository.findById(documentId)).thenReturn(Optional.empty());
+        when(documentRepository.findByIdAndProjectId(documentId,projectId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> documentService.findDocumentById(oryId, projectId, documentId))
                 .isInstanceOf(EntityNotFoundException.class)

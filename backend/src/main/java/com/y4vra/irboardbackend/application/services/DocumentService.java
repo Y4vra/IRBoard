@@ -68,13 +68,9 @@ public class DocumentService {
 
     @Transactional(readOnly = true)
     public DocumentDTO findDocumentById(String oryId, Long projectId, Long documentId) {
-        boolean hasProjectAccess = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
+        checkViewPermission(oryId,String.valueOf(projectId));
         Set<Long> viewableFunctionalities = functionalityService.getViewableFunctionalityIds(oryId, projectId);
-
-        if (!hasProjectAccess) {
-            throw new AccessDeniedException("User not authorized to view documents of this project");
-        }
-        Document document = documentRepository.findById(documentId)
+        Document document = documentRepository.findByIdAndProjectId(documentId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found"));
 
         String url = objStorageService.getDownloadUrl(document.getS3Key());
@@ -127,12 +123,9 @@ public class DocumentService {
     public DocumentDTO updateDocument(MultipartFile file, DocumentDTO dto, Long projectId, Long documentId, String oryId) {
         checkEditPermission(oryId,String.valueOf(projectId));
 
-        Document existing = documentRepository.findById(documentId)
+        Document existing = documentRepository.findByIdAndProjectId(documentId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
-
-        if (!existing.getProjectId().equals(projectId)) {
-            throw new AccessDeniedException("Document does not belong to this project");
-        }
+        existing.checkCanBeModified();
 
         try {
             objStorageService.deleteFile(existing.getS3Key());
@@ -166,9 +159,44 @@ public class DocumentService {
 
     @Transactional
     public void approveDocuments(String oryId, Long projectId, List<Long> documentIds) {
-        checkEditPermission(oryId,String.valueOf(projectId));
-        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds))
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
+        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)) {
             throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
         documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.APPROVED,EntityState.PENDING_APPROVAL);
+    }
+    @Transactional
+    public void disableDocuments(String oryId, Long projectId, List<Long> documentIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.DEACTIVATED,EntityState.PENDING_APPROVAL);
+    }
+    @Transactional
+    public void enableDocuments(String oryId, Long projectId, List<Long> documentIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.PENDING_APPROVAL,EntityState.DEACTIVATED);
+    }
+    @Transactional
+    public void removeDocuments(String oryId, Long projectId, List<Long> documentIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.REMOVED,EntityState.DEACTIVATED);
+    }
+    @Transactional
+    public void deleteDocuments(String oryId, Long projectId, List<Long> documentIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        documentRepository.deleteRemovedByIdsAndProject(documentIds,projectId);
     }
 }

@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.errors.DeactivatedEntityException;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
@@ -39,6 +40,14 @@ public class Document extends ProjectElement {
 
     public void notifyObservers() {
         observerRequirements.forEach(Requirement::update);
+    }
+
+    public void checkCanBeModified() {
+        if (state.equals(EntityState.DEACTIVATED)){
+            throw new DeactivatedEntityException("The document is deactivated and cannot be modified");
+        } else if (state.equals(EntityState.REMOVED)){
+            throw new DeactivatedEntityException("The document is removed and cannot be modified");
+        }
     }
 
     public Long getId() { return id; }

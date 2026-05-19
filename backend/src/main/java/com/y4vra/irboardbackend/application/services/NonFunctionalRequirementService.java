@@ -113,7 +113,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     public void observeDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(projectId));
         Associations.observe(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
+                documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
     public void unobserveStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
@@ -125,7 +125,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     public void unobserveDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(projectId));
         Associations.unobserve(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
+                documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
 
     @Transactional(readOnly = true)
@@ -182,7 +182,9 @@ public class NonFunctionalRequirementService extends RequirementService {
     }
     @Transactional
     public void approveRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
-        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         nfrRepository.updateStateByIdsAndProject(nonFunctionalRequirementIds,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);

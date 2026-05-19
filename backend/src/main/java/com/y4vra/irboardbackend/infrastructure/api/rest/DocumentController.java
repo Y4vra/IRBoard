@@ -33,8 +33,28 @@ public class DocumentController {
     }
 
     @PostMapping("/approve")
-    public ResponseEntity<Void> approveFunctionalRequirementsOfFunctionality(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> documentIds) {
+    public ResponseEntity<Void> approveDocuments(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> documentIds) {
         documentService.approveDocuments(((User)authentication.getPrincipal()).getOryId(),projectId,documentIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/disable")
+    public ResponseEntity<Void> disableDocuments(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> documentIds) {
+        documentService.disableDocuments(((User)authentication.getPrincipal()).getOryId(),projectId,documentIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/enable")
+    public ResponseEntity<Void> enableDocuments(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> documentIds) {
+        documentService.enableDocuments(((User)authentication.getPrincipal()).getOryId(),projectId,documentIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/remove")
+    public ResponseEntity<Void> removeDocuments(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> documentIds) {
+        documentService.removeDocuments(((User)authentication.getPrincipal()).getOryId(),projectId,documentIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/delete")
+    public ResponseEntity<Void> deleteDocuments(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> documentIds) {
+        documentService.deleteDocuments(((User)authentication.getPrincipal()).getOryId(),projectId,documentIds);
         return ResponseEntity.ok().build();
     }
 

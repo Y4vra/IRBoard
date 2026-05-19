@@ -77,20 +77,22 @@ class ProjectServiceTest {
     @Test
     void findProjectsForUser_returnsOnlyAuthorizedProjects() {
         String oryId = "user-ory-123";
-        when(permService.getAuthorizedObjects(oryId, "Project", "view")).thenReturn(List.of("1"));
+        when(projectRepository.findAllIds()).thenReturn(List.of(1L));
+        when(permService.filterAuthorizedObjects(oryId, "Project", "view", List.of(String.valueOf(1L)))).thenReturn(List.of("1"));
         when(projectRepository.findAllById(List.of(1L))).thenReturn(List.of(project));
         when(projectMapper.toDto(project)).thenReturn(projectDTO);
 
         List<ProjectDTO> result = projectService.findProjectsForUser(oryId);
 
         assertThat(result).containsExactly(projectDTO);
-        verify(permService).getAuthorizedObjects(oryId, "Project", "view");
+        verify(permService).filterAuthorizedObjects(oryId, "Project", "view",List.of(String.valueOf(1L)));
     }
 
     @Test
     void findProjectsForUser_returnsEmptyListWhenNoPermissions() {
         String oryId = "user-ory-456";
-        when(permService.getAuthorizedObjects(oryId, "Project", "view")).thenReturn(List.of());
+        when(projectRepository.findAllIds()).thenReturn(List.of(1L));
+        when(permService.filterAuthorizedObjects(oryId, "Project", "view", List.of(String.valueOf(1L)))).thenReturn(List.of());
         when(projectRepository.findAllById(List.of())).thenReturn(List.of());
 
         List<ProjectDTO> result = projectService.findProjectsForUser(oryId);
@@ -121,6 +123,7 @@ class ProjectServiceTest {
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(false);
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(statisticsRepository.getStakeholderStatistics(1L)).thenReturn(null);
+        when(statisticsRepository.getDocumentStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getNonFunctionalRequirementStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getFunctionalitiesStatistics(1L)).thenReturn(null);
         when(projectMapper.toDto(project, false, null, null, null, null)).thenReturn(projectDTO);

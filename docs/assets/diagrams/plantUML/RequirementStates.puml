@@ -2,11 +2,8 @@
 title Lifecycle of a Requirement (IR-Board)
 
 state PendingApproval{
-  state Reviewed : By default
-  state PendingReview {
-    PendingReview : Flagged due to changes in 
-    PendingReview : linked Stakeholders/Docs/Requirements
-  }
+  PendingApproval : Flagged due to changes in 
+  PendingApproval : linked Stakeholders/Docs/Requirements
 }
 
 state Approved
@@ -19,8 +16,6 @@ state Removed: Archived, hidden from view
 
 ' Transiciones
 [*] -down-> PendingApproval : Requirement is created and saved
-
-PendingReview -up-> Reviewed : Review completed (modifying it or accepting it)
 
 PendingApproval -right-> Approved 
 Approved -up-> PendingApproval : modified

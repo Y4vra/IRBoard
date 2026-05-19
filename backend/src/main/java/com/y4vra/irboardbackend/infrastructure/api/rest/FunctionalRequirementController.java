@@ -76,8 +76,8 @@ public class FunctionalRequirementController {
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/linkDocument")
-    public ResponseEntity<Void> linkDocument(@RequestBody Long documentId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
-        functionalRequirementService.observeDocument(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,documentId);
+    public ResponseEntity<Void> linkDocument(@RequestBody Long documentId,@PathVariable Long projectId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.observeDocument(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,documentId);
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/linkRequirement")
@@ -91,8 +91,8 @@ public class FunctionalRequirementController {
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/unlinkDocument")
-    public ResponseEntity<Void> unlinkDocument(@RequestBody Long documentId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
-        functionalRequirementService.unobserveDocument(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,documentId);
+    public ResponseEntity<Void> unlinkDocument(@RequestBody Long documentId,@PathVariable Long projectId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.unobserveDocument(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,documentId);
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/unlinkRequirement")

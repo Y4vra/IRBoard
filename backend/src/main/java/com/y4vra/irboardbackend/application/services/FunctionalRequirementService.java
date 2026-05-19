@@ -139,10 +139,10 @@ public class FunctionalRequirementService extends RequirementService {
                             stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
-    public void observeDocument(String oryId, Long functionalityId,Long requirementId, Long documentId) {
+    public void observeDocument(String oryId,Long projectId, Long functionalityId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
         Associations.observe(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
+                documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
     public void observeRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
@@ -157,10 +157,10 @@ public class FunctionalRequirementService extends RequirementService {
                 stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
-    public void unobserveDocument(String oryId, Long functionalityId,Long requirementId, Long documentId) {
+    public void unobserveDocument(String oryId,Long projectId, Long functionalityId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
         Associations.unobserve(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                documentRepository.findById(documentId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
+                documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
     public void unobserveRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
@@ -249,6 +249,9 @@ public class FunctionalRequirementService extends RequirementService {
     }
     @Transactional
     public void approveRequirements(String oryId, Long projectId, Long functionalityId, List<Long> functionalRequirementIds) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
         checkEditPermission(oryId,String.valueOf(functionalityId));
         if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(functionalityId,projectId,functionalRequirementIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");

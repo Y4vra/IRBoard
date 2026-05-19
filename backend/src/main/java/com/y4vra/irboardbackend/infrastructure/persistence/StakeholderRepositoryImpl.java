@@ -18,6 +18,9 @@ import java.util.Set;
 @Repository
 interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
     List<Stakeholder> findByProjectId(Long projectId);
+
+    List<Stakeholder> findByProjectIdAndStateNot(Long projectId,EntityState state);
+
     @Query("""
         SELECT r FROM Requirement r
         LEFT JOIN FETCH TREAT(r AS FunctionalRequirement).functionality
@@ -41,12 +44,13 @@ interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
     @Query("""
         SELECT s FROM Stakeholder s
         WHERE s.project.id = :projectId
+        AND s.state NOT IN :states
         AND NOT EXISTS (
             SELECT 1 FROM s.observerRequirements r
             WHERE r.id = :requirementId
         )
     """)
-    List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId);
+    List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId,List<EntityState> notAllowedStates);
     @Query("""
    SELECT COUNT(s) = :expectedCount
    FROM Stakeholder s
@@ -78,31 +82,30 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     public List<Stakeholder> findAll() {
         return jpaRepository.findAll();
     }
-
     @Override
     public List<Stakeholder> findAllById(Iterable<Long> ids) {
         return jpaRepository.findAllById(ids);
     }
-
     @Override
-    public Optional<Stakeholder> findById(Long id) {
-        return jpaRepository.findById(id);
-    }
-
+    public Optional<Stakeholder> findById(Long id) {return jpaRepository.findById(id);}
     @Override
     public List<Stakeholder> findByProjectId(Long projectId) {
         return jpaRepository.findByProjectId(projectId);
     }
-
     @Override
     public Stakeholder save(Stakeholder stakeholder) {
         return jpaRepository.save(stakeholder);
     }
-
     @Override
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
     }
+
+    @Override
+    public List<Stakeholder> findByProjectIdNotRemoved(Long projectId){
+        return jpaRepository.findByProjectIdAndStateNot(projectId,EntityState.REMOVED);
+    }
+
     @Override
     public List<Requirement> findFilteredRequirementsForStakeholder(Long stakeholderId, Set<Long> functionalityIds) {
         return jpaRepository.findFilteredRequirementsForStakeholder(stakeholderId, functionalityIds);
@@ -113,7 +116,7 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     }
     @Override
     public List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId) {
-        return jpaRepository.findObservableStakeholdersForRequirement(projectId,requirementId);
+        return jpaRepository.findObservableStakeholdersForRequirement(projectId,requirementId, List.of(EntityState.REMOVED,EntityState.DEACTIVATED));
     }
 
     @Override

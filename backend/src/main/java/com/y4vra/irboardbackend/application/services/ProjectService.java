@@ -117,7 +117,9 @@ public class ProjectService {
     }
     @Transactional
     public void approveAllElements(String oryId, Long projectId) {
-        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
         projectRepository.approveAllElementsInProject(projectId);
     }
 }

@@ -51,14 +51,6 @@ public class StakeholderService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public List<StakeholderDTO> findStakeholdersOfProject(String oryId, long projectId) {
-        checkViewPermission(oryId,String.valueOf(projectId));
-        return stakeholderRepository.findByProjectId(projectId).stream()
-                .map(stakeholderMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
     @Transactional
     public StakeholderDTO createStakeholder(String oryId,StakeholderDTO dto, long projectId) {
         checkEditPermission(oryId,String.valueOf(projectId));
@@ -75,6 +67,13 @@ public class StakeholderService {
 
         Stakeholder saved = stakeholderRepository.save(stakeholder);
         return stakeholderMapper.toDto(saved);
+    }
+    @Transactional(readOnly = true)
+    public List<StakeholderDTO> findStakeholdersNotRemovedOfProject(String oryId, long projectId) {
+        checkViewPermission(oryId,String.valueOf(projectId));
+        return stakeholderRepository.findByProjectIdNotRemoved(projectId).stream()
+                .map(stakeholderMapper::toDto)
+                .collect(Collectors.toList());
     }
     @Transactional(readOnly = true)
     public StakeholderDTO findStakeholderById(String oryId, long projectId, long stakeholderId) {
@@ -101,6 +100,7 @@ public class StakeholderService {
     public void requestEdit(User user,Long projectId,Long stkhId) {
         checkEditPermission(user.getOryId(),String.valueOf(projectId));
         Stakeholder stakeholder = stakeholderRepository.findById(stkhId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        stakeholder.checkCanBeModified();
         entityLockService.lock(stakeholder,user);
     }
 
@@ -111,6 +111,7 @@ public class StakeholderService {
         if(!entityLockService.isLockedByUser(stakeholder, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
+        stakeholder.checkCanBeModified();
         stakeholderMapper.patchEntity(patch, stakeholder);
         stakeholder.setState(EntityState.PENDING_APPROVAL);
         entityLockService.unlock(stakeholder,user);
@@ -120,7 +121,9 @@ public class StakeholderService {
 
     @Transactional
     public void approveStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
-        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
         if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         stakeholderRepository.updateStateByIdsAndProject(stakeholderIds,projectId, EntityState.APPROVED,EntityState.PENDING_APPROVAL);

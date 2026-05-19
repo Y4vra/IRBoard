@@ -36,6 +36,7 @@ class DocumentMapperTest {
         document.setMimeType("application/pdf");
         document.setFileSize(1024L);
         document.setProject(project);
+        document.setState(EntityState.PENDING_APPROVAL);
 
         DocumentDTO dto = mapper.toDtoDetailed(document, "https://minio/spec.pdf");
 
@@ -55,6 +56,7 @@ class DocumentMapperTest {
         document.setMimeType("application/pdf");
         document.setFileSize(512L);
         document.setProject(null);
+        document.setState(EntityState.PENDING_APPROVAL);
 
         DocumentDTO dto = mapper.toDto(document);
 

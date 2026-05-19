@@ -64,7 +64,7 @@ public class ProjectController {
 
     @GetMapping("/{projectId}/stakeholders")
     public ResponseEntity<List<StakeholderDTO>> getStakeholders(Authentication authentication, @PathVariable Long projectId) {
-        return ResponseEntity.ok(stakeholderService.findStakeholdersOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+        return ResponseEntity.ok(stakeholderService.findStakeholdersNotRemovedOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
     }
 
     @GetMapping("/{projectId}/nonFunctionalRequirements")

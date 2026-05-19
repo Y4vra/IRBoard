@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.errors.DeactivatedEntityException;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
@@ -58,5 +59,13 @@ public class Stakeholder extends ProjectElement {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public void checkCanBeModified() {
+        if (state.equals(EntityState.DEACTIVATED)){
+            throw new DeactivatedEntityException("The stakeholder is deactivated and cannot be modified");
+        } else if (state.equals(EntityState.REMOVED)){
+            throw new DeactivatedEntityException("The stakeholder is removed and cannot be modified");
+        }
     }
 }

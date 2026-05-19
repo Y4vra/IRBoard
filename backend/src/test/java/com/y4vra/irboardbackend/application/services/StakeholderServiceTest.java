@@ -66,10 +66,10 @@ class StakeholderServiceTest {
     @Test
     void findStakeholdersOfProject_returnsStakeholdersWhenAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(stakeholderRepository.findByProjectId(projectId)).thenReturn(List.of(stakeholder));
+        when(stakeholderRepository.findByProjectIdNotRemoved(projectId)).thenReturn(List.of(stakeholder));
         when(stakeholderMapper.toDto(stakeholder)).thenReturn(stakeholderDTO);
 
-        List<StakeholderDTO> result = stakeholderService.findStakeholdersOfProject(oryId, projectId);
+        List<StakeholderDTO> result = stakeholderService.findStakeholdersNotRemovedOfProject(oryId, projectId);
 
         assertThat(result).hasSize(1).containsExactly(stakeholderDTO);
     }
@@ -78,7 +78,7 @@ class StakeholderServiceTest {
     void findStakeholdersOfProject_throwsAccessDeniedWhenNotAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
 
-        assertThatThrownBy(() -> stakeholderService.findStakeholdersOfProject(oryId, projectId))
+        assertThatThrownBy(() -> stakeholderService.findStakeholdersNotRemovedOfProject(oryId, projectId))
                 .isInstanceOf(AccessDeniedException.class);
 
         verify(stakeholderRepository, never()).findByProjectId(any());
@@ -87,9 +87,8 @@ class StakeholderServiceTest {
     @Test
     void findStakeholdersOfProject_returnsEmptyListWhenNoneExist() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(stakeholderRepository.findByProjectId(projectId)).thenReturn(List.of());
 
-        List<StakeholderDTO> result = stakeholderService.findStakeholdersOfProject(oryId, projectId);
+        List<StakeholderDTO> result = stakeholderService.findStakeholdersNotRemovedOfProject(oryId, projectId);
 
         assertThat(result).isEmpty();
         verify(stakeholderMapper, never()).toDto(any());

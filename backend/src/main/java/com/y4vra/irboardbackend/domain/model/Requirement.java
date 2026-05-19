@@ -1,5 +1,7 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.errors.DeactivatedEntityException;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
@@ -54,6 +56,13 @@ public abstract class Requirement extends ProjectElement {
     }
     public void notifyObservers() {
         observerRequirements.forEach(Requirement::update);
+    }
+    public void checkCanBeModified() {
+        if (state.equals(RequirementState.DEACTIVATED)){
+            throw new DeactivatedEntityException("The requirement is deactivated and cannot be modified");
+        } else if (state.equals(RequirementState.REMOVED)){
+            throw new DeactivatedEntityException("The requirement is removed and cannot be modified");
+        }
     }
 
     public Long getId() { return id; }
