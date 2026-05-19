@@ -27,6 +27,15 @@ interface JpaProjectRepository extends JpaRepository<Project, Long> {
 
     @Modifying
     @Query("""
+        UPDATE Document d
+        SET d.state = :newState
+        WHERE d.project.id = :projectId
+        AND d.state = :oldState
+        """)
+    void changeStateAllDocuments(Long projectId, EntityState newState, EntityState oldState);
+
+    @Modifying
+    @Query("""
         UPDATE NonFunctionalRequirement r
         SET r.state = :newState
         WHERE r.project.id = :projectId
@@ -85,6 +94,7 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Transactional
     public void approveAllElementsInProject(Long projectId) {
         jpaRepository.changeStateAllStakeholders(projectId,EntityState.APPROVED,EntityState.PENDING_APPROVAL);
+        jpaRepository.changeStateAllDocuments(projectId,EntityState.APPROVED,EntityState.PENDING_APPROVAL);
         jpaRepository.changeStateAllNonFunctionalRequirements(projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
         jpaRepository.changeStateAllFunctionalRequirements(projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
     }
