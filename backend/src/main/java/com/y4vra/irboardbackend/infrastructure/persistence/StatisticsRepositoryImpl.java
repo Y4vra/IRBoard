@@ -20,7 +20,7 @@ interface JpaStatisticsRepository extends JpaRepository<Project, Long> {
         SELECT s.state, COUNT(s)
         FROM Stakeholder s
         WHERE s.project.id = :projectId
-        AND s.state <> 'DEACTIVATED'
+        AND s.state NOT IN ('DEACTIVATED','REMOVED')
         GROUP BY s.state
         """)
     List<Object[]> countStakeholdersByState(@Param("projectId") Long projectId);
@@ -29,7 +29,7 @@ interface JpaStatisticsRepository extends JpaRepository<Project, Long> {
         SELECT d.state, COUNT(d)
         FROM Document d
         WHERE d.project.id = :projectId
-        AND d.state <> 'DEACTIVATED'
+        AND d.state NOT IN ('DEACTIVATED','REMOVED')
         GROUP BY d.state
         """)
     List<Object[]> countDocumentsByState(@Param("projectId") Long projectId);
@@ -38,7 +38,7 @@ interface JpaStatisticsRepository extends JpaRepository<Project, Long> {
         SELECT r.state, COUNT(r)
         FROM NonFunctionalRequirement r
         WHERE r.project.id = :projectId
-        AND r.state <> 'DEACTIVATED'
+        AND r.state NOT IN ('DEACTIVATED','REMOVED')
         GROUP BY r.state
         """)
     List<Object[]> countNonFunctionalRequirementsByState(@Param("projectId") Long projectId);
@@ -47,7 +47,7 @@ interface JpaStatisticsRepository extends JpaRepository<Project, Long> {
         SELECT r.state, COUNT(r)
         FROM FunctionalRequirement r
         WHERE r.functionality.project.id = :projectId
-        AND r.state <> 'DEACTIVATED'
+        AND r.state NOT IN ('DEACTIVATED','REMOVED')
         GROUP BY r.state
         """)
     List<Object[]> countAllFunctionalRequirementsByState(@Param("projectId") Long projectId);
@@ -57,7 +57,7 @@ interface JpaStatisticsRepository extends JpaRepository<Project, Long> {
         FROM FunctionalRequirement r
         WHERE r.functionality.id = :functionalityId
         AND r.functionality.project.id = :projectId
-        AND r.state <> 'DEACTIVATED'
+        AND r.state NOT IN ('DEACTIVATED','REMOVED')
         GROUP BY r.state
         """)
     List<Object[]> countFunctionalRequirementsByFunctionality(
@@ -69,7 +69,7 @@ interface JpaStatisticsRepository extends JpaRepository<Project, Long> {
     SELECT r.functionality.id, r.state, COUNT(r)
     FROM FunctionalRequirement r
     WHERE r.functionality.project.id = :projectId
-    AND r.state <> 'DEACTIVATED'
+    AND r.state NOT IN ('DEACTIVATED','REMOVED')
     GROUP BY r.functionality.id, r.state
     """)
     List<Object[]> countFunctionalRequirementsByFunctionality(@Param("projectId") Long projectId);

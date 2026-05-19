@@ -54,6 +54,11 @@ public class DocumentService {
             throw new AccessDeniedException("User not authorized to view documents for this project");
         }
     }
+    private void checkProjectManagerPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
+    }
 
     @Transactional(readOnly = true)
     public List<DocumentDTO> findDocumentsNotRemovedOfProject(String oryId, Long projectId) {
@@ -82,7 +87,8 @@ public class DocumentService {
         Set<Long> viewableFunctionalities = functionalityService.getViewableFunctionalityIds(oryId, projectId);
         Document document = documentRepository.findByIdAndProjectId(documentId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found"));
-
+        if (document.getState()==EntityState.REMOVED)
+            checkProjectManagerPermission(oryId,String.valueOf(projectId));
         String url = objStorageService.getDownloadUrl(document.getS3Key());
         List<Requirement> observers = documentRepository
                 .findFilteredRequirementsForDocument(documentId, viewableFunctionalities);
@@ -169,9 +175,7 @@ public class DocumentService {
 
     @Transactional
     public void approveDocuments(String oryId, Long projectId, List<Long> documentIds) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
-            throw new AccessDeniedException("User not authorized to perform this action on this project");
-        }
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
         if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)) {
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
@@ -183,7 +187,10 @@ public class DocumentService {
         if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
-        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.DEACTIVATED,List.of(EntityState.PENDING_APPROVAL,EntityState.APPROVED,EntityState.REMOVED));
+        documentRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId, List.of(EntityState.PENDING_APPROVAL,EntityState.APPROVED,EntityState.REMOVED)).forEach(document -> {
+            document.setState(EntityState.DEACTIVATED);
+            document.notifyObservers();
+        });
     }
     @Transactional
     public void enableDocuments(String oryId, Long projectId, List<Long> documentIds) {
@@ -191,7 +198,10 @@ public class DocumentService {
         if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
-        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.PENDING_APPROVAL,EntityState.DEACTIVATED);
+        documentRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId, EntityState.DEACTIVATED).forEach(document -> {
+            document.setState(EntityState.PENDING_APPROVAL);
+            document.notifyObservers();
+        });
     }
     @Transactional
     public void removeDocuments(String oryId, Long projectId, List<Long> documentIds) {
@@ -199,6 +209,11 @@ public class DocumentService {
         if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
+        documentRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId, EntityState.DEACTIVATED).forEach(document -> {
+            document.setState(EntityState.REMOVED);
+            document.notifyObservers();
+            Associations.unlinkObservers(document);
+        });
         documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.REMOVED,EntityState.DEACTIVATED);
     }
     @Transactional

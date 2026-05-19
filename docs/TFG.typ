@@ -348,7 +348,7 @@ A crucial process for the system is the updates triggered by modifications betwe
       [The system must show all requirements linked to it.],
     ),
   ),
-  [The system must allow a project manager to add a new stakeholder to a project.],
+  [The system must allow a requirement engineer or a project manager to add a new stakeholder to a project.],
   (
     [The system must only allow a stakeholder to be added to a project the user is linked to.],
     [The system must require a name to generate a stakeholder.],
@@ -363,7 +363,13 @@ A crucial process for the system is the updates triggered by modifications betwe
   (
     [The system must only allow the user to unlink a stakeholder from a requirement of a functionality they are linked to.],
   ),
-  [The system must allow a project manager to deactivate a stakeholder from a project the user is linked to.],
+  [The system must allow a requirement engineer or a project manager to deactivate a stakeholder from a project the user is linked to.],
+  (
+    [The system must flag all entities linked as pending review.],
+    [The system must ask for confirmation before deactivating.],
+    [The system must put the stakeholder on read only mode.],
+  ),
+  [The system must allow a project manager to remove a stakeholder from a project the user is linked to.],
   (
     [The system must show the user the amount of entities affected by the deactivations.],
     [The system must flag all entities linked as pending review.],

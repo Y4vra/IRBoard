@@ -83,4 +83,8 @@ public class Associations {
         observed._getObserverRequirements().remove(observer);
         observer._getObservedRequirements().remove(observed);
     }
+
+    public static void unlinkObservers(Document document) {
+        document.getObserverRequirements().forEach(r -> unobserve(r, document));
+    }
 }

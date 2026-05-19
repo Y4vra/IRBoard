@@ -72,6 +72,21 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
        AND d.state IN :oldStates
        """)
     int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, List<EntityState> oldStates);
+
+    @Query("""
+        SELECT d from Document d
+        WHERE d.id IN :documentIds
+        AND d.project.id = :projectId
+        AND d.state = :state
+        """)
+    List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, EntityState state);
+    @Query("""
+        SELECT d from Document d
+        WHERE d.id IN :documentIds
+        AND d.project.id = :projectId
+        AND d.state IN :states
+        """)
+    List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states);
 }
 
 @Component
@@ -147,10 +162,17 @@ public class DocumentRepositoryImpl implements DocumentRepository {
 
     @Override
     public int deleteRemovedByIdsAndProject(List<Long> documentIds, Long projectId) {
-        List<Document> docs = jpaRepository.findAllByProjectId(projectId);
-        docs.stream()
-                .filter(d -> d.getState() == EntityState.DEACTIVATED)
-                .forEach(jpaRepository::delete);
+        List<Document> docs = jpaRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId,EntityState.REMOVED);
+        jpaRepository.deleteAll(docs);
         return docs.size();
+    }
+
+    @Override
+    public List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, EntityState state) {
+        return jpaRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId,state);
+    }
+    @Override
+    public List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states) {
+        return jpaRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId,states);
     }
 }

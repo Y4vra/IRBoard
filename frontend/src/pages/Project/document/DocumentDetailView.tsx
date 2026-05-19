@@ -17,6 +17,10 @@ import { LockIndicator } from "@/components/LockIndicator";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
 import { useApproveDocuments } from "@/hooks/useApproveActions";
+import { useDisableDocuments } from "@/hooks/useDisableActions";
+import { useEnableDocuments } from "@/hooks/useEnableActions";
+import { useRemoveDocuments } from "@/hooks/useRemoveActions";
+import { useDeleteDocuments } from "@/hooks/useDeleteActions";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -65,6 +69,22 @@ function DocumentDetailView() {
   const { approveDocuments, loading: approving } = useApproveDocuments({
     projectId: projectId!,
     onSuccess: refresh,
+  })
+  const { disableDocuments, loading: disabling } = useDisableDocuments({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { enableDocuments, loading: enabling } = useEnableDocuments({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { removeDocuments, loading: removing } = useRemoveDocuments({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/documents`),
+  })
+  const { deleteDocuments, loading: deleting } = useDeleteDocuments({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/documents`),
   })
 
   if (loading) return <LoadingSpinner />;
@@ -135,19 +155,45 @@ function DocumentDetailView() {
           
           <div className="flex flex-col gap-3">
             <LockIndicator lock={lock} />
-            {editPermission && (
-              <UpdateDocumentDialog 
-                projectId={projectId!} 
-                document={document}
-                disabled={isLocked}
-                onSuccess={refresh} 
-                />
-            )}
+            {editPermission && 
+              <>
+                <UpdateDocumentDialog 
+                  projectId={projectId!} 
+                  document={document}
+                  disabled={isLocked}
+                  onSuccess={refresh} 
+                  />
+                <Button variant="outline" size="sm" 
+                  disabled={document.state === "DEACTIVATED"?true:disabling}
+                  onClick={() => disableDocuments([document.id])}>
+                  {approving ? "Disabling..." : "Disable document"}
+                </Button>
+                <Button variant="outline" size="sm" 
+                  disabled={document.state === "DEACTIVATED"?enabling:true}
+                  onClick={() => enableDocuments([document.id])}>
+                  {approving ? "Enabling..." : "Enable document"}
+                </Button>
+              </>
+            }
             {isManager &&
+              <>
+                <Button variant="outline" size="sm" 
+                  disabled={document.state === "PENDING_APPROVAL"?approving:true}
+                  onClick={() => approveDocuments([document.id])}>
+                  {approving ? "Approving..." : "Approve document"}
+                </Button>
+                <Button variant="outline" size="sm" 
+                  disabled={document.state === "DEACTIVATED"?removing:true}
+                  onClick={() => removeDocuments([document.id])}>
+                  {approving ? "Removing..." : "Remove document"}
+                </Button>
+              </>
+            }
+            {isManager && document.state === "REMOVED" &&
               <Button variant="outline" size="sm" 
-                disabled={document.state === "PENDING_APPROVAL"?approving:true}
-                onClick={() => approveDocuments([document.id])}>
-                {approving ? "Approving..." : "Approve document"}
+                disabled={deleting}
+                onClick={() => deleteDocuments([document.id])}>
+                {approving ? "Deleting..." : "Delete document permanently"}
               </Button>
             }
           </div>
