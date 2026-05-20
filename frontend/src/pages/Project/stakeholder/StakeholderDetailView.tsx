@@ -15,6 +15,10 @@ import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
 import { useApproveStakeholders } from "@/hooks/useApproveActions";
 import { useBackendResource } from "@/hooks/useBackendResource";
+import { useDeleteStakeholders } from "@/hooks/useDeleteActions";
+import { useRemoveStakeholders } from "@/hooks/useRemoveActions";
+import { useEnableStakeholders } from "@/hooks/useEnableActions";
+import { useDisableStakeholders } from "@/hooks/useDisableActions";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -54,6 +58,22 @@ function StakeholderDetailView() {
     projectId: projectId!,
     onSuccess: refresh,
   })
+  const { disableStakeholders, loading: disabling } = useDisableStakeholders({
+      projectId: projectId!,
+      onSuccess: refresh,
+    })
+    const { enableStakeholders, loading: enabling } = useEnableStakeholders({
+      projectId: projectId!,
+      onSuccess: refresh,
+    })
+    const { removeStakeholders, loading: removing } = useRemoveStakeholders({
+      projectId: projectId!,
+      onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
+    })
+    const { deleteStakeholders, loading: deleting } = useDeleteStakeholders({
+      projectId: projectId!,
+      onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
+    })
 
   if (loading) return <LoadingSpinner />;
   if (error || !stakeholder)
@@ -98,23 +118,49 @@ function StakeholderDetailView() {
         <div className="flex flex-col gap-3">
           <LockIndicator lock={lock} />
           {editPermission && 
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              disabled={isLocked}
-              title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
-              >
-              <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
-              </Link>
-            </Button>
+            <>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                disabled={isLocked}
+                title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
+                >
+                <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" 
+                  disabled={stakeholder.state === "DEACTIVATED"?true:disabling}
+                  onClick={() => disableStakeholders([stakeholder.id])}>
+                  {disabling ? "Disabling..." : "Disable stakeholder"}
+                </Button>
+                <Button variant="outline" size="sm" 
+                  disabled={stakeholder.state === "DEACTIVATED"?enabling:true}
+                  onClick={() => enableStakeholders([stakeholder.id])}>
+                  {enabling ? "Enabling..." : "Enable stakeholder"}
+                </Button>
+            </>
           }
           {isManager &&
+            <>
+              <Button variant="outline" size="sm" 
+                disabled={stakeholder.state === "PENDING_APPROVAL"?approving:true}
+                onClick={() => approveStakeholders([stakeholder.id])}>
+                {approving ? "Approving..." : "Approve Stakeholder"}
+              </Button>
+              <Button variant="outline" size="sm" 
+                  disabled={stakeholder.state === "DEACTIVATED"?removing:true}
+                  onClick={() => removeStakeholders([stakeholder.id])}>
+                  {removing ? "Removing..." : "Remove stakeholder"}
+                </Button>
+            </>
+          }
+          {isManager && stakeholder.state === "REMOVED" &&
             <Button variant="outline" size="sm" 
-              disabled={stakeholder.state === "PENDING_APPROVAL"?approving:true}
-              onClick={() => approveStakeholders([stakeholder.id])}>
-              {approving ? "Approving..." : "Approve Stakeholder"}
+              disabled={deleting}
+              onClick={() => deleteStakeholders([stakeholder.id])}>
+              {deleting ? "Deleting..." : "Delete stakeholder permanently"}
             </Button>
           }
         </div>

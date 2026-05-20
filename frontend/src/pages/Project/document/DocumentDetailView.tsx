@@ -166,12 +166,12 @@ function DocumentDetailView() {
                 <Button variant="outline" size="sm" 
                   disabled={document.state === "DEACTIVATED"?true:disabling}
                   onClick={() => disableDocuments([document.id])}>
-                  {approving ? "Disabling..." : "Disable document"}
+                  {disabling ? "Disabling..." : "Disable document"}
                 </Button>
                 <Button variant="outline" size="sm" 
                   disabled={document.state === "DEACTIVATED"?enabling:true}
                   onClick={() => enableDocuments([document.id])}>
-                  {approving ? "Enabling..." : "Enable document"}
+                  {enabling ? "Enabling..." : "Enable document"}
                 </Button>
               </>
             }
@@ -185,7 +185,7 @@ function DocumentDetailView() {
                 <Button variant="outline" size="sm" 
                   disabled={document.state === "DEACTIVATED"?removing:true}
                   onClick={() => removeDocuments([document.id])}>
-                  {approving ? "Removing..." : "Remove document"}
+                  {removing ? "Removing..." : "Remove document"}
                 </Button>
               </>
             }
@@ -193,7 +193,7 @@ function DocumentDetailView() {
               <Button variant="outline" size="sm" 
                 disabled={deleting}
                 onClick={() => deleteDocuments([document.id])}>
-                {approving ? "Deleting..." : "Delete document permanently"}
+                {deleting ? "Deleting..." : "Delete document permanently"}
               </Button>
             }
           </div>
