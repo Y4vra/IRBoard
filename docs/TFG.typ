@@ -339,6 +339,7 @@ A crucial process for the system is the updates triggered by modifications betwe
 #SM_List(
   [The system must allow any user linked with the project access to view its stakeholders.],
   (
+    [The system must show stakeholders that are not removed.],
     [The system must show if a stakeholder is flagged as pending review.],
     [The system must show the identifier, the name and part of the description.],
     [The system must allow to collapse and expand stakeholders with children.],
@@ -348,6 +349,7 @@ A crucial process for the system is the updates triggered by modifications betwe
       [The system must show all requirements linked to it.],
     ),
   ),
+  [The system must allow a project manager to view its removed stakeholders.],
   [The system must allow a requirement engineer or a project manager to add a new stakeholder to a project.],
   (
     [The system must only allow a stakeholder to be added to a project the user is linked to.],
@@ -366,17 +368,20 @@ A crucial process for the system is the updates triggered by modifications betwe
   [The system must allow a requirement engineer or a project manager to deactivate a stakeholder from a project the user is linked to.],
   (
     [The system must flag all entities linked as pending review.],
-    [The system must ask for confirmation before deactivating.],
     [The system must put the stakeholder on read only mode.],
   ),
-  [The system must allow a project manager to remove a stakeholder from a project the user is linked to.],
+  [The system must allow a requirement engineer or a project manager to enable a disabled stakeholder from a project the user is linked to.],
   (
-    [The system must show the user the amount of entities affected by the deactivations.],
     [The system must flag all entities linked as pending review.],
-    [The system must ask for confirmation before deactivating.],
     [The system must put the stakeholder on read only mode.],
   ),
-  [The system must allow a project manager or requirement engineer to modify a stakeholder.],
+  [The system must allow a project manager to remove a disabled stakeholder from a project the user is linked to.],
+  (
+    [The system must flag all entities linked as pending review.],
+    [The system must unlink any requirements linked to the stakeholder],
+  ),
+  [The system must allow a project manager to delete permanently a removed stakeholder.],
+  [The system must allow a project manager or requirement engineer to modify a stakeholder that's not deactivated or removed.],
   (
     [The system must flag as pending review linked entities upon saving.],
   ),
