@@ -66,6 +66,10 @@ public class ProjectController {
     public ResponseEntity<List<StakeholderDTO>> getStakeholders(Authentication authentication, @PathVariable Long projectId) {
         return ResponseEntity.ok(stakeholderService.findStakeholdersNotRemovedOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
     }
+    @GetMapping("/{projectId}/stakeholders/removed")
+    public ResponseEntity<List<StakeholderDTO>> getRemovedStakeholders(Authentication authentication, @PathVariable Long projectId) {
+        return ResponseEntity.ok(stakeholderService.findStakeholdersRemovedOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+    }
 
     @GetMapping("/{projectId}/nonFunctionalRequirements")
     public ResponseEntity<List<NonFunctionalRequirementDTO>> getNonFunctionalRequirements(Authentication authentication,@PathVariable Long projectId) {
