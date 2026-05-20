@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapp
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
+import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -67,9 +68,11 @@ public class NonFunctionalRequirementService extends RequirementService {
     }
     @Transactional(readOnly = true)
     public NonFunctionalRequirementDTO findNonFunctionalRequirementById(String oryId, long projectId, long nonFunctionalRequirementId) {
-        NonFunctionalRequirement nonFunctionalRequirement = nfrRepository.findByIdAndProjectId(nonFunctionalRequirementId,projectId).orElseThrow(()-> new EntityNotFoundException("NonFunctionalRequirement not found"));
-
         checkViewPermission(oryId,String.valueOf(projectId));
+        NonFunctionalRequirement nonFunctionalRequirement = nfrRepository.findByIdAndProjectId(nonFunctionalRequirementId,projectId).orElseThrow(()-> new EntityNotFoundException("NonFunctionalRequirement not found"));
+        if (nonFunctionalRequirement.getState()== RequirementState.REMOVED){
+            checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        }
         return nfrMapper.toDetailedDto(nonFunctionalRequirement,
                 stakeholderRepository.findAllObservedByRequirement(nonFunctionalRequirementId),
                 nfrRepository.findAllObservedByRequirement(nonFunctionalRequirementId),

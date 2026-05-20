@@ -2,7 +2,7 @@ import { useCallback, useState, useRef, useMemo, Fragment } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "@/lib/globalVars"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, ChevronRight, ChevronDown, Plus, GripVertical, Eye, EyeOff } from "lucide-react"
+import { AlertCircle, ChevronRight, ChevronDown, Plus, GripVertical, Eye, EyeOff, Archive, FolderOpen } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
@@ -24,6 +24,14 @@ import {
 } from "@/lib/reorderUtils"
 import { collectPendingNFRIds } from "@/lib/requirementUtils"
 import { useApproveNFRequirements } from "@/hooks/useApproveActions"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 // ---------------------------------------------------------------------------
 // API calls
@@ -67,6 +75,62 @@ async function apiChangeParent(
     const err = await res.json().catch(() => null)
     throw new Error(err?.message || "Failed to change parent")
   }
+}
+
+// ---------------------------------------------------------------------------
+// ViewToggle
+// ---------------------------------------------------------------------------
+
+type ViewMode = "active" | "removed"
+
+interface ViewToggleProps {
+  mode: ViewMode
+  onChange: (mode: ViewMode) => void
+  activeCount?: number
+  removedCount?: number
+}
+
+function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewToggleProps) {
+  return (
+    <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
+      <button
+        onClick={() => onChange("active")}
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+          mode === "active"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
+        }`}
+      >
+        <FolderOpen className="h-3.5 w-3.5" />
+        Active
+        {activeCount !== undefined && (
+          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+            mode === "active" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"
+          }`}>
+            {activeCount}
+          </span>
+        )}
+      </button>
+      <button
+        onClick={() => onChange("removed")}
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+          mode === "removed"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
+        }`}
+      >
+        <Archive className="h-3.5 w-3.5" />
+        Removed
+        {removedCount !== undefined && (
+          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+            mode === "removed" ? "bg-red-100 text-red-600" : "bg-slate-200 text-slate-500"
+          }`}>
+            {removedCount}
+          </span>
+        )}
+      </button>
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -114,7 +178,7 @@ function NFRCard({
   const [reorderError, setReorderError] = useState<string | null>(null)
 
   const parentId = (r.parentId as number | null | undefined) ?? null
-  const sortedChildren:NonFunctionalRequirement[] = sortByOrderValue(r.children ?? [])
+  const sortedChildren: NonFunctionalRequirement[] = sortByOrderValue(r.children ?? [])
 
   const handleDragStart = (e: React.DragEvent) => {
     if (!editPermission) return
@@ -315,6 +379,7 @@ function NFRCard({
 
 function NonFunctionalRequirementsView() {
   const { projectId } = useParams<{ projectId: string }>()
+  const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { nonFunctionalRequirementStats, editPermission, isManager } = useProject()
 
@@ -322,7 +387,9 @@ function NonFunctionalRequirementsView() {
   const dragStateRef = useRef<number | null>(null)
   const [dropPreview, setDropPreview] = useState<DropPreview>(null)
   const [showDeactivated, setShowDeactivated] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>("active")
 
+  // Active requirements
   const fetchRequirements = useCallback(
     () =>
       fetch(`${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements`, {
@@ -334,20 +401,42 @@ function NonFunctionalRequirementsView() {
     [projectId]
   )
 
-  const { data, loading, error, refresh } = useBackendResource<NonFunctionalRequirement[]>({
+  // Removed requirements
+  const fetchRemovedRequirements = useCallback(
+    () =>
+      fetch(`${API_BASE_URL}/projects/${projectId}/nonFunctionalRequirements/removed`, {
+        credentials: "include",
+      }).then((r) => {
+        if (!r.ok) throw new Error("Failed to fetch removed requirements")
+        return r.json()
+      }),
+    [projectId]
+  )
+
+  const { data, loading, error, refresh: refreshActive } = useBackendResource<NonFunctionalRequirement[]>({
     fetcher: fetchRequirements,
     enabled: isAuthenticated,
   })
 
+  const {
+    data: removedData,
+    loading: loadingRemoved,
+    error: errorRemoved,
+    refresh: refreshRemoved,
+  } = useBackendResource<NonFunctionalRequirement[]>({
+    fetcher: fetchRemovedRequirements,
+    enabled: isAuthenticated && isManager,
+  })
+
   const requirements: NonFunctionalRequirement[] = sortByOrderValue(data ?? [])
+  const removedRequirements: NonFunctionalRequirement[] = removedData ?? []
 
   const { approveNFRequirements, loading: approving } = useApproveNFRequirements({
     projectId: projectId!,
-    onSuccess: refresh,
+    onSuccess: refreshActive,
   })
 
   const pendingNFRIds = useMemo(() => collectPendingNFRIds(requirements), [requirements])
-
 
   const parentIdMap = useMemo(() => {
     const map = new Map<number, number | null>()
@@ -384,19 +473,24 @@ function NonFunctionalRequirementsView() {
       .filter(r => r.state !== "DEACTIVATED")
       .map(r => ({ ...r, children: filterDeactivated(r.children ?? []) }))
   }
+
   const displayedRequirements = useMemo(
     () => showDeactivated ? requirements : filterDeactivated(requirements),
     [requirements, showDeactivated]
   )
 
-  if (loading) return <LoadingSpinner text="Loading Non-Functional Requirements..." />
+  const isLoading = viewMode === "active" ? loading : loadingRemoved
+  const currentError = viewMode === "active" ? error : errorRemoved
+  const refresh = viewMode === "active" ? refreshActive : refreshRemoved
 
-  if (error)
+  if (isLoading) return <LoadingSpinner text={viewMode === "removed" ? "Loading Removed Requirements..." : "Loading Non-Functional Requirements..."} />
+
+  if (currentError)
     return (
       <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center">
         <AlertCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
         <p className="text-red-600 font-semibold">Error</p>
-        <p className="text-red-500 text-sm mt-1">{error}</p>
+        <p className="text-red-500 text-sm mt-1">{currentError}</p>
         <Button variant="outline" className="mt-4" onClick={refresh}>
           Try Again
         </Button>
@@ -412,7 +506,7 @@ function NonFunctionalRequirementsView() {
     parentIdMap,
     onReorder: handleReorder,
     onChangeParent: handleChangeParent,
-    onRefetch: refresh,
+    onRefetch: refreshActive,
   }
 
   return (
@@ -423,7 +517,7 @@ function NonFunctionalRequirementsView() {
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900">Non-Functional Requirements</h1>
           <p className="text-slate-500 mt-1">Manage quality attributes and system constraints.</p>
-          {editPermission && (
+          {editPermission && viewMode === "active" && (
             <p className="text-xs text-slate-300 mt-0.5">
               <span className="text-slate-400">
                 Drag to reorder · drag to the middle of a card to nest inside it.
@@ -438,21 +532,23 @@ function NonFunctionalRequirementsView() {
             </Card>
           )}
           <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setShowDeactivated(v => !v)}
-              className={[
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
-                showDeactivated
-                  ? "border-slate-300 bg-slate-100 text-slate-600"
-                  : "border-slate-200 bg-white text-slate-400 hover:border-slate-300",
-              ].join(" ")}
-            >
-              {showDeactivated
-                ? <><Eye className="h-3 w-3" /> Showing deactivated</>
-                : <><EyeOff className="h-3 w-3" /> Hiding deactivated</>
-              }
-            </button>
-            {editPermission && (
+            {viewMode === "active" && (
+              <button
+                onClick={() => setShowDeactivated(v => !v)}
+                className={[
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
+                  showDeactivated
+                    ? "border-slate-300 bg-slate-100 text-slate-600"
+                    : "border-slate-200 bg-white text-slate-400 hover:border-slate-300",
+                ].join(" ")}
+              >
+                {showDeactivated
+                  ? <><Eye className="h-3 w-3" /> Showing deactivated</>
+                  : <><EyeOff className="h-3 w-3" /> Hiding deactivated</>
+                }
+              </button>
+            )}
+            {editPermission && viewMode === "active" && (
               <>
                 <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-1.5" />
@@ -462,16 +558,16 @@ function NonFunctionalRequirementsView() {
                   open={createDialogOpen}
                   onOpenChange={setCreateDialogOpen}
                   projectId={projectId!}
-                  onSuccess={refresh}
+                  onSuccess={refreshActive}
                   siblingRequirements={requirements}
-                  />
+                />
               </>
             )}
-            {isManager && (
+            {isManager && viewMode === "active" && (
               <Button
                 size="sm"
                 variant="outline"
-                disabled={pendingNFRIds.length===0?true:approving}
+                disabled={pendingNFRIds.length === 0 ? true : approving}
                 onClick={() => approveNFRequirements(pendingNFRIds)}
               >
                 {approving ? "Approving..." : `Approve All (${pendingNFRIds.length})`}
@@ -483,37 +579,104 @@ function NonFunctionalRequirementsView() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Project Non-Functional Requirements</CardTitle>
-          <CardDescription>Listed non-functional requirements for this project.</CardDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle>
+                {viewMode === "active" ? "Project Non-Functional Requirements" : "Removed Non-Functional Requirements"}
+              </CardTitle>
+              <CardDescription>
+                {viewMode === "active"
+                  ? "Listed non-functional requirements for this project."
+                  : "Non-functional requirements that have been removed from this project. Visible to managers only."}
+              </CardDescription>
+            </div>
+            {isManager && (
+              <ViewToggle
+                mode={viewMode}
+                onChange={setViewMode}
+                activeCount={requirements.length}
+                removedCount={removedRequirements.length}
+              />
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-0">
-          {requirements.length === 0 ? (
-            <p className="text-center text-slate-400 italic py-8">
-              No non-functional requirements found for this project.
-            </p>
+          {viewMode === "removed" ? (
+            <>
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-2.5 text-sm text-amber-700">
+                <Archive className="h-4 w-4 shrink-0" />
+                <span>These requirements have been removed and are no longer active in the project.</span>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Details</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {removedRequirements.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-slate-400 italic py-8">
+                        No removed non-functional requirements found.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    removedRequirements.map((r) => (
+                      <TableRow
+                        key={r.id}
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => navigate(`/project/${projectId}/nfr/${r.id}`)}
+                      >
+                        <TableCell className="font-mono text-xs text-slate-400">{r.entityIdentifier ?? r.id}</TableCell>
+                        <TableCell className="font-medium">{r.name}</TableCell>
+                        <TableCell className="max-w-xs truncate text-slate-500">{r.description}</TableCell>
+                        <TableCell>
+                          <RequirementStateBadge state={r.state} />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <ChevronRight className="h-4 w-4 ml-auto text-slate-400" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </>
           ) : (
             <>
-              <GapDropZone parentId={null} index={0} {...rootGapProps} />
-              {displayedRequirements.map((r, index) => (
-                <Fragment key={r.id}>
-                  <NFRCard
-                    requirement={r}
-                    siblings={displayedRequirements}
-                    positionInSiblings={index}
-                    projectId={projectId!}
-                    label={`NFR.${index + 1}`}
-                    editPermission={editPermission}
-                    onRefetch={refresh}
-                    dragStateRef={dragStateRef}
-                    dropPreview={dropPreview}
-                    setDropPreview={setDropPreview}
-                    onReorder={handleReorder}
-                    parentIdMap={parentIdMap}
-                    onChangeParent={handleChangeParent}
-                  />
-                  <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
-                </Fragment>
-              ))}
+              {requirements.length === 0 ? (
+                <p className="text-center text-slate-400 italic py-8">
+                  No non-functional requirements found for this project.
+                </p>
+              ) : (
+                <>
+                  <GapDropZone parentId={null} index={0} {...rootGapProps} />
+                  {displayedRequirements.map((r, index) => (
+                    <Fragment key={r.id}>
+                      <NFRCard
+                        requirement={r}
+                        siblings={displayedRequirements}
+                        positionInSiblings={index}
+                        projectId={projectId!}
+                        label={`NFR.${index + 1}`}
+                        editPermission={editPermission}
+                        onRefetch={refreshActive}
+                        dragStateRef={dragStateRef}
+                        dropPreview={dropPreview}
+                        setDropPreview={setDropPreview}
+                        onReorder={handleReorder}
+                        parentIdMap={parentIdMap}
+                        onChangeParent={handleChangeParent}
+                      />
+                      <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
+                    </Fragment>
+                  ))}
+                </>
+              )}
             </>
           )}
         </CardContent>
