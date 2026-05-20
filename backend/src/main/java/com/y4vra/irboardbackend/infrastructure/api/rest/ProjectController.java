@@ -3,7 +3,6 @@ package com.y4vra.irboardbackend.infrastructure.api.rest;
 import com.y4vra.irboardbackend.application.dtos.*;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.application.services.*;
-import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,7 +72,11 @@ public class ProjectController {
 
     @GetMapping("/{projectId}/nonFunctionalRequirements")
     public ResponseEntity<List<NonFunctionalRequirementDTO>> getNonFunctionalRequirements(Authentication authentication,@PathVariable Long projectId) {
-        return ResponseEntity.ok(nonFunctionalRequirementService.findNonFunctionalRequirementsOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+        return ResponseEntity.ok(nonFunctionalRequirementService.findNonFunctionalRequirementsNotRemovedOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+    }
+    @GetMapping("/{projectId}/nonFunctionalRequirements/removed")
+    public ResponseEntity<List<NonFunctionalRequirementDTO>> getRemovedNonFunctionalRequirements(Authentication authentication,@PathVariable Long projectId) {
+        return ResponseEntity.ok(nonFunctionalRequirementService.findNonFunctionalRequirementsRemovedOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
     }
 
     @GetMapping("/{projectId}/documents")

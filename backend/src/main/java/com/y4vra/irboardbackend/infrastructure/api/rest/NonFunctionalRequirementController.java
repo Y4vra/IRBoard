@@ -61,7 +61,26 @@ public class NonFunctionalRequirementController {
         nonFunctionalRequirementService.approveRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalRequirementIds);
         return ResponseEntity.ok().build();
     }
-
+    @PostMapping("/disable")
+    public ResponseEntity<Void> disableNonFunctionalRequirements(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> nonFunctionalRequirementIds) {
+        nonFunctionalRequirementService.disableNonFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/enable")
+    public ResponseEntity<Void> enableNonFunctionalRequirements(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> nonFunctionalRequirementIds) {
+        nonFunctionalRequirementService.enableNonFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/remove")
+    public ResponseEntity<Void> removeNonFunctionalRequirements(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> nonFunctionalRequirementIds) {
+        nonFunctionalRequirementService.removeNonFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/delete")
+    public ResponseEntity<Void> deleteNonFunctionalRequirements(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> nonFunctionalRequirementIds) {
+        nonFunctionalRequirementService.deleteNonFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,nonFunctionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
     @PostMapping("/new")
     public ResponseEntity<NonFunctionalRequirementDTO> createNonFunctionalRequirement(@Validated @RequestBody NonFunctionalRequirementDTO nonFunctionalRequirementDTO, @PathVariable Long projectId, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(nonFunctionalRequirementService.createNonFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),nonFunctionalRequirementDTO,projectId));

@@ -29,12 +29,17 @@ public abstract class RequirementService {
         this.entityLockService = entityLockService;
     }
 
+    protected void checkProjectManagerPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
+    }
+
     @Transactional
     public void requestEdit(User user,Long projectId,Long requirementId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
-            throw new AccessDeniedException("User not authorized to edit requirements of this project");
-        }
-        Requirement requirement = requirementRepository.findById(requirementId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        checkProjectManagerPermission(user.getOryId(),String.valueOf(projectId));
+        Requirement requirement = requirementRepository.findById(requirementId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
+        requirement.checkCanBeModified();
         entityLockService.lock(requirement,user);
     }
 }

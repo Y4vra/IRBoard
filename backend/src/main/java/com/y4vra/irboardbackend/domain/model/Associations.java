@@ -90,4 +90,16 @@ public class Associations {
     public static void unlinkObservers(Stakeholder stakeholder) {
         stakeholder.getObserverRequirements().forEach(r -> unobserve(r, stakeholder));
     }
+    public static void unlinkObservers(FunctionalRequirement requirement) {
+        requirement.getObserverRequirements().forEach(r -> unobserve(r, requirement));
+    }
+    public static void unlinkObservers(NonFunctionalRequirement requirement) {
+        requirement.getObserverRequirements().forEach(r -> unobserve(r, requirement));
+    }
+    public static void unlinkChildren(FunctionalRequirement requirement) {
+        requirement.getChildren().forEach(r -> unlink(requirement,r));
+    }
+    public static void unlinkChildren(NonFunctionalRequirement requirement) {
+        requirement.getChildren().forEach(r -> unlink(requirement,r));
+    }
 }

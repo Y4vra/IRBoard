@@ -210,7 +210,6 @@ public class DocumentService {
             document.notifyObservers();
             Associations.unlinkObservers(document);
         });
-        documentRepository.updateStateByIdsAndProject(documentIds,projectId, EntityState.REMOVED,EntityState.DEACTIVATED);
     }
     @Transactional
     public void deleteDocuments(String oryId, Long projectId, List<Long> documentIds) {

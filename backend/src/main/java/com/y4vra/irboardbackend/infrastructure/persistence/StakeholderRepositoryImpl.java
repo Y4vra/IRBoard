@@ -19,7 +19,6 @@ import java.util.Set;
 @Repository
 interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
     Optional<Stakeholder> findByIdAndProjectId(Long id,Long projectId);
-    List<Stakeholder> findByProjectId(Long projectId);
 
     List<Stakeholder> findByProjectIdAndStateNot(Long projectId,EntityState state);
     List<Stakeholder> findByProjectIdAndState(Long projectId,EntityState state);
@@ -105,10 +104,6 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     }
     @Override
     public Optional<Stakeholder> findByIdAndProjectId(Long id,Long projectId) {return jpaRepository.findByIdAndProjectId(id,projectId);}
-    @Override
-    public List<Stakeholder> findByProjectId(Long projectId) {
-        return jpaRepository.findByProjectId(projectId);
-    }
     @Override
     public Stakeholder save(Stakeholder stakeholder) {
         return jpaRepository.save(stakeholder);

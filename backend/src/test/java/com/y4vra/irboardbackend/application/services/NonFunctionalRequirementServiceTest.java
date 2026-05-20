@@ -72,32 +72,32 @@ class NonFunctionalRequirementServiceTest {
     }
 
     @Test
-    void findNonFunctionalRequirementsOfProject_returnsListWhenAuthorized() {
+    void findNonFunctionalRequirementsNotRemovedOfProject_returnsListWhenAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(nfrRepository.findAllByProjectId(projectId)).thenReturn(List.of(nfr));
+        when(nfrRepository.findAllByProjectIdNotRemoved(projectId)).thenReturn(List.of(nfr));
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
 
-        List<NonFunctionalRequirementDTO> result = nfrService.findNonFunctionalRequirementsOfProject(oryId, projectId);
+        List<NonFunctionalRequirementDTO> result = nfrService.findNonFunctionalRequirementsNotRemovedOfProject(oryId, projectId);
 
         assertThat(result).hasSize(1).containsExactly(nfrDTO);
     }
 
     @Test
-    void findNonFunctionalRequirementsOfProject_throwsAccessDeniedWhenNotAuthorized() {
+    void findNonFunctionalRequirementsNotRemovedOfProject_throwsAccessDeniedWhenNotAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
 
-        assertThatThrownBy(() -> nfrService.findNonFunctionalRequirementsOfProject(oryId, projectId))
+        assertThatThrownBy(() -> nfrService.findNonFunctionalRequirementsNotRemovedOfProject(oryId, projectId))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(nfrRepository, never()).findAllByProjectId(any());
+        verify(nfrRepository, never()).findAllByProjectIdNotRemoved(any());
     }
 
     @Test
-    void findNonFunctionalRequirementsOfProject_returnsEmptyListWhenNoneExist() {
+    void findNonFunctionalRequirementsNotRemovedOfProject_returnsEmptyListWhenNoneExist() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(nfrRepository.findAllByProjectId(projectId)).thenReturn(List.of());
+        when(nfrRepository.findAllByProjectIdNotRemoved(projectId)).thenReturn(List.of());
 
-        List<NonFunctionalRequirementDTO> result = nfrService.findNonFunctionalRequirementsOfProject(oryId, projectId);
+        List<NonFunctionalRequirementDTO> result = nfrService.findNonFunctionalRequirementsNotRemovedOfProject(oryId, projectId);
 
         assertThat(result).isEmpty();
         verify(nfrMapper, never()).toDto(any());

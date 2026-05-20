@@ -8,12 +8,14 @@ import java.util.Optional;
 
 public interface NonFunctionalRequirementRepository {
     Optional<Long> findRootProjectIdById(Long id);
+    List<NonFunctionalRequirement> findAllDescendantsOf(Long rootId);
     List<NonFunctionalRequirement> findAll();
     List<NonFunctionalRequirement> findAllById(Iterable<Long> ids);
-    List<NonFunctionalRequirement> findAllByProjectId(Long projectId);
-    Optional<NonFunctionalRequirement> findById(Long id);
+    Optional<NonFunctionalRequirement> findByIdAndProjectId(Long id,Long projectId);
     NonFunctionalRequirement save(NonFunctionalRequirement nfr);
-    void deleteById(Long id);
+
+    List<NonFunctionalRequirement> findAllByProjectIdNotRemoved(Long projectId);
+    List<NonFunctionalRequirement> findAllByProjectIdRemoved(Long projectId);
 
     List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
     List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId);
@@ -23,4 +25,9 @@ public interface NonFunctionalRequirementRepository {
 
     boolean allNonFunctionalRequirementsBelongToProject(Long projectId, List<Long> functionalRequirementIds);
     int updateStateByIdsAndProject(List<Long> functionalRequirementIds, Long projectId, RequirementState requirementState, RequirementState requirementState1);
+
+    int deleteRemovedByIdsAndProject(List<Long> nonFunctionalRequirementIds, Long projectId);
+
+    List<NonFunctionalRequirement> findAllByIdsAndProjectIdAndState(List<Long> nonFunctionalRequirementIds, Long projectId, RequirementState state);
+    List<NonFunctionalRequirement> findAllByIdsAndProjectIdAndState(List<Long> nonFunctionalRequirementIds, Long projectId, List<RequirementState> states);
 }

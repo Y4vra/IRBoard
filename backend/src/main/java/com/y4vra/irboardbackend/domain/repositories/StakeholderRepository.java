@@ -14,7 +14,6 @@ public interface StakeholderRepository {
     List<Stakeholder> findAll();
     List<Stakeholder> findAllById(Iterable<Long> ids);
     Optional<Stakeholder> findByIdAndProjectId(Long id,Long projectId);
-    List<Stakeholder> findByProjectId(Long projectId);
     Stakeholder save(Stakeholder stakeholder);
 
     List<Stakeholder> findAllByProjectIdNotRemoved(Long projectId);
@@ -22,7 +21,6 @@ public interface StakeholderRepository {
 
     List<Requirement> findFilteredRequirementsForStakeholder(Long stakeholderId, Set<Long> functionalityIds);
     List<Stakeholder> findAllObservedByRequirement(Long requirementId);
-
     List<Stakeholder> findObservableStakeholdersForRequirement(Long projectId,Long requirementId);
 
     boolean allStakeholdersBelongToProject(Long projectId, List<Long> stakeholderIds);

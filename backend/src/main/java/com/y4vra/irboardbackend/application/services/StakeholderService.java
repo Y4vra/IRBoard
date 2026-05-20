@@ -170,7 +170,6 @@ public class StakeholderService {
             stakeholder.notifyObservers();
             Associations.unlinkObservers(stakeholder);
         });
-        stakeholderRepository.updateStateByIdsAndProject(stakeholderIds,projectId, EntityState.REMOVED,EntityState.DEACTIVATED);
     }
     @Transactional
     public void deleteStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {

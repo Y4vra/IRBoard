@@ -81,7 +81,7 @@ class StakeholderServiceTest {
         assertThatThrownBy(() -> stakeholderService.findStakeholdersNotRemovedOfProject(oryId, projectId))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(stakeholderRepository, never()).findByProjectId(any());
+        verify(stakeholderRepository, never()).findAllByProjectIdNotRemoved(any());
     }
 
     @Test
