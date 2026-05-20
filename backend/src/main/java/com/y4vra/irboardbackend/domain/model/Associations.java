@@ -87,4 +87,7 @@ public class Associations {
     public static void unlinkObservers(Document document) {
         document.getObserverRequirements().forEach(r -> unobserve(r, document));
     }
+    public static void unlinkObservers(Stakeholder stakeholder) {
+        stakeholder.getObserverRequirements().forEach(r -> unobserve(r, stakeholder));
+    }
 }

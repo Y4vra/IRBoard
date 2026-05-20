@@ -66,7 +66,7 @@ class StakeholderServiceTest {
     @Test
     void findStakeholdersOfProject_returnsStakeholdersWhenAuthorized() {
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(stakeholderRepository.findByProjectIdNotRemoved(projectId)).thenReturn(List.of(stakeholder));
+        when(stakeholderRepository.findAllByProjectIdNotRemoved(projectId)).thenReturn(List.of(stakeholder));
         when(stakeholderMapper.toDto(stakeholder)).thenReturn(stakeholderDTO);
 
         List<StakeholderDTO> result = stakeholderService.findStakeholdersNotRemovedOfProject(oryId, projectId);

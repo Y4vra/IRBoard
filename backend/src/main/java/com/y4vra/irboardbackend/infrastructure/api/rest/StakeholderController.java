@@ -53,6 +53,26 @@ public class StakeholderController {
         stakeholderService.approveStakeholders(((User)authentication.getPrincipal()).getOryId(),projectId,stakeholderIds);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/disable")
+    public ResponseEntity<Void> disableStakeholders(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> stakeholderIds) {
+        stakeholderService.disableStakeholders(((User)authentication.getPrincipal()).getOryId(),projectId,stakeholderIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/enable")
+    public ResponseEntity<Void> enableStakeholders(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> stakeholderIds) {
+        stakeholderService.enableStakeholders(((User)authentication.getPrincipal()).getOryId(),projectId,stakeholderIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/remove")
+    public ResponseEntity<Void> removeStakeholders(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> stakeholderIds) {
+        stakeholderService.removeStakeholders(((User)authentication.getPrincipal()).getOryId(),projectId,stakeholderIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/delete")
+    public ResponseEntity<Void> deleteStakeholders(Authentication authentication, @PathVariable Long projectId, @RequestBody List<Long> stakeholderIds) {
+        stakeholderService.deleteStakeholders(((User)authentication.getPrincipal()).getOryId(),projectId,stakeholderIds);
+        return ResponseEntity.ok().build();
+    }
     @PostMapping("/new")
     public ResponseEntity<StakeholderDTO> createStakeholder(@Validated @RequestBody StakeholderDTO stakeholderDTO, @PathVariable Long projectId, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(stakeholderService.createStakeholder(((User) authentication.getPrincipal()).getOryId(),stakeholderDTO,projectId));

@@ -18,7 +18,6 @@ import java.util.Set;
 @Repository
 interface JpaDocumentRepository extends JpaRepository<Document, Long> {
     Optional<Document> findByIdAndProjectId(Long id, Long projectId);
-    List<Document> findAllByProjectId(Long projectId);
     List<Document> findAllByProjectIdAndState(Long projectId, EntityState state);
     List<Document> findAllByProjectIdAndStateNot(Long projectId, EntityState state);
     @Query("""
@@ -28,12 +27,13 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
     @Query("""
         SELECT d FROM Document d
         WHERE d.project.id = :projectId
+        AND d.state NOT IN :notAllowedStates
         AND NOT EXISTS (
             SELECT 1 FROM d.observerRequirements r
             WHERE r.id = :requirementId
         )
     """)
-    List<Document> findObservableDocumentsForRequirement(Long projectId,Long requirementId);
+    List<Document> findObservableDocumentsForRequirement(Long projectId,Long requirementId,List<EntityState> notAllowedStates);
     @Query("""
         SELECT r FROM Requirement r
         LEFT JOIN FETCH TREAT(r AS FunctionalRequirement).functionality
@@ -127,18 +127,13 @@ public class DocumentRepositoryImpl implements DocumentRepository {
         return jpaRepository.save(doc);
     }
 
-//    @Override
-//    public void deleteById(Long id) {
-//        jpaRepository.deleteById(id);
-//    }
-
     @Override
     public List<Document> findAllObservedByRequirement(Long requirementId) {
         return jpaRepository.findAllObservedByRequirement(requirementId);
     }
     @Override
     public List<Document> findObservableDocumentsForRequirement(Long projectId,Long requirementId){
-        return jpaRepository.findObservableDocumentsForRequirement(projectId,requirementId);
+        return jpaRepository.findObservableDocumentsForRequirement(projectId,requirementId,List.of(EntityState.REMOVED,EntityState.DEACTIVATED));
     }
 
     @Override
@@ -154,10 +149,6 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     @Override
     public int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState) {
         return jpaRepository.updateStateByIdsAndProject(documentIds,projectId,newState,oldState);
-    }
-    @Override
-    public int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, List<EntityState> oldStates) {
-        return jpaRepository.updateStateByIdsAndProject(documentIds,projectId,newState,oldStates);
     }
 
     @Override

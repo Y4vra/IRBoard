@@ -97,9 +97,7 @@ public class DocumentService {
 
     @Transactional
     public DocumentDTO uploadDocument(MultipartFile file, DocumentDTO dto, Long projectId, String oryId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
-            throw new AccessDeniedException("User not authorized to upload documents for this project");
-        }
+        checkEditPermission(oryId,String.valueOf(projectId));
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found"));
         Document document = documentMapper.toEntity(dto);
         document.setState(EntityState.PENDING_APPROVAL);
@@ -129,9 +127,7 @@ public class DocumentService {
 
     @Transactional
     public List<DocumentDTO> findObservableDocumentsForRequirement(String oryId, Long projectId, Long requirementId) {
-        if(!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)) {
-            throw new AccessDeniedException("User not authorized to view documents of this project");
-        }
+        checkViewPermission(oryId,String.valueOf(projectId));
         return documentMapper.toDtoList(documentRepository.findObservableDocumentsForRequirement(projectId,requirementId));
     }
 

@@ -133,10 +133,10 @@ public class FunctionalRequirementService extends RequirementService {
     // linking & unlinking
     // linking
     @Transactional
-    public void observeStakeholder(String oryId, Long functionalityId,Long requirementId, Long stakeholderId) {
+    public void observeStakeholder(String oryId,Long projectId, Long functionalityId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
         Associations.observe(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                            stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
+                            stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void observeDocument(String oryId,Long projectId, Long functionalityId,Long requirementId, Long documentId) {
@@ -151,10 +151,10 @@ public class FunctionalRequirementService extends RequirementService {
                 requirementRepository.findById(requirementId2).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
     }
     @Transactional
-    public void unobserveStakeholder(String oryId, Long functionalityId,Long requirementId, Long stakeholderId) {
+    public void unobserveStakeholder(String oryId,Long projectId, Long functionalityId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
         Associations.unobserve(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
+                stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void unobserveDocument(String oryId,Long projectId, Long functionalityId,Long requirementId, Long documentId) {

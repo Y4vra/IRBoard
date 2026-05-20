@@ -50,6 +50,11 @@ public class StakeholderService {
             throw new AccessDeniedException("User not authorized to view stakeholders of this project");
         }
     }
+    private void checkProjectManagerPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
+    }
 
     @Transactional
     public StakeholderDTO createStakeholder(String oryId,StakeholderDTO dto, long projectId) {
@@ -71,20 +76,26 @@ public class StakeholderService {
     @Transactional(readOnly = true)
     public List<StakeholderDTO> findStakeholdersNotRemovedOfProject(String oryId, long projectId) {
         checkViewPermission(oryId,String.valueOf(projectId));
-        return stakeholderRepository.findByProjectIdNotRemoved(projectId).stream()
+        return stakeholderRepository.findAllByProjectIdNotRemoved(projectId).stream()
+                .map(stakeholderMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
+    public List<StakeholderDTO> findStakeholdersRemovedOfProject(String oryId, Long projectId) {
+        checkViewPermission(oryId,String.valueOf(projectId));
+        return stakeholderRepository.findAllByProjectIdRemoved(projectId).stream()
                 .map(stakeholderMapper::toDto)
                 .collect(Collectors.toList());
     }
     @Transactional(readOnly = true)
     public StakeholderDTO findStakeholderById(String oryId, long projectId, long stakeholderId) {
-        Set<Long> viewableFunctionalities = functionalityService.getViewableFunctionalityIds(oryId, projectId);
-        Stakeholder stakeholder = stakeholderRepository.findById(stakeholderId)
-                .orElseThrow(()-> new EntityNotFoundException("Stakeholder with id " + stakeholderId + " not found"));
-
-        if(stakeholder.getProject().getId() != projectId){
-            throw new EntityNotFoundException("Stakeholder with id " + stakeholderId + " not found");
-        }
         checkViewPermission(oryId,String.valueOf(projectId));
+        Set<Long> viewableFunctionalities = functionalityService.getViewableFunctionalityIds(oryId, projectId);
+        Stakeholder stakeholder = stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId)
+                .orElseThrow(()-> new EntityNotFoundException("Stakeholder not found"));
+        if (stakeholder.getState()==EntityState.REMOVED){
+            checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        }
         List<Requirement> observers = stakeholderRepository
                 .findFilteredRequirementsForStakeholder(stakeholderId, viewableFunctionalities);
         return stakeholderMapper.toDtoWithObservers(stakeholder, observers);
@@ -99,7 +110,7 @@ public class StakeholderService {
     @Transactional
     public void requestEdit(User user,Long projectId,Long stkhId) {
         checkEditPermission(user.getOryId(),String.valueOf(projectId));
-        Stakeholder stakeholder = stakeholderRepository.findById(stkhId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        Stakeholder stakeholder = stakeholderRepository.findByIdAndProjectId(stkhId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
         stakeholder.checkCanBeModified();
         entityLockService.lock(stakeholder,user);
     }
@@ -107,7 +118,7 @@ public class StakeholderService {
     @Transactional
     public StakeholderDTO patch(User user,Long projectId,Long stkhId,StakeholderDTO patch) {
         checkEditPermission(user.getOryId(),String.valueOf(projectId));
-        Stakeholder stakeholder = stakeholderRepository.findById(stkhId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        Stakeholder stakeholder = stakeholderRepository.findByIdAndProjectId(stkhId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
         if(!entityLockService.isLockedByUser(stakeholder, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
@@ -121,11 +132,52 @@ public class StakeholderService {
 
     @Transactional
     public void approveStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
-            throw new AccessDeniedException("User not authorized to perform this action on this project");
-        }
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
         if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         stakeholderRepository.updateStateByIdsAndProject(stakeholderIds,projectId, EntityState.APPROVED,EntityState.PENDING_APPROVAL);
+    }
+    @Transactional
+    public void disableStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        stakeholderRepository.findAllByIdsAndProjectIdAndState(stakeholderIds,projectId, List.of(EntityState.PENDING_APPROVAL,EntityState.APPROVED,EntityState.REMOVED)).forEach(stakeholder -> {
+            stakeholder.setState(EntityState.DEACTIVATED);
+            stakeholder.notifyObservers();
+        });
+    }
+    @Transactional
+    public void enableStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        stakeholderRepository.findAllByIdsAndProjectIdAndState(stakeholderIds,projectId, EntityState.DEACTIVATED).forEach(stakeholder -> {
+            stakeholder.setState(EntityState.PENDING_APPROVAL);
+            stakeholder.notifyObservers();
+        });
+    }
+    @Transactional
+    public void removeStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        stakeholderRepository.findAllByIdsAndProjectIdAndState(stakeholderIds,projectId, EntityState.DEACTIVATED).forEach(stakeholder -> {
+            stakeholder.setState(EntityState.REMOVED);
+            stakeholder.notifyObservers();
+            Associations.unlinkObservers(stakeholder);
+        });
+        stakeholderRepository.updateStateByIdsAndProject(stakeholderIds,projectId, EntityState.REMOVED,EntityState.DEACTIVATED);
+    }
+    @Transactional
+    public void deleteStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
+        checkEditPermission(oryId,String.valueOf(projectId));
+        if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        stakeholderRepository.deleteRemovedByIdsAndProject(stakeholderIds,projectId);
     }
 }

@@ -71,8 +71,8 @@ public class FunctionalRequirementController {
     }
 
     @PostMapping("/{functionalRequirementId}/linkStakeholder")
-    public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
-        functionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,stakeholderId);
+    public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long projectId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,stakeholderId);
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/linkDocument")
@@ -86,8 +86,8 @@ public class FunctionalRequirementController {
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/unlinkStakeholder")
-    public ResponseEntity<Void> unlinkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
-        functionalRequirementService.unobserveStakeholder(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,stakeholderId);
+    public ResponseEntity<Void> unlinkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long projectId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.unobserveStakeholder(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,stakeholderId);
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/unlinkDocument")

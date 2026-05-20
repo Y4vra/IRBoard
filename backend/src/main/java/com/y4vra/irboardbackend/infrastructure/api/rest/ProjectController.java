@@ -100,4 +100,29 @@ public class ProjectController {
         projectService.approveAllElements(((User) authentication.getPrincipal()).getOryId(),projectId);
         return ResponseEntity.ok().build();
     }
+//    @PostMapping("/{projectId}/finish")
+//    public ResponseEntity<Void> finishActiveProject(Authentication authentication, @PathVariable Long projectId) {
+////        projectService.approveAllElements(((User) authentication.getPrincipal()).getOryId(),projectId);
+//        return ResponseEntity.ok().build();
+//    }
+//    @PostMapping("/{projectId}/disable")
+//    public ResponseEntity<Void> disableActiveProject(Authentication authentication, @PathVariable Long projectId) {
+////        projectService.approveAllElements(((User) authentication.getPrincipal()).getOryId(),projectId);
+//        return ResponseEntity.ok().build();
+//    }
+//    @PostMapping("/{projectId}/activate")
+//    public ResponseEntity<Void> activateDisabledOrFinishedProject(Authentication authentication, @PathVariable Long projectId) {
+////        projectService.approveAllElements(((User) authentication.getPrincipal()).getOryId(),projectId);
+//        return ResponseEntity.ok().build();
+//    }
+//    @PostMapping("/{projectId}/remove")
+//    public ResponseEntity<Void> removeDisabledProject(Authentication authentication, @PathVariable Long projectId) {
+////        projectService.approveAllElements(((User) authentication.getPrincipal()).getOryId(),projectId);
+//        return ResponseEntity.ok().build();
+//    }
+//    @PostMapping("/{projectId}/delete")
+//    public ResponseEntity<Void> deleteRemovedProject(Authentication authentication, @PathVariable Long projectId) {
+////        projectService.approveAllElements(((User) authentication.getPrincipal()).getOryId(),projectId);
+//        return ResponseEntity.ok().build();
+//    }
 }

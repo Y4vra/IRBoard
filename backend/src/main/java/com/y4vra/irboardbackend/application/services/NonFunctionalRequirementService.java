@@ -107,7 +107,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     public void observeStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(projectId));
         Associations.observe(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
+                stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void observeDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
@@ -119,7 +119,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     public void unobserveStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(projectId));
         Associations.unobserve(nfrRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
-                stakeholderRepository.findById(stakeholderId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
+                stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void unobserveDocument(String oryId, Long projectId,Long requirementId, Long documentId) {

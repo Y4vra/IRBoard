@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
+import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
@@ -17,9 +18,11 @@ import java.util.Set;
 
 @Repository
 interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
+    Optional<Stakeholder> findByIdAndProjectId(Long id,Long projectId);
     List<Stakeholder> findByProjectId(Long projectId);
 
     List<Stakeholder> findByProjectIdAndStateNot(Long projectId,EntityState state);
+    List<Stakeholder> findByProjectIdAndState(Long projectId,EntityState state);
 
     @Query("""
         SELECT r FROM Requirement r
@@ -44,7 +47,7 @@ interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
     @Query("""
         SELECT s FROM Stakeholder s
         WHERE s.project.id = :projectId
-        AND s.state NOT IN :states
+        AND s.state NOT IN :notAllowedStates
         AND NOT EXISTS (
             SELECT 1 FROM s.observerRequirements r
             WHERE r.id = :requirementId
@@ -67,6 +70,20 @@ interface JpaStakeholderRepository extends JpaRepository<Stakeholder, Long> {
    AND s.state = :oldState
    """)
     int updateStateByIdsAndProject(List<Long> stakeholderIds, Long projectId, EntityState newState, EntityState oldState);
+    @Query("""
+        SELECT s from Stakeholder s
+        WHERE s.id IN :stakeholderIds
+        AND s.project.id = :projectId
+        AND s.state = :state
+        """)
+    List<Stakeholder> findAllByIdsAndProjectIdAndState(List<Long> stakeholderIds, Long projectId, EntityState state);
+    @Query("""
+        SELECT s from Stakeholder s
+        WHERE s.id IN :stakeholderIds
+        AND s.project.id = :projectId
+        AND s.state IN :states
+        """)
+    List<Stakeholder> findAllByIdsAndProjectIdAndState(List<Long> stakeholderIds, Long projectId, List<EntityState> states);
 }
 
 @Component
@@ -87,7 +104,7 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
         return jpaRepository.findAllById(ids);
     }
     @Override
-    public Optional<Stakeholder> findById(Long id) {return jpaRepository.findById(id);}
+    public Optional<Stakeholder> findByIdAndProjectId(Long id,Long projectId) {return jpaRepository.findByIdAndProjectId(id,projectId);}
     @Override
     public List<Stakeholder> findByProjectId(Long projectId) {
         return jpaRepository.findByProjectId(projectId);
@@ -96,14 +113,14 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     public Stakeholder save(Stakeholder stakeholder) {
         return jpaRepository.save(stakeholder);
     }
-    @Override
-    public void deleteById(Long id) {
-        jpaRepository.deleteById(id);
-    }
 
     @Override
-    public List<Stakeholder> findByProjectIdNotRemoved(Long projectId){
+    public List<Stakeholder> findAllByProjectIdNotRemoved(Long projectId){
         return jpaRepository.findByProjectIdAndStateNot(projectId,EntityState.REMOVED);
+    }
+    @Override
+    public List<Stakeholder> findAllByProjectIdRemoved(Long projectId){
+        return jpaRepository.findByProjectIdAndState(projectId,EntityState.REMOVED);
     }
 
     @Override
@@ -127,5 +144,21 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     @Override
     public int updateStateByIdsAndProject(List<Long> stakeholderIds, Long projectId, EntityState newState, EntityState oldState) {
         return jpaRepository.updateStateByIdsAndProject(stakeholderIds, projectId, newState, oldState);
+    }
+
+    @Override
+    public int deleteRemovedByIdsAndProject(List<Long> stakeholderIds, Long projectId) {
+        List<Stakeholder> stakeholders = jpaRepository.findAllByIdsAndProjectIdAndState(stakeholderIds,projectId,EntityState.REMOVED);
+        jpaRepository.deleteAll(stakeholders);
+        return stakeholders.size();
+    }
+
+    @Override
+    public List<Stakeholder> findAllByIdsAndProjectIdAndState(List<Long> stakeholderIds, Long projectId, EntityState state) {
+        return jpaRepository.findAllByIdsAndProjectIdAndState(stakeholderIds,projectId,state);
+    }
+    @Override
+    public List<Stakeholder> findAllByIdsAndProjectIdAndState(List<Long> stakeholderIds, Long projectId, List<EntityState> states) {
+        return jpaRepository.findAllByIdsAndProjectIdAndState(stakeholderIds,projectId,states);
     }
 }
