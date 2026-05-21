@@ -40,6 +40,7 @@ import { useDisableNFRequirements } from "@/hooks/useDisableActions";
 import { useEnableNFRequirements } from "@/hooks/useEnableActions";
 import { useRemoveNFRequirements } from "@/hooks/useRemoveActions";
 import { useDeleteNFRequirements } from "@/hooks/useDeleteActions";
+import { useFinishNFRequirements } from "@/hooks/useFinishActions";
 
 // ─── Operator helpers ─────────────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ function evaluatePassing(
 
 // ─── Metric expression block ──────────────────────────────────────────────────
 
-function MetricExpression({ req }: { req: NonFunctionalRequirement }) {
+function MetricExpression({ req,passing }: { req: NonFunctionalRequirement,passing:boolean }) {
   const { actualValue, thresholdValue, targetValue, operator, measurementUnit } = req;
 
   const hasMetrics =
@@ -88,7 +89,6 @@ function MetricExpression({ req }: { req: NonFunctionalRequirement }) {
 
   if (!hasMetrics) return null;
 
-  const passing = evaluatePassing(actualValue, operator, thresholdValue);
   const unit = measurementUnit ? ` ${measurementUnit}` : "";
 
   // Progress bar: position of actual relative to threshold (clamped 0–100%)
@@ -376,6 +376,10 @@ function NonFunctionalRequirementDetailView() {
     projectId: projectId!,
     onSuccess: refresh,
   })
+  const { finishNFRequirements, loading: finishing } = useFinishNFRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
   const { disableNFRequirements, loading: disabling } = useDisableNFRequirements({
     projectId: projectId!,
     onSuccess: refresh,
@@ -420,6 +424,7 @@ function NonFunctionalRequirementDetailView() {
       docId
     );
 
+  const passing = evaluatePassing(requirement?.actualValue, requirement?.operator, requirement?.thresholdValue);
   const ableToBeModified = !isLocked && requirement?.state!="DEACTIVATED" && requirement?.state!="REMOVED"
 
   if (loading) return <LoadingSpinner text="Loading requirement..." />;
@@ -507,6 +512,12 @@ function NonFunctionalRequirementDetailView() {
                 {approving ? "Approving..." : "Approve Requirement"}
               </Button>
               <Button variant="outline" size="sm" 
+                disabled={requirement.state === "APPROVED" && passing?finishing:true}
+                onClick={() => finishNFRequirements([requirement.id])}
+                >
+                {finishing ? "Marking as finished..." : "Mark as finished"}
+              </Button>
+              <Button variant="outline" size="sm" 
                 disabled={requirement.state === "DEACTIVATED"?removing:true}
                 onClick={() => removeNFRequirements([requirement.id])}>
                 {removing ? "Removing..." : "Remove requirement"}
@@ -524,7 +535,7 @@ function NonFunctionalRequirementDetailView() {
       </header>
 
       {/* Semantic metric expression */}
-      <MetricExpression req={requirement} />
+      <MetricExpression req={requirement} passing/>
 
       {/* Children */}
       {(requirement.children?.length > 0 || editPermission) && (

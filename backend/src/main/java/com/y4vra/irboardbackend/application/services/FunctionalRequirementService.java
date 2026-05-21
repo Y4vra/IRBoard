@@ -230,7 +230,7 @@ public class FunctionalRequirementService extends RequirementService {
     }
     @Transactional
     public FunctionalRequirementDTO patch(User user,Long projectId,Long functionalityId, Long requirementId, FunctionalRequirementDTO patch) {
-        checkEditPermission(user.getOryId(), String.valueOf(requirementId));
+        checkEditPermission(user.getOryId(), String.valueOf(functionalityId));
         FunctionalRequirement requirement = frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
         if(!entityLockService.isLockedByUser(requirement, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
@@ -249,6 +249,13 @@ public class FunctionalRequirementService extends RequirementService {
         if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalityId,functionalRequirementIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         frRepository.updateStateByIdsAndFunctionalityAndProject(functionalRequirementIds,functionalityId,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
+    }
+    @Transactional
+    public void finishRequirements(String oryId, Long projectId, Long functionalityId, List<Long> functionalRequirementIds) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalityId,functionalRequirementIds))
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        frRepository.updateStateByIdsAndFunctionalityAndProject(functionalRequirementIds,functionalityId,projectId,RequirementState.FINISHED,RequirementState.APPROVED);
     }
     @Transactional
     public void disableFunctionalRequirements(String oryId, Long projectId,Long functionalityId, List<Long> functionalRequirementIds) {

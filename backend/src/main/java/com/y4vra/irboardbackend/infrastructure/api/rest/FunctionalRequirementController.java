@@ -64,6 +64,11 @@ public class FunctionalRequirementController {
         functionalRequirementService.approveRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementIds);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/finish")
+    public ResponseEntity<Void> finishFunctionalRequirementsOfFunctionality(Authentication authentication, @PathVariable Long projectId,@PathVariable Long functionalityId, @RequestBody List<Long> functionalRequirementIds) {
+        functionalRequirementService.finishRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
     @PostMapping("/disable")
     public ResponseEntity<Void> disableFunctionalRequirements(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @RequestBody List<Long> nonFunctionalRequirementIds) {
         functionalRequirementService.disableFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,nonFunctionalRequirementIds);

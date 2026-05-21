@@ -182,6 +182,20 @@ public class NonFunctionalRequirementService extends RequirementService {
         nfrRepository.updateStateByIdsAndProject(nonFunctionalRequirementIds,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
     }
     @Transactional
+    public void finishRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds))
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        nfrRepository.findAllByIdsAndProjectIdAndState(nonFunctionalRequirementIds,projectId, RequirementState.APPROVED).forEach(
+            nfr ->{
+                if(nfr.isPassing()){
+                    throw new IllegalStateException("A non-passing requirement cannot be marked as finished.");
+                }
+                nfr.setState(RequirementState.FINISHED);
+            }
+        );
+    }
+    @Transactional
     public void disableNonFunctionalRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds)){

@@ -44,6 +44,7 @@ import { useRemoveFunctionalRequirements } from "@/hooks/useRemoveActions";
 import { useDeleteFunctionalRequirements } from "@/hooks/useDeleteActions";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
+import { useFinishFunctionalRequirements } from "@/hooks/useFinishActions";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -249,6 +250,10 @@ function FunctionalRequirementDetailView() {
     projectId: projectId!,
     onSuccess: refresh,
   })
+  const { finishFunctionalRequirements, loading: finishing } = useFinishFunctionalRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
   const { disableFunctionalRequirements, loading: disabling } = useDisableFunctionalRequirements({
     projectId: projectId!,
     onSuccess: refresh,
@@ -398,6 +403,12 @@ function FunctionalRequirementDetailView() {
                 onClick={() => approveFunctionalRequirements(functionalityId!, [requirement.id])}
                 >
                 {approving ? "Approving..." : "Approve Requirement"}
+              </Button>
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "APPROVED"?approving:true}
+                onClick={() => finishFunctionalRequirements(functionalityId!, [requirement.id])}
+                >
+                {finishing ? "Marking as finished..." : "Mark as finished"}
               </Button>
               <Button variant="outline" size="sm" 
                 disabled={requirement.state === "DEACTIVATED"?removing:true}
