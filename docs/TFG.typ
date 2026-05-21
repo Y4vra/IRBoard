@@ -454,12 +454,14 @@ A crucial process for the system is the updates triggered by modifications betwe
   ),
   [The system must allow a requirement engineer or a project manager to deactivate a requirement pending approval on a functionality they are linked to.],
   (
-    [The system must show the user the amount of entities that will be affected by the deactivation.],
-    [The system must ask for confirmation.],
     [The system must flag any requirements linked to the deactivated requirement as pending review.],
     [The system must put the requirement on read only.],
   ),
   [The system must allow a project manager or requirement engineer to set a deactivated requirement as removed.],
+  (
+    [The system must hide from view a removed requirement, effectively archiving it.],
+  ),
+  [The system must allow a project manager to permanently delete a removed requirement.],
   (
     [The system must hide from view a removed requirement, effectively archiving it.],
   ),
