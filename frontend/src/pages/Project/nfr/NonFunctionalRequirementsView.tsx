@@ -267,6 +267,7 @@ function NFRCard({
       className={[
         "rounded-xl border bg-white shadow-sm transition-all select-none",
         depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : "",
+        r.state === "DEACTIVATED" ? "opacity-50" : "",
         isChildTarget ? "ring-2 ring-blue-400 bg-blue-50/40 shadow-md" : "hover:shadow-md",
       ].join(" ")}
       draggable={editPermission}
