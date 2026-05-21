@@ -60,13 +60,33 @@ public class FunctionalRequirementService extends RequirementService {
     }
 
     @Transactional(readOnly = true)
-    public List<FunctionalRequirementDTO> findFunctionalRequirementsOfFunctionality(String oryId, Long functionalityId) {
+    public List<FunctionalRequirementDTO> findFunctionalRequirementsNotRemovedOfFunctionality(String oryId, Long projectId, Long functionalityId) {
         checkViewPermission(oryId,String.valueOf(functionalityId));
-        return frRepository.findAllByFunctionalityId(functionalityId).stream()
+        return frRepository.findAllByFunctionalityIdAndProjectIdNotRemoved(functionalityId,projectId).stream()
                 .map(frMapper::toDto)
                 .collect(Collectors.toList());
     }
+    @Transactional(readOnly = true)
+    public List<FunctionalRequirementDTO> findFunctionalRequirementsRemovedOfFunctionality(String oryId, Long projectId, Long functionalityId) {
+        checkViewPermission(oryId,String.valueOf(functionalityId));
+        return frRepository.findAllByFunctionalityIdAndProjectIdRemoved(functionalityId,projectId).stream()
+                .map(frMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
+    public FunctionalRequirementDTO findFunctionalRequirementById(String oryId,Long projectId, Long functionalityId, Long functionalRequirementId) {
+        checkViewPermission(oryId,String.valueOf(functionalityId));
 
+        FunctionalRequirement functionalRequirement = frRepository.findByIdAndFunctionalityIdAndProjectId(functionalRequirementId,functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("FunctionalRequirement with id " + functionalRequirementId + " not found"));
+        if (functionalRequirement.getState()== RequirementState.REMOVED){
+            checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        }
+        return frMapper.toDetailedDto(functionalRequirement,
+                stakeholderRepository.findAllObservedByRequirement(functionalRequirementId),
+                nfrRepository.findAllObservedByRequirement(functionalRequirementId),
+                documentRepository.findAllObservedByRequirement(functionalRequirementId),
+                frRepository.findAllObservedByRequirement(functionalRequirementId));
+    }
     @Transactional
     public FunctionalRequirementDTO createFunctionalRequirement(String oryId,FunctionalRequirementDTO dto, Long projectId, Long functionalityId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
@@ -79,35 +99,13 @@ public class FunctionalRequirementService extends RequirementService {
         EntitySlugGenerator.setSlug(fr,projectId);
         fr.setState(RequirementState.PENDING_APPROVAL);
         if (dto.parentId() != null) {
-            FunctionalRequirement frParent = frRepository.findById(dto.parentId())
+            FunctionalRequirement frParent = frRepository.findByIdAndFunctionalityIdAndProjectId(dto.parentId(),functionalityId,projectId)
                     .orElseThrow(() -> new EntityNotFoundException("Parent not found"));
-
-            Long parentFunctionalityId = frRepository.findRootFunctionalityIdById(dto.parentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Parent functionality not found"));
-
-            if (!parentFunctionalityId.equals(functionalityId)) {
-                throw new IllegalArgumentException("Parent does not belong to this functionality");
-            }
-
             Associations.link(frParent, fr);
         }
         FunctionalRequirement saved = frRepository.save(fr);
 
         return frMapper.toDto(saved);
-    }
-    @Transactional(readOnly = true)
-    public FunctionalRequirementDTO findFunctionalRequirementById(String oryId, long functionalityId, long functionalRequirementId) {
-        checkViewPermission(oryId,String.valueOf(functionalityId));
-
-        FunctionalRequirement functionalRequirement = frRepository.findById(functionalRequirementId).orElseThrow(()-> new EntityNotFoundException("FunctionalRequirement with id " + functionalRequirementId + " not found"));
-        if(functionalRequirement.getFunctionality().getId() != functionalityId){
-            throw new EntityNotFoundException("FunctionalRequirement with id " + functionalRequirementId + " not found");
-        }
-        return frMapper.toDetailedDto(functionalRequirement,
-                stakeholderRepository.findAllObservedByRequirement(functionalRequirementId),
-                nfrRepository.findAllObservedByRequirement(functionalRequirementId),
-                documentRepository.findAllObservedByRequirement(functionalRequirementId),
-                frRepository.findAllObservedByRequirement(functionalRequirementId));
     }
 
     @Transactional
@@ -135,37 +133,37 @@ public class FunctionalRequirementService extends RequirementService {
     @Transactional
     public void observeStakeholder(String oryId,Long projectId, Long functionalityId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        Associations.observe(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
+        Associations.observe(frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                             stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void observeDocument(String oryId,Long projectId, Long functionalityId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        Associations.observe(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
+        Associations.observe(frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
-    public void observeRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
+    public void observeRequirement(String oryId,Long projectId, Long functionalityId,Long requirementId, Long requirementId2) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        Associations.observe(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
+        Associations.observe(frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 requirementRepository.findById(requirementId2).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
     }
     @Transactional
     public void unobserveStakeholder(String oryId,Long projectId, Long functionalityId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        Associations.unobserve(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
+        Associations.unobserve(frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void unobserveDocument(String oryId,Long projectId, Long functionalityId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        Associations.unobserve(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
+        Associations.unobserve(frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
-    public void unobserveRequirement(String oryId, Long functionalityId,Long requirementId, Long requirementId2) {
+    public void unobserveRequirement(String oryId,Long projectId, Long functionalityId,Long requirementId, Long requirementId2) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        Associations.unobserve(frRepository.findById(requirementId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
+        Associations.unobserve(frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 requirementRepository.findById(requirementId2).orElseThrow(() -> new EntityNotFoundException("Could not find requirement")));
     }
 
@@ -195,36 +193,32 @@ public class FunctionalRequirementService extends RequirementService {
     }
 
     @Transactional
-    public void reorderRequirement(String oryId, Long functionalityId, Long functionalRequirementId, Long orderValue) {
+    public void reorderRequirement(String oryId,Long projectId, Long functionalityId, Long functionalRequirementId, Long orderValue) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
         functionalityRepository.findById(functionalityId).orElseThrow(()-> new EntityNotFoundException("Could not find functionality"));
-        FunctionalRequirement fr = frRepository.findById(functionalRequirementId).orElseThrow(()-> new EntityNotFoundException("Could not find functional requirement"));
+        FunctionalRequirement fr = frRepository.findByIdAndFunctionalityIdAndProjectId(functionalRequirementId,functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find functional requirement"));
         if(!Objects.equals(fr.getFunctionality().getId(), functionalityId)){
             throw new EntityNotFoundException("Functionality id does not match functionality id");
         }
         fr.setOrderValue(orderValue);
     }
     @Transactional
-    public void changeParent(String oryId, Long functionalityId, Long functionalRequirementId, Long newParentId) {
+    public void changeParent(String oryId,Long projectId, Long functionalityId, Long functionalRequirementId, Long newParentId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
         functionalityRepository.findById(functionalityId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find functionality"));
-        FunctionalRequirement fr = frRepository.findByIdWithParent(functionalRequirementId)
+        FunctionalRequirement fr = frRepository.findByIdWithParentAndFunctionalityIdAndProjectId(functionalRequirementId,functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement"));
-        if (!Objects.equals(fr.getFunctionality().getId(), functionalityId))
-            throw new EntityNotFoundException("Functionality id does not match functionality id");
 
         if (fr.getParent() != null) {
             FunctionalRequirement currentParent = frRepository
-                    .findByIdWithChildren(fr.getParent().getId())
+                    .findByIdWithChildrenAndFunctionalityIdAndProjectId(fr.getParent().getId(),functionalityId,projectId)
                     .orElseThrow(() -> new EntityNotFoundException("Could not find current parent"));
             Associations.unlink(currentParent, fr);
         }
         if (newParentId != null) {
-            FunctionalRequirement newParent = frRepository.findById(newParentId)
+            FunctionalRequirement newParent = frRepository.findByIdAndFunctionalityIdAndProjectId(newParentId,functionalityId,projectId)
                     .orElseThrow(() -> new EntityNotFoundException("Could not find parent"));
-            if (!Objects.equals(newParent.getFunctionality().getId(), functionalityId))
-                throw new EntityNotFoundException("Functionality id does not match functionality id");
             Associations.link(newParent, fr);
         }
     }
@@ -235,11 +229,13 @@ public class FunctionalRequirementService extends RequirementService {
         super.requestEdit(user,projectId,requirementId);
     }
     @Transactional
-    public FunctionalRequirementDTO patch(User user, Long requirementId, FunctionalRequirementDTO patch) {
-        FunctionalRequirement requirement = frRepository.findById(requirementId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
+    public FunctionalRequirementDTO patch(User user,Long projectId,Long functionalityId, Long requirementId, FunctionalRequirementDTO patch) {
+        checkEditPermission(user.getOryId(), String.valueOf(requirementId));
+        FunctionalRequirement requirement = frRepository.findByIdAndFunctionalityIdAndProjectId(requirementId,functionalityId,projectId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
         if(!entityLockService.isLockedByUser(requirement, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
+        requirement.checkCanBeModified();
         frMapper.patchEntity(patch, requirement);
         updatePriority(requirement,patch.priority());
         entityLockService.unlock(requirement,user);
@@ -249,12 +245,68 @@ public class FunctionalRequirementService extends RequirementService {
     }
     @Transactional
     public void approveRequirements(String oryId, Long projectId, Long functionalityId, List<Long> functionalRequirementIds) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
-            throw new AccessDeniedException("User not authorized to perform this action on this project");
-        }
-        checkEditPermission(oryId,String.valueOf(functionalityId));
-        if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(functionalityId,projectId,functionalRequirementIds))
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalityId,functionalRequirementIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         frRepository.updateStateByIdsAndFunctionalityAndProject(functionalRequirementIds,functionalityId,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
+    }
+    @Transactional
+    public void disableFunctionalRequirements(String oryId, Long projectId,Long functionalityId, List<Long> functionalRequirementIds) {
+        checkEditPermission(oryId,String.valueOf(functionalityId));
+        if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalityId,functionalRequirementIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        List<RequirementState> validStatesList= List.of(RequirementState.PENDING_APPROVAL,RequirementState.APPROVED,RequirementState.REMOVED);
+        frRepository.findAllByIdsAndFunctionalityIdAndProjectIdAndState(functionalRequirementIds,functionalityId,projectId, validStatesList).forEach(
+            functionalRequirement -> {
+                frRepository.findAllDescendantsOf(functionalRequirement.getId())
+                        .stream()
+                        .filter(child -> validStatesList.contains(child.getState()))
+                        .forEach(child -> {
+                            child.setState(RequirementState.DEACTIVATED);
+                            child.notifyObservers();
+                        });
+                functionalRequirement.setState(RequirementState.DEACTIVATED);
+                functionalRequirement.notifyObservers();
+            });
+    }
+    @Transactional
+    public void enableFunctionalRequirements(String oryId, Long projectId,Long functionalityId, List<Long> functionalRequirementIds) {
+        checkEditPermission(oryId,String.valueOf(functionalityId));
+        if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalityId,functionalRequirementIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        frRepository.findAllByIdsAndFunctionalityIdAndProjectIdAndState(functionalRequirementIds,functionalityId,projectId, RequirementState.DEACTIVATED).forEach(nonFunctionalRequirement -> {
+            nonFunctionalRequirement.setState(RequirementState.PENDING_APPROVAL);
+            nonFunctionalRequirement.notifyObservers();
+        });
+    }
+    @Transactional
+    public void removeFunctionalRequirements(String oryId, Long projectId,Long functionalityId, List<Long> functionalRequirementIds) {
+        checkEditPermission(oryId,String.valueOf(functionalityId));
+        if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalityId,functionalRequirementIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        frRepository.findAllByIdsAndFunctionalityIdAndProjectIdAndState(functionalRequirementIds,functionalityId,projectId, RequirementState.DEACTIVATED).forEach(functionalRequirement -> {
+            frRepository.findAllDescendantsOf(functionalRequirement.getId())
+                    .forEach(child -> {
+                        child.setState(RequirementState.REMOVED);
+                        child.notifyObservers();
+                        Associations.unlinkObservers(child);
+                        Associations.unlinkChildren(child);
+                    });
+            functionalRequirement.setState(RequirementState.REMOVED);
+            functionalRequirement.notifyObservers();
+            Associations.unlinkObservers(functionalRequirement);
+            Associations.unlinkChildren(functionalRequirement);
+        });
+    }
+    @Transactional
+    public void deleteFunctionalRequirements(String oryId, Long projectId,Long functionalityId, List<Long> functionalRequirementIds) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        if (!frRepository.allFunctionalRequirementsBelongToFunctionalityAndProject(projectId,functionalityId,functionalRequirementIds)){
+            throw new EntityNotFoundException("One of the elements was not found on the system");
+        }
+        frRepository.deleteRemovedByIdsAndFunctionalityIdAndProjectId(functionalRequirementIds,functionalityId,projectId);
     }
 }

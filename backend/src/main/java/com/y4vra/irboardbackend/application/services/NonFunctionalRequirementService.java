@@ -91,11 +91,6 @@ public class NonFunctionalRequirementService extends RequirementService {
         if (dto.parentId() != null) {
             NonFunctionalRequirement nfrParent = nfrRepository.findByIdAndProjectId(dto.parentId(),projectId)
                     .orElseThrow(() -> new EntityNotFoundException("Parent not found"));
-            Long parentProjectId = nfrRepository.findRootProjectIdById(dto.parentId())
-                    .orElseThrow(() -> new EntityNotFoundException("Project linked to root nfr parent not found"));
-            if (!Objects.equals(parentProjectId, project.getId())) {
-                throw new EntityNotFoundException("Parent is not the same as this project");
-            }
             Associations.link(nfrParent, nfr);
         }
         NonFunctionalRequirement saved = nfrRepository.save(nfr);
@@ -239,10 +234,10 @@ public class NonFunctionalRequirementService extends RequirementService {
     }
     @Transactional
     public void deleteNonFunctionalRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
-        checkEditPermission(oryId,String.valueOf(projectId));
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
-        nfrRepository.deleteRemovedByIdsAndProject(nonFunctionalRequirementIds,projectId);
+        nfrRepository.deleteRemovedByIdsAndProjectId(nonFunctionalRequirementIds,projectId);
     }
 }

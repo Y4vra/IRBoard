@@ -1,13 +1,8 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalRequirementDTO;
-import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
-import com.y4vra.irboardbackend.application.dtos.ReorderRequest;
-import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.services.FunctionalRequirementService;
-import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
-import io.minio.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,15 +22,19 @@ public class FunctionalRequirementController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<FunctionalRequirementDTO>> getFunctionalRequirementOfFunctionality(Authentication authentication, @PathVariable Long functionalityId) {
-        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementsOfFunctionality(((User) authentication.getPrincipal()).getOryId(),functionalityId));
+    public ResponseEntity<List<FunctionalRequirementDTO>> getFunctionalRequirementsNotRemovedOfFunctionality(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId) {
+        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementsNotRemovedOfFunctionality(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId));
+    }
+    @GetMapping("/removed")
+    public ResponseEntity<List<FunctionalRequirementDTO>> getFunctionalRequirementsRemovedOfFunctionality(Authentication authentication,@PathVariable Long projectId, @PathVariable Long functionalityId) {
+        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementsRemovedOfFunctionality(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId));
     }
     @GetMapping("/{functionalRequirementId}")
-    public ResponseEntity<FunctionalRequirementDTO> getFunctionalRequirementById(Authentication authentication,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
-        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementById(((User) authentication.getPrincipal()).getOryId(),functionalityId, functionalRequirementId));
+    public ResponseEntity<FunctionalRequirementDTO> getFunctionalRequirementById(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
+        return ResponseEntity.ok(functionalRequirementService.findFunctionalRequirementById(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId, functionalRequirementId));
     }
     @GetMapping("/{functionalRequirementId}/requestEdit")
-    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
+    public ResponseEntity<Void> requestEdit(Authentication authentication, @PathVariable Long projectId,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId) {
         User user = (User) authentication.getPrincipal();
         functionalRequirementService.requestEdit(user,projectId,functionalityId,functionalRequirementId);
         return ResponseEntity.ok().build();
@@ -43,19 +42,20 @@ public class FunctionalRequirementController {
     @PatchMapping("/{functionalRequirementId}/modify")
     public ResponseEntity<FunctionalRequirementDTO> modify(Authentication authentication,
                                                  @PathVariable Long projectId,
+                                                 @PathVariable Long functionalityId,
                                                  @PathVariable Long functionalRequirementId,
                                                  @RequestBody FunctionalRequirementDTO patch) {
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(functionalRequirementService.patch(user,functionalRequirementId,patch));
+        return ResponseEntity.ok(functionalRequirementService.patch(user,projectId,functionalityId,functionalRequirementId,patch));
     }
     @PatchMapping("/{functionalRequirementId}/changeParent")
-    public ResponseEntity<Void> changeParentFunctionalRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody(required = false) Long newParentId) {
-        functionalRequirementService.changeParent(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,newParentId);
+    public ResponseEntity<Void> changeParentFunctionalRequirement(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody(required = false) Long newParentId) {
+        functionalRequirementService.changeParent(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,newParentId);
         return ResponseEntity.ok().build();
     }
     @PatchMapping("/{functionalRequirementId}/reorder")
-    public ResponseEntity<Void> reorderFunctionalRequirement(Authentication authentication, @PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody Long orderValue) {
-        functionalRequirementService.reorderRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,orderValue);
+    public ResponseEntity<Void> reorderFunctionalRequirement(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @PathVariable Long functionalRequirementId, @RequestBody Long orderValue) {
+        functionalRequirementService.reorderRequirement(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,orderValue);
         return ResponseEntity.ok().build();
     }
 
@@ -64,14 +64,33 @@ public class FunctionalRequirementController {
         functionalRequirementService.approveRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementIds);
         return ResponseEntity.ok().build();
     }
-
+    @PostMapping("/disable")
+    public ResponseEntity<Void> disableFunctionalRequirements(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @RequestBody List<Long> nonFunctionalRequirementIds) {
+        functionalRequirementService.disableFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,nonFunctionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/enable")
+    public ResponseEntity<Void> enableFunctionalRequirements(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @RequestBody List<Long> functionalRequirementIds) {
+        functionalRequirementService.enableFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/remove")
+    public ResponseEntity<Void> removeFunctionalRequirements(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @RequestBody List<Long> functionalRequirementIds) {
+        functionalRequirementService.removeFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/delete")
+    public ResponseEntity<Void> deleteFunctionalRequirements(Authentication authentication,@PathVariable Long projectId,@PathVariable Long functionalityId, @RequestBody List<Long> functionalRequirementIds) {
+        functionalRequirementService.deleteFunctionalRequirements(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementIds);
+        return ResponseEntity.ok().build();
+    }
     @PostMapping("/new")
     public ResponseEntity<FunctionalRequirementDTO> createFunctionalRequirement(@Validated @RequestBody FunctionalRequirementDTO functionalRequirementDTO, @PathVariable Long projectId, @PathVariable Long functionalityId, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(functionalRequirementService.createFunctionalRequirement(((User) authentication.getPrincipal()).getOryId(),functionalRequirementDTO,projectId,functionalityId));
     }
 
     @PostMapping("/{functionalRequirementId}/linkStakeholder")
-    public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long projectId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
+    public ResponseEntity<Void> linkStakeholder(@RequestBody Long stakeholderId,@PathVariable Long projectId,@PathVariable Long functionalRequirementId,@PathVariable Long functionalityId, Authentication authentication) {
         functionalRequirementService.observeStakeholder(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,stakeholderId);
         return ResponseEntity.ok().build();
     }
@@ -81,8 +100,8 @@ public class FunctionalRequirementController {
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/linkRequirement")
-    public ResponseEntity<Void> linkRequirement(@RequestBody Long nfrId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
-        functionalRequirementService.observeRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,nfrId);
+    public ResponseEntity<Void> linkRequirement(@RequestBody Long nfrId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId,@PathVariable Long projectId, Authentication authentication) {
+        functionalRequirementService.observeRequirement(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,nfrId);
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/unlinkStakeholder")
@@ -96,8 +115,8 @@ public class FunctionalRequirementController {
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalRequirementId}/unlinkRequirement")
-    public ResponseEntity<Void> unlinkRequirement(@RequestBody Long nfrId,@PathVariable Long functionalRequirementId, @PathVariable Long functionalityId, Authentication authentication) {
-        functionalRequirementService.unobserveRequirement(((User) authentication.getPrincipal()).getOryId(),functionalityId,functionalRequirementId,nfrId);
+    public ResponseEntity<Void> unlinkRequirement(@RequestBody Long nfrId,@PathVariable Long functionalRequirementId,@PathVariable Long projectId, @PathVariable Long functionalityId, Authentication authentication) {
+        functionalRequirementService.unobserveRequirement(((User) authentication.getPrincipal()).getOryId(),projectId,functionalityId,functionalRequirementId,nfrId);
         return ResponseEntity.ok().build();
     }
 }

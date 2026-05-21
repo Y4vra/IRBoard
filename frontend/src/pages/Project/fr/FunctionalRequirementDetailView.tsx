@@ -38,6 +38,12 @@ import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { sortByOrderValue } from "@/lib/reorderUtils";
 import { useApproveRequirements } from "@/hooks/useApproveActions";
+import { useDisableFunctionalRequirements } from "@/hooks/useDisableActions";
+import { useEnableFunctionalRequirements } from "@/hooks/useEnableActions";
+import { useRemoveFunctionalRequirements } from "@/hooks/useRemoveActions";
+import { useDeleteFunctionalRequirements } from "@/hooks/useDeleteActions";
+import { useLocks } from "@/hooks/useLocks";
+import { EntityType } from "@/lib/lockUtils";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -207,14 +213,18 @@ function FunctionalRequirementDetailView() {
   const { canEditFunctionality } = useFunctionalities();
   const canEdit = canEditFunctionality(functionalityId!);
   const navigate = useNavigate();
-  const [removingId, setRemovingId] = useState<number | null>(null);
 
+  const { getLock } = useLocks();
+  const lock = getLock(EntityType.FUNCTIONAL_REQUIREMENT, Number(frId));
+  const isLocked = !!lock;
+  
   // Dialog open states
   const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
   const [stakeholderDialogOpen, setStakeholderDialogOpen] = useState(false);
   const [nfrDialogOpen, setNfrDialogOpen] = useState(false);
   const [documentDialogOpen, setDocumentDialogOpen] = useState(false);
   const [linkedFRDialogOpen, setLinkedFRDialogOpen] = useState(false);
+  const [removingId, setRemovingId] = useState<number | null>(null);
 
   const fetcher = useCallback(
     () =>
@@ -238,6 +248,22 @@ function FunctionalRequirementDetailView() {
   const { approveFunctionalRequirements, loading: approving } = useApproveRequirements({
     projectId: projectId!,
     onSuccess: refresh,
+  })
+  const { disableFunctionalRequirements, loading: disabling } = useDisableFunctionalRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { enableFunctionalRequirements, loading: enabling } = useEnableFunctionalRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { removeFunctionalRequirements, loading: removing } = useRemoveFunctionalRequirements({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/functionalities/${functionalityId}`),
+  })
+  const { deleteFunctionalRequirements, loading: deleting } = useDeleteFunctionalRequirements({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/functionalities/${functionalityId}`),
   })
 
   const unlink = async (path: string, id: number) => {
@@ -334,42 +360,51 @@ function FunctionalRequirementDetailView() {
             )}
           </div>
         </div>
-
-        {/* Stats */}
-        <div className="flex items-stretch gap-3">
-          {/* <div className="bg-white border border-slate-200 rounded-xl p-4 min-w-[200px]">
-            {[
-              { label: "Children", value: requirement.children?.length ?? 0 },
-              { label: "Stakeholders", value: requirement.observedStakeholders?.length ?? 0 },
-              { label: "NFRs", value: requirement.observedNFRequirements?.length ?? 0 },
-              { label: "Docs", value: requirement.observedDocuments?.length ?? 0 },
-            ].map(({ label, value }) => (
-              <div
-              key={label}
-                className="bg-white border border-slate-200 rounded-xl px-4 py-3 text-center min-w-[72px]"
+        <div className="flex flex-col gap-3">
+          {canEdit && 
+            <>
+              <Button asChild variant="outline" size="sm"
+                disabled={isLocked}
+                title={isLocked ? "This nfr is currently being edited by another user" : undefined}
                 >
-                <p className="text-2xl font-extrabold text-slate-900">{value}</p>
-                <p className="text-xs text-slate-400 font-medium mt-0.5">{label}</p>
-              </div>
-            ))}
-          </div> */}
-          <div className="flex flex-col gap-3">
-            {canEdit && (
-              <Button asChild variant="outline" size="sm">
                 <Link to={`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirement.id}/edit`}>
                   <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
                 </Link>
               </Button>
-            )}
-            {project.isManager &&
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "DEACTIVATED"?true:disabling}
+                onClick={() => disableFunctionalRequirements(functionalityId!,[requirement.id])}>
+                {disabling ? "Disabling..." : "Disable requirement"}
+              </Button>
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "DEACTIVATED"?enabling:true}
+                onClick={() => enableFunctionalRequirements(functionalityId!,[requirement.id])}>
+                {enabling ? "Enabling..." : "Enable requirement"}
+              </Button>
+            </>
+          }
+          {project.isManager &&
+            <>
               <Button variant="outline" size="sm" 
                 disabled={requirement.state === "PENDING_APPROVAL"?approving:true}
                 onClick={() => approveFunctionalRequirements(functionalityId!, [requirement.id])}
                 >
                 {approving ? "Approving..." : "Approve Requirement"}
               </Button>
-            }
-          </div>
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "DEACTIVATED"?removing:true}
+                onClick={() => removeFunctionalRequirements(functionalityId!,[requirement.id])}>
+                {removing ? "Removing..." : "Remove requirement"}
+              </Button>
+            </>
+          }
+          {project.isManager && requirement.state === "REMOVED" &&
+            <Button variant="outline" size="sm" 
+              disabled={deleting}
+              onClick={() => deleteFunctionalRequirements(functionalityId!,[requirement.id])}>
+              {deleting ? "Deleting..." : "Delete requirement permanently"}
+            </Button>
+          }
         </div>
       </header>
 
