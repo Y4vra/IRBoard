@@ -5,7 +5,6 @@ import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapp
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
-import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -151,22 +149,19 @@ public class NonFunctionalRequirementService extends RequirementService {
         checkEditPermission(oryId,String.valueOf(projectId));
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find project"));
-        NonFunctionalRequirement nfr = nfrRepository.findByIdWithParent(nonFunctionalRequirementId)
+        NonFunctionalRequirement nfr = nfrRepository.findByIdWithParentAndProjectId(nonFunctionalRequirementId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find non functional requirement"));
-        if (!Objects.equals(nfr.getProject().getId(), projectId))
-            throw new EntityNotFoundException("Functionality id does not match project id");
+        nfr.checkCanBeModified();
 
         if (nfr.getParent() != null) {
             NonFunctionalRequirement currentParent = nfrRepository
-                    .findByIdWithChildren(nfr.getParent().getId())
+                    .findByIdWithChildrenAndProjectId(nfr.getParent().getId(),projectId)
                     .orElseThrow(() -> new EntityNotFoundException("Could not find current parent"));
             Associations.unlink(currentParent, nfr);
         }
         if (newParentId != null) {
             NonFunctionalRequirement newParent = nfrRepository.findByIdAndProjectId(newParentId,projectId)
                     .orElseThrow(() -> new EntityNotFoundException("Could not find parent"));
-            if (!Objects.equals(newParent.getProject().getId(), projectId))
-                throw new EntityNotFoundException("Parent project id does not match current requirement's project id");
             Associations.link(newParent, nfr);
         }
     }
@@ -197,11 +192,12 @@ public class NonFunctionalRequirementService extends RequirementService {
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
-        nfrRepository.findAllByIdsAndProjectIdAndState(nonFunctionalRequirementIds,projectId, List.of(RequirementState.PENDING_APPROVAL,RequirementState.APPROVED,RequirementState.REMOVED)).forEach(
+        List<RequirementState> validStatesList= List.of(RequirementState.PENDING_APPROVAL,RequirementState.APPROVED,RequirementState.REMOVED);
+        nfrRepository.findAllByIdsAndProjectIdAndState(nonFunctionalRequirementIds,projectId, validStatesList).forEach(
         nonFunctionalRequirement -> {
             nfrRepository.findAllDescendantsOf(nonFunctionalRequirement.getId())
                     .stream()
-                    .filter(child -> RequirementState.DEACTIVATED.equals(child.getState()))
+                    .filter(child -> validStatesList.contains(child.getState()))
                     .forEach(child -> {
                         child.setState(RequirementState.DEACTIVATED);
                         child.notifyObservers();

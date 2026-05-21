@@ -50,6 +50,7 @@ public class NonFunctionalRequirementMapper {
 
         List<NonFunctionalRequirementDTO> childDtos = entity.getChildren().stream()
                 .filter(child -> child instanceof NonFunctionalRequirement)
+                .filter(child -> child.getState() != RequirementState.REMOVED)//removed dont have children
                 .map(child -> toDto((NonFunctionalRequirement) child))
                 .sorted(Comparator.comparing(
                         NonFunctionalRequirementDTO::orderValue,

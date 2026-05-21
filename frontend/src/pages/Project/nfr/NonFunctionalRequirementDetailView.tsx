@@ -36,6 +36,10 @@ import { useApproveNFRequirements } from "@/hooks/useApproveActions";
 import { LockIndicator } from "@/components/LockIndicator";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
+import { useDisableNFRequirements } from "@/hooks/useDisableActions";
+import { useEnableNFRequirements } from "@/hooks/useEnableActions";
+import { useRemoveNFRequirements } from "@/hooks/useRemoveActions";
+import { useDeleteNFRequirements } from "@/hooks/useDeleteActions";
 
 // ─── Operator helpers ─────────────────────────────────────────────────────────
 
@@ -372,6 +376,22 @@ function NonFunctionalRequirementDetailView() {
     projectId: projectId!,
     onSuccess: refresh,
   })
+  const { disableNFRequirements, loading: disabling } = useDisableNFRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { enableNFRequirements, loading: enabling } = useEnableNFRequirements({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { removeNFRequirements, loading: removing } = useRemoveNFRequirements({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/nfr`),
+  })
+  const { deleteNFRequirements, loading: deleting } = useDeleteNFRequirements({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/nfr`),
+  })
 
   const unlink = async (path: string, id: number) => {
     setRemovingId(id);
@@ -454,23 +474,49 @@ function NonFunctionalRequirementDetailView() {
         <div className="flex flex-col gap-3">
           <LockIndicator lock={lock} />
           {editPermission && (
-            <Button asChild 
-              variant="outline" 
-              size="sm" 
-              disabled={isLocked}
-              title={isLocked ? "This nfr is currently being edited by another user" : undefined}
-              >
-              <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
-                <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
-              </Link>
-            </Button>
+            <>
+              <Button asChild 
+                variant="outline" 
+                size="sm" 
+                disabled={isLocked}
+                title={isLocked ? "This nfr is currently being edited by another user" : undefined}
+                >
+                <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
+                  <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "DEACTIVATED"?true:disabling}
+                onClick={() => disableNFRequirements([requirement.id])}>
+                {disabling ? "Disabling..." : "Disable requirement"}
+              </Button>
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "DEACTIVATED"?enabling:true}
+                onClick={() => enableNFRequirements([requirement.id])}>
+                {enabling ? "Enabling..." : "Enable requirement"}
+              </Button>
+            </>
           )}
           {isManager &&
+            <>
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "PENDING_APPROVAL"?approving:true}
+                onClick={() => approveNFRequirements([requirement.id])}
+                >
+                {approving ? "Approving..." : "Approve Requirement"}
+              </Button>
+              <Button variant="outline" size="sm" 
+                disabled={requirement.state === "DEACTIVATED"?removing:true}
+                onClick={() => removeNFRequirements([requirement.id])}>
+                {removing ? "Removing..." : "Remove requirement"}
+              </Button>
+            </>
+          }
+          {isManager && requirement.state === "REMOVED" &&
             <Button variant="outline" size="sm" 
-              disabled={requirement.state === "PENDING_APPROVAL"?approving:true}
-              onClick={() => approveNFRequirements([requirement.id])}
-              >
-              {approving ? "Approving..." : "Approve Requirement"}
+              disabled={deleting}
+              onClick={() => deleteNFRequirements([requirement.id])}>
+              {deleting ? "Deleting..." : "Delete requirement permanently"}
             </Button>
           }
         </div>

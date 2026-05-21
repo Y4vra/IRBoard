@@ -59,21 +59,21 @@ function StakeholderDetailView() {
     onSuccess: refresh,
   })
   const { disableStakeholders, loading: disabling } = useDisableStakeholders({
-      projectId: projectId!,
-      onSuccess: refresh,
-    })
-    const { enableStakeholders, loading: enabling } = useEnableStakeholders({
-      projectId: projectId!,
-      onSuccess: refresh,
-    })
-    const { removeStakeholders, loading: removing } = useRemoveStakeholders({
-      projectId: projectId!,
-      onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
-    })
-    const { deleteStakeholders, loading: deleting } = useDeleteStakeholders({
-      projectId: projectId!,
-      onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
-    })
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { enableStakeholders, loading: enabling } = useEnableStakeholders({
+    projectId: projectId!,
+    onSuccess: refresh,
+  })
+  const { removeStakeholders, loading: removing } = useRemoveStakeholders({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
+  })
+  const { deleteStakeholders, loading: deleting } = useDeleteStakeholders({
+    projectId: projectId!,
+    onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
+  })
 
   if (loading) return <LoadingSpinner />;
   if (error || !stakeholder)

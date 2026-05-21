@@ -3,7 +3,6 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -17,8 +16,19 @@ import java.util.Optional;
 @Repository
 interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctionalRequirement, Long> {
     Optional<NonFunctionalRequirement> findByIdAndProjectId(Long id, Long projectId);
-    List<NonFunctionalRequirement> findAllByProjectIdAndState(Long id, RequirementState state);
-    @Query("SELECT n FROM NonFunctionalRequirement n WHERE n.project.id = :projectId AND n.parent IS NULL")
+    @Query("""
+        SELECT n FROM NonFunctionalRequirement n 
+        WHERE n.project.id = :projectId 
+        AND n.parent IS NULL 
+        AND n.state = :state
+        """)
+    List<NonFunctionalRequirement> findAllByProjectIdAndState(Long projectId, RequirementState state);
+    @Query("""
+        SELECT n FROM NonFunctionalRequirement n 
+        WHERE n.project.id = :projectId 
+        AND n.parent IS NULL 
+        AND n.state <> :state
+        """)
     List<NonFunctionalRequirement> findAllByProjectIdAndStateNot(Long projectId, RequirementState state);
     @Query(value = """
         WITH RECURSIVE root_finder AS (
@@ -34,14 +44,16 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
         """, nativeQuery = true)
     Optional<Long> findRootProjectIdById(@Param("id") Long id);
     @Query(value = """
-    WITH RECURSIVE subtree AS (
-        SELECT id FROM requirement WHERE parent_id = :rootId
-        UNION ALL
-        SELECT r.id FROM requirement r
-        INNER JOIN subtree s ON r.parent_id = s.id
-    )
-    SELECT n FROM NonFunctionalRequirement n WHERE n.id IN (SELECT id FROM subtree)
-    """, nativeQuery = true)
+        WITH RECURSIVE subtree AS (
+            SELECT id FROM requirement WHERE parent_id = :rootId
+            UNION ALL
+            SELECT r.id FROM requirement r
+            INNER JOIN subtree s ON r.parent_id = s.id
+        )
+        SELECT * FROM requirement
+        WHERE requirement_type = 'NFR'
+        AND id IN (SELECT id FROM subtree)
+        """, nativeQuery = true)
     List<NonFunctionalRequirement> findAllDescendantsOf(@Param("rootId") Long rootId);
     @Query("""
         SELECT nfr FROM NonFunctionalRequirement nfr JOIN nfr.observerRequirements r WHERE r.id = :requirementId
@@ -59,10 +71,10 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
     """)
     List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId,List<RequirementState> notAllowedStates);
 
-    @Query("select r from NonFunctionalRequirement r left join fetch r.parent where r.id = :nonFunctionalRequirementId")
-    Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId);
-    @Query("SELECT r FROM NonFunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :nonFunctionalRequirementId")
-    Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId);
+    @Query("select r from NonFunctionalRequirement r left join fetch r.parent where r.id = :nonFunctionalRequirementId and r.project.id = :projectId")
+    Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId,Long projectId);
+    @Query("SELECT r FROM NonFunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :nonFunctionalRequirementId and r.project.id = :projectId")
+    Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId,Long projectId);
     @Query("""
    SELECT COUNT(nfr) = :expectedCount
    FROM NonFunctionalRequirement nfr
@@ -152,12 +164,11 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     }
 
     @Override
-    public Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId) {
-        return jpaRepository.findByIdWithParent(nonFunctionalRequirementId);
+    public Optional<NonFunctionalRequirement> findByIdWithParentAndProjectId(Long nonFunctionalRequirementId,Long projectId) {
+        return jpaRepository.findByIdWithParent(nonFunctionalRequirementId,projectId);
     }
-    @Override
-    public Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId) {
-        return jpaRepository.findByIdWithChildren(nonFunctionalRequirementId);
+    public Optional<NonFunctionalRequirement> findByIdWithChildrenAndProjectId(Long nonFunctionalRequirementId, Long projectId) {
+        return jpaRepository.findByIdWithChildren(nonFunctionalRequirementId,projectId);
     }
 
     @Override

@@ -20,8 +20,8 @@ public interface NonFunctionalRequirementRepository {
     List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId);
     List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId);
 
-    Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId);
-    Optional<NonFunctionalRequirement> findByIdWithChildren(Long nonFunctionalRequirementId);
+    Optional<NonFunctionalRequirement> findByIdWithParentAndProjectId(Long nonFunctionalRequirementId, Long projectId);
+    Optional<NonFunctionalRequirement> findByIdWithChildrenAndProjectId(Long nonFunctionalRequirementId, Long projectId);
 
     boolean allNonFunctionalRequirementsBelongToProject(Long projectId, List<Long> functionalRequirementIds);
     int updateStateByIdsAndProject(List<Long> functionalRequirementIds, Long projectId, RequirementState requirementState, RequirementState requirementState1);
