@@ -70,7 +70,6 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
         )
     """)
     List<NonFunctionalRequirement> findObservableNfRequirementsForRequirement(Long projectId,Long requirementId,List<RequirementState> notAllowedStates);
-
     @Query("select r from NonFunctionalRequirement r left join fetch r.parent where r.id = :nonFunctionalRequirementId and r.project.id = :projectId")
     Optional<NonFunctionalRequirement> findByIdWithParent(Long nonFunctionalRequirementId,Long projectId);
     @Query("SELECT r FROM NonFunctionalRequirement r LEFT JOIN FETCH r.children WHERE r.id = :nonFunctionalRequirementId and r.project.id = :projectId")
@@ -84,12 +83,12 @@ interface JpaNonFunctionalRequirementRepository extends JpaRepository<NonFunctio
     boolean existsAllInProject(Long projectId,List<Long> nonFunctionalRequirementIds,long expectedCount);
     @Modifying
     @Query("""
-   UPDATE NonFunctionalRequirement nfr
-   SET nfr.state = :newState
-   WHERE nfr.id IN :nonFunctionalRequirementIds
-   AND nfr.project.id = :projectId
-   AND nfr.state = :oldState
-   """)
+       UPDATE NonFunctionalRequirement nfr
+       SET nfr.state = :newState
+       WHERE nfr.id IN :nonFunctionalRequirementIds
+       AND nfr.project.id = :projectId
+       AND nfr.state = :oldState
+       """)
     int updateStateByIdsAndProject(List<Long> nonFunctionalRequirementIds, Long projectId, RequirementState newState, RequirementState oldState);
     @Query("""
         SELECT n from NonFunctionalRequirement n
@@ -117,15 +116,9 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     }
 
     @Override
-    public List<NonFunctionalRequirement> findAll() {
-        return jpaRepository.findAll();
+    public List<NonFunctionalRequirement> findAllDescendantsOf(Long rootId){
+        return jpaRepository.findAllDescendantsOf(rootId);
     }
-
-    @Override
-    public List<NonFunctionalRequirement> findAllById(Iterable<Long> ids) {
-        return jpaRepository.findAllById(ids);
-    }
-
     @Override
     public List<NonFunctionalRequirement> findAllByProjectIdNotRemoved(Long projectId) {
         return jpaRepository.findAllByProjectIdAndStateNot(projectId,RequirementState.REMOVED);
@@ -145,14 +138,6 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
         return jpaRepository.save(functionality);
     }
 
-    @Override
-    public Optional<Long> findRootProjectIdById(Long id){
-        return jpaRepository.findRootProjectIdById(id);
-    }
-    @Override
-    public List<NonFunctionalRequirement> findAllDescendantsOf(Long rootId){
-        return jpaRepository.findAllDescendantsOf(rootId);
-    }
     @Override
     public List<NonFunctionalRequirement> findAllObservedByRequirement(Long requirementId){
         return jpaRepository.findAllObservedByRequirement(requirementId);
@@ -182,7 +167,7 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     }
 
     @Override
-    public int deleteRemovedByIdsAndProject(List<Long> nonFunctionalRequirementIds, Long projectId) {
+    public int deleteRemovedByIdsAndProjectId(List<Long> nonFunctionalRequirementIds, Long projectId) {
         List<NonFunctionalRequirement> nonFunctionalRequirements = jpaRepository.findAllByIdsAndProjectIdAndState(nonFunctionalRequirementIds,projectId,RequirementState.REMOVED);
         jpaRepository.deleteAll(nonFunctionalRequirements);
         return nonFunctionalRequirements.size();

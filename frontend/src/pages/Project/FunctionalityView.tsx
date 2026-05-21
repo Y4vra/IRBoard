@@ -22,6 +22,8 @@ import {
   ArrowDown,
   EyeOff,
   Eye,
+  Archive,
+  FolderOpen,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge"
@@ -46,6 +48,14 @@ import {
   type DropPreview,
 } from "@/lib/reorderUtils"
 import { useApproveRequirements } from "@/hooks/useApproveActions"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 // ---------------------------------------------------------------------------
 // Filter/sort types
@@ -58,6 +68,8 @@ interface SortConfig {
   field: SortField | null
   dir: SortDir
 }
+
+type ViewMode = "active" | "removed"
 
 const PRIORITY_ORDER_MOSCOW = ["MUST", "SHOULD", "COULD", "WONT"]
 const PRIORITY_ORDER_TERNARY = ["HIGH", "NORMAL", "LOW"]
@@ -72,6 +84,60 @@ function priorityRank(priority: string | null | undefined, priorityStyle: Priori
 function stateRank(state: string | null | undefined): number {
   const idx = STATE_ORDER.indexOf(state ?? "")
   return idx === -1 ? 999 : idx
+}
+
+// ---------------------------------------------------------------------------
+// ViewToggle
+// ---------------------------------------------------------------------------
+
+interface ViewToggleProps {
+  mode: ViewMode
+  onChange: (mode: ViewMode) => void
+  activeCount?: number
+  removedCount?: number
+}
+
+function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewToggleProps) {
+  return (
+    <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
+      <button
+        onClick={() => onChange("active")}
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+          mode === "active"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
+        }`}
+      >
+        <FolderOpen className="h-3.5 w-3.5" />
+        Active
+        {activeCount !== undefined && (
+          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+            mode === "active" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"
+          }`}>
+            {activeCount}
+          </span>
+        )}
+      </button>
+      <button
+        onClick={() => onChange("removed")}
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+          mode === "removed"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
+        }`}
+      >
+        <Archive className="h-3.5 w-3.5" />
+        Removed
+        {removedCount !== undefined && (
+          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+            mode === "removed" ? "bg-red-100 text-red-600" : "bg-slate-200 text-slate-500"
+          }`}>
+            {removedCount}
+          </span>
+        )}
+      </button>
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -124,7 +190,6 @@ function FilterBar({ showDeactivated, onToggleDeactivated, sort, onClearSort, on
         Filters
       </span>
 
-      {/* Deactivated toggle */}
       <button
         onClick={onToggleDeactivated}
         className={[
@@ -200,9 +265,7 @@ function countHidden(
   original: FunctionalRequirement[],
   filtered: FunctionalRequirement[]
 ): number {
-  const originalTotal = countAll(original)
-  const filteredTotal = countAll(filtered)
-  return originalTotal - filteredTotal
+  return countAll(original) - countAll(filtered)
 }
 
 function countAll(reqs: FunctionalRequirement[]): number {
@@ -210,7 +273,7 @@ function countAll(reqs: FunctionalRequirement[]): number {
 }
 
 // ---------------------------------------------------------------------------
-// API calls (unchanged)
+// API calls
 // ---------------------------------------------------------------------------
 
 async function apiReorder(projectId: string, functionalityId: string, requirementId: number, newOrderValue: number): Promise<void> {
@@ -230,7 +293,7 @@ async function apiChangeParent(projectId: string, functionalityId: string, requi
 }
 
 // ---------------------------------------------------------------------------
-// FunctionalRequirementCard (unchanged)
+// FunctionalRequirementCard
 // ---------------------------------------------------------------------------
 
 interface FunctionalRequirementCardProps {
@@ -392,6 +455,9 @@ function FunctionalityView() {
   const dragStateRef = useRef<number | null>(null)
   const [dropPreview, setDropPreview] = useState<DropPreview>(null)
 
+  // ── View mode ────────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>("active")
+
   // ── Filter/sort state ────────────────────────────────────────────────────
   const [showDeactivated, setShowDeactivated] = useState(false)
   const [sort, setSort] = useState<SortConfig>({ field: null, dir: "asc" })
@@ -404,7 +470,7 @@ function FunctionalityView() {
     setSort(prev => {
       if (prev.field !== field) return { field, dir: "asc" }
       if (prev.dir === "asc") return { field, dir: "desc" }
-      return { field: null, dir: "asc" } // third click clears
+      return { field: null, dir: "asc" }
     })
   }, [])
 
@@ -414,16 +480,34 @@ function FunctionalityView() {
     [projectId, functionalityId]
   )
 
+  // Active requirements
   const fetchRequirements = useCallback(
     () => fetch(`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/`, { credentials: "include" })
       .then((r) => { if (!r.ok) throw new Error("Failed to fetch requirements"); return r.json() }),
     [projectId, functionalityId]
   )
 
+  // Removed requirements
+  const fetchRemovedRequirements = useCallback(
+    () => fetch(`${API_BASE_URL}/projects/${projectId}/functionalities/${functionalityId}/functionalRequirements/removed`, { credentials: "include" })
+      .then((r) => { if (!r.ok) throw new Error("Failed to fetch removed requirements"); return r.json() }),
+    [projectId, functionalityId]
+  )
+
   const { data: functionality, loading: funcLoading, error: funcError } = useBackendResource<Functionality>({ fetcher: fetchFunctionality })
   const { data: requirementsData, loading: reqLoading, error: reqError, refresh: refreshRequirements } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
+  const {
+    data: removedData,
+    loading: loadingRemoved,
+    error: errorRemoved,
+    refresh: refreshRemoved,
+  } = useBackendResource<FunctionalRequirement[]>({
+    fetcher: fetchRemovedRequirements,
+    enabled: isManager,
+  })
 
   const requirements: FunctionalRequirement[] = sortByOrderValue(requirementsData ?? [])
+  const removedRequirements: FunctionalRequirement[] = removedData ?? []
 
   // ── Filtered + sorted view (memoized) ───────────────────────────────────
   const displayedRequirements = useMemo(
@@ -479,6 +563,8 @@ function FunctionalityView() {
     [projectId, functionalityId]
   )
 
+  const navigate = useNavigate()
+
   if (funcLoading) return <LoadingSpinner text="Loading functionality..." />
   if (funcError || !functionality)
     return (
@@ -495,6 +581,11 @@ function FunctionalityView() {
     siblings: displayedRequirements, parentIdMap,
     onReorder: handleReorder, onChangeParent: handleChangeParent, onRefetch: refreshRequirements,
   }
+
+  // Determine loading/error state based on active view
+  const isContentLoading = viewMode === "active" ? reqLoading : loadingRemoved
+  const contentError = viewMode === "active" ? reqError : errorRemoved
+  const refreshCurrent = viewMode === "active" ? refreshRequirements : refreshRemoved
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
@@ -557,10 +648,12 @@ function FunctionalityView() {
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
               Manage hierarchical functional requirements.{" "}
-              {canEdit && <span className="text-slate-400">Drag to reorder · drag to the middle of a card to nest inside it.</span>}
+              {canEdit && viewMode === "active" && (
+                <span className="text-slate-400">Drag to reorder · drag to the middle of a card to nest inside it.</span>
+              )}
             </p>
           </div>
-          {canEdit && (
+          {canEdit && viewMode === "active" && (
             <>
               <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-1.5" /> Add FR
@@ -577,52 +670,135 @@ function FunctionalityView() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Functional Requirements</CardTitle>
-            <CardDescription>Listed functional requirements for this functionality, ordered by priority.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {/* Filter bar */}
-            <FilterBar
-              showDeactivated={showDeactivated}
-              onToggleDeactivated={() => setShowDeactivated(v => !v)}
-              sort={sort}
-              onClearSort={() => setSort({ field: null, dir: "asc" })}
-              onToggleSort={handleToggleSort}
-              totalHidden={totalHidden}
-            />
-
-            <div className="border-t border-slate-100 pt-3">
-              {reqLoading ? (
-                <div className="py-16 flex justify-center"><LoadingSpinner text="Loading requirements..." /></div>
-              ) : reqError ? (
-                <div className="py-10 text-center">
-                  <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-                  <p className="text-red-500 text-sm">{reqError}</p>
-                </div>
-              ) : displayedRequirements.length === 0 ? (
-                <p className="text-center text-slate-400 italic py-8">
-                  {requirements.length === 0 ? "No functional requirements found." : "No requirements match the current filters."}
-                </p>
-              ) : (
-                <>
-                  <GapDropZone parentId={null} index={0} {...rootGapProps} />
-                  {displayedRequirements.map((r, index) => (
-                    <Fragment key={r.id}>
-                      <FunctionalRequirementCard
-                        requirement={r} siblings={displayedRequirements} positionInSiblings={index}
-                        projectId={projectId!} functionalityId={functionalityId!}
-                        priorityStyle={priorityStyle} label={`${functionalityPrefix}.${index + 1}`}
-                        canEdit={canEdit} onRefetch={refreshRequirements}
-                        dragStateRef={dragStateRef} dropPreview={dropPreview}
-                        setDropPreview={setDropPreview} onReorder={handleReorder}
-                        parentIdMap={parentIdMap} onChangeParent={handleChangeParent}
-                      />
-                      <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
-                    </Fragment>
-                  ))}
-                </>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle>
+                  {viewMode === "active" ? "Functional Requirements" : "Removed Functional Requirements"}
+                </CardTitle>
+                <CardDescription>
+                  {viewMode === "active"
+                    ? "Listed functional requirements for this functionality, ordered by priority."
+                    : "Functional requirements that have been removed. Visible to managers only."}
+                </CardDescription>
+              </div>
+              {isManager && (
+                <ViewToggle
+                  mode={viewMode}
+                  onChange={setViewMode}
+                  activeCount={requirements.length}
+                  removedCount={removedRequirements.length}
+                />
               )}
             </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {viewMode === "removed" ? (
+              <>
+                <div className="mb-2 flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-2.5 text-sm text-amber-700">
+                  <Archive className="h-4 w-4 shrink-0" />
+                  <span>These requirements have been removed and are no longer active in this functionality.</span>
+                </div>
+                {isContentLoading ? (
+                  <div className="py-16 flex justify-center">
+                    <LoadingSpinner text="Loading removed requirements..." />
+                  </div>
+                ) : contentError ? (
+                  <div className="py-10 text-center">
+                    <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
+                    <p className="text-red-500 text-sm">{contentError}</p>
+                    <Button variant="outline" className="mt-4" onClick={refreshCurrent}>Try Again</Button>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Slug</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Details</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {removedRequirements.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-slate-400 italic py-8">
+                            No removed functional requirements found.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        removedRequirements.map((r) => (
+                          <TableRow
+                            key={r.id}
+                            className="cursor-pointer hover:bg-slate-50"
+                            onClick={() => navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`)}
+                          >
+                            <TableCell className="font-mono text-xs text-slate-400">{r.entityIdentifier ?? r.id}</TableCell>
+                            <TableCell className="font-medium">{r.name}</TableCell>
+                            <TableCell className="max-w-xs truncate text-slate-500">{r.description}</TableCell>
+                            <TableCell>
+                              <PriorityBadge priority={r.priority} priorityStyle={priorityStyle} />
+                            </TableCell>
+                            <TableCell>
+                              <RequirementStateBadge state={r.state} />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <ChevronRight className="h-4 w-4 ml-auto text-slate-400" />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Filter bar — only shown in active view */}
+                <FilterBar
+                  showDeactivated={showDeactivated}
+                  onToggleDeactivated={() => setShowDeactivated(v => !v)}
+                  sort={sort}
+                  onClearSort={() => setSort({ field: null, dir: "asc" })}
+                  onToggleSort={handleToggleSort}
+                  totalHidden={totalHidden}
+                />
+
+                <div className="border-t border-slate-100 pt-3">
+                  {isContentLoading ? (
+                    <div className="py-16 flex justify-center"><LoadingSpinner text="Loading requirements..." /></div>
+                  ) : contentError ? (
+                    <div className="py-10 text-center">
+                      <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
+                      <p className="text-red-500 text-sm">{contentError}</p>
+                    </div>
+                  ) : displayedRequirements.length === 0 ? (
+                    <p className="text-center text-slate-400 italic py-8">
+                      {requirements.length === 0 ? "No functional requirements found." : "No requirements match the current filters."}
+                    </p>
+                  ) : (
+                    <>
+                      <GapDropZone parentId={null} index={0} {...rootGapProps} />
+                      {displayedRequirements.map((r, index) => (
+                        <Fragment key={r.id}>
+                          <FunctionalRequirementCard
+                            requirement={r} siblings={displayedRequirements} positionInSiblings={index}
+                            projectId={projectId!} functionalityId={functionalityId!}
+                            priorityStyle={priorityStyle} label={`${functionalityPrefix}.${index + 1}`}
+                            canEdit={canEdit} onRefetch={refreshRequirements}
+                            dragStateRef={dragStateRef} dropPreview={dropPreview}
+                            setDropPreview={setDropPreview} onReorder={handleReorder}
+                            parentIdMap={parentIdMap} onChangeParent={handleChangeParent}
+                          />
+                          <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
+                        </Fragment>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </section>

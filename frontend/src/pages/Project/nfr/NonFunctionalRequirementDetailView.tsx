@@ -475,10 +475,7 @@ function NonFunctionalRequirementDetailView() {
           <LockIndicator lock={lock} />
           {editPermission && (
             <>
-              <Button asChild 
-                variant="outline" 
-                size="sm" 
-                disabled={isLocked}
+              <Button asChild variant="outline" size="sm" disabled={isLocked}
                 title={isLocked ? "This nfr is currently being edited by another user" : undefined}
                 >
                 <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
