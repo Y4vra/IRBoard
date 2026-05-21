@@ -75,6 +75,8 @@ function StakeholderDetailView() {
     onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
   })
 
+  const ableToBeModified = !isLocked && stakeholder?.state!="DEACTIVATED" && stakeholder?.state!="REMOVED" 
+
   if (loading) return <LoadingSpinner />;
   if (error || !stakeholder)
     return (
@@ -120,15 +122,17 @@ function StakeholderDetailView() {
           {editPermission && 
             <>
               <Button
-                asChild
                 variant="outline"
                 size="sm"
-                disabled={isLocked}
+                disabled={!ableToBeModified}
                 title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
+                onClick={() => {
+                  if (ableToBeModified) {
+                    navigate(`/project/${projectId}/stakeholders/${stakeholderId}/edit`);
+                  }
+                }}
                 >
-                <Link to={`/project/${projectId}/stakeholders/${stakeholderId}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
-                </Link>
+                <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
               </Button>
               <Button variant="outline" size="sm" 
                   disabled={stakeholder.state === "DEACTIVATED"?true:disabling}

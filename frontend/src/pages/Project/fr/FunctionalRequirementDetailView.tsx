@@ -308,6 +308,9 @@ function FunctionalRequirementDetailView() {
       linkedFrId
     );
 
+    
+  const ableToBeModified = !isLocked && requirement?.state!="DEACTIVATED" && requirement?.state!="REMOVED"
+
   if (loading) return <LoadingSpinner text="Loading requirement..." />;
 
   if (error || !requirement)
@@ -363,13 +366,18 @@ function FunctionalRequirementDetailView() {
         <div className="flex flex-col gap-3">
           {canEdit && 
             <>
-              <Button asChild variant="outline" size="sm"
-                disabled={isLocked}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!ableToBeModified}
                 title={isLocked ? "This nfr is currently being edited by another user" : undefined}
+                onClick={() => {
+                  if (ableToBeModified) {
+                    navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirement.id}/edit`);
+                  }
+                }}
                 >
-                <Link to={`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirement.id}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
-                </Link>
+                <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
               </Button>
               <Button variant="outline" size="sm" 
                 disabled={requirement.state === "DEACTIVATED"?true:disabling}

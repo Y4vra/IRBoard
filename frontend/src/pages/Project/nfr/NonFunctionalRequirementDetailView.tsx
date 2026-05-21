@@ -420,6 +420,8 @@ function NonFunctionalRequirementDetailView() {
       docId
     );
 
+  const ableToBeModified = !isLocked && requirement?.state!="DEACTIVATED" && requirement?.state!="REMOVED"
+
   if (loading) return <LoadingSpinner text="Loading requirement..." />;
 
   if (error || !requirement)
@@ -475,12 +477,14 @@ function NonFunctionalRequirementDetailView() {
           <LockIndicator lock={lock} />
           {editPermission && (
             <>
-              <Button asChild variant="outline" size="sm" disabled={isLocked}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!ableToBeModified}
                 title={isLocked ? "This nfr is currently being edited by another user" : undefined}
-                >
-                <Link to={`/project/${projectId}/nfr/${requirement.id}/edit`}>
-                  <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
-                </Link>
+                onClick={() => navigate(`/project/${projectId}/nfr/${requirement.id}/edit`)}
+              >
+                <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
               </Button>
               <Button variant="outline" size="sm" 
                 disabled={requirement.state === "DEACTIVATED"?true:disabling}

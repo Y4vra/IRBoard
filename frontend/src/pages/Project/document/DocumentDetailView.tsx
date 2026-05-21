@@ -87,6 +87,8 @@ function DocumentDetailView() {
     onSuccess: ()=>navigate(`/project/${projectId}/documents`),
   })
 
+  const ableToBeModified = !isLocked && document?.state!="DEACTIVATED" && document?.state!="REMOVED" 
+
   if (loading) return <LoadingSpinner />;
 
   if (error || !document)
@@ -160,7 +162,7 @@ function DocumentDetailView() {
                 <UpdateDocumentDialog 
                   projectId={projectId!} 
                   document={document}
-                  disabled={isLocked}
+                  disabled={!ableToBeModified}
                   onSuccess={refresh} 
                   />
                 <Button variant="outline" size="sm" 
