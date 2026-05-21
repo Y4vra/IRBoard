@@ -468,16 +468,17 @@ function NonFunctionalRequirementsView() {
     [projectId]
   )
 
-  function filterDeactivated(reqs: NonFunctionalRequirement[]): NonFunctionalRequirement[] {
-    return reqs
-      .filter(r => r.state !== "DEACTIVATED")
-      .map(r => ({ ...r, children: filterDeactivated(r.children ?? []) }))
-  }
+  const displayedRequirements = useMemo(() => {
+    const filter = (reqs: NonFunctionalRequirement[]): NonFunctionalRequirement[] =>
+      reqs
+        .filter(r => r.state !== "DEACTIVATED")
+        .map(r => ({
+          ...r,
+          children: filter(r.children ?? [])
+        }))
 
-  const displayedRequirements = useMemo(
-    () => showDeactivated ? requirements : filterDeactivated(requirements),
-    [requirements, showDeactivated]
-  )
+    return showDeactivated ? requirements : filter(requirements)
+  }, [requirements, showDeactivated])
 
   const isLoading = viewMode === "active" ? loading : loadingRemoved
   const currentError = viewMode === "active" ? error : errorRemoved

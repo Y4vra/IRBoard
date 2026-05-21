@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "../../../lib/globalVars"
 import { Button } from "../../../components/ui/button"
-import { AlertCircle, ChevronRight, Archive, FolderOpen } from "lucide-react"
+import { AlertCircle, ChevronRight, Archive, FolderOpen, Eye, EyeOff } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
   Table,
@@ -90,6 +90,7 @@ function StakeholdersView() {
   const { stakeholderStats, editPermission, isManager } = useProject();
 
   const [viewMode, setViewMode] = useState<ViewMode>("active");
+  const [showDeactivated, setShowDeactivated] = useState(false)
 
   // Active stakeholders fetch
   const fetchStakeholders = useCallback(() =>
@@ -125,6 +126,14 @@ function StakeholdersView() {
     enabled: isAuthenticated && isManager,
   });
 
+  const displayedStakeholders = useMemo(() => {
+    const filter = (reqs: Stakeholder[]): Stakeholder[] =>
+      reqs
+        .filter(r => r.state !== "DEACTIVATED")
+
+    return showDeactivated ? stakeholders : filter(stakeholders??[])
+  }, [stakeholders, showDeactivated])
+
   const { approveStakeholders, loading: approving } = useApproveStakeholders({
     projectId: projectId!,
     onSuccess: refreshActive,
@@ -152,7 +161,7 @@ function StakeholdersView() {
 
   const activeCount = stakeholders?.length;
   const removedCount = removedStakeholders?.length;
-  const currentStakeholders = viewMode === "active" ? (stakeholders ?? []) : (removedStakeholders ?? []);
+  const currentStakeholders = viewMode === "active" ? (displayedStakeholders ?? []) : (removedStakeholders ?? []);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 p-6 animate-in fade-in duration-500">
@@ -170,6 +179,22 @@ function StakeholdersView() {
             </Card>
           )}
           <div className="flex flex-col gap-3">
+            {viewMode === "active" && (
+              <button
+                onClick={() => setShowDeactivated(v => !v)}
+                className={[
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors",
+                  showDeactivated
+                    ? "border-slate-300 bg-slate-100 text-slate-600"
+                    : "border-slate-200 bg-white text-slate-400 hover:border-slate-300",
+                ].join(" ")}
+              >
+                {showDeactivated
+                  ? <><Eye className="h-3 w-3" /> Showing deactivated</>
+                  : <><EyeOff className="h-3 w-3" /> Hiding deactivated</>
+                }
+              </button>
+            )}
             {editPermission && viewMode === "active" && (
               <CreateStakeholderDialog projectId={projectId!} onSuccess={refreshActive} />
             )}
