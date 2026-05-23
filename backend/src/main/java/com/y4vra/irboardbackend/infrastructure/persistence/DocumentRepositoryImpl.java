@@ -87,6 +87,8 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
         AND d.state IN :states
         """)
     List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states);
+
+    void deleteByIdAndProjectIdAndState(Long documentId, Long projectId, EntityState entityState);
 }
 
 @Component
@@ -152,10 +154,8 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     }
 
     @Override
-    public int deleteRemovedByIdsAndProject(List<Long> documentIds, Long projectId) {
-        List<Document> docs = jpaRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId,EntityState.REMOVED);
-        jpaRepository.deleteAll(docs);
-        return docs.size();
+    public void deleteRemovedByIdAndProject(Long documentId, Long projectId) {
+        jpaRepository.deleteByIdAndProjectIdAndState(documentId,projectId,EntityState.REMOVED);
     }
 
     @Override

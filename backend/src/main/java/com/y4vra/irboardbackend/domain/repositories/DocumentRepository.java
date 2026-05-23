@@ -24,7 +24,7 @@ public interface DocumentRepository {
 
     int updateStateByIdsAndProject(List<Long> documentIds, Long projectId, EntityState newState, EntityState oldState);
 
-    int deleteRemovedByIdsAndProject(List<Long> documentIds, Long projectId);
+    void deleteRemovedByIdAndProject(Long documentId, Long projectId);
 
     List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, EntityState state);
     List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states);

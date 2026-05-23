@@ -14,7 +14,6 @@ import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -214,9 +213,13 @@ public class DocumentService {
     @Transactional
     public void deleteDocuments(String oryId, Long projectId, List<Long> documentIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
-        if (!documentRepository.allDocumentsBelongToProject(projectId,documentIds)){
+        List<Document> documents = documentRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId,EntityState.REMOVED);
+        if (documents.size() != documentIds.size()) {
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
-        documentRepository.deleteRemovedByIdsAndProject(documentIds,projectId);
+        documents.forEach(document -> {
+            objStorageService.deleteFile(document.getS3Key());
+            documentRepository.deleteRemovedByIdAndProject(document.getId(),projectId);
+        });
     }
 }
