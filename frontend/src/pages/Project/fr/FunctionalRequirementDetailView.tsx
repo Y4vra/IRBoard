@@ -46,6 +46,7 @@ import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
 import { useFinishFunctionalRequirements } from "@/hooks/useFinishActions";
 import { useAuth } from "@/context/AuthContext";
+import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -412,19 +413,35 @@ function FunctionalRequirementDetailView() {
                 >
                 {finishing ? "Marking as finished..." : "Mark as finished"}
               </Button>
-              <Button variant="outline" size="sm" 
-                disabled={requirement.state === "DEACTIVATED"?removing:true}
-                onClick={() => removeFunctionalRequirements(functionalityId!,[requirement.id])}>
-                {removing ? "Removing..." : "Remove requirement"}
-              </Button>
+              <ConfirmActionDialog
+                trigger={
+                  <Button variant="outline" size="sm" disabled={requirement.state !== "DEACTIVATED" || removing}>
+                    {removing ? "Removing..." : "Remove requirement"}
+                  </Button>
+                }
+                title="Remove this requirement?"
+                description="This requirement will be marked as removed and will no longer be active. Managers can still view and restore it."
+                confirmLabel="Remove"
+                loading={removing}
+                disabled={requirement.state !== "DEACTIVATED"}
+                onConfirm={() => removeFunctionalRequirements(functionalityId!, [requirement.id])}
+              />
             </>
           }
           {project.isManager && requirement.state === "REMOVED" &&
-            <Button variant="outline" size="sm" 
-              disabled={deleting}
-              onClick={() => deleteFunctionalRequirements(functionalityId!,[requirement.id])}>
-              {deleting ? "Deleting..." : "Delete requirement permanently"}
-            </Button>
+            <ConfirmActionDialog
+              trigger={
+                <Button variant="outline" size="sm" disabled={deleting}>
+                  {deleting ? "Deleting..." : "Delete requirement permanently"}
+                </Button>
+              }
+              title="Delete permanently?"
+              description="This action cannot be undone. The requirement will be erased from the project entirely."
+              confirmLabel="Delete permanently"
+              confirmVariant="destructive"
+              loading={deleting}
+              onConfirm={() => deleteFunctionalRequirements(functionalityId!, [requirement.id])}
+            />
           }
         </div>
       </header>

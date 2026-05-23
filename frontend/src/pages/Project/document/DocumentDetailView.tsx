@@ -21,6 +21,7 @@ import { useDisableDocuments } from "@/hooks/useDisableActions";
 import { useEnableDocuments } from "@/hooks/useEnableActions";
 import { useRemoveDocuments } from "@/hooks/useRemoveActions";
 import { useDeleteDocuments } from "@/hooks/useDeleteActions";
+import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -184,19 +185,35 @@ function DocumentDetailView() {
                   onClick={() => approveDocuments([document.id])}>
                   {approving ? "Approving..." : "Approve document"}
                 </Button>
-                <Button variant="outline" size="sm" 
-                  disabled={document.state === "DEACTIVATED"?removing:true}
-                  onClick={() => removeDocuments([document.id])}>
-                  {removing ? "Removing..." : "Remove document"}
-                </Button>
+                <ConfirmActionDialog
+                  trigger={
+                    <Button variant="outline" size="sm" disabled={document.state !== "DEACTIVATED" || removing}>
+                      {removing ? "Removing..." : "Remove document"}
+                    </Button>
+                  }
+                  title="Remove this document?"
+                  description="This document will be marked as removed and will no longer be active. Managers can still view and restore it."
+                  confirmLabel="Remove"
+                  loading={removing}
+                  disabled={document.state !== "DEACTIVATED"}
+                  onConfirm={() => removeDocuments([document.id])}
+                />
               </>
             }
             {isManager && document.state === "REMOVED" &&
-              <Button variant="outline" size="sm" 
-                disabled={deleting}
-                onClick={() => deleteDocuments([document.id])}>
-                {deleting ? "Deleting..." : "Delete document permanently"}
-              </Button>
+              <ConfirmActionDialog
+                trigger={
+                  <Button variant="outline" size="sm" disabled={deleting}>
+                    {deleting ? "Deleting..." : "Delete document permanently"}
+                  </Button>
+                }
+                title="Delete permanently?"
+                description="This action cannot be undone. The document will be erased from the project entirely."
+                confirmLabel="Delete permanently"
+                confirmVariant="destructive"
+                loading={deleting}
+                onConfirm={() => deleteDocuments([document.id])}
+              />
             }
           </div>
         </div>

@@ -20,6 +20,7 @@ import { useRemoveStakeholders } from "@/hooks/useRemoveActions";
 import { useEnableStakeholders } from "@/hooks/useEnableActions";
 import { useDisableStakeholders } from "@/hooks/useDisableActions";
 import { useAuth } from "@/context/AuthContext";
+import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -155,19 +156,35 @@ function StakeholderDetailView() {
                 onClick={() => approveStakeholders([stakeholder.id])}>
                 {approving ? "Approving..." : "Approve Stakeholder"}
               </Button>
-              <Button variant="outline" size="sm" 
-                  disabled={stakeholder.state === "DEACTIVATED"?removing:true}
-                  onClick={() => removeStakeholders([stakeholder.id])}>
-                  {removing ? "Removing..." : "Remove stakeholder"}
-                </Button>
+              <ConfirmActionDialog
+                trigger={
+                  <Button variant="outline" size="sm" disabled={stakeholder.state !== "DEACTIVATED" || removing}>
+                    {removing ? "Removing..." : "Remove stakeholder"}
+                  </Button>
+                }
+                title="Remove this stakeholder?"
+                description="This stakeholder will be marked as removed and will no longer be active. Managers can still view and restore it."
+                confirmLabel="Remove"
+                loading={removing}
+                disabled={stakeholder.state !== "DEACTIVATED"}
+                onConfirm={() => removeStakeholders([stakeholder.id])}
+              />
             </>
           }
           {isManager && stakeholder.state === "REMOVED" &&
-            <Button variant="outline" size="sm" 
-              disabled={deleting}
-              onClick={() => deleteStakeholders([stakeholder.id])}>
-              {deleting ? "Deleting..." : "Delete stakeholder permanently"}
-            </Button>
+            <ConfirmActionDialog
+              trigger={
+                <Button variant="outline" size="sm" disabled={deleting}>
+                  {deleting ? "Deleting..." : "Delete stakeholder permanently"}
+                </Button>
+              }
+              title="Delete permanently?"
+              description="This action cannot be undone. The stakeholder will be erased from the project entirely."
+              confirmLabel="Delete permanently"
+              confirmVariant="destructive"
+              loading={deleting}
+              onConfirm={() => deleteStakeholders([stakeholder.id])}
+            />
           }
         </div>
       </header>
