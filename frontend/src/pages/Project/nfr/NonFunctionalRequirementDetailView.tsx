@@ -41,6 +41,7 @@ import { useEnableNFRequirements } from "@/hooks/useEnableActions";
 import { useRemoveNFRequirements } from "@/hooks/useRemoveActions";
 import { useDeleteNFRequirements } from "@/hooks/useDeleteActions";
 import { useFinishNFRequirements } from "@/hooks/useFinishActions";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Operator helpers ─────────────────────────────────────────────────────────
 
@@ -345,8 +346,9 @@ function NonFunctionalRequirementDetailView() {
   const navigate = useNavigate();
 
   const { getLock } = useLocks();
+  const { user } = useAuth();
   const lock = getLock(EntityType.NON_FUNCTIONAL_REQUIREMENT, Number(nfrId));
-  const isLocked = !!lock;
+  const isLockedByAnotherUser = !!lock && lock.username !== user?.name;
 
   const [createNFRDialogOpen, setCreateNFRDialogOpen] = useState(false);
   const [stakeholderDialogOpen, setStakeholderDialogOpen] = useState(false);
@@ -425,7 +427,7 @@ function NonFunctionalRequirementDetailView() {
     );
 
   const passing = evaluatePassing(requirement?.actualValue, requirement?.operator, requirement?.thresholdValue);
-  const ableToBeModified = !isLocked && requirement?.state!="DEACTIVATED" && requirement?.state!="REMOVED"
+  const ableToBeModified = !isLockedByAnotherUser && requirement?.state!="DEACTIVATED" && requirement?.state!="REMOVED"
 
   if (loading) return <LoadingSpinner text="Loading requirement..." />;
 
@@ -486,7 +488,7 @@ function NonFunctionalRequirementDetailView() {
                 variant="outline"
                 size="sm"
                 disabled={!ableToBeModified}
-                title={isLocked ? "This nfr is currently being edited by another user" : undefined}
+                title={isLockedByAnotherUser ? "This nfr is currently being edited by another user" : undefined}
                 onClick={() => navigate(`/project/${projectId}/nfr/${requirement.id}/edit`)}
               >
                 <Pencil className="mr-2 h-4 w-4" /> Edit Requirement

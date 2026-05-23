@@ -41,12 +41,12 @@ public class StakeholderService {
     }
 
     private void checkEditPermission(String oryId,String projectId){
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId)) {
+        if (!permService.checkPermission("Project", projectId, "edit", oryId)) {
             throw new AccessDeniedException("User not authorized to edit stakeholders in this project");
         }
     }
     private void checkViewPermission(String oryId,String projectId){
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "view", oryId)){
+        if (!permService.checkPermission("Project", projectId, "view", oryId)){
             throw new AccessDeniedException("User not authorized to view stakeholders of this project");
         }
     }

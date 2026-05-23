@@ -258,7 +258,7 @@ public class UserService {
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
-        functionalityRepository.findById(functionalityId)
+        functionalityRepository.findByIdAndProjectId(functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));
 
         String userOryIdToBeLinked=userRepository.findById(userIdToBeLinked)
@@ -283,7 +283,7 @@ public class UserService {
         projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
-        functionalityRepository.findById(functionalityId)
+        functionalityRepository.findByIdAndProjectId(functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));
 
         String userOryIdToBeLinked=userRepository.findById(userIdToBeUnlinked)

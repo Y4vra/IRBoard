@@ -19,6 +19,7 @@ import { useDeleteStakeholders } from "@/hooks/useDeleteActions";
 import { useRemoveStakeholders } from "@/hooks/useRemoveActions";
 import { useEnableStakeholders } from "@/hooks/useEnableActions";
 import { useDisableStakeholders } from "@/hooks/useDisableActions";
+import { useAuth } from "@/context/AuthContext";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -37,8 +38,9 @@ function StakeholderDetailView() {
   const navigate = useNavigate();
 
   const { getLock } = useLocks();
+  const { user } = useAuth();
   const lock = getLock(EntityType.STAKEHOLDER, Number(stakeholderId));
-  const isLocked = !!lock;
+  const isLockedByAnotherUser = !!lock && lock.username !== user?.name;
 
   const fetcher = useCallback(
     () => fetch(
@@ -75,7 +77,7 @@ function StakeholderDetailView() {
     onSuccess: ()=>navigate(`/project/${projectId}/stakeholders`),
   })
 
-  const ableToBeModified = !isLocked && stakeholder?.state!="DEACTIVATED" && stakeholder?.state!="REMOVED" 
+  const ableToBeModified = !isLockedByAnotherUser && stakeholder?.state!="DEACTIVATED" && stakeholder?.state!="REMOVED" 
 
   if (loading) return <LoadingSpinner />;
   if (error || !stakeholder)
@@ -125,7 +127,7 @@ function StakeholderDetailView() {
                 variant="outline"
                 size="sm"
                 disabled={!ableToBeModified}
-                title={isLocked ? "This stakeholder is currently being edited by another user" : undefined}
+                title={isLockedByAnotherUser ? "This stakeholder is currently being edited by another user" : undefined}
                 onClick={() => {
                   if (ableToBeModified) {
                     navigate(`/project/${projectId}/stakeholders/${stakeholderId}/edit`);

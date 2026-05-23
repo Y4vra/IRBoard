@@ -24,7 +24,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toDto_returnsNullWhenEntityIsNull() {
-        assertThat(mapper.toDto(null,null)).isNull();
+        assertThat(mapper.toDto(null)).isNull();
     }
 
     @Test
@@ -39,7 +39,7 @@ class FunctionalityMapperTest {
         functionality.setState(FunctionalityState.ACTIVE);
         functionality.setProject(project);
 
-        FunctionalityDTO dto = mapper.toDto(functionality,false);
+        FunctionalityDTO dto = mapper.toDto(functionality);
 
         assertThat(dto.id()).isEqualTo(1L);
         assertThat(dto.name()).isEqualTo("User Management");
@@ -55,7 +55,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_mapsAllFields() {
-        FunctionalityDTO dto = new FunctionalityDTO(2L, "identifier", "Authentication", "description", "AU", "DEACTIVATED", 5L,false,List.of());
+        FunctionalityDTO dto = new FunctionalityDTO(2L, "identifier", "Authentication", "description", "AU", "DEACTIVATED", 5L,List.of());
 
         Functionality entity = mapper.toEntity(dto);
 
@@ -67,7 +67,7 @@ class FunctionalityMapperTest {
 
     @Test
     void toEntity_throwsWhenStateIsInvalid() {
-        FunctionalityDTO dto = new FunctionalityDTO(1L, "identifier", "Name","description", "NM", "INVALID_STATE", 1L,false, List.of());
+        FunctionalityDTO dto = new FunctionalityDTO(1L, "identifier", "Name","description", "NM", "INVALID_STATE", 1L, List.of());
 
         org.junit.jupiter.api.Assertions.assertThrows(
                 IllegalArgumentException.class,

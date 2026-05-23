@@ -315,10 +315,9 @@ A crucial process for the system is the updates triggered by modifications betwe
     [The system must automatically attempt to get the letters for the dynamic identifier from the name.],
     (
       [The system must take the first letter from every word in the name.],
-      [If the identifier is already in use by another functionality on the same project, the system will suggest one letter more of each word on the name.],
-      [If the system cannot generate a new set of letters to identify its requirements, a message must be shown to the project manager.],
     ),
     [The system must deny adding any functionality with an identifier matching another on the same project.],
+    [The system must allow to use a custom functionality identifier.],
     [The system must automatically link the project manager to the new functionality.],
   ),
   [The system must allow a project manager to modify a functionality.],
@@ -329,10 +328,6 @@ A crucial process for the system is the updates triggered by modifications betwe
   ),
   [The system must allow a project manager to reactivate a functionality.],
   [The system must allow a project manager to mark as approved all elements in a functionality.],
-  [The system must allow a project manager to generate a baseline for a project.],
-  (
-    [The system must perform a snapshot of the project once a baseline is set.],
-  ),
   [The system must allow a project manager to export the project's requirements onto a pdf file.],
 )
 ==== Stakeholders management
@@ -342,7 +337,6 @@ A crucial process for the system is the updates triggered by modifications betwe
     [The system must show stakeholders that are not removed.],
     [The system must show if a stakeholder is flagged as pending review.],
     [The system must show the identifier, the name and part of the description.],
-    [The system must allow to collapse and expand stakeholders with children.],
     [The system must allow to view the details of a stakeholder.],
     (
       [The system must show all atributes of a stakeholder.],
@@ -400,7 +394,6 @@ A crucial process for the system is the updates triggered by modifications betwe
       [The system must show all stakeholders linked to it.],
       [The system must show all requirements cross-linked with it.],
       [The system must show all documents linked to it.],
-      [The system must show the previous dynamic identifiers.],
     ),
   ),
   [The system must allow a requirement engineer or a project manager to add a requirement to a project the user is linked to.],
@@ -488,15 +481,6 @@ A crucial process for the system is the updates triggered by modifications betwe
     [The system must allow reordering of functional requirements to users linked to the same functionality.],
     [The system must update the dynamic identifier automatically.],
     [The system must set the order of requirements using a floating point order value.],
-  ),
-  [The system must allow a project manager or requirement engineer to review an requirement flagged as pending a review.],
-  (
-    [The system must allow removing the flag if no changes are required.],
-    [The system must allow modifying the requirement upon review.],
-    (
-      [The system must remove the flag upon saving with changes.],
-      [The system must flag the linked entities as pending a review.],
-    ),
   ),
 )
 ==== User management

@@ -131,6 +131,10 @@ function ProjectView() {
     },
   })
 
+  const { getLock } = useLocks();
+  const lock = getLock(EntityType.PROJECT, Number(project.id));
+  const isProjectLockedByAnother = !!lock && lock.username !== user?.name;
+
   if (error || !project)
     return (
       <div className="p-8 text-center">
@@ -211,11 +215,24 @@ function ProjectView() {
           <div className="flex items-center gap-2">
             {user?.isAdmin && (
               <>
-                <Button asChild variant="outline" size="sm">
-                  <Link to={`/project/${project.id}/edit`}>
-                    <Settings className="mr-2 h-4 w-4" /> Edit project
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <LockIndicator lock={lock} />
+                  <Button
+                    asChild={!isProjectLockedByAnother}
+                    variant="outline"
+                    size="sm"
+                    disabled={isProjectLockedByAnother}
+                    title={isProjectLockedByAnother ? "This project is currently being edited by another user" : undefined}
+                  >
+                    {isProjectLockedByAnother ? (
+                      <span><Settings className="mr-2 h-4 w-4" /> Edit project</span>
+                    ) : (
+                      <Link to={`/project/${project.id}/edit`}>
+                        <Settings className="mr-2 h-4 w-4" /> Edit project
+                      </Link>
+                    )}
+                  </Button>
+                </div>
                 <LinkUserToProjectDialog projectId={project.id!} onSuccess={project.refresh}/>
               </>
             )}

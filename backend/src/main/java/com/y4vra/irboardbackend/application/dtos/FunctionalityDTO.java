@@ -22,6 +22,5 @@ public record FunctionalityDTO(
     String state,
     @NotNull(message = "The project ID is mandatory")
     Long projectId,
-    Boolean isUserFunctionalityManager,
     List<FunctionalRequirementDTO> requirements
 ) implements Serializable{}

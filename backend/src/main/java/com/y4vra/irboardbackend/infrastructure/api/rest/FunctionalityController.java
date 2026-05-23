@@ -10,14 +10,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/projects/{projectId}/functionalities")
 public class FunctionalityController {
 
     private final FunctionalityService functionalityService;
+    private final FunctionalRequirementService functionalRequirementService;
 
-    public FunctionalityController(FunctionalityService functionalityService) {
+    public FunctionalityController(FunctionalityService functionalityService, FunctionalRequirementService functionalRequirementService) {
         this.functionalityService = functionalityService;
+        this.functionalRequirementService = functionalRequirementService;
     }
 
     @GetMapping("/{functionalityId}")
@@ -38,7 +42,32 @@ public class FunctionalityController {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(functionalityService.patch(user,projectId,functionalityId,patch));
     }
-
+    @PostMapping("/{functionalityId}/disable")
+    public ResponseEntity<Void> disableFunctionality(Authentication authentication, @PathVariable Long projectId,@PathVariable Long functionalityId) {
+        String oryId= ((User)authentication.getPrincipal()).getOryId();
+        List<Long> rootRequirementIds = functionalityService.getRootRequirementIds(projectId,functionalityId);
+        functionalRequirementService.disableFunctionalRequirements(oryId,projectId,functionalityId,rootRequirementIds);
+        functionalityService.disableFunctionality(oryId,projectId,functionalityId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{functionalityId}/enable")
+    public ResponseEntity<Void> enableFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
+        functionalityService.enableFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{functionalityId}/remove")
+    public ResponseEntity<Void> removeFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
+        String oryId = ((User)authentication.getPrincipal()).getOryId();
+        List<Long> rootRequirementIds = functionalityService.getRootRequirementIds(projectId,functionalityId);
+        functionalRequirementService.removeFunctionalRequirements(oryId,projectId,functionalityId,rootRequirementIds);
+        functionalityService.removeFunctionality(oryId,projectId,functionalityId);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/{functionalityId}/delete")
+    public ResponseEntity<Void> deleteFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
+        functionalityService.deleteFunctionality(((User)authentication.getPrincipal()).getOryId(),projectId,functionalityId);
+        return ResponseEntity.ok().build();
+    }
     @PostMapping("/new")
     public ResponseEntity<FunctionalityDTO> createFunctionality(@Validated @RequestBody FunctionalityDTO functionalityDTO, @PathVariable Long projectId, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(functionalityService.createFunctionality(functionalityDTO,projectId,((User) authentication.getPrincipal()).getOryId()));

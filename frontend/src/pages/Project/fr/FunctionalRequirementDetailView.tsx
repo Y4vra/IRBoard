@@ -45,6 +45,7 @@ import { useDeleteFunctionalRequirements } from "@/hooks/useDeleteActions";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
 import { useFinishFunctionalRequirements } from "@/hooks/useFinishActions";
+import { useAuth } from "@/context/AuthContext";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -216,8 +217,9 @@ function FunctionalRequirementDetailView() {
   const navigate = useNavigate();
 
   const { getLock } = useLocks();
+  const { user } = useAuth();
   const lock = getLock(EntityType.FUNCTIONAL_REQUIREMENT, Number(frId));
-  const isLocked = !!lock;
+  const isLockedByAnotherUser = !!lock && lock.username !== user?.name;
   
   // Dialog open states
   const [createFunctionalRequirementDialogOpen, setCreateFunctionalRequirementDialogOpen] = useState(false);
@@ -314,7 +316,7 @@ function FunctionalRequirementDetailView() {
     );
 
     
-  const ableToBeModified = !isLocked && requirement?.state!="DEACTIVATED" && requirement?.state!="REMOVED"
+  const ableToBeModified = !isLockedByAnotherUser && requirement?.state!="DEACTIVATED" && requirement?.state!="REMOVED"
 
   if (loading) return <LoadingSpinner text="Loading requirement..." />;
 
@@ -375,7 +377,7 @@ function FunctionalRequirementDetailView() {
                 variant="outline"
                 size="sm"
                 disabled={!ableToBeModified}
-                title={isLocked ? "This nfr is currently being edited by another user" : undefined}
+                title={isLockedByAnotherUser ? "This nfr is currently being edited by another user" : undefined}
                 onClick={() => {
                   if (ableToBeModified) {
                     navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${requirement.id}/edit`);

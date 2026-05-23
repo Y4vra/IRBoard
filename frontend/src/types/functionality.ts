@@ -11,7 +11,6 @@ export interface Functionality {
   label: string;
   state: FunctionalityState;
   projectId: number;
-  isUserFunctionalityManager: boolean  
 }
 
 export interface FunctionalityWithRequirements extends Functionality {

@@ -75,6 +75,8 @@ gateways Kong y Typhoon.
 - RN-03 Disponibilidad y Web: Acceso multiplataforma mediante navegador, garantizando un diseño responsive gracias a Material UI.
 
 == Future Work / Enhancements
+=== Requirement management
+[The system must show the previous dynamic identifiers.],
 === Document management
 - (future work) The system must allow a requirement engineer fill a tabular use case
   - The system must have the following fields:
@@ -99,6 +101,10 @@ gateways Kong y Typhoon.
 - The system must allow a project manager generate a customized pdf of requirements for a stakeholder
 - The system must allow a project manager define a stencil for pdf generation of the srs export
 === Variant control
+[The system must allow a project manager to generate a baseline for a project.],
+(
+[The system must perform a snapshot of the project once a baseline is set.],
+),
 Highly ambitious—only if time permits.
 Keep this in mind even if not implemented: requirement reuse.
 Defining templates or abstract projects.
@@ -108,3 +114,4 @@ The system must allow a user to search requirements by text
 === extras
 i18n of frontend & databases with AI
 smtp server
+showing how many elements are affected by removal/deactivation.

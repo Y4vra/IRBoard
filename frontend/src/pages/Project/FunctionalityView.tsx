@@ -56,6 +56,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { useAuth } from "@/context/AuthContext"
+import { UpdateFunctionalityDialog } from "@/components/dialogs/updatingDialogs/UpdateFunctionalityDialog"
 
 // ---------------------------------------------------------------------------
 // Filter/sort types
@@ -451,7 +453,13 @@ function FunctionalityView() {
   const { canEditFunctionality } = useFunctionalities()
   const canEdit = canEditFunctionality(functionalityId!)
 
+  const { getLock } = useLocks();
+  const { user } = useAuth();
+  const lock = getLock(EntityType.FUNCTIONALITY, Number(functionalityId));
+  const isProjectLockedByAnother = !!lock && lock.username !== user?.name;
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const dragStateRef = useRef<number | null>(null)
   const [dropPreview, setDropPreview] = useState<DropPreview>(null)
 
@@ -494,7 +502,7 @@ function FunctionalityView() {
     [projectId, functionalityId]
   )
 
-  const { data: functionality, loading: funcLoading, error: funcError } = useBackendResource<Functionality>({ fetcher: fetchFunctionality })
+  const { data: functionality, loading: funcLoading, error: funcError, refresh: refresh } = useBackendResource<Functionality>({ fetcher: fetchFunctionality })
   const { data: requirementsData, loading: reqLoading, error: reqError, refresh: refreshRequirements } = useBackendResource<FunctionalRequirement[]>({ fetcher: fetchRequirements })
   const {
     data: removedData,
@@ -616,25 +624,43 @@ function FunctionalityView() {
             <StatsChart stats={frStats} title="Requirements" size={100} />
           </div>
           <div className="flex flex-col gap-3">
-            {canEdit && (
-              <Button variant="outline" size="sm">
-                <Pencil className="mr-2 h-4 w-4" /> Edit Functionality
-              </Button>
-            )}
-            {functionality.isUserFunctionalityManager && (
+            {isManager && (
               <>
+                <LockIndicator lock={lock} />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isProjectLockedByAnother}
+                  title={
+                    isProjectLockedByAnother
+                      ? "This functionality is currently being edited by another user"
+                      : undefined
+                  }
+                  onClick={() => {
+                    if (!isProjectLockedByAnother) setUpdateDialogOpen(true);
+                  }}
+                >
+                  <Pencil className="mr-2 h-4 w-4" /> Edit Functionality
+                </Button>
                 <LinkUserToFunctionalityDialog
                   projectId={projectId!} functionalityId={functionalityId!}
-                  canManage={functionality.isUserFunctionalityManager}
+                  canManage={isManager}
                 />
-                {isManager && (
-                  <Button size="sm" variant="outline"
-                    disabled={pendingIds.length === 0 || approving}
-                    onClick={() => approveFunctionality(functionalityId!, pendingIds)}>
-                    {approving ? "Approving..." : `Approve All (${pendingIds.length})`}
-                  </Button>
-                )}
+                <Button size="sm" variant="outline"
+                  disabled={pendingIds.length === 0 || approving}
+                  onClick={() => approveFunctionality(functionalityId!, pendingIds)}>
+                  {approving ? "Approving..." : `Approve All (${pendingIds.length})`}
+                </Button>
               </>
+            )}
+            {functionality && (
+              <UpdateFunctionalityDialog
+                open={updateDialogOpen}
+                onOpenChange={setUpdateDialogOpen}
+                projectId={projectId!}
+                functionality={functionality}
+                onSuccess={refresh}
+              />
             )}
           </div>
         </div>

@@ -1,13 +1,11 @@
 package com.y4vra.irboardbackend.application.services;
 
 import com.y4vra.irboardbackend.application.dtos.FunctionalityDTO;
-import com.y4vra.irboardbackend.application.dtos.StakeholderDTO;
 import com.y4vra.irboardbackend.application.mappers.FunctionalityMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
-import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
@@ -39,6 +37,27 @@ public class FunctionalityService {
         this.entityLockService = entityLockService;
     }
 
+    private void checkEditPermission(String oryId,String projectId){
+        if (!permService.checkPermission("Project", projectId, "edit", oryId)) {
+            throw new AccessDeniedException("User not authorized to edit functionalities of this project");
+        }
+    }
+    private void checkViewProjectPermission(String oryId,String projectId){
+        if (!permService.checkPermission("Project", projectId, "view", oryId)) {
+            throw new AccessDeniedException("User not authorized to edit functionalities of this project");
+        }
+    }
+    private void checkViewFunctionalityPermission(String oryId,String functionalityId){
+        if (!permService.checkPermission("Functionality", functionalityId, "viewRequirements", oryId)){
+            throw new AccessDeniedException("You do not have permission to view this Functionality");
+        }
+    }
+    private void checkProjectManagerPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to edit functionalities of this project");
+        }
+    }
+
     @Transactional(readOnly = true)
     public Map<String, List<FunctionalityDTO>> findFunctionalitiesOfProjectForUser(String oryId, long projectId) {
         List<Functionality> allProjectFunctionalities = functionalityRepository.findByProjectId(projectId);
@@ -52,7 +71,7 @@ public class FunctionalityService {
         result.put("none", new ArrayList<>());
 
         for (Functionality f : allProjectFunctionalities) {
-            FunctionalityDTO dto = functionalityMapper.toDto(f,canEditProject);
+            FunctionalityDTO dto = functionalityMapper.toDto(f);
             String fId = String.valueOf(f.getId());
 
             if (canEditProject || permService.checkPermission("Functionality", fId, "editRequirements", oryId)) {
@@ -68,18 +87,10 @@ public class FunctionalityService {
     }
     @Transactional(readOnly = true)
     public FunctionalityDTO findFunctionalityById(String oryId, long projectId, long functionalityId) {
-        Optional<Functionality> functionality = functionalityRepository.findById(functionalityId);
+        Functionality functionality = functionalityRepository.findByIdAndProjectId(functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("Functionality with id " + functionalityId + " not found"));
 
-        if(functionality.isEmpty()) {
-            throw new EntityNotFoundException("Functionality with id " + functionalityId + " not found");
-        }
-        if(functionality.get().getProject().getId() != projectId){
-            throw new EntityNotFoundException("Functionality with id " + functionalityId + " not found");
-        }
-        if (!permService.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId)){
-            throw new AccessDeniedException("You do not have permission to view this Functionality");
-        }
-        return functionalityMapper.toDto(functionality.get(),permService.checkPermission("Project",String.valueOf(projectId),"linkProjectUsers",oryId));
+        checkViewFunctionalityPermission(oryId,String.valueOf(functionalityId));
+        return functionalityMapper.toDto(functionality);
     }
     @Transactional(readOnly = true)
     public Set<Long> getViewableFunctionalityIds(String oryId, long projectId) {
@@ -108,11 +119,7 @@ public class FunctionalityService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
-        boolean isAllowed = permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId);
-
-        if (!isAllowed) {
-            throw new AccessDeniedException("User not authorized to add functionalities to this project");
-        }
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
 
         Functionality functionality = functionalityMapper.toEntity(dto);
         Associations.link(project, functionality);
@@ -128,29 +135,58 @@ public class FunctionalityService {
         }
         permService.grantPermissionToSubjectSet("Project", String.valueOf(projectId), "functionalities", "Functionality", String.valueOf(saved.getId()), "project");
         permService.grantPermissionToSubjectSet("Functionality", String.valueOf(saved.getId()), "project","Project", String.valueOf(projectId), "functionalities");
-        return functionalityMapper.toDto(saved,true);
+        return functionalityMapper.toDto(saved);
     }
 
     @Transactional
     public void requestEdit(User user, Long projectId, Long funcId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
-            throw new AccessDeniedException("User not authorized to edit functionalities of this project");
-        }
-        Functionality stakeholder = functionalityRepository.findById(funcId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        checkProjectManagerPermission(user.getOryId(),String.valueOf(projectId));
+        Functionality stakeholder = functionalityRepository.findByIdAndProjectId(funcId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
         entityLockService.lock(stakeholder,user);
     }
 
     @Transactional
     public FunctionalityDTO patch(User user, Long projectId, Long funcId, FunctionalityDTO patch) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "edit", user.getOryId())) {
-            throw new AccessDeniedException("User not authorized to edit functionalities of this project");
-        }
-        Functionality functionality = functionalityRepository.findById(funcId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        checkProjectManagerPermission(user.getOryId(),String.valueOf(projectId));
+        Functionality functionality = functionalityRepository.findByIdAndProjectId(funcId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
         if(!entityLockService.isLockedByUser(functionality, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
         functionalityMapper.patchEntity(patch, functionality);
         entityLockService.unlock(functionality,user);
-        return functionalityMapper.toDto(functionalityRepository.save(functionality),true);
+        return functionalityMapper.toDto(functionalityRepository.save(functionality));
+    }
+    @Transactional(readOnly = true)
+    /**
+     * Does not check permissions, use as data obtaining only
+     */
+    public List<Long> getRootRequirementIds(Long projectId, Long functionalityId) {
+        return functionalityRepository.getActiveRootRequirementIds(projectId,functionalityId);
+    }
+
+    @Transactional
+    public void disableFunctionality(String oryId, Long projectId, Long functionalityId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        Functionality func = functionalityRepository.findByIdAndProjectIdAndStateNot(functionalityId,projectId,FunctionalityState.DEACTIVATED).orElseThrow(()->new EntityNotFoundException("Functionality of project not found"));
+        func.setState(FunctionalityState.DEACTIVATED);
+    }
+    @Transactional
+    public void enableFunctionality(String oryId, Long projectId, Long functionalityId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        Functionality func = functionalityRepository.findByIdAndProjectIdAndState(functionalityId,projectId,FunctionalityState.DEACTIVATED).orElseThrow(()->new EntityNotFoundException("Functionality of project not found"));
+        func.setState(FunctionalityState.ACTIVE);
+    }
+    @Transactional
+    public void removeFunctionality(String oryId, Long projectId, Long functionalityId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        Functionality func = functionalityRepository.findByIdAndProjectIdAndState(functionalityId,projectId,FunctionalityState.DEACTIVATED).orElseThrow(()->new EntityNotFoundException("Functionality of project not found"));
+        func.setState(FunctionalityState.REMOVED);
+    }
+    @Transactional
+    public void deleteFunctionality(String oryId, Long projectId, Long functionalityId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        if (functionalityRepository.deleteFunctionalityAndRequirementsInState(projectId,functionalityId,FunctionalityState.DEACTIVATED)<1){
+            throw new EntityNotFoundException("Functionality of project not found");
+        }
     }
 }

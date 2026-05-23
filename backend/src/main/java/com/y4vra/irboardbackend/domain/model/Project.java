@@ -30,19 +30,19 @@ public class Project extends ProjectIndependentElement {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<Functionality> functionalities = new HashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL,orphanRemoval = true)
     private Set<NonFunctionalRequirement> nonFunctionalRequirements = new HashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FunctionalRequirement> functionalRequirements = new HashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Stakeholder> stakeholders = new HashSet<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Document> documents = new HashSet<>();
 
     public Project() {}

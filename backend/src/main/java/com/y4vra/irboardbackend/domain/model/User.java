@@ -18,6 +18,7 @@ public class User extends ProjectIndependentElement {
 
     @Column(unique = true, nullable = false)
     private String email;
+    @Column(unique = true, nullable = false)
     private String name;
     private String surname;
 

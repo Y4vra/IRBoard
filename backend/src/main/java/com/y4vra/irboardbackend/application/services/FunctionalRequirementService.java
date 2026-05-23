@@ -91,7 +91,7 @@ public class FunctionalRequirementService extends RequirementService {
     public FunctionalRequirementDTO createFunctionalRequirement(String oryId,FunctionalRequirementDTO dto, Long projectId, Long functionalityId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
         Project project = projectRepository.findById(projectId).orElseThrow(()->new EntityNotFoundException("Project does not exist"));
-        Functionality functionality = functionalityRepository.findById(functionalityId).orElseThrow(()->new EntityNotFoundException("Functionality does not exist"));
+        Functionality functionality = functionalityRepository.findByIdAndProjectId(functionalityId,projectId).orElseThrow(()->new EntityNotFoundException("Functionality does not exist"));
 
         FunctionalRequirement fr = frMapper.toEntity(dto,functionality);
         Associations.link(project,fr);
@@ -109,8 +109,8 @@ public class FunctionalRequirementService extends RequirementService {
     }
 
     @Transactional
-    public void updatePriority(FunctionalRequirement fr, String priority) {
-        Functionality functionality = functionalityRepository.findById(fr.getFunctionality().getId())
+    public void updatePriority(FunctionalRequirement fr, String priority,Long projectId, Long functionalityId) {
+        Functionality functionality = functionalityRepository.findByIdAndProjectId(functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));
 
         if (!isValidPriority(priority, functionality.getProject().getPriorityStyle())) {
@@ -195,7 +195,7 @@ public class FunctionalRequirementService extends RequirementService {
     @Transactional
     public void reorderRequirement(String oryId,Long projectId, Long functionalityId, Long functionalRequirementId, Long orderValue) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        functionalityRepository.findById(functionalityId).orElseThrow(()-> new EntityNotFoundException("Could not find functionality"));
+        functionalityRepository.findByIdAndProjectId(functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find functionality"));
         FunctionalRequirement fr = frRepository.findByIdAndFunctionalityIdAndProjectId(functionalRequirementId,functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find functional requirement"));
         if(!Objects.equals(fr.getFunctionality().getId(), functionalityId)){
             throw new EntityNotFoundException("Functionality id does not match functionality id");
@@ -205,7 +205,7 @@ public class FunctionalRequirementService extends RequirementService {
     @Transactional
     public void changeParent(String oryId,Long projectId, Long functionalityId, Long functionalRequirementId, Long newParentId) {
         checkEditPermission(oryId,String.valueOf(functionalityId));
-        functionalityRepository.findById(functionalityId)
+        functionalityRepository.findByIdAndProjectId(functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find functionality"));
         FunctionalRequirement fr = frRepository.findByIdWithParentAndFunctionalityIdAndProjectId(functionalRequirementId,functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement"));
@@ -237,7 +237,7 @@ public class FunctionalRequirementService extends RequirementService {
         }
         requirement.checkCanBeModified();
         frMapper.patchEntity(patch, requirement);
-        updatePriority(requirement,patch.priority());
+        updatePriority(requirement,patch.priority(),projectId,functionalityId);
         entityLockService.unlock(requirement,user);
         requirement.setState(RequirementState.PENDING_APPROVAL);
         requirement.notifyObservers();
