@@ -67,8 +67,8 @@ function evaluatePassing(
   actual: number | null | undefined,
   operator: string | null | undefined,
   threshold: number | null | undefined
-): boolean | null {
-  if (actual == null || threshold == null || !operator) return null;
+): boolean {
+  if (actual == null || threshold == null || !operator) return false;
   switch (operator) {
     case "EQUAL_TO": return actual === threshold;
     case "GREATER_THAN": return actual > threshold;
@@ -76,7 +76,7 @@ function evaluatePassing(
     case "LESS_THAN": return actual < threshold;
     case "LESS_THAN_OR_EQUAL_TO": return actual <= threshold;
     case "NOT_EQUAL_TO": return actual !== threshold;
-    default: return null;
+    default: return false;
   }
 }
 
@@ -537,7 +537,7 @@ function NonFunctionalRequirementDetailView() {
       </header>
 
       {/* Semantic metric expression */}
-      <MetricExpression req={requirement} passing/>
+      <MetricExpression req={requirement} passing={passing}/>
 
       {/* Children */}
       {(requirement.children?.length > 0 || editPermission) && (

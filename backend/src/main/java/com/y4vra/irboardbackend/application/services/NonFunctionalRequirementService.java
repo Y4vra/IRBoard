@@ -188,7 +188,7 @@ public class NonFunctionalRequirementService extends RequirementService {
             throw new EntityNotFoundException("One of the elements was not found on the system");
         nfrRepository.findAllByIdsAndProjectIdAndState(nonFunctionalRequirementIds,projectId, RequirementState.APPROVED).forEach(
             nfr ->{
-                if(nfr.isPassing()){
+                if(!nfr.isPassing()){
                     throw new IllegalStateException("A non-passing requirement cannot be marked as finished.");
                 }
                 nfr.setState(RequirementState.FINISHED);
