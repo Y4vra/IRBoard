@@ -89,6 +89,12 @@ interface JpaDocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states);
 
     void deleteByIdAndProjectIdAndState(Long documentId, Long projectId, EntityState entityState);
+
+    @Query("""
+        SELECT d.s3Key FROM Document d
+        WHERE d.project.id = :projectId
+        """)
+    List<String> findAllObjectStorageKeysByProjectId(Long projectId);
 }
 
 @Component
@@ -109,6 +115,11 @@ public class DocumentRepositoryImpl implements DocumentRepository {
 //    public List<Document> findAllById(Iterable<Long> ids) {
 //        return jpaRepository.findAllById(ids);
 //    }
+
+    @Override
+    public List<String> findAllObjectStorageKeysByProjectId(Long projectId) {
+        return jpaRepository.findAllObjectStorageKeysByProjectId(projectId);
+    }
 
     @Override
     public List<Document> findAllByProjectIdNotRemoved(Long projectId) {

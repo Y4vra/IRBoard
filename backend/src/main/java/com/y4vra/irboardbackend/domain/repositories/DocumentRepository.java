@@ -28,4 +28,6 @@ public interface DocumentRepository {
 
     List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, EntityState state);
     List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states);
+
+    List<String> findAllObjectStorageKeysByProjectId(Long projectId);
 }
