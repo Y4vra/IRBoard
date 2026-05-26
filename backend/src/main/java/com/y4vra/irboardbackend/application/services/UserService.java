@@ -158,15 +158,32 @@ public class UserService {
         return userMapper.toDto(savedUser);
     }
 
+//    @Transactional
+//    public void deactivateUser(Long id) {
+//        User user = userRepository.findByIdAndActive(id,true)
+//                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+//
+//        user.setActive(false);
+//
+//        identService.disableIdentity(user.getOryId());
+//    }
+//    @Transactional
+//    public void reactivateUser(Long id) {
+//        User user = userRepository.findByIdAndActive(id,false)
+//                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+//
+//        user.setActive(true);
+//
+//        identService.reenableIdentity(user.getOryId());
+//    }
     @Transactional
-    public void deactivateUser(Long id) {
+    public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        user.setActive(false);
-        userRepository.save(user);
-
-        identService.disableIdentity(user.getOryId());
+        userRepository.deleteById(id);
+        identService.deleteIdentity(user.getOryId());
+        permService.removeAllTuplesForSubject(user.getOryId());
     }
 
     public UserDTO getUserAuthenticatedDto(User user) {

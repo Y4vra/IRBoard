@@ -11,5 +11,7 @@ public interface PermissionService {
     void revokePermission(String resourceType, String resourceId, String action, String subjectId);
     List<String> getSubjectsForObject(String namespace, String object, String relation);
 
+    void removeAllTuplesForSubject(String subjectId);
+
     List<String> filterAuthorizedObjects(String oryId, String project, String view, List<String> allProjectIds);
 }

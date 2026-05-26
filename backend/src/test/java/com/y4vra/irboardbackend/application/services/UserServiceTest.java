@@ -239,28 +239,6 @@ class UserServiceTest {
     }
 
     @Test
-    void deactivateUser_setsInactiveAndDisablesKratosIdentity() {
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        userService.deactivateUser(userId);
-
-        assertThat(user.getActive()).isFalse();
-        verify(userRepository).save(user);
-        verify(identService).disableIdentity(oryId);
-    }
-
-    @Test
-    void deactivateUser_throwsEntityNotFoundWhenUserDoesNotExist() {
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> userService.deactivateUser(userId))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("User not found");
-
-        verify(identService, never()).disableIdentity(any());
-    }
-
-    @Test
     void getUserAuthenticatedDto_delegatesToMapper() {
         when(userMapper.toDto(user)).thenReturn(userDTO);
 

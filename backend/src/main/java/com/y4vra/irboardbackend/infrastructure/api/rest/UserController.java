@@ -56,12 +56,23 @@ public class UserController {
     public ResponseEntity<UserDTO> reinviteUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.generateNewInvite(id));
     }
-
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PostMapping("/{id}/deactivate")
+//    public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
+//        userService.deactivateUser(id);
+//        return ResponseEntity.ok().build();
+//    }
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @PostMapping("/{id}/reactivate")
+//    public ResponseEntity<Void> activateUser(@PathVariable Long id) {
+//        userService.reactivateUser(id);
+//        return ResponseEntity.ok().build();
+//    }
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
-        userService.deactivateUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok().build();
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

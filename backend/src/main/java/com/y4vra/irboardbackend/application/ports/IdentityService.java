@@ -8,4 +8,6 @@ public interface IdentityService {
     void validateRecoveryCode(String email, String code, String flowId);
     void setPassword(String oryId, String password, User user);
     void disableIdentity(String oryId);
+    void reenableIdentity(String oryId);
+    void deleteIdentity(String oryId);
 }

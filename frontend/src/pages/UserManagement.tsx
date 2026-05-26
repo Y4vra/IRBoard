@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react"
 import { API_BASE_URL } from "../lib/globalVars"
 import { Button } from "../components/ui/button"
-import { Mail, AlertCircle } from "lucide-react"
+import { Mail, AlertCircle, Trash2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
@@ -22,10 +22,12 @@ import { useLocks } from "@/hooks/useLocks"
 import { LockIndicator } from "@/components/LockIndicator"
 import { EntityType } from "@/lib/lockUtils"
 import { UserDetailDialog } from "@/components/dialogs/UserDetailDialog"
+import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog"
 
 function UserManagement() {
   const { getLock } = useLocks()
   const [currentPage, setCurrentPage] = useState(1)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const itemsPerPage = 10
 
   const { isAuthenticated, loading: authLoading } = useAuth()
@@ -56,6 +58,21 @@ function UserManagement() {
       }
     } catch (err) {
       console.error("Re-invite failed", err)
+    }
+  }
+
+  const handleDelete = async (userId: number) => {
+    setDeletingId(userId)
+    try {
+      await fetch(`${API_BASE_URL}/users/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+      refresh()
+    } catch (err) {
+      console.error("Delete failed", err)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -119,16 +136,16 @@ function UserManagement() {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                    <LockIndicator lock={getLock(EntityType.USER, user.id)} />
-                    {user.active ? (
-                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">
-                        Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="destructive" className="uppercase text-[10px]">
-                        Deactivated
-                      </Badge>
-                    )}
+                      <LockIndicator lock={getLock(EntityType.USER, user.id)} />
+                      {user.active ? (
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-100 uppercase text-[10px]">
+                          Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="uppercase text-[10px]">
+                          Deactivated
+                        </Badge>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -145,7 +162,7 @@ function UserManagement() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <UserDetailDialog userId={user.id}/>
+                      <UserDetailDialog userId={user.id} />
                       <EditUserDialog user={user} onSuccess={refresh} />
                       <Button
                         variant="ghost"
@@ -156,6 +173,25 @@ function UserManagement() {
                         <Mail className="h-4 w-4 mr-2" />
                         Re-invite
                       </Button>
+                      <ConfirmActionDialog
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-slate-600 hover:text-destructive"
+                            disabled={deletingId === user.id}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        }
+                        title={`Delete ${user.name} ${user.surname}?`}
+                        description={`This will permanently remove ${user.name} ${user.surname} (${user.email}) from the system, revoke all their permissions, and delete their login credentials. This action cannot be undone.`}
+                        confirmLabel="Delete permanently"
+                        confirmVariant="destructive"
+                        loading={deletingId === user.id}
+                        onConfirm={() => handleDelete(user.id)}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

@@ -1,11 +1,13 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
 import com.y4vra.irboardbackend.application.ports.IdentityService;
+import com.y4vra.irboardbackend.domain.errors.IdentityServiceException;
 import com.y4vra.irboardbackend.domain.model.User;
 import com.y4vra.irboardbackend.infrastructure.api.rest.errors.AccountRecoveryException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -59,7 +61,7 @@ public class KratosClient implements IdentityService {
             // If 409 Conflict, fetch the existing identity by email
             return getIdentityIdByEmail(email);
         } catch (Exception e) {
-            throw new RuntimeException("Identity creation failed: " + e.getMessage(), e);
+            throw new IdentityServiceException("Identity creation failed: " + e.getMessage(), e);
         }
     }
 
@@ -71,9 +73,9 @@ public class KratosClient implements IdentityService {
                 Map<?, ?> identity = (Map<?, ?>) response.get(0);
                 return (String) identity.get("id");
             }
-            throw new RuntimeException("Identity exists in Kratos but could not be retrieved");
+            throw new IdentityServiceException("Identity exists in Kratos but could not be retrieved");
         } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve existing identity from Kratos", e);
+            throw new IdentityServiceException("Failed to retrieve existing identity from Kratos", e);
         }
     }
 
@@ -98,7 +100,7 @@ public class KratosClient implements IdentityService {
 
             return flowId;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to trigger recovery email for: " + email, e);
+            throw new IdentityServiceException("Failed to trigger recovery email for: " + email, e);
         }
     }
 
@@ -144,7 +146,7 @@ public class KratosClient implements IdentityService {
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, createHeaders());
-        restTemplate.exchange(url, org.springframework.http.HttpMethod.PUT, request, Map.class);
+        restTemplate.exchange(url, HttpMethod.PUT, request, Map.class);
     }
 
     public void disableIdentity(String oryId) {
@@ -154,9 +156,33 @@ public class KratosClient implements IdentityService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, createHeaders());
 
         try {
-            restTemplate.patchForObject(url, request, Map.class);
+            restTemplate.exchange(url, HttpMethod.PATCH, request, Map.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to disable identity", e);
+            throw new IdentityServiceException("Failed to disable identity", e);
+        }
+    }
+    public void reenableIdentity(String oryId) {
+        String url = kratosAdminUrl + "/admin/identities/" + oryId;
+
+        Map<String, Object> body = Map.of("state", "active");
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, createHeaders());
+
+        try {
+            restTemplate.exchange(url, HttpMethod.PATCH, request, Map.class);
+        } catch (Exception e) {
+            throw new IdentityServiceException("Failed to re-enable identity", e);
+        }
+    }
+    public void deleteIdentity(String oryId) {
+        String url = kratosAdminUrl + "/admin/identities/" + oryId;
+        HttpEntity<Void> request = new HttpEntity<>(createHeaders());
+
+        try {
+            restTemplate.exchange(url, HttpMethod.DELETE, request, Void.class);
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+            // Identity already gone = success, deletion is idempotent
+        } catch (Exception e) {
+            throw new IdentityServiceException("Failed to delete identity from Kratos for oryId: " + oryId, e);
         }
     }
 

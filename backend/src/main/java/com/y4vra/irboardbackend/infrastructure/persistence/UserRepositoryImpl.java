@@ -16,6 +16,10 @@ interface JpaUserRepository extends JpaRepository<User, Long> {
 
     List<User> findByOryIdIn(List<String> oryIds);
     List<User> findByOryIdNotIn(List<String> oryIds);
+
+    void deleteByIdAndActive(Long id, Boolean active);
+
+    Optional<User> findByIdAndActive(Long id, Boolean active);
 }
 
 @Component
@@ -52,6 +56,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public void deleteByIdAndActive(Long id,Boolean active) {
+        jpaRepository.deleteByIdAndActive(id,active);
+    }
+
+    @Override
     public void deleteById(Long id) {
         jpaRepository.deleteById(id);
     }
@@ -64,5 +73,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<User> findByOryIdNotIn(List<String> oryIds) {
         return jpaRepository.findByOryIdNotIn(oryIds);
+    }
+
+    @Override
+    public Optional<User> findByIdAndActive(Long id,Boolean active) {
+        return jpaRepository.findByIdAndActive(id,active);
     }
 }

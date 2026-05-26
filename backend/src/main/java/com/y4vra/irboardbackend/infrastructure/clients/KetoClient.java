@@ -1,12 +1,13 @@
 package com.y4vra.irboardbackend.infrastructure.clients;
 
 import com.y4vra.irboardbackend.application.ports.PermissionService;
-import com.y4vra.irboardbackend.infrastructure.api.rest.errors.ReBACException;
+import com.y4vra.irboardbackend.domain.errors.PermissionServiceException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,7 +81,7 @@ public class KetoClient implements PermissionService {
         try {
             restTemplate.put(url, body);
         } catch (Exception e) {
-            throw new ReBACException("Failed to create ReBAC tuple in Keto", e);
+            throw new PermissionServiceException("Failed to create ReBAC tuple in Keto", e);
         }
     }
     public void grantPermissionToSubjectSet(String namespace, String object, String relation,
@@ -103,7 +104,7 @@ public class KetoClient implements PermissionService {
         try {
             restTemplate.put(url, body);
         } catch (Exception e) {
-            throw new ReBACException("Failed to create ReBAC tuple in Keto", e);
+            throw new PermissionServiceException("Failed to create ReBAC tuple in Keto", e);
         }
     }
     @Override
@@ -118,7 +119,7 @@ public class KetoClient implements PermissionService {
         try {
             restTemplate.delete(url);
         } catch (Exception e) {
-            throw new ReBACException("Failed to revoke ReBAC tuple in Keto", e);
+            throw new PermissionServiceException("Failed to revoke ReBAC tuple in Keto", e);
         }
     }
     @Override
@@ -146,6 +147,46 @@ public class KetoClient implements PermissionService {
                     .toList();
         } catch (Exception e) {
             return List.of();
+        }
+    }
+
+    @Override
+    public void removeAllTuplesForSubject(String subjectId) {
+        List<String> namespaces = fetchNamespaces();
+        List<String> failures = new ArrayList<>();
+
+        for (String namespace : namespaces) {
+            String url = UriComponentsBuilder.fromUriString(ketoWriteUrl + "/admin/relation-tuples")
+                    .queryParam("namespace", namespace)
+                    .queryParam("subject_id", subjectId)
+                    .toUriString();
+            try {
+                restTemplate.delete(url);
+            } catch (Exception e) {
+                failures.add("namespace [" + namespace + "]: " + e.getMessage());
+            }
+        }
+
+        if (!failures.isEmpty()) {
+            throw new PermissionServiceException(
+                    "Failed to remove Keto tuples for subject " + subjectId + ": " + String.join(", ", failures),
+                    null
+            );
+        }
+    }
+    private List<String> fetchNamespaces() {
+        String url = ketoReadUrl + "/namespaces";
+        try {
+            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            if (response == null || !response.containsKey("namespaces")) {
+                return List.of();
+            }
+            List<Map<String, Object>> namespaceList = (List<Map<String, Object>>) response.get("namespaces");
+            return namespaceList.stream()
+                    .map(n -> n.get("name").toString())
+                    .toList();
+        } catch (Exception e) {
+            throw new PermissionServiceException("Failed to fetch namespaces from Keto", e);
         }
     }
 

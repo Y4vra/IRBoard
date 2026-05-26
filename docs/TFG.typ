@@ -511,11 +511,10 @@ A crucial process for the system is the updates triggered by modifications betwe
     ),
     [The system must temporally block the user after 3 consecutive failed attempts.],
   ),
-  [The system must allow an admin to deactivate a user from the system.],
+  [The system must allow an admin to remove a user from the system.],
   (
-    [A deactivated user remains on the system but cannot access it.],
+    [The system must clean the removed user's ReBAC permissions.],
   ),
-  [The system must allow an admin to reactivate a user from the system.],
 )
 ==== Document management and modelling
 #DMM_List(

@@ -3,9 +3,7 @@ package com.y4vra.irboardbackend.infrastructure.api.rest.errors;
 import com.y4vra.irboardbackend.domain.errors.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -118,14 +116,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(ReBACException.class)
-    public ResponseEntity<Object> handleReBACException(ReBACException ex) {
-        log.error("ReBAC exception", ex);
+    @ExceptionHandler(PermissionServiceException.class)
+    public ResponseEntity<Object> handleReBACException(PermissionServiceException ex) {
+        log.error("Permission service exception", ex);
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", LocalDateTime.now());
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         body.put("message", "Authorization service communication error: " + ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    @ExceptionHandler(IdentityServiceException.class)
+    public ResponseEntity<Object> handleReBACException(IdentityServiceException ex) {
+        log.error("Identity service exception", ex);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("message", "Identity service communication error: " + ex.getMessage());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @ExceptionHandler(ObjectStorageException.class)
