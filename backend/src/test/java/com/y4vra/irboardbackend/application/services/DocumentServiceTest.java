@@ -8,9 +8,9 @@ import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
-import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -161,7 +161,7 @@ class DocumentServiceTest {
         project.setId(projectId);
 
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
         when(multipartFile.getInputStream()).thenReturn(InputStream.nullInputStream());
         when(multipartFile.getSize()).thenReturn(1024L);
         when(multipartFile.getContentType()).thenReturn("application/pdf");
@@ -186,7 +186,7 @@ class DocumentServiceTest {
         assertThatThrownBy(() -> documentService.uploadDocument(multipartFile, inputDto, projectId, oryId))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(projectRepository, never()).findById(any());
+        verify(projectRepository, never()).findByIdAndState(any(), ProjectState.ACTIVE);
         verify(objStorageService, never()).uploadFile(any(), any(), anyLong(), any());
         verify(documentRepository, never()).save(any());
     }
@@ -197,7 +197,7 @@ class DocumentServiceTest {
         project.setId(projectId);
 
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
         when(multipartFile.getInputStream()).thenReturn(InputStream.nullInputStream());
         when(multipartFile.getSize()).thenReturn(1024L);
         when(multipartFile.getContentType()).thenReturn("application/pdf");

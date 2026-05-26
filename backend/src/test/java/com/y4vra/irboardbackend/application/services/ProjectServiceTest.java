@@ -4,6 +4,7 @@ import com.y4vra.irboardbackend.application.dtos.ProjectDTO;
 import com.y4vra.irboardbackend.application.mappers.ProjectMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StatisticsRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -60,7 +61,7 @@ class ProjectServiceTest {
         when(projectRepository.findAll()).thenReturn(List.of(project));
         when(projectMapper.toDto(project)).thenReturn(projectDTO);
 
-        List<ProjectDTO> result = projectService.findAllProjects();
+        List<ProjectDTO> result = projectService.findAllProjectsNotRemoved();
 
         assertThat(result).hasSize(1).containsExactly(projectDTO);
     }
@@ -69,7 +70,7 @@ class ProjectServiceTest {
     void findAllProjects_returnsEmptyListWhenNoneExist() {
         when(projectRepository.findAll()).thenReturn(List.of());
 
-        List<ProjectDTO> result = projectService.findAllProjects();
+        List<ProjectDTO> result = projectService.findAllProjectsNotRemoved();
 
         assertThat(result).isEmpty();
     }
@@ -121,7 +122,7 @@ class ProjectServiceTest {
         String oryId = "user-ory-123";
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(false);
-        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
         when(statisticsRepository.getStakeholderStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getDocumentStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getNonFunctionalRequirementStatistics(1L)).thenReturn(null);
@@ -142,7 +143,7 @@ class ProjectServiceTest {
         assertThatThrownBy(() -> projectService.findById(oryId, 1L))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(projectRepository, never()).findById(any());
+        verify(projectRepository, never()).findByIdAndState(any(), ProjectState.ACTIVE);
         verify(projectMapper, never()).toDto(any(), anyBoolean(), any(), any(), any(), any());
     }
 
@@ -150,7 +151,7 @@ class ProjectServiceTest {
     void findById_throwsEntityNotFoundWhenProjectDoesNotExist() {
         String oryId = "user-ory-123";
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(projectRepository.findById(1L)).thenReturn(Optional.empty());
+        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> projectService.findById(oryId, 1L))
                 .isInstanceOf(EntityNotFoundException.class)

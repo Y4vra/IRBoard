@@ -1,11 +1,12 @@
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { API_BASE_URL } from "../lib/globalVars";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Link } from "react-router-dom";
-import { ArrowRight, Folder, Plus, Search, X, ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import { ArrowRight, Folder, Plus, Search, X, ChevronLeft, ChevronRight, Filter, FolderOpen, Archive } from "lucide-react";
+import { ProjectStateBadge } from "@/components/badges/ProjectStateBadge";
 import { type Project } from "../types/Project";
 import { cn } from "@/lib/utils";
 
@@ -16,14 +17,72 @@ import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
 
 const PROJECTS_PER_PAGE = 12;
-const PAGINATION_THRESHOLD = PROJECTS_PER_PAGE; // show pagination only when results exceed one page
+const PAGINATION_THRESHOLD = PROJECTS_PER_PAGE;
 
 type SortOption = "name_asc" | "name_desc" | "state" | "priority";
+type ViewMode = "active" | "removed";
+
+// ── View Toggle ───────────────────────────────────────────────────────────────
+
+interface ViewToggleProps {
+  mode: ViewMode;
+  onChange: (mode: ViewMode) => void;
+  activeCount?: number;
+  removedCount?: number;
+}
+
+function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewToggleProps) {
+  return (
+    <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
+      <button
+        onClick={() => onChange("active")}
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+          mode === "active"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
+        }`}
+      >
+        <FolderOpen className="h-3.5 w-3.5" />
+        Active
+        {activeCount !== undefined && (
+          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+            mode === "active" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"
+          }`}>
+            {activeCount}
+          </span>
+        )}
+      </button>
+      <button
+        onClick={() => onChange("removed")}
+        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+          mode === "removed"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
+        }`}
+      >
+        <Archive className="h-3.5 w-3.5" />
+        Removed
+        {removedCount !== undefined && (
+          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+            mode === "removed" ? "bg-red-100 text-red-600" : "bg-slate-200 text-slate-500"
+          }`}>
+            {removedCount}
+          </span>
+        )}
+      </button>
+    </div>
+  );
+}
+
+// ── Home ──────────────────────────────────────────────────────────────────────
 
 function Home() {
   const [projects, setProjects] = useState<Project[] | null>(null)
+  const [removedProjects, setRemovedProjects] = useState<Project[] | null>(null)
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadingRemoved, setLoadingRemoved] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("active");
 
   // Search & filter state
   const [search, setSearch] = useState("");
@@ -35,6 +94,9 @@ function Home() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { getLock } = useLocks();
 
+  const isAdmin = user?.isAdmin ?? false;
+
+  // Fetch active projects
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -62,24 +124,57 @@ function Home() {
       setError("Enviroment variable 'api_domain' is not properly configured, or the authentication context failed.");
       setLoading(false);
     }
-  }, [authLoading,isAuthenticated]);
+  }, [authLoading, isAuthenticated]);
+
+  // Fetch removed projects — lazy, only fires once on first switch to "removed"
+  const fetchRemovedProjects = useCallback(async () => {
+    if (removedProjects !== null) return;
+    setLoadingRemoved(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/removed`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Error fetching removed projects');
+      setRemovedProjects(await response.json());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoadingRemoved(false);
+    }
+  }, [removedProjects]);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    setSearch("");
+    setActiveStates(new Set());
+    setActivePriorities(new Set());
+    setSortBy("name_asc");
+    if (mode === "removed") fetchRemovedProjects();
+  };
+
+  const currentProjects = viewMode === "active" ? projects : removedProjects;
 
   // Derive unique filter options from the data
   const allStates = useMemo(() => {
-    if (!projects) return [];
-    return Array.from(new Set(projects.map(p => p.state))).sort();
-  }, [projects]);
+    if (!currentProjects) return [];
+    return Array.from(new Set(currentProjects.map(p => p.state))).sort();
+  }, [currentProjects]);
 
   const allPriorities = useMemo(() => {
-    if (!projects) return [];
-    return Array.from(new Set(projects.map(p => p.priorityStyle))).sort();
-  }, [projects]);
+    if (!currentProjects) return [];
+    return Array.from(new Set(currentProjects.map(p => p.priorityStyle))).sort();
+  }, [currentProjects]);
 
   // Filtered + sorted list
   const filteredProjects = useMemo(() => {
-    if (!projects) return [];
+    if (!currentProjects) return [];
 
-    let result = projects.filter(p => {
+    let result = currentProjects.filter(p => {
       const matchesSearch =
         search.trim() === "" ||
         p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -102,7 +197,7 @@ function Home() {
     });
 
     return result;
-  }, [projects, search, activeStates, activePriorities, sortBy]);
+  }, [currentProjects, search, activeStates, activePriorities, sortBy]);
 
   // Pagination
   const totalPages = Math.ceil(filteredProjects.length / PROJECTS_PER_PAGE);
@@ -131,7 +226,7 @@ function Home() {
     setSortBy("name_asc");
   };
 
-  if (loading || authLoading) return <LoadingSpinner />;
+  if (loading || authLoading || (viewMode === "removed" && loadingRemoved)) return <LoadingSpinner />;
 
   if (error) return (
     <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center animate-in zoom-in-95 duration-300">
@@ -149,20 +244,42 @@ function Home() {
       <header className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-700">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-2">Projects</h1>
-          <p className="text-slate-500 mt-1">Explore the projects you have access to.</p>
+          <p className="text-slate-500 mt-1">
+            {viewMode === "removed"
+              ? "Removed projects archive. Visible to administrators only."
+              : "Explore the projects you have access to."}
+          </p>
         </div>
-        {user?.isAdmin && projects && projects.length > 0 && (
-          <Button asChild className="shadow-md animate-in zoom-in-95 duration-500">
-            <Link to="/projects/new" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              New Project
-            </Link>
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <ViewToggle
+              mode={viewMode}
+              onChange={handleViewModeChange}
+              activeCount={projects?.length}
+              removedCount={removedProjects?.length}
+            />
+          )}
+          {isAdmin && viewMode === "active" && projects && projects.length > 0 && (
+            <Button asChild className="shadow-md animate-in zoom-in-95 duration-500">
+              <Link to="/projects/new" className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                New Project
+              </Link>
+            </Button>
+          )}
+        </div>
       </header>
 
+      {/* Removed projects banner */}
+      {viewMode === "removed" && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-2.5 text-sm text-amber-700 animate-in fade-in duration-300">
+          <Archive className="h-4 w-4 shrink-0" />
+          <span>These projects have been removed and are no longer active. Visible to administrators only.</span>
+        </div>
+      )}
+
       {/* Search & Filter bar — only shown when there are projects */}
-      {projects && projects.length > 0 && (
+      {currentProjects && currentProjects.length > 0 && (
         <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
           {/* Search + Sort row */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -195,7 +312,7 @@ function Home() {
             </select>
           </div>
 
-          {/* Filter chips — State */}
+          {/* Filter chips */}
           {(allStates.length > 1 || allPriorities.length > 1) && (
             <div className="flex flex-wrap items-center gap-2">
               <span className="flex items-center gap-1 text-xs text-slate-500 font-medium shrink-0">
@@ -250,33 +367,41 @@ function Home() {
           {/* Result count */}
           <p className="text-xs text-slate-400">
             {hasActiveFilters
-              ? `${filteredProjects.length} of ${projects.length} project${projects.length !== 1 ? "s" : ""} match`
-              : `${projects.length} project${projects.length !== 1 ? "s" : ""}`}
+              ? `${filteredProjects.length} of ${currentProjects.length} project${currentProjects.length !== 1 ? "s" : ""} match`
+              : `${currentProjects.length} project${currentProjects.length !== 1 ? "s" : ""}`}
             {showPagination && ` — page ${currentPage} of ${totalPages}`}
           </p>
         </div>
       )}
 
       {/* Empty states */}
-      {(!projects || projects.length === 0) ? (
+      {(!currentProjects || currentProjects.length === 0) ? (
         <Card className="p-16 text-center border-dashed bg-slate-50/50 animate-in fade-in zoom-in-95 duration-700">
           <div className="mx-auto w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-            <Folder className="text-slate-400 h-6 w-6" />
+            {viewMode === "removed"
+              ? <Archive className="text-slate-400 h-6 w-6" />
+              : <Folder className="text-slate-400 h-6 w-6" />}
           </div>
-          <h3 className="text-lg font-medium text-slate-900">No projects found</h3>
+          <h3 className="text-lg font-medium text-slate-900">
+            {viewMode === "removed" ? "No removed projects" : "No projects found"}
+          </h3>
           <p className="text-slate-500 max-w-xs mx-auto mt-2">
-            It looks like you don't have any projects assigned yet or the system is empty.
+            {viewMode === "removed"
+              ? "There are no removed projects in the system."
+              : "It looks like you don't have any projects assigned yet or the system is empty."}
           </p>
-          {user?.isAdmin ? (
-            <p className="mt-4">
-              <Link to="/projects/new" className="text-indigo-600 hover:underline font-medium">
-                Create your first project
-              </Link>
-            </p>
-          ) : (
-            <p className="mt-4 text-slate-400 text-sm">
-              Please contact an administrator to be assigned to a project.
-            </p>
+          {viewMode === "active" && (
+            user?.isAdmin ? (
+              <p className="mt-4">
+                <Link to="/projects/new" className="text-indigo-600 hover:underline font-medium">
+                  Create your first project
+                </Link>
+              </p>
+            ) : (
+              <p className="mt-4 text-slate-400 text-sm">
+                Please contact an administrator to be assigned to a project.
+              </p>
+            )
           )}
         </Card>
       ) : filteredProjects.length === 0 ? (
@@ -300,24 +425,34 @@ function Home() {
               <Card
                 key={project.id}
                 className={cn(
-                  "group flex flex-col h-full bg-card border-border/60 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-md",
+                  "group flex flex-col h-full border-border/60 transition-all duration-300 shadow-sm",
+                  viewMode === "removed"
+                    ? "bg-slate-50/80 opacity-75 hover:opacity-100 hover:border-amber-300/60 hover:shadow-md"
+                    : "bg-card hover:border-primary/40 hover:shadow-md",
                   "max-w-sm mx-auto w-full",
                   index === 0 ? "delay-0" : "delay-75"
                 )}
               >
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
-                    <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">
+                    <Badge variant="secondary" className={cn(
+                      "border-none",
+                      viewMode === "removed"
+                        ? "bg-slate-100 text-slate-500"
+                        : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                    )}>
                       {project.priorityStyle}
                     </Badge>
                     <div className="flex items-center gap-2">
-                      <LockIndicator lock={getLock(EntityType.PROJECT, Number(project.id))} />
-                      <Badge variant="outline" className="capitalize">
-                        {project.state.toLowerCase()}
-                      </Badge>
+                      {viewMode === "active" && (
+                        <LockIndicator lock={getLock(EntityType.PROJECT, Number(project.id))} />
+                      )}
+                      <ProjectStateBadge state={project.state} />
                     </div>
                   </div>
-                  <CardTitle className="text-xl line-clamp-1">{project.name}</CardTitle>
+                  <CardTitle className={cn("text-xl line-clamp-1", viewMode === "removed" && "text-slate-500")}>
+                    {project.name}
+                  </CardTitle>
                   <CardDescription className="line-clamp-3 min-h-[4.5rem]">
                     {project.description || "No description provided."}
                   </CardDescription>
@@ -330,7 +465,11 @@ function Home() {
                 </CardContent>
 
                 <CardFooter className="border-t bg-slate-50/50 p-4">
-                  <Button asChild className="w-full shadow-sm transition-colors">
+                  <Button
+                    asChild
+                    variant={viewMode === "removed" ? "outline" : "default"}
+                    className="w-full shadow-sm transition-colors"
+                  >
                     <Link to={`/project/${project.id}`}>
                       More...
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -341,7 +480,7 @@ function Home() {
             ))}
           </div>
 
-          {/* Pagination — only shown when results exceed one page */}
+          {/* Pagination */}
           {showPagination && (
             <div className="flex items-center justify-center gap-2 pt-2 animate-in fade-in duration-300">
               <Button
@@ -355,7 +494,6 @@ function Home() {
                 Prev
               </Button>
 
-              {/* Page number buttons */}
               <div className="flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter(page =>

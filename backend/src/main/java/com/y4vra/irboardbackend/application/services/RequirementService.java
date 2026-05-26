@@ -39,6 +39,7 @@ public abstract class RequirementService {
     public void requestEdit(User user,Long projectId,Long requirementId) {
         checkProjectManagerPermission(user.getOryId(),String.valueOf(projectId));
         Requirement requirement = requirementRepository.findById(requirementId).orElseThrow(()->new EntityNotFoundException("Requirement not found"));
+        requirement.getProject().checkCanBeModified();
         requirement.checkCanBeModified();
         entityLockService.lock(requirement,user);
     }

@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.errors.ProjectStateException;
 import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
 import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.interfaces.ProjectIndependentElement;
@@ -89,4 +90,10 @@ public class Project extends ProjectIndependentElement {
 
     public Set<Document> getDocuments() { return Set.copyOf(documents); }
     protected Set<Document> _getDocuments() { return documents; }
+
+    public void checkCanBeModified() {
+        if (!state.equals(ProjectState.ACTIVE)) {
+            throw new ProjectStateException("Project cannot be modified");
+        }
+    }
 }

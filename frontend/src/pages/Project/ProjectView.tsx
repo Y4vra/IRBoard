@@ -1,8 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Settings,
   Users,
@@ -10,10 +18,16 @@ import {
   FileText,
   ArrowLeft,
   ChevronRight,
-  Activity,
   Eye,
   Pencil,
   Lock,
+  ChevronDown,
+  CheckCheck,
+  PowerOff,
+  Power,
+  Flag,
+  Archive,
+  Trash2,
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { CreateFunctionalityDialog } from "../../components/dialogs/creatingDialogs/CreateFunctionalityDialog";
@@ -27,6 +41,9 @@ import { ProjectStatsSection } from "@/components/graphics/ProjectStatsSectionGr
 import { ProjectHealthBar } from "@/components/graphics/ProjectHealthBar";
 import { LinkUserToProjectDialog } from "@/components/dialogs/userLinking/LinkUserToProjectDialog";
 import { useApproveAll } from "@/hooks/useApproveActions";
+import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
+import { useDeleteProject, useDisableProject, useEnableProject, useFinishProject, useRemoveProject } from "@/hooks/useProjectActions";
+import { ProjectStateBadge } from "@/components/badges/ProjectStateBadge";
 
 const permissionConfig: Record<
   Permission,
@@ -123,17 +140,48 @@ function ProjectView() {
   const project = useProject();
   const { user } = useAuth();
   const { functionalities, loading, error, refresh } = useFunctionalities();
+  const navigate = useNavigate();
+
+  const refreshAll = () => { refresh(); project.refresh(); }
+
   const { approveAll, loading: approving } = useApproveAll({
     projectId: project.id!,
-    onSuccess: ()=>{
-      refresh()
-      project.refresh()
-    },
+    onSuccess: refreshAll,
+  })
+  const { finishProject, loading: finishing } = useFinishProject({
+    projectId: project.id!,
+    onSuccess: refreshAll,
+  })
+  const { disableProject, loading: disabling } = useDisableProject({
+    projectId: project.id!,
+    onSuccess: refreshAll,
+  })
+  const { enableProject, loading: enabling } = useEnableProject({
+    projectId: project.id!,
+    onSuccess: refreshAll,
+  })
+  const { removeProject, loading: removing } = useRemoveProject({
+    projectId: project.id!,
+    onSuccess: () => navigate(`/home`),
+  })
+  const { deleteProject, loading: deleting } = useDeleteProject({
+    projectId: project.id!,
+    onSuccess: () => navigate(`/home`),
   })
 
   const { getLock } = useLocks();
   const lock = getLock(EntityType.PROJECT, Number(project.id));
   const isProjectLockedByAnother = !!lock && lock.username !== user?.name;
+
+  // Matches service logic exactly
+  const canDisable = project.state === "ACTIVE" || project.state === "REMOVED";
+  const canEnable  = project.state === "FINISHED" || project.state === "DEACTIVATED";
+  const canApprove = project.state === "ACTIVE";
+  const canFinish  = project.state === "ACTIVE";
+  const canRemove  = project.state === "DEACTIVATED";
+  const canDelete  = project.state === "REMOVED";
+
+  const anyLoading = disabling || enabling || approving || finishing || removing || deleting;
 
   if (error || !project)
     return (
@@ -200,10 +248,7 @@ function ProjectView() {
             {project.description || "No project description available."}
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5 font-bold text-foreground/80">
-              <Activity className="h-4 w-4" />
-              {project.state}
-            </div>
+            <ProjectStateBadge state={project.state} />
             <div className="font-mono opacity-50">
               REF: {project.id}
             </div>
@@ -233,21 +278,87 @@ function ProjectView() {
                     )}
                   </Button>
                 </div>
-                <LinkUserToProjectDialog projectId={project.id!} onSuccess={project.refresh}/>
+                <LinkUserToProjectDialog projectId={project.id!} onSuccess={project.refresh} />
               </>
             )}
+
             {project.isManager && (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={approving}
-                onClick={approveAll}
-              >
-                {approving ? "Approving..." : "Approve all entities"}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={anyLoading}>
+                    {anyLoading ? "Processing..." : "Actions"}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Project Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem disabled={!canApprove || approving} onClick={approveAll}>
+                    <CheckCheck className="mr-2 h-4 w-4" />
+                    Approve all entities
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem disabled={!canFinish || finishing} onClick={() => finishProject()}>
+                    <Flag className="mr-2 h-4 w-4" />
+                    Mark as finished
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem disabled={!canDisable || disabling} onClick={() => disableProject()}>
+                    <PowerOff className="mr-2 h-4 w-4" />
+                    Disable project
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem disabled={!canEnable || enabling} onClick={() => enableProject()}>
+                    <Power className="mr-2 h-4 w-4" />
+                    Enable project
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <ConfirmActionDialog
+                    trigger={
+                      <DropdownMenuItem
+                        disabled={!canRemove || removing}
+                        onSelect={e => e.preventDefault()}
+                        className="text-amber-600 focus:text-amber-600"
+                      >
+                        <Archive className="mr-2 h-4 w-4" />
+                        Remove project
+                      </DropdownMenuItem>
+                    }
+                    title="Remove this project?"
+                    description="This project will be marked as removed and will no longer be active. Managers can still view and restore it."
+                    confirmLabel="Remove"
+                    loading={removing}
+                    disabled={!canRemove}
+                    onConfirm={() => removeProject()}
+                  />
+
+                  <ConfirmActionDialog
+                    trigger={
+                      <DropdownMenuItem
+                        disabled={!canDelete || deleting}
+                        onSelect={e => e.preventDefault()}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete permanently
+                      </DropdownMenuItem>
+                    }
+                    title="Delete permanently?"
+                    description="This action cannot be undone. The project will be erased entirely."
+                    confirmLabel="Delete permanently"
+                    confirmVariant="destructive"
+                    loading={deleting}
+                    onConfirm={() => deleteProject()}
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
-          
         </div>
       </header>
 

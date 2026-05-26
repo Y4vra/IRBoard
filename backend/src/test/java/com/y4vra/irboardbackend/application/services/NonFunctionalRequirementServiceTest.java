@@ -6,6 +6,7 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.NonFunctionalRequirementRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
@@ -105,7 +106,7 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void createNonFunctionalRequirement_savesAndCreatesKetoRelations() {
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
         when(nfrMapper.toEntity(nfrDTO)).thenReturn(nfr);
         when(nfrRepository.save(nfr)).thenReturn(nfr);
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
@@ -119,7 +120,7 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void createNonFunctionalRequirement_createsBothKetoRelationsInOrder() {
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
         when(nfrMapper.toEntity(nfrDTO)).thenReturn(nfr);
         when(nfrRepository.save(nfr)).thenReturn(nfr);
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);

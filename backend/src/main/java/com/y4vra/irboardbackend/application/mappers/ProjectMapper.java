@@ -23,7 +23,7 @@ public class ProjectMapper {
                 project.getName(),
                 project.getDescription(),
                 project.getPriorityStyle() != null ? project.getPriorityStyle().toString() : null,
-                project.getState() != null ? project.getState().toString() : null,
+                project.getState() != null ? project.getState().name() : null,
                 editPermission,
                 stakeholderStats,documentStats,nonFunctionalRequirementStats,functionalRequirementStats
         );

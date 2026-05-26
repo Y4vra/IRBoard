@@ -5,11 +5,13 @@ import com.y4vra.irboardbackend.application.mappers.DocumentMapper;
 import com.y4vra.irboardbackend.application.ports.ObjectStorageService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.ObjectStorageException;
+import com.y4vra.irboardbackend.domain.errors.ProjectStateException;
 import com.y4vra.irboardbackend.domain.model.Associations;
 import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.repositories.DocumentRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -97,7 +99,7 @@ public class DocumentService {
     @Transactional
     public DocumentDTO uploadDocument(MultipartFile file, DocumentDTO dto, Long projectId, String oryId) {
         checkEditPermission(oryId,String.valueOf(projectId));
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        Project project = projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(() -> new EntityNotFoundException("Project not found"));
         Document document = documentMapper.toEntity(dto);
         document.setState(EntityState.PENDING_APPROVAL);
         Associations.link(project,document);
@@ -136,6 +138,7 @@ public class DocumentService {
 
         Document existing = documentRepository.findByIdAndProjectId(documentId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
+        existing.getProject().checkCanBeModified();
         existing.checkCanBeModified();
 
         try {

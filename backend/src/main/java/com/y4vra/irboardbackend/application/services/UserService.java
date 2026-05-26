@@ -5,14 +5,13 @@ import com.y4vra.irboardbackend.application.mappers.UserMapper;
 import com.y4vra.irboardbackend.application.ports.IdentityService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
-import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -260,8 +259,8 @@ public class UserService {
 
     @Transactional
     public void linkUserToProject(Long projectId, Long userIdToBeLinked) {
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found or not able to be modified"));
 
         String oryId=userRepository.findById(userIdToBeLinked)
                 .orElseThrow(() -> new EntityNotFoundException("User not found")).getOryId();
@@ -272,8 +271,8 @@ public class UserService {
     public void linkUserToProjectsFunctionality(String oryId, Long projectId, Long functionalityId, Long userIdToBeLinked,String relation) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "linkProjectUsers", oryId))
             throw new AccessDeniedException("User not authorized to link users to this project");
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found or not able to be modified"));
 
         functionalityRepository.findByIdAndProjectId(functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));
@@ -285,8 +284,8 @@ public class UserService {
     }
 
     public void unlinkUserFromProject(Long projectId, Long userIdToBeUnlinked) {
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found or not able to be modified"));
 
         String oryId=userRepository.findById(userIdToBeUnlinked)
                 .orElseThrow(() -> new EntityNotFoundException("User not found")).getOryId();
@@ -297,8 +296,8 @@ public class UserService {
     public void unlinkUserFromProjectsFunctionality(String oryId, Long projectId, Long functionalityId, Long userIdToBeUnlinked, String relation) {
         if (!permService.checkPermission("Project", String.valueOf(projectId), "linkProjectUsers", oryId))
             throw new AccessDeniedException("User not authorized to link users to this project");
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found or not able to be modified"));
 
         functionalityRepository.findByIdAndProjectId(functionalityId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));

@@ -7,6 +7,7 @@ import com.y4vra.irboardbackend.domain.errors.LabelConflictException;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -116,8 +117,8 @@ public class FunctionalityService {
             throw new IllegalArgumentException("Attempt to add a functionality to different project than the one being edited.");
         }
 
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        Project project = projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found or not available for editing"));
 
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
 
@@ -141,8 +142,9 @@ public class FunctionalityService {
     @Transactional
     public void requestEdit(User user, Long projectId, Long funcId) {
         checkProjectManagerPermission(user.getOryId(),String.valueOf(projectId));
-        Functionality stakeholder = functionalityRepository.findByIdAndProjectId(funcId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
-        entityLockService.lock(stakeholder,user);
+        Functionality functionality = functionalityRepository.findByIdAndProjectId(funcId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        functionality.getProject().checkCanBeModified();
+        entityLockService.lock(functionality,user);
     }
 
     @Transactional
@@ -152,6 +154,7 @@ public class FunctionalityService {
         if(!entityLockService.isLockedByUser(functionality, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
+        functionality.getProject().checkCanBeModified();
         functionalityMapper.patchEntity(patch, functionality);
         entityLockService.unlock(functionality,user);
         return functionalityMapper.toDto(functionalityRepository.save(functionality));
@@ -168,23 +171,27 @@ public class FunctionalityService {
     public void disableFunctionality(String oryId, Long projectId, Long functionalityId) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
         Functionality func = functionalityRepository.findByIdAndProjectIdAndStateNot(functionalityId,projectId,FunctionalityState.DEACTIVATED).orElseThrow(()->new EntityNotFoundException("Functionality of project not found"));
+        func.getProject().checkCanBeModified();
         func.setState(FunctionalityState.DEACTIVATED);
     }
     @Transactional
     public void enableFunctionality(String oryId, Long projectId, Long functionalityId) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
         Functionality func = functionalityRepository.findByIdAndProjectIdAndState(functionalityId,projectId,FunctionalityState.DEACTIVATED).orElseThrow(()->new EntityNotFoundException("Functionality of project not found"));
+        func.getProject().checkCanBeModified();
         func.setState(FunctionalityState.ACTIVE);
     }
     @Transactional
     public void removeFunctionality(String oryId, Long projectId, Long functionalityId) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
         Functionality func = functionalityRepository.findByIdAndProjectIdAndState(functionalityId,projectId,FunctionalityState.DEACTIVATED).orElseThrow(()->new EntityNotFoundException("Functionality of project not found"));
+        func.getProject().checkCanBeModified();
         func.setState(FunctionalityState.REMOVED);
     }
     @Transactional
     public void deleteFunctionality(String oryId, Long projectId, Long functionalityId) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (functionalityRepository.deleteFunctionalityAndRequirementsInState(projectId,functionalityId,FunctionalityState.DEACTIVATED)<1){
             throw new EntityNotFoundException("Functionality of project not found");
         }

@@ -1,19 +1,27 @@
 package com.y4vra.irboardbackend.domain.repositories;
 
 import com.y4vra.irboardbackend.domain.model.Project; // Asumiendo que tus entidades están en la raíz o .entities
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public interface ProjectRepository {
     List<Project> findAll();
+    List<Project> findAllByStateNot(ProjectState state);
+    List<Project> findAllByState(ProjectState state);
     List<Project> findAllById(Iterable<Long> ids);
-    Optional<Project> findById(Long id);
+    Optional<Project> findByIdAndState(Long id, ProjectState state);
     Project save(Project project);
-    void deleteById(Long id);
+    void deleteByIdAndState(Long id,ProjectState state);
 
     void approveAllElementsInProject(Long projectId);
 
     List<Long> findAllIds();
+
+    boolean checkAllElementsAreFinished(Long projectId);
+
+    Optional<Project> findByIdAndStates(Long projectId, List<ProjectState> active);
+
+    Optional<Project> findById(Long projectId);
 }

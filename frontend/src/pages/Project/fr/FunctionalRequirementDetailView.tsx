@@ -408,7 +408,7 @@ function FunctionalRequirementDetailView() {
                 {approving ? "Approving..." : "Approve Requirement"}
               </Button>
               <Button variant="outline" size="sm" 
-                disabled={requirement.state === "APPROVED"?approving:true}
+                disabled={requirement.state === "APPROVED"?finishing:true}
                 onClick={() => finishFunctionalRequirements(functionalityId!, [requirement.id])}
                 >
                 {finishing ? "Marking as finished..." : "Mark as finished"}

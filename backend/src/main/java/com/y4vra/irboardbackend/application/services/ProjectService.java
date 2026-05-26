@@ -5,11 +5,10 @@ import com.y4vra.irboardbackend.application.mappers.ProjectMapper;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.User;
-import com.y4vra.irboardbackend.domain.model.enums.PriorityStyle;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.repositories.StatisticsRepository;
-import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -45,10 +44,22 @@ public class ProjectService {
             throw new AccessDeniedException("User not authorized to view this project");
         }
     }
+    private void checkProjectManagerPermission(String oryId, String projectId) {
+        if (!permService.checkPermission("Project", projectId, "editProject", oryId)) {
+            throw new AccessDeniedException("User not authorized to perform this action on this project");
+        }
+    }
 
     @Transactional(readOnly = true)
-    public List<ProjectDTO> findAllProjects() {
-        return projectRepository.findAll()
+    public List<ProjectDTO> findAllProjectsNotRemoved() {
+        return projectRepository.findAllByStateNot(ProjectState.REMOVED)
+                .stream()
+                .map(projectMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
+    public List<ProjectDTO> findAllProjectsRemoved() {
+        return projectRepository.findAllByState(ProjectState.REMOVED)
                 .stream()
                 .map(projectMapper::toDto)
                 .collect(Collectors.toList());
@@ -85,7 +96,8 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public ProjectDTO findById(String oryId, long projectId) {
         checkViewPermission(oryId,String.valueOf(projectId));
-        Project project =projectRepository.findById(projectId)
+        Project project =projectRepository.findById(
+                projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
         return projectMapper.toDto(project,
@@ -98,15 +110,15 @@ public class ProjectService {
 
     @Transactional
     public void requestEdit(Long id, User user) {
-        Project project = projectRepository.findById(id)
+        Project project = projectRepository.findByIdAndState(id, ProjectState.ACTIVE)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
         entityLockService.lock(project, user); // throws LockableEntityException if locked by another
     }
 
     @Transactional
     public ProjectDTO patch(Long id, ProjectDTO patch, User user) {
-        Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        Project project = projectRepository.findByIdAndState(id, ProjectState.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found or not able to be modified"));
 
         if (!entityLockService.isLockedByUser(project, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
@@ -117,9 +129,45 @@ public class ProjectService {
     }
     @Transactional
     public void approveAllElements(String oryId, Long projectId) {
-        if (!permService.checkPermission("Project", String.valueOf(projectId), "editProject", oryId)) {
-            throw new AccessDeniedException("User not authorized to perform this action on this project");
-        }
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(() -> new EntityNotFoundException("Project not found or not able to be modified"));
         projectRepository.approveAllElementsInProject(projectId);
+    }
+
+    @Transactional
+    public void finishActiveProject(String oryId, Long projectId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        Project project = projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(()-> new EntityNotFoundException("Project not found or not able to be modified"));
+        projectRepository.checkAllElementsAreFinished(projectId);
+
+        project.setState(ProjectState.FINISHED);
+    }
+    @Transactional
+    public void disableProject(String oryId, Long projectId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        Project project = projectRepository.findByIdAndStates(projectId, List.of(ProjectState.ACTIVE,ProjectState.REMOVED)).orElseThrow(()-> new EntityNotFoundException("Project not found or not able to be modified"));
+
+        project.setState(ProjectState.DEACTIVATED);
+    }
+    @Transactional
+    public void enableProject(String oryId, Long projectId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        Project project = projectRepository.findByIdAndStates(projectId,List.of(ProjectState.FINISHED,ProjectState.DEACTIVATED)).orElseThrow(()-> new EntityNotFoundException("Project not found or not able to be modified"));
+
+        project.setState(ProjectState.ACTIVE);
+    }
+    @Transactional
+    public void removeProject(String oryId, Long projectId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        Project project = projectRepository.findByIdAndState(projectId,ProjectState.DEACTIVATED).orElseThrow(()-> new EntityNotFoundException("Project not found or not able to be modified"));
+
+        project.setState(ProjectState.REMOVED);
+    }
+    @Transactional
+    public void deleteProject(String oryId, Long projectId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.REMOVED).orElseThrow(()-> new EntityNotFoundException("Project not found or not able to be modified"));
+
+        projectRepository.deleteByIdAndState(projectId,ProjectState.REMOVED);
     }
 }

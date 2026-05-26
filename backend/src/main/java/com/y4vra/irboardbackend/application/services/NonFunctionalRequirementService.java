@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.mappers.NonFunctionalRequirementMapp
 import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -81,8 +82,8 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public NonFunctionalRequirementDTO createNonFunctionalRequirement(String oryId, NonFunctionalRequirementDTO dto, Long projectId) {
         checkEditPermission(oryId,String.valueOf(projectId));
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+        Project project = projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Project not found or not able to be modified"));
 
         NonFunctionalRequirement nfr = nfrMapper.toEntity(dto);
         Associations.link(project,nfr);
@@ -102,24 +103,28 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void observeStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         Associations.observe(nfrRepository.findByIdAndProjectId(requirementId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void observeDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         Associations.observe(nfrRepository.findByIdAndProjectId(requirementId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
     @Transactional
     public void unobserveStakeholder(String oryId, Long projectId,Long requirementId, Long stakeholderId) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         Associations.unobserve(nfrRepository.findByIdAndProjectId(requirementId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 stakeholderRepository.findByIdAndProjectId(stakeholderId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find stakeholder")));
     }
     @Transactional
     public void unobserveDocument(String oryId, Long projectId,Long requirementId, Long documentId) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         Associations.unobserve(nfrRepository.findByIdAndProjectId(requirementId,projectId).orElseThrow(() -> new EntityNotFoundException("Could not find functional requirement")),
                 documentRepository.findByIdAndProjectId(documentId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find document")));
     }
@@ -132,20 +137,17 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void reorderRequirement(String oryId, Long projectId, Long nonFunctionalRequirementId, Long orderValue) {
         checkEditPermission(oryId,String.valueOf(projectId));
-        projectRepository.findById(projectId).orElseThrow(()-> new EntityNotFoundException("Could not find functionality"));
-        NonFunctionalRequirement nfr = nfrRepository.findByIdAndProjectId(nonFunctionalRequirementId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find functional requirement"));
-        if(!Objects.equals(nfr.getProject().getId(), projectId)){
-            throw new EntityNotFoundException("Project id does not match requirement's project id");
-        }
+        NonFunctionalRequirement nfr = nfrRepository.findByIdAndProjectId(nonFunctionalRequirementId,projectId).orElseThrow(()-> new EntityNotFoundException("Could not find nfr"));
+        nfr.getProject().checkCanBeModified();
+        nfr.checkCanBeModified();
         nfr.setOrderValue(orderValue);
     }
     @Transactional
     public void changeParent(String oryId, Long projectId, Long nonFunctionalRequirementId, Long newParentId) {
         checkEditPermission(oryId,String.valueOf(projectId));
-        projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Could not find project"));
         NonFunctionalRequirement nfr = nfrRepository.findByIdWithParentAndProjectId(nonFunctionalRequirementId,projectId)
                 .orElseThrow(() -> new EntityNotFoundException("Could not find non functional requirement"));
+        nfr.getProject().checkCanBeModified();
         nfr.checkCanBeModified();
 
         if (nfr.getParent() != null) {
@@ -167,6 +169,7 @@ public class NonFunctionalRequirementService extends RequirementService {
         if(!entityLockService.isLockedByUser(requirement, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
+        requirement.getProject().checkCanBeModified();
         requirement.checkCanBeModified();
         nfrMapper.patchEntity(patch, requirement);
         entityLockService.unlock(requirement,user);
@@ -177,6 +180,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void approveRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         nfrRepository.updateStateByIdsAndProject(nonFunctionalRequirementIds,projectId,RequirementState.APPROVED,RequirementState.PENDING_APPROVAL);
@@ -184,6 +188,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void finishRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         nfrRepository.findAllByIdsAndProjectIdAndState(nonFunctionalRequirementIds,projectId, RequirementState.APPROVED).forEach(
@@ -198,6 +203,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void disableNonFunctionalRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
@@ -218,6 +224,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void enableNonFunctionalRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
@@ -229,6 +236,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void removeNonFunctionalRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
@@ -249,6 +257,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     @Transactional
     public void deleteNonFunctionalRequirements(String oryId, Long projectId, List<Long> nonFunctionalRequirementIds) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!nfrRepository.allNonFunctionalRequirementsBelongToProject(projectId,nonFunctionalRequirementIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }

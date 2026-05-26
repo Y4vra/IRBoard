@@ -6,6 +6,7 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -97,7 +98,7 @@ class StakeholderServiceTest {
     @Test
     void createStakeholder_savesAndReturnsDto() {
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
         when(stakeholderRepository.save(any(Stakeholder.class))).thenReturn(stakeholder);
         when(stakeholderMapper.toDto(stakeholder)).thenReturn(stakeholderDTO);
 
@@ -110,7 +111,7 @@ class StakeholderServiceTest {
     @Test
     void createStakeholder_setsProjectOnEntity() {
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
         when(stakeholderRepository.save(any(Stakeholder.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stakeholderMapper.toDto(any(Stakeholder.class))).thenReturn(stakeholderDTO);
 
@@ -126,7 +127,7 @@ class StakeholderServiceTest {
     @Test
     void createStakeholder_throwsEntityNotFoundWhenProjectDoesNotExist() {
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
+        when(projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> stakeholderService.createStakeholder(oryId,stakeholderDTO, projectId))
                 .isInstanceOf(EntityNotFoundException.class)

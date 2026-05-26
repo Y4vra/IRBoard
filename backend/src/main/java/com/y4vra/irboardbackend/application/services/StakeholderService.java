@@ -6,6 +6,7 @@ import com.y4vra.irboardbackend.application.ports.PermissionService;
 import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.StakeholderRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -59,7 +60,7 @@ public class StakeholderService {
     @Transactional
     public StakeholderDTO createStakeholder(String oryId,StakeholderDTO dto, long projectId) {
         checkEditPermission(oryId,String.valueOf(projectId));
-        Project project = projectRepository.findById(projectId)
+        Project project = projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE)
                 .orElseThrow(() -> new EntityNotFoundException("Project not found"));
 
         Stakeholder stakeholder = new Stakeholder();
@@ -111,6 +112,7 @@ public class StakeholderService {
     public void requestEdit(User user,Long projectId,Long stkhId) {
         checkEditPermission(user.getOryId(),String.valueOf(projectId));
         Stakeholder stakeholder = stakeholderRepository.findByIdAndProjectId(stkhId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        stakeholder.getProject().checkCanBeModified();
         stakeholder.checkCanBeModified();
         entityLockService.lock(stakeholder,user);
     }
@@ -122,6 +124,7 @@ public class StakeholderService {
         if(!entityLockService.isLockedByUser(stakeholder, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
+        stakeholder.getProject().checkCanBeModified();
         stakeholder.checkCanBeModified();
         stakeholderMapper.patchEntity(patch, stakeholder);
         stakeholder.setState(EntityState.PENDING_APPROVAL);
@@ -133,6 +136,7 @@ public class StakeholderService {
     @Transactional
     public void approveStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds))
             throw new EntityNotFoundException("One of the elements was not found on the system");
         stakeholderRepository.updateStateByIdsAndProject(stakeholderIds,projectId, EntityState.APPROVED,EntityState.PENDING_APPROVAL);
@@ -140,6 +144,7 @@ public class StakeholderService {
     @Transactional
     public void disableStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
@@ -151,6 +156,7 @@ public class StakeholderService {
     @Transactional
     public void enableStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
@@ -162,6 +168,7 @@ public class StakeholderService {
     @Transactional
     public void removeStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }
@@ -174,6 +181,7 @@ public class StakeholderService {
     @Transactional
     public void deleteStakeholders(String oryId, Long projectId, List<Long> stakeholderIds) {
         checkEditPermission(oryId,String.valueOf(projectId));
+        projectRepository.findByIdAndState(projectId, ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
         if (!stakeholderRepository.allStakeholdersBelongToProject(projectId,stakeholderIds)){
             throw new EntityNotFoundException("One of the elements was not found on the system");
         }

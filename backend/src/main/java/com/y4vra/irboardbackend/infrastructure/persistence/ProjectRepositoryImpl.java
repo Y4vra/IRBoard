@@ -1,6 +1,7 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.model.Project;
@@ -54,6 +55,55 @@ interface JpaProjectRepository extends JpaRepository<Project, Long> {
 
     @Query("SELECT p.id FROM Project p")
     List<Long> findAllIds();
+
+    Optional<Project> findByIdAndState(Long projectId, ProjectState projectState);
+
+    @Query("""
+    SELECT CASE WHEN
+        EXISTS (SELECT s FROM Stakeholder s WHERE s.project.id = :projectId)
+        AND NOT EXISTS (SELECT s FROM Stakeholder s WHERE s.project.id = :projectId AND s.state != :state)
+    THEN TRUE ELSE FALSE END
+    FROM Project p WHERE p.id = :projectId
+    """)
+    boolean checkAllStakeholdersOfProjectAreInState(Long projectId, EntityState state);
+    @Query("""
+    SELECT CASE WHEN
+        EXISTS (SELECT s FROM Document s WHERE s.project.id = :projectId)
+        AND NOT EXISTS (SELECT s FROM Document s WHERE s.project.id = :projectId AND s.state != :state)
+    THEN TRUE ELSE FALSE END
+    FROM Project p WHERE p.id = :projectId
+    """)
+    boolean checkAllDocumentsOfProjectAreInState(Long projectId, EntityState state);
+    @Query("""
+    SELECT CASE WHEN
+        EXISTS (SELECT s FROM NonFunctionalRequirement s WHERE s.project.id = :projectId)
+        AND NOT EXISTS (SELECT s FROM NonFunctionalRequirement s WHERE s.project.id = :projectId AND s.state != :state)
+    THEN TRUE ELSE FALSE END
+    FROM Project p WHERE p.id = :projectId
+    """)
+    boolean checkAllNFROfProjectAreInState(Long projectId, RequirementState state);
+    @Query("""
+    SELECT CASE WHEN
+        EXISTS (SELECT s FROM FunctionalRequirement s WHERE s.project.id = :projectId)
+        AND NOT EXISTS (SELECT s FROM FunctionalRequirement s WHERE s.project.id = :projectId AND s.state != :state)
+    THEN TRUE ELSE FALSE END
+    FROM Project p WHERE p.id = :projectId
+    """)
+    boolean checkAllFunctionalRequirementsOfProjectAreInState(Long projectId, RequirementState state);
+
+    void deleteByIdAndState(Long id, ProjectState state);
+
+    @Query("""
+        SELECT p FROM Project p
+        WHERE p.id = :projectId
+        AND p.state IN :validStates
+        """)
+    Optional<Project> findByIdAndStates(Long projectId, List<ProjectState> validStates);
+    Optional<Project> findByIdAndStateNot(Long id, ProjectState state);
+
+    List<Project> findAllByStateNot(ProjectState state);
+    List<Project> findAllByState(ProjectState state);
+
 }
 
 @Component
@@ -71,10 +121,24 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
+    public List<Project> findAllByStateNot(ProjectState state) {
+        return jpaRepository.findAllByStateNot(state);
+    }
+
+    @Override
+    public List<Project> findAllByState(ProjectState state) {
+        return jpaRepository.findAllByState(state);
+    }
+
+    @Override
     public List<Project> findAllById(Iterable<Long> ids) {
         return jpaRepository.findAllById(ids);
     }
 
+    @Override
+    public Optional<Project> findByIdAndState(Long id, ProjectState state) {
+        return jpaRepository.findByIdAndState(id,state);
+    }
     @Override
     public Optional<Project> findById(Long id) {
         return jpaRepository.findById(id);
@@ -86,8 +150,8 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public void deleteById(Long id) {
-        jpaRepository.deleteById(id);
+    public void deleteByIdAndState(Long id,ProjectState state) {
+        jpaRepository.deleteByIdAndState(id,state);
     }
 
     @Override
@@ -102,5 +166,34 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     @Override
     public List<Long> findAllIds() {
         return jpaRepository.findAllIds();
+    }
+
+    @Override
+    public boolean checkAllElementsAreFinished(Long projectId) {
+        return checkAllStakeholdersOfProjectAreApproved(projectId) &&
+                checkAllDocumentsOfProjectAreApproved(projectId) &&
+                checkAllNFROfProjectAreFinished(projectId) &&
+                checkAllFunctionalRequirementsOfProjectAreFinished(projectId);
+    }
+
+    @Override
+    public Optional<Project> findByIdAndStates(Long projectId, List<ProjectState> validStates) {
+        return jpaRepository.findByIdAndStates(projectId,validStates);
+    }
+
+    private boolean checkAllStakeholdersOfProjectAreApproved(Long projectId) {
+        return jpaRepository.checkAllStakeholdersOfProjectAreInState(projectId,EntityState.APPROVED);
+    }
+
+    private boolean checkAllDocumentsOfProjectAreApproved(Long projectId) {
+        return jpaRepository.checkAllDocumentsOfProjectAreInState(projectId,EntityState.APPROVED);
+    }
+
+    private boolean checkAllNFROfProjectAreFinished(Long projectId) {
+        return jpaRepository.checkAllNFROfProjectAreInState(projectId,RequirementState.FINISHED);
+    }
+
+    private boolean checkAllFunctionalRequirementsOfProjectAreFinished(Long projectId) {
+        return jpaRepository.checkAllFunctionalRequirementsOfProjectAreInState(projectId,RequirementState.FINISHED);
     }
 }

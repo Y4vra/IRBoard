@@ -5,6 +5,7 @@ import com.y4vra.irboardbackend.application.services.ProjectService;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.Authentication;
@@ -25,11 +26,20 @@ public class HomeController {
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        List<ProjectDTO> projects;
         if (isAdmin) {
-            return ResponseEntity.status(HttpStatus.OK).body(projectService.findAllProjects());
+            return ResponseEntity.status(HttpStatus.OK).body(projectService.findAllProjectsNotRemoved());
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(projectService.findProjectsForUser(user.getOryId()));
         }
+    }
+    @GetMapping("/projects/removed")
+    public ResponseEntity<List<ProjectDTO>> getRemovedProjects(Authentication authentication) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            throw new AccessDeniedException("You do not have permission to access this resource");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(projectService.findAllProjectsRemoved());
     }
 }
