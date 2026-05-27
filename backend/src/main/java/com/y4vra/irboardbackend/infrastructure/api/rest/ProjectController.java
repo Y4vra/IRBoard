@@ -56,6 +56,10 @@ public class ProjectController {
     public ResponseEntity<Map<String, List<FunctionalityDTO>>> getFunctionalities(Authentication authentication, @PathVariable Long projectId) {
         return ResponseEntity.ok(functionalityService.findFunctionalitiesOfProjectForUser(((User) authentication.getPrincipal()).getOryId(),projectId));
     }
+    @GetMapping("/{projectId}/functionalities/removed")
+    public ResponseEntity<List<FunctionalityDTO>> getRemovedFunctionalities(Authentication authentication, @PathVariable Long projectId) {
+        return ResponseEntity.ok(functionalityService.findRemovedFunctionalitiesOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
+    }
     @GetMapping("/{projectId}/functionalRequirements/observable/{requirementId}")
     public ResponseEntity<List<FunctionalityDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
         return ResponseEntity.ok(functionalRequirementService.findObservableFRequirementsGroupedByFunctionality(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));

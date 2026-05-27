@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.model;
 
+import com.y4vra.irboardbackend.domain.errors.FunctionalityStateException;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.model.interfaces.Lockable;
@@ -49,4 +50,10 @@ public class Functionality extends ProjectElement {
 
     public Set<FunctionalRequirement> getRequirements() { return new HashSet<>(requirements); }
     protected Set<FunctionalRequirement> _getRequirements() { return requirements; }
+
+    public void checkCanBeModified() {
+        if (!state.equals(FunctionalityState.ACTIVE)){
+            throw new FunctionalityStateException("Functionality is not able to be modified");
+        }
+    }
 }

@@ -61,7 +61,7 @@ public class FunctionalityService {
 
     @Transactional(readOnly = true)
     public Map<String, List<FunctionalityDTO>> findFunctionalitiesOfProjectForUser(String oryId, long projectId) {
-        List<Functionality> allProjectFunctionalities = functionalityRepository.findByProjectId(projectId);
+        List<Functionality> allProjectFunctionalities = functionalityRepository.findByStateNotAndProjectId(FunctionalityState.REMOVED,projectId);
 
         boolean canEditProject = permService.checkPermission("Project", String.valueOf(projectId), "edit", oryId);
         boolean canViewProject = permService.checkPermission("Project", String.valueOf(projectId), "view", oryId);
@@ -87,10 +87,18 @@ public class FunctionalityService {
         return result;
     }
     @Transactional(readOnly = true)
+    public List<FunctionalityDTO> findRemovedFunctionalitiesOfProject(String oryId, Long projectId) {
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
+
+        return functionalityRepository.findByStateAndProjectId(FunctionalityState.REMOVED,projectId).stream()
+                .map(functionalityMapper::toDto)
+                .collect(Collectors.toList());
+    }
+    @Transactional(readOnly = true)
     public FunctionalityDTO findFunctionalityById(String oryId, long projectId, long functionalityId) {
+        checkViewFunctionalityPermission(oryId,String.valueOf(functionalityId));
         Functionality functionality = functionalityRepository.findByIdAndProjectId(functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("Functionality with id " + functionalityId + " not found"));
 
-        checkViewFunctionalityPermission(oryId,String.valueOf(functionalityId));
         return functionalityMapper.toDto(functionality);
     }
     @Transactional(readOnly = true)
@@ -143,6 +151,7 @@ public class FunctionalityService {
     public void requestEdit(User user, Long projectId, Long funcId) {
         checkProjectManagerPermission(user.getOryId(),String.valueOf(projectId));
         Functionality functionality = functionalityRepository.findByIdAndProjectId(funcId,projectId).orElseThrow(()->new EntityNotFoundException("User not found"));
+        functionality.checkCanBeModified();
         functionality.getProject().checkCanBeModified();
         entityLockService.lock(functionality,user);
     }
@@ -154,6 +163,7 @@ public class FunctionalityService {
         if(!entityLockService.isLockedByUser(functionality, user)) {
             throw new LockableEntityException("You do not hold the lock for this project");
         }
+        functionality.checkCanBeModified();
         functionality.getProject().checkCanBeModified();
         functionalityMapper.patchEntity(patch, functionality);
         entityLockService.unlock(functionality,user);
@@ -192,7 +202,7 @@ public class FunctionalityService {
     public void deleteFunctionality(String oryId, Long projectId, Long functionalityId) {
         checkProjectManagerPermission(oryId,String.valueOf(projectId));
         projectRepository.findByIdAndState(projectId,ProjectState.ACTIVE).orElseThrow(()->new EntityNotFoundException("Project not found or not able to be modified"));
-        if (functionalityRepository.deleteFunctionalityAndRequirementsInState(projectId,functionalityId,FunctionalityState.DEACTIVATED)<1){
+        if (functionalityRepository.deleteFunctionalityAndRequirementsInState(projectId,functionalityId,FunctionalityState.REMOVED)<1){
             throw new EntityNotFoundException("Functionality of project not found");
         }
     }

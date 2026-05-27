@@ -11,6 +11,14 @@ import {
   CardDescription,
 } from "@/components/ui/card"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   AlertCircle,
   Pencil,
   ChevronRight,
@@ -24,6 +32,10 @@ import {
   Eye,
   Archive,
   FolderOpen,
+  ChevronDown as ChevronDownIcon,
+  PowerOff,
+  Power,
+  Trash2,
 } from "lucide-react"
 import LoadingSpinner from "@/components/LoadingSpinner"
 import { RequirementStateBadge } from "@/components/badges/RequirementStateBadge"
@@ -58,6 +70,14 @@ import {
 } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
 import { UpdateFunctionalityDialog } from "@/components/dialogs/updatingDialogs/UpdateFunctionalityDialog"
+import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog"
+import {
+  useDisableFunctionality,
+  useEnableFunctionality,
+  useRemoveFunctionality,
+  useDeleteFunctionality,
+} from "@/hooks/useFunctionalityActions"
+import { FunctionalityStateBadge } from "@/components/badges/FunctionalityStateBadge"
 
 // ---------------------------------------------------------------------------
 // Filter/sort types
@@ -536,6 +556,40 @@ function FunctionalityView() {
     onSuccess: refreshRequirements,
   })
 
+  // ── Functionality state actions ──────────────────────────────────────────
+  const refreshAll = () => { refresh(); refreshRequirements(); }
+
+  const { disableFunctionality, loading: disabling } = useDisableFunctionality({
+    projectId: projectId!,
+    functionalityId: functionalityId!,
+    onSuccess: refreshAll,
+  })
+  const { enableFunctionality, loading: enabling } = useEnableFunctionality({
+    projectId: projectId!,
+    functionalityId: functionalityId!,
+    onSuccess: refreshAll,
+  })
+  const { removeFunctionality, loading: removing } = useRemoveFunctionality({
+    projectId: projectId!,
+    functionalityId: functionalityId!,
+    onSuccess: refreshAll,
+  })
+  const { deleteFunctionality, loading: deleting } = useDeleteFunctionality({
+    projectId: projectId!,
+    functionalityId: functionalityId!,
+    onSuccess: refreshAll,
+  })
+
+  // Mirror the service-layer state machine for functionalities
+  // (same pattern as ProjectView — adjust states as needed to match your backend)
+  const funcState = functionality?.state
+  const canDisable = funcState === "ACTIVE" || funcState === "REMOVED"
+  const canEnable  = funcState === "DEACTIVATED"
+  const canRemove  = funcState === "DEACTIVATED"
+  const canDelete  = funcState === "REMOVED"
+
+  const anyActionLoading = disabling || enabling || removing || deleting
+
   function collectPendingIds(reqs: FunctionalRequirement[]): number[] {
     return reqs.flatMap((r) => [
       ...(r.state === "PENDING_APPROVAL" ? [r.id] : []),
@@ -610,11 +664,7 @@ function FunctionalityView() {
             <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{functionality.description}</p>
           )}
           <div className="flex items-center gap-3 pt-1">
-            {functionality.state && (
-              <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
-                {functionality.state}
-              </Badge>
-            )}
+            <FunctionalityStateBadge state={funcState!} />
             <Badge variant="outline" className="text-xs font-mono text-slate-400">{priorityStyle}</Badge>
           </div>
         </div>
@@ -651,16 +701,85 @@ function FunctionalityView() {
                   onClick={() => approveFunctionality(functionalityId!, pendingIds)}>
                   {approving ? "Approving..." : `Approve All (${pendingIds.length})`}
                 </Button>
+
+                {/* ── State actions dropdown ── */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={anyActionLoading}>
+                      {anyActionLoading ? "Processing..." : "Actions"}
+                      <ChevronDownIcon className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Functionality Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      disabled={!canDisable || disabling}
+                      onClick={() => disableFunctionality()}
+                    >
+                      <PowerOff className="mr-2 h-4 w-4" />
+                      Disable functionality
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      disabled={!canEnable || enabling}
+                      onClick={() => enableFunctionality()}
+                    >
+                      <Power className="mr-2 h-4 w-4" />
+                      Enable functionality
+                    </DropdownMenuItem>
+
+                    <DropdownMenuSeparator />
+
+                    <ConfirmActionDialog
+                      trigger={
+                        <DropdownMenuItem
+                          disabled={!canRemove || removing}
+                          onSelect={(e) => e.preventDefault()}
+                          className="text-amber-600 focus:text-amber-600"
+                        >
+                          <Archive className="mr-2 h-4 w-4" />
+                          Remove functionality
+                        </DropdownMenuItem>
+                      }
+                      title="Remove this functionality?"
+                      description="This functionality will be marked as removed and will no longer be active. Managers can still view and restore it."
+                      confirmLabel="Remove"
+                      loading={removing}
+                      disabled={!canRemove}
+                      onConfirm={() => removeFunctionality()}
+                    />
+
+                    <ConfirmActionDialog
+                      trigger={
+                        <DropdownMenuItem
+                          disabled={!canDelete || deleting}
+                          onSelect={(e) => e.preventDefault()}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete permanently
+                        </DropdownMenuItem>
+                      }
+                      title="Delete permanently?"
+                      description="This action cannot be undone. The functionality and all its requirements will be erased entirely."
+                      confirmLabel="Delete permanently"
+                      confirmVariant="destructive"
+                      loading={deleting}
+                      onConfirm={() => deleteFunctionality()}
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <UpdateFunctionalityDialog
+                  open={updateDialogOpen}
+                  onOpenChange={setUpdateDialogOpen}
+                  projectId={projectId!}
+                  functionality={functionality}
+                  onSuccess={refresh}
+                />
               </>
-            )}
-            {functionality && (
-              <UpdateFunctionalityDialog
-                open={updateDialogOpen}
-                onOpenChange={setUpdateDialogOpen}
-                projectId={projectId!}
-                functionality={functionality}
-                onSuccess={refresh}
-              />
             )}
           </div>
         </div>

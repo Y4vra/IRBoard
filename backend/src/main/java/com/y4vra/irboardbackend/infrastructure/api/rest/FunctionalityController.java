@@ -7,6 +7,7 @@ import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +44,7 @@ public class FunctionalityController {
         return ResponseEntity.ok(functionalityService.patch(user,projectId,functionalityId,patch));
     }
     @PostMapping("/{functionalityId}/disable")
+    @Transactional
     public ResponseEntity<Void> disableFunctionality(Authentication authentication, @PathVariable Long projectId,@PathVariable Long functionalityId) {
         String oryId= ((User)authentication.getPrincipal()).getOryId();
         List<Long> rootRequirementIds = functionalityService.getRootRequirementIds(projectId,functionalityId);
@@ -56,6 +58,7 @@ public class FunctionalityController {
         return ResponseEntity.ok().build();
     }
     @PostMapping("/{functionalityId}/remove")
+    @Transactional
     public ResponseEntity<Void> removeFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
         String oryId = ((User)authentication.getPrincipal()).getOryId();
         List<Long> rootRequirementIds = functionalityService.getRootRequirementIds(projectId,functionalityId);

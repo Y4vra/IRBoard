@@ -2,6 +2,7 @@ package com.y4vra.irboardbackend.infrastructure.persistence;
 
 import com.y4vra.irboardbackend.domain.model.Functionality;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
@@ -36,7 +37,7 @@ interface JpaFunctionalityRepository extends JpaRepository<Functionality, Long> 
         WHERE r.functionality.id = :functionalityId
         AND r.project.id = :projectId
         AND r.parent = NULL
-        AND r.state <> :invalidStates
+        AND r.state NOT IN :invalidStates
         """)
     List<Long> getActiveRootRequirementIds(Long projectId, Long functionalityId, List<RequirementState> invalidStates);
 
@@ -44,6 +45,27 @@ interface JpaFunctionalityRepository extends JpaRepository<Functionality, Long> 
     Optional<Functionality> findByIdAndProjectIdAndState(Long functionalityId, Long projectId, FunctionalityState state);
 
     int deleteByIdAndProjectIdAndState(Long functionalityId, Long projectId, FunctionalityState functionalityState);
+
+    @Query("""
+        SELECT f FROM Functionality f
+        WHERE f.project.id = :projectId
+        AND f.state = :state
+        AND f.project.state = :projectState
+        """)
+    Optional<Functionality> findByIdAndStateAndProjectIdAndProjectState(Long id, FunctionalityState state, Long projectId, ProjectState projectState);
+
+    @Query("""
+        SELECT f FROM Functionality f
+        WHERE f.project.id = :projectId
+        AND f.state IN :states
+        AND f.project.state = :projectState
+        """)
+    Optional<Functionality> findByIdAndStatesAndProjectIdAndProjectState(Long id, List<FunctionalityState> states, Long projectId, ProjectState projectState);
+
+    Optional<Functionality> findByIdAndState(Long id, FunctionalityState state);
+
+    List<Functionality> findByStateAndProjectId(FunctionalityState functionalityState, Long projectId);
+    List<Functionality> findByStateNotAndProjectId(FunctionalityState functionalityState, Long projectId);
 }
 
 @Component
@@ -63,6 +85,11 @@ public class FunctionalityRepositoryImpl implements FunctionalityRepository {
     @Override
     public Optional<Functionality> findByIdAndProjectId(Long id,Long projectId) {
         return jpaRepository.findByIdAndProjectId(id,projectId);
+    }
+
+    @Override
+    public Optional<Functionality> findByIdAndStateAndProjectIdAndProjectState(Long id, FunctionalityState state, Long projectId, ProjectState projectState) {
+        return jpaRepository.findByIdAndStateAndProjectIdAndProjectState(id,state,projectId,projectState);
     }
 
     @Override
@@ -98,6 +125,26 @@ public class FunctionalityRepositoryImpl implements FunctionalityRepository {
     @Override
     public int deleteFunctionalityAndRequirementsInState(Long projectId, Long functionalityId, FunctionalityState functionalityState) {
         return jpaRepository.deleteByIdAndProjectIdAndState(functionalityId,projectId,functionalityState);
+    }
+
+    @Override
+    public Optional<Functionality> findByIdAndState(Long functionalityId, FunctionalityState functionalityState) {
+        return jpaRepository.findByIdAndState(functionalityId,functionalityState);
+    }
+
+    @Override
+    public List<Functionality> findByStateAndProjectId(FunctionalityState functionalityState, Long projectId) {
+        return jpaRepository.findByStateAndProjectId(functionalityState,projectId);
+    }
+
+    @Override
+    public List<Functionality> findByStateNotAndProjectId(FunctionalityState functionalityState, Long projectId) {
+        return jpaRepository.findByStateNotAndProjectId(functionalityState,projectId);
+    }
+
+    @Override
+    public Optional<Functionality> findByIdAndStatesAndProjectIdAndProjectState(Long functionalityId, List<FunctionalityState> states, Long projectId, ProjectState projectState) {
+        return jpaRepository.findByIdAndStatesAndProjectIdAndProjectState(functionalityId,states,projectId,projectState);
     }
 
 }
