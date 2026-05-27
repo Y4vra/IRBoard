@@ -93,7 +93,7 @@ services:
         condition: service_completed_successfully
       kratos-db:
         condition: service_healthy
-      mailpit:
+      smtp-server:
         condition: service_healthy
     environment:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
@@ -122,7 +122,7 @@ services:
         condition: service_completed_successfully
       kratos-db:
         condition: service_healthy
-      mailpit:
+      smtp-server:
         condition: service_healthy
     environment:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
@@ -335,13 +335,24 @@ services:
       - "traefik.http.services.frontend.loadbalancer.server.port=5173" # Default Vite port for Dev mode. Update to 80 for Production-stage (Nginx).
 
   # --- MAIL SERVER ---
-  mailpit:
+  smtp-server:
     image: axllent/mailpit:v1.29
     ports:
       - "8025:8025" 
       - "1025:1025" 
     networks:
       - internal
+
+  # smtp-relay:
+  #   image: boky/postfix
+  #   container_name: smtp-relay
+  #   environment:
+  #     - RELAYHOST=[smtp.your-provider.com]:587
+  #     - RELAYHOST_USERNAME=${SMTP_USER}
+  #     - RELAYHOST_PASSWORD=${SMTP_PASS}
+  #     - ALLOWED_SENDER_DOMAINS=${DOMAIN_NAME}
+  #   networks:
+  #     - internal
 
   # # --- OBSERVABILITY ---
   # grafana:
