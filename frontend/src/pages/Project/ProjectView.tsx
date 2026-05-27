@@ -28,6 +28,7 @@ import {
   Flag,
   Archive,
   Trash2,
+  AlertCircle,
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { CreateFunctionalityDialog } from "../../components/dialogs/creatingDialogs/CreateFunctionalityDialog";
@@ -44,6 +45,13 @@ import { useApproveAll } from "@/hooks/useApproveActions";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 import { useDeleteProject, useDisableProject, useEnableProject, useFinishProject, useRemoveProject } from "@/hooks/useProjectActions";
 import { ProjectStateBadge } from "@/components/badges/ProjectStateBadge";
+import { useCallback, useState } from "react";
+import type { ViewMode } from "@/types/ViewMode";
+import { ViewToggle } from "@/components/ViewToggle";
+import { useBackendResource } from "@/hooks/useBackendResource";
+import { API_BASE_URL } from "@/lib/globalVars";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FunctionalityStateBadge } from "@/components/badges/FunctionalityStateBadge";
 
 const permissionConfig: Record<
   Permission,
@@ -116,12 +124,13 @@ function FunctionalityCard({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 ml-2 shrink-0">
+        <div className="flex flex-col items-end gap-2 ml-2 shrink-0">
           <LockIndicator lock={getLock(EntityType.FUNCTIONALITY, Number(functionality.id))} />
           <Badge className={`text-xs border font-medium flex items-center gap-1 ${config.badgeClass}`}>
             {config.icon}
             {config.label}
           </Badge>
+          <FunctionalityStateBadge state={functionality.state}/>
         </div>
       </CardHeader>
     </Card>
@@ -138,27 +147,27 @@ function FunctionalityCard({
 
 function ProjectView() {
   const project = useProject();
-  const { user } = useAuth();
-  const { functionalities, loading, error, refresh } = useFunctionalities();
+  const { user,isAuthenticated } = useAuth();
+  const { functionalities, loading, error, refresh: refreshProject } = useFunctionalities();
   const navigate = useNavigate();
 
-  const refreshAll = () => { refresh(); project.refresh(); }
+  const refreshActive = () => { refreshProject(); project.refresh(); }
 
   const { approveAll, loading: approving } = useApproveAll({
     projectId: project.id!,
-    onSuccess: refreshAll,
+    onSuccess: refreshActive,
   })
   const { finishProject, loading: finishing } = useFinishProject({
     projectId: project.id!,
-    onSuccess: refreshAll,
+    onSuccess: refreshActive,
   })
   const { disableProject, loading: disabling } = useDisableProject({
     projectId: project.id!,
-    onSuccess: refreshAll,
+    onSuccess: refreshActive,
   })
   const { enableProject, loading: enabling } = useEnableProject({
     projectId: project.id!,
-    onSuccess: refreshAll,
+    onSuccess: refreshActive,
   })
   const { removeProject, loading: removing } = useRemoveProject({
     projectId: project.id!,
@@ -173,6 +182,32 @@ function ProjectView() {
   const lock = getLock(EntityType.PROJECT, Number(project.id));
   const isProjectLockedByAnother = !!lock && lock.username !== user?.name;
 
+  // ── View mode ────────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>("active")
+
+  const fetchRemovedFunctionalities = useCallback(
+    () =>
+      fetch(`${API_BASE_URL}/projects/${project.id}/functionalities/removed`, {
+        credentials: "include",
+      }).then((f) => {
+        if (!f.ok) throw new Error("Failed to fetch removed functionalities")
+        return f.json()
+      }),
+    [project]
+  )
+
+  const {
+    data: removedData,
+    loading: loadingRemoved,
+    error: errorRemoved,
+    refresh: refreshRemoved,
+  } = useBackendResource<Functionality[]>({
+    fetcher: fetchRemovedFunctionalities,
+    enabled: isAuthenticated && project.isManager,
+  })
+
+  const removedFunctionalities: Functionality[] = removedData ?? []
+
   // Matches service logic exactly
   const canDisable = project.state === "ACTIVE" || project.state === "REMOVED";
   const canEnable  = project.state === "FINISHED" || project.state === "DEACTIVATED";
@@ -183,16 +218,20 @@ function ProjectView() {
 
   const anyLoading = disabling || enabling || approving || finishing || removing || deleting;
 
-  if (error || !project)
+  const isLoading = viewMode === "active" ? loading : loadingRemoved
+  const currentError = viewMode === "active" ? error : errorRemoved
+  const refresh = viewMode === "active" ? refreshActive : refreshRemoved
+
+  if (isLoading) return <LoadingSpinner text={viewMode === "removed" ? "Loading Removed functionalities..." : "Loading functionalities..."} />
+
+  if (currentError || !project)
     return (
-      <div className="p-8 text-center">
-        <p className="text-destructive font-semibold">
-          Error: {error || "Project not found"}
-        </p>
-        <Button asChild variant="link" className="mt-4">
-          <Link to="/">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-          </Link>
+      <div className="mx-auto max-w-md mt-10 p-6 bg-red-50 border border-red-100 rounded-xl text-center">
+        <AlertCircle className="h-10 w-10 text-red-500 mx-auto mb-3" />
+        <p className="text-red-600 font-semibold">Error</p>
+        <p className="text-red-500 text-sm mt-1">{currentError}</p>
+        <Button variant="outline" className="mt-4" onClick={refresh}>
+          Try Again
         </Button>
       </div>
     );
@@ -217,6 +256,10 @@ function ProjectView() {
       icon: <FileText className="h-6 w-6" />,
     },
   ];
+
+  const activeCount = (functionalities?.edit?.length ?? 0) +
+    (functionalities?.view?.length ?? 0) +
+    (functionalities?.none?.length ?? 0)
 
   const allFunctionalities: { func: Functionality; permission: Permission }[] = functionalities
     ? [
@@ -401,8 +444,16 @@ function ProjectView() {
               </p>
             )}
           </div>
+          {project.isManager && (
+            <ViewToggle
+              mode={viewMode}
+              onChange={setViewMode}
+              activeCount={activeCount}
+              removedCount={removedFunctionalities.length}
+            />
+          )}
           {project.editPermission && (
-            <CreateFunctionalityDialog projectId={project.id!} onSuccess={refresh} />
+            <CreateFunctionalityDialog projectId={project.id!} onSuccess={refreshProject} />
           )}
         </div>
 
@@ -410,7 +461,52 @@ function ProjectView() {
           <div className="flex items-center justify-center py-16">
             <LoadingSpinner />
           </div>
-        ) : allFunctionalities.length === 0 ? (
+        ) : viewMode === "removed" ? (
+            <>
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-100 bg-amber-50 px-4 py-2.5 text-sm text-amber-700">
+                <Archive className="h-4 w-4 shrink-0" />
+                <span>These functionalities have been removed and are no longer active in the project.</span>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Details</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {removedFunctionalities.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-slate-400 italic py-8">
+                        No removed functionalities found.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    removedFunctionalities.map((f) => (
+                      <TableRow
+                        key={f.id}
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={() => navigate(`/project/${project.id}/functionalities/${f.id}`)}
+                      >
+                        <TableCell className="font-mono text-xs text-slate-400">{f.entityIdentifier ?? f.id}</TableCell>
+                        <TableCell className="font-medium">{f.name}</TableCell>
+                        <TableCell className="max-w-xs truncate text-slate-500">{f.description}</TableCell>
+                        <TableCell>
+                          <FunctionalityStateBadge state={f.state} />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <ChevronRight className="h-4 w-4 ml-auto text-slate-400" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </>
+          ) : allFunctionalities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed rounded-xl">
             <p className="text-muted-foreground font-medium">No functionalities yet</p>
             <p className="text-sm text-muted-foreground/60 mt-1">
@@ -418,7 +514,7 @@ function ProjectView() {
             </p>
             {project.editPermission && (
               <div className="mt-4">
-                <CreateFunctionalityDialog projectId={project.id!} onSuccess={refresh} />
+                <CreateFunctionalityDialog projectId={project.id!} onSuccess={refreshProject} />
               </div>
             )}
           </div>

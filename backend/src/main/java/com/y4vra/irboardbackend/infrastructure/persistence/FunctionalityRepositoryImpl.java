@@ -48,19 +48,21 @@ interface JpaFunctionalityRepository extends JpaRepository<Functionality, Long> 
 
     @Query("""
         SELECT f FROM Functionality f
-        WHERE f.project.id = :projectId
+        WHERE f.id = :functionalityId
+        AND f.project.id = :projectId
         AND f.state = :state
         AND f.project.state = :projectState
         """)
-    Optional<Functionality> findByIdAndStateAndProjectIdAndProjectState(Long id, FunctionalityState state, Long projectId, ProjectState projectState);
+    Optional<Functionality> findByIdAndStateAndProjectIdAndProjectState(Long functionalityId, FunctionalityState state, Long projectId, ProjectState projectState);
 
     @Query("""
         SELECT f FROM Functionality f
-        WHERE f.project.id = :projectId
+        WHERE f.id = :functionalityId
+        AND f.project.id = :projectId
         AND f.state IN :states
         AND f.project.state = :projectState
         """)
-    Optional<Functionality> findByIdAndStatesAndProjectIdAndProjectState(Long id, List<FunctionalityState> states, Long projectId, ProjectState projectState);
+    Optional<Functionality> findByIdAndStatesAndProjectIdAndProjectState(Long functionalityId, List<FunctionalityState> states, Long projectId, ProjectState projectState);
 
     Optional<Functionality> findByIdAndState(Long id, FunctionalityState state);
 

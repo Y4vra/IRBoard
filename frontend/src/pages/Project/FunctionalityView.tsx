@@ -31,7 +31,6 @@ import {
   EyeOff,
   Eye,
   Archive,
-  FolderOpen,
   ChevronDown as ChevronDownIcon,
   PowerOff,
   Power,
@@ -78,6 +77,8 @@ import {
   useDeleteFunctionality,
 } from "@/hooks/useFunctionalityActions"
 import { FunctionalityStateBadge } from "@/components/badges/FunctionalityStateBadge"
+import type { ViewMode } from "@/types/ViewMode"
+import { ViewToggle } from "@/components/ViewToggle"
 
 // ---------------------------------------------------------------------------
 // Filter/sort types
@@ -90,8 +91,6 @@ interface SortConfig {
   field: SortField | null
   dir: SortDir
 }
-
-type ViewMode = "active" | "removed"
 
 const PRIORITY_ORDER_MOSCOW = ["MUST", "SHOULD", "COULD", "WONT"]
 const PRIORITY_ORDER_TERNARY = ["HIGH", "NORMAL", "LOW"]
@@ -106,60 +105,6 @@ function priorityRank(priority: string | null | undefined, priorityStyle: Priori
 function stateRank(state: string | null | undefined): number {
   const idx = STATE_ORDER.indexOf(state ?? "")
   return idx === -1 ? 999 : idx
-}
-
-// ---------------------------------------------------------------------------
-// ViewToggle
-// ---------------------------------------------------------------------------
-
-interface ViewToggleProps {
-  mode: ViewMode
-  onChange: (mode: ViewMode) => void
-  activeCount?: number
-  removedCount?: number
-}
-
-function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewToggleProps) {
-  return (
-    <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
-      <button
-        onClick={() => onChange("active")}
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-          mode === "active"
-            ? "bg-white text-slate-900 shadow-sm"
-            : "text-slate-500 hover:text-slate-700"
-        }`}
-      >
-        <FolderOpen className="h-3.5 w-3.5" />
-        Active
-        {activeCount !== undefined && (
-          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-            mode === "active" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"
-          }`}>
-            {activeCount}
-          </span>
-        )}
-      </button>
-      <button
-        onClick={() => onChange("removed")}
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-          mode === "removed"
-            ? "bg-white text-slate-900 shadow-sm"
-            : "text-slate-500 hover:text-slate-700"
-        }`}
-      >
-        <Archive className="h-3.5 w-3.5" />
-        Removed
-        {removedCount !== undefined && (
-          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-            mode === "removed" ? "bg-red-100 text-red-600" : "bg-slate-200 text-slate-500"
-          }`}>
-            {removedCount}
-          </span>
-        )}
-      </button>
-    </div>
-  )
 }
 
 // ---------------------------------------------------------------------------
@@ -470,7 +415,7 @@ function FunctionalRequirementCard({
 function FunctionalityView() {
   const { projectId, functionalityId } = useParams<{ projectId: string; functionalityId: string }>()
   const { priorityStyle, functionalRequirementStats, isManager } = useProject()
-  const { canEditFunctionality } = useFunctionalities()
+  const { canEditFunctionality,refresh:refreshProjectFunctionalities } = useFunctionalities()
   const canEdit = canEditFunctionality(functionalityId!)
 
   const { getLock } = useLocks();
@@ -572,12 +517,12 @@ function FunctionalityView() {
   const { removeFunctionality, loading: removing } = useRemoveFunctionality({
     projectId: projectId!,
     functionalityId: functionalityId!,
-    onSuccess: refreshAll,
+    onSuccess: ()=>{refreshProjectFunctionalities();navigate(`/project/${projectId}`);},
   })
   const { deleteFunctionality, loading: deleting } = useDeleteFunctionality({
     projectId: projectId!,
     functionalityId: functionalityId!,
-    onSuccess: refreshAll,
+    onSuccess: ()=>navigate(`/project/${projectId}`),
   })
 
   // Mirror the service-layer state machine for functionalities

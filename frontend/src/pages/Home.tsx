@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../lib/globalVars";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Link } from "react-router-dom";
-import { ArrowRight, Folder, Plus, Search, X, ChevronLeft, ChevronRight, Filter, FolderOpen, Archive } from "lucide-react";
+import { ArrowRight, Folder, Plus, Search, X, ChevronLeft, ChevronRight, Filter, Archive } from "lucide-react";
 import { ProjectStateBadge } from "@/components/badges/ProjectStateBadge";
 import { type Project } from "../types/Project";
 import { cn } from "@/lib/utils";
@@ -15,64 +15,13 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useLocks } from "@/hooks/useLocks";
 import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
+import type { ViewMode } from "@/types/ViewMode";
+import { ViewToggle } from "@/components/ViewToggle";
 
 const PROJECTS_PER_PAGE = 12;
 const PAGINATION_THRESHOLD = PROJECTS_PER_PAGE;
 
 type SortOption = "name_asc" | "name_desc" | "state" | "priority";
-type ViewMode = "active" | "removed";
-
-// ── View Toggle ───────────────────────────────────────────────────────────────
-
-interface ViewToggleProps {
-  mode: ViewMode;
-  onChange: (mode: ViewMode) => void;
-  activeCount?: number;
-  removedCount?: number;
-}
-
-function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewToggleProps) {
-  return (
-    <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
-      <button
-        onClick={() => onChange("active")}
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-          mode === "active"
-            ? "bg-white text-slate-900 shadow-sm"
-            : "text-slate-500 hover:text-slate-700"
-        }`}
-      >
-        <FolderOpen className="h-3.5 w-3.5" />
-        Active
-        {activeCount !== undefined && (
-          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-            mode === "active" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"
-          }`}>
-            {activeCount}
-          </span>
-        )}
-      </button>
-      <button
-        onClick={() => onChange("removed")}
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-          mode === "removed"
-            ? "bg-white text-slate-900 shadow-sm"
-            : "text-slate-500 hover:text-slate-700"
-        }`}
-      >
-        <Archive className="h-3.5 w-3.5" />
-        Removed
-        {removedCount !== undefined && (
-          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-            mode === "removed" ? "bg-red-100 text-red-600" : "bg-slate-200 text-slate-500"
-          }`}>
-            {removedCount}
-          </span>
-        )}
-      </button>
-    </div>
-  );
-}
 
 // ── Home ──────────────────────────────────────────────────────────────────────
 

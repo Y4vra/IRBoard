@@ -8,6 +8,7 @@ import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
+import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -98,6 +99,10 @@ public class FunctionalityService {
     public FunctionalityDTO findFunctionalityById(String oryId, long projectId, long functionalityId) {
         checkViewFunctionalityPermission(oryId,String.valueOf(functionalityId));
         Functionality functionality = functionalityRepository.findByIdAndProjectId(functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("Functionality with id " + functionalityId + " not found"));
+
+        if (functionality.getState()== FunctionalityState.REMOVED){
+            checkProjectManagerPermission(oryId,String.valueOf(projectId));
+        }
 
         return functionalityMapper.toDto(functionality);
     }

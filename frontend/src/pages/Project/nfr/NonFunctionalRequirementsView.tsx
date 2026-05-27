@@ -2,7 +2,7 @@ import { useCallback, useState, useRef, useMemo, Fragment } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { API_BASE_URL } from "@/lib/globalVars"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, ChevronRight, ChevronDown, Plus, GripVertical, Eye, EyeOff, Archive, FolderOpen } from "lucide-react"
+import { AlertCircle, ChevronRight, ChevronDown, Plus, GripVertical, Eye, EyeOff, Archive } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAuth } from "@/context/AuthContext"
 import LoadingSpinner from "@/components/LoadingSpinner"
@@ -32,6 +32,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import type { ViewMode } from "@/types/ViewMode"
+import { ViewToggle } from "@/components/ViewToggle"
 
 // ---------------------------------------------------------------------------
 // API calls
@@ -75,62 +77,6 @@ async function apiChangeParent(
     const err = await res.json().catch(() => null)
     throw new Error(err?.message || "Failed to change parent")
   }
-}
-
-// ---------------------------------------------------------------------------
-// ViewToggle
-// ---------------------------------------------------------------------------
-
-type ViewMode = "active" | "removed"
-
-interface ViewToggleProps {
-  mode: ViewMode
-  onChange: (mode: ViewMode) => void
-  activeCount?: number
-  removedCount?: number
-}
-
-function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewToggleProps) {
-  return (
-    <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
-      <button
-        onClick={() => onChange("active")}
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-          mode === "active"
-            ? "bg-white text-slate-900 shadow-sm"
-            : "text-slate-500 hover:text-slate-700"
-        }`}
-      >
-        <FolderOpen className="h-3.5 w-3.5" />
-        Active
-        {activeCount !== undefined && (
-          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-            mode === "active" ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-500"
-          }`}>
-            {activeCount}
-          </span>
-        )}
-      </button>
-      <button
-        onClick={() => onChange("removed")}
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-          mode === "removed"
-            ? "bg-white text-slate-900 shadow-sm"
-            : "text-slate-500 hover:text-slate-700"
-        }`}
-      >
-        <Archive className="h-3.5 w-3.5" />
-        Removed
-        {removedCount !== undefined && (
-          <span className={`ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-            mode === "removed" ? "bg-red-100 text-red-600" : "bg-slate-200 text-slate-500"
-          }`}>
-            {removedCount}
-          </span>
-        )}
-      </button>
-    </div>
-  )
 }
 
 // ---------------------------------------------------------------------------
@@ -648,37 +594,33 @@ function NonFunctionalRequirementsView() {
                 </TableBody>
               </Table>
             </>
+          ) : requirements.length === 0 ? (
+            <p className="text-center text-slate-400 italic py-8">
+              No non-functional requirements found for this project.
+            </p>
           ) : (
             <>
-              {requirements.length === 0 ? (
-                <p className="text-center text-slate-400 italic py-8">
-                  No non-functional requirements found for this project.
-                </p>
-              ) : (
-                <>
-                  <GapDropZone parentId={null} index={0} {...rootGapProps} />
-                  {displayedRequirements.map((r, index) => (
-                    <Fragment key={r.id}>
-                      <NFRCard
-                        requirement={r}
-                        siblings={displayedRequirements}
-                        positionInSiblings={index}
-                        projectId={projectId!}
-                        label={`NFR.${index + 1}`}
-                        editPermission={editPermission}
-                        onRefetch={refreshActive}
-                        dragStateRef={dragStateRef}
-                        dropPreview={dropPreview}
-                        setDropPreview={setDropPreview}
-                        onReorder={handleReorder}
-                        parentIdMap={parentIdMap}
-                        onChangeParent={handleChangeParent}
-                      />
-                      <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
-                    </Fragment>
-                  ))}
-                </>
-              )}
+              <GapDropZone parentId={null} index={0} {...rootGapProps} />
+              {displayedRequirements.map((r, index) => (
+                <Fragment key={r.id}>
+                  <NFRCard
+                    requirement={r}
+                    siblings={displayedRequirements}
+                    positionInSiblings={index}
+                    projectId={projectId!}
+                    label={`NFR.${index + 1}`}
+                    editPermission={editPermission}
+                    onRefetch={refreshActive}
+                    dragStateRef={dragStateRef}
+                    dropPreview={dropPreview}
+                    setDropPreview={setDropPreview}
+                    onReorder={handleReorder}
+                    parentIdMap={parentIdMap}
+                    onChangeParent={handleChangeParent}
+                  />
+                  <GapDropZone parentId={null} index={index + 1} {...rootGapProps} />
+                </Fragment>
+              ))}
             </>
           )}
         </CardContent>
