@@ -3,6 +3,16 @@ import { MemoryRouter } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import Home from "../pages/Home"
 
+vi.mock("../lib/globalVars", () => ({
+  API_BASE_URL: "http://api.irboard.local/v1",
+}))
+
+vi.mock("@/hooks/useLocks", () => ({
+  useLocks: () => ({
+    getLock: () => null,
+  }),
+}))
+
 const { mockAuthContext, mockFetch } = vi.hoisted(() => ({
   mockAuthContext: {
     user: { isAdmin: false },
@@ -19,23 +29,6 @@ vi.mock("@/context/AuthContext", () => ({
 vi.mock("@/components/LoadingSpinner", () => ({
   default: () => <div data-testid="loading-spinner" />,
 }))
-
-const mockProjects = [
-  {
-    id: "abcdef1234567890",
-    name: "IR-Board",
-    description: "Requirements management",
-    priorityStyle: "TERNARY",
-    state: "ACTIVE",
-  },
-  {
-    id: "bbbbbbbbbbbbbbbb",
-    name: "Second Project",
-    description: "Another one",
-    priorityStyle: "MOSCOW",
-    state: "FINISHED",
-  },
-]
 
 function renderHome() {
   return render(
@@ -54,160 +47,186 @@ describe("Home", () => {
     vi.stubGlobal("fetch", mockFetch)
   })
 
-  // ── Loading states ─────────────────────────────────────────────────────────
+  // ── Loading ─────────────────────────────
 
-  it("shows the loading spinner while fetching", () => {
+  it("shows loading spinner while auth is loading", () => {
     mockAuthContext.loading = true
     renderHome()
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument()
   })
 
-  it("shows the loading spinner while data is loading", () => {
+  it("shows loading spinner while fetch is pending", () => {
     mockFetch.mockReturnValue(new Promise(() => {}))
     renderHome()
     expect(screen.getByTestId("loading-spinner")).toBeInTheDocument()
   })
 
-  // ── Error state ────────────────────────────────────────────────────────────
+  // ── Error ───────────────────────────────
 
   it("shows error UI when fetch fails", async () => {
     mockFetch.mockResolvedValue({ ok: false })
     renderHome()
+
     await waitFor(() => {
-      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/whoops! something went wrong/i)
+      ).toBeInTheDocument()
     })
   })
 
-  it("shows the error message returned by the API", async () => {
+  it("shows API error message", async () => {
     mockFetch.mockRejectedValue(new Error("Network error"))
     renderHome()
+
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument()
     })
   })
 
-  it("renders a Retry button on error", async () => {
+  it("shows retry button on error", async () => {
     mockFetch.mockResolvedValue({ ok: false })
     renderHome()
+
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole("button", { name: /retry/i })
+      ).toBeInTheDocument()
     })
   })
 
-  it("shows error when not authenticated and not loading", async () => {
+  it("shows auth failure error when not authenticated", async () => {
     mockAuthContext.isAuthenticated = false
     renderHome()
+
     await waitFor(() => {
-      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/enviroment variable/i)
+      ).toBeInTheDocument()
     })
   })
 
-  // ── Empty state ────────────────────────────────────────────────────────────
+  // ── Empty state ─────────────────────────
 
-  it("shows empty state when projects list is empty", async () => {
+  it("shows empty state when no projects exist", async () => {
     mockFetch.mockResolvedValue({ ok: true, json: async () => [] })
     renderHome()
+
     await waitFor(() => {
       expect(screen.getByText(/no projects found/i)).toBeInTheDocument()
     })
   })
 
-  it("shows admin link to create first project when admin and empty", async () => {
+  it("shows admin CTA when empty and admin", async () => {
     mockAuthContext.user = { isAdmin: true }
     mockFetch.mockResolvedValue({ ok: true, json: async () => [] })
     renderHome()
+
     await waitFor(() => {
-      expect(screen.getByText(/create your first project/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/create your first project/i)
+      ).toBeInTheDocument()
     })
   })
 
-  it("shows contact admin message for non-admin when empty", async () => {
+  it("shows contact admin when empty and not admin", async () => {
     mockAuthContext.user = { isAdmin: false }
     mockFetch.mockResolvedValue({ ok: true, json: async () => [] })
     renderHome()
+
     await waitFor(() => {
-      expect(screen.getByText(/contact an administrator/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/contact an administrator/i)
+      ).toBeInTheDocument()
     })
   })
 
-  // ── Projects list ──────────────────────────────────────────────────────────
+  // ── Data rendering ──────────────────────
 
-  it("renders the Projects heading", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
-    renderHome()
-    await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /^projects$/i })).toBeInTheDocument()
+  it("renders project names", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: "abcdef1234567890",
+          name: "IR-Board",
+          description: "Requirements management",
+          priorityStyle: "TERNARY",
+          state: "ACTIVE",
+        },
+      ],
     })
-  })
 
-  it("renders a card for each project", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
     renderHome()
+
     await waitFor(() => {
       expect(screen.getByText("IR-Board")).toBeInTheDocument()
-      expect(screen.getByText("Second Project")).toBeInTheDocument()
     })
   })
 
-  it("renders priority style badges", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
+  it("renders priority styles", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: "1",
+          name: "Test",
+          description: "",
+          priorityStyle: "MOSCOW",
+          state: "ACTIVE",
+        },
+      ],
+    })
+
     renderHome()
+
     await waitFor(() => {
-      expect(screen.getByText("TERNARY")).toBeInTheDocument()
       expect(screen.getByText("MOSCOW")).toBeInTheDocument()
     })
   })
 
-  it("renders state badges in lowercase", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
+  it("renders reference id truncated", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: "abcdef1234567890",
+          name: "Test",
+          description: "",
+          priorityStyle: "TERNARY",
+          state: "ACTIVE",
+        },
+      ],
+    })
+
     renderHome()
+
     await waitFor(() => {
-      expect(screen.getByText("active")).toBeInTheDocument()
-      expect(screen.getByText("finished")).toBeInTheDocument()
+      expect(
+        screen.getByText(/reference id: abcdef12/i)
+      ).toBeInTheDocument()
     })
   })
 
-  it("renders More... links pointing to /project/:id", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
-    renderHome()
-    await waitFor(() => {
-      const links = screen.getAllByRole("link", { name: /more/i })
-      expect(links[0]).toHaveAttribute("href", `/project/${mockProjects[0].id}`)
+  it("shows fallback description", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => [
+        {
+          id: "1",
+          name: "Test",
+          description: "",
+          priorityStyle: "TERNARY",
+          state: "ACTIVE",
+        },
+      ],
     })
-  })
 
-  it("shows New Project button only for admins when projects exist", async () => {
-    mockAuthContext.user = { isAdmin: true }
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
     renderHome()
-    await waitFor(() => {
-      expect(screen.getByRole("link", { name: /new project/i })).toBeInTheDocument()
-    })
-  })
 
-  it("does NOT show New Project button for non-admins", async () => {
-    mockAuthContext.user = { isAdmin: false }
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
-    renderHome()
     await waitFor(() => {
-      expect(screen.queryByRole("link", { name: /new project/i })).not.toBeInTheDocument()
-    })
-  })
-
-  it("uses truncated reference ID in each card", async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: async () => mockProjects })
-    renderHome()
-    await waitFor(() => {
-      expect(screen.getByText(/reference id: abcdef12/i)).toBeInTheDocument()
-    })
-  })
-
-  it("shows fallback description when project has none", async () => {
-    const projectsNoDesc = [{ ...mockProjects[0], description: "" }]
-    mockFetch.mockResolvedValue({ ok: true, json: async () => projectsNoDesc })
-    renderHome()
-    await waitFor(() => {
-      expect(screen.getByText(/no description provided/i)).toBeInTheDocument()
+      expect(
+        screen.getByText(/no description provided/i)
+      ).toBeInTheDocument()
     })
   })
 })

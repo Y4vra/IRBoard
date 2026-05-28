@@ -291,7 +291,7 @@ function ProjectView() {
             {project.description || "No project description available."}
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <ProjectStateBadge state={project.state} />
+            <ProjectStateBadge state={project?.state} />
             <div className="font-mono opacity-50">
               REF: {project.id}
             </div>

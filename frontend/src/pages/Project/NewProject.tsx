@@ -173,7 +173,7 @@ export default function NewProject() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/projects")}
+                onClick={() => navigate("/home")}
                 className="flex-1 rounded-xl h-12"
               >
                 Cancel

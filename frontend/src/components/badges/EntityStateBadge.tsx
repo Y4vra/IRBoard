@@ -25,7 +25,7 @@ interface EntityStateBadgeProps {
 }
 
 export function EntityStateBadge({ state }: EntityStateBadgeProps) {
-  const { label, className } = STATE_CONFIG[state]
+  const { label, className } = STATE_CONFIG[state ?? "DEACTIVATED"]
 
   return (
     <Badge

@@ -29,9 +29,7 @@ interface RequirementStateBadgeProps {
 }
 
 export function RequirementStateBadge({ state }: RequirementStateBadgeProps) {
-  const config =
-    REQUIREMENT_STATE_CONFIG[state as RequirementState] ??
-    REQUIREMENT_STATE_CONFIG.DEACTIVATED;
+  const config = REQUIREMENT_STATE_CONFIG[state ?? "DEACTIVATED"]
 
   return (
     <Badge className={`${config.class} uppercase text-[10px] border`}>

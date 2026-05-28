@@ -26,7 +26,7 @@ interface ProjectStateBadgeProps {
 }
 
 export function ProjectStateBadge({ state }: ProjectStateBadgeProps) {
-  const { label, className } = STATE_CONFIG[state]
+  const { label, className } = STATE_CONFIG[state ?? "DEACTIVATED"]
 
   return (
     <Badge

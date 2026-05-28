@@ -22,7 +22,7 @@ interface FunctionalityStateBadgeProps {
 }
 
 export function FunctionalityStateBadge({ state }: FunctionalityStateBadgeProps) {
-  const { label, className } = STATE_CONFIG[state]
+  const { label, className } = STATE_CONFIG[state ?? "DEACTIVATED"]
 
   return (
     <Badge
