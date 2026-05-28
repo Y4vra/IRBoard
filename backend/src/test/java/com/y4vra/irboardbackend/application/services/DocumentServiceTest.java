@@ -186,7 +186,7 @@ class DocumentServiceTest {
         assertThatThrownBy(() -> documentService.uploadDocument(multipartFile, inputDto, projectId, oryId))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(projectRepository, never()).findByIdAndState(any(), ProjectState.ACTIVE);
+        verify(projectRepository, never()).findByIdAndState(any(), eq(ProjectState.ACTIVE));
         verify(objStorageService, never()).uploadFile(any(), any(), anyLong(), any());
         verify(documentRepository, never()).save(any());
     }

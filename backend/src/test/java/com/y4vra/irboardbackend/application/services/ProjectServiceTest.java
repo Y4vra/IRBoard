@@ -58,7 +58,7 @@ class ProjectServiceTest {
 
     @Test
     void findAllProjects_returnsAllProjects() {
-        when(projectRepository.findAll()).thenReturn(List.of(project));
+        when(projectRepository.findAllByStateNot(ProjectState.REMOVED)).thenReturn(List.of(project));
         when(projectMapper.toDto(project)).thenReturn(projectDTO);
 
         List<ProjectDTO> result = projectService.findAllProjectsNotRemoved();
@@ -68,7 +68,7 @@ class ProjectServiceTest {
 
     @Test
     void findAllProjects_returnsEmptyListWhenNoneExist() {
-        when(projectRepository.findAll()).thenReturn(List.of());
+        when(projectRepository.findAllByStateNot(ProjectState.REMOVED)).thenReturn(List.of());
 
         List<ProjectDTO> result = projectService.findAllProjectsNotRemoved();
 
@@ -122,7 +122,7 @@ class ProjectServiceTest {
         String oryId = "user-ory-123";
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
         when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(false);
-        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE)).thenReturn(Optional.of(project));
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
         when(statisticsRepository.getStakeholderStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getDocumentStatistics(1L)).thenReturn(null);
         when(statisticsRepository.getNonFunctionalRequirementStatistics(1L)).thenReturn(null);
@@ -143,7 +143,7 @@ class ProjectServiceTest {
         assertThatThrownBy(() -> projectService.findById(oryId, 1L))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(projectRepository, never()).findByIdAndState(any(), ProjectState.ACTIVE);
+        verify(projectRepository, never()).findByIdAndState(any(), eq(ProjectState.ACTIVE));
         verify(projectMapper, never()).toDto(any(), anyBoolean(), any(), any(), any(), any());
     }
 
@@ -151,7 +151,7 @@ class ProjectServiceTest {
     void findById_throwsEntityNotFoundWhenProjectDoesNotExist() {
         String oryId = "user-ory-123";
         when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
-        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE)).thenReturn(Optional.empty());
+        when(projectRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> projectService.findById(oryId, 1L))
                 .isInstanceOf(EntityNotFoundException.class)

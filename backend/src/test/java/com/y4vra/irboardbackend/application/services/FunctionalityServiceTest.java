@@ -78,7 +78,7 @@ class FunctionalityServiceTest {
         Functionality funcView = new Functionality(); funcView.setId(11L); funcView.setProject(project);
         Functionality funcNone = new Functionality(); funcNone.setId(12L); funcNone.setProject(project);
 
-        when(functionalityRepository.findByProjectId(projectId)).thenReturn(List.of(funcEdit, funcView, funcNone));
+        when(functionalityRepository.findByStateNotAndProjectId(FunctionalityState.REMOVED,projectId)).thenReturn(List.of(funcEdit, funcView, funcNone));
 
         // Setup DTOs
         FunctionalityDTO dtoEdit = new FunctionalityDTO(10L, "identifier", "Edit","description", "E", "PENDING_APPROVAL", 1L,List.of());
@@ -117,7 +117,7 @@ class FunctionalityServiceTest {
         when(permService.checkPermission("Functionality", "10", "editRequirements", oryId)).thenReturn(true);
 
 
-        when(functionalityRepository.findByProjectId(1L)).thenReturn(List.of(correctProject));
+        when(functionalityRepository.findByStateNotAndProjectId(FunctionalityState.REMOVED,1L)).thenReturn(List.of(correctProject));
         when(functionalityMapper.toDto(correctProject)).thenReturn(functionalityDTO);
 
         Map<String, List<FunctionalityDTO>> result = functionalityService.findFunctionalitiesOfProjectForUser(oryId, 1L);
