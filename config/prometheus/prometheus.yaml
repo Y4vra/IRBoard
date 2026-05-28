@@ -21,7 +21,8 @@ scrape_configs:
           - oathkeeper:9000
 
   - job_name: backend
-    metrics_path: /actuator/prometheus
+    metrics_path: /v1/actuator/prometheus
+    scrape_interval: 15s
     static_configs:
       - targets:
           - backend:8080

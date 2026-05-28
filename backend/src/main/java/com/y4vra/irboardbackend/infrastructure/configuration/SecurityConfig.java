@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/whoami","/auth/activate", "/error").permitAll()
+                        .requestMatchers("/whoami","/auth/activate", "/error","/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(headerFilter, UsernamePasswordAuthenticationFilter.class);
