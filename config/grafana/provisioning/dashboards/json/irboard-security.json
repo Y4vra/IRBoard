@@ -48,12 +48,82 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container_name=\"kratos\"} |= \"error\"",
+          "expr": "{job=\"kratos\"} |= \"error\"",
           "refId": "A"
         }
       ],
       "title": "Kratos Error Logs",
       "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending",
+        "showLabels": false,
+        "showCommonLabels": false
+      },
+      "targets": [
+        {
+          "expr": "{job=\"keto\"} |= \"error\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Keto Error Logs",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kratos\"} |~ \"login|recovery|error\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Kratos Auth Events",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 5,
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"backend\"} |= \"ERROR\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Backend Errors",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "id": 6,
+      "type": "timeseries",
+      "title": "Backend Log Volume (1m)",
+      "targets": [
+        {
+          "expr": "count_over_time({job=\"backend\"}[1m])",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
     },
     {
       "datasource": {
@@ -135,12 +205,80 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "count_over_time({container_name=\"traefik\"} |= \"429\" [1m])",
+          "expr": "count_over_time({job=\"traefik\"} |= \"429\" [1m])",
           "refId": "A"
         }
       ],
       "title": "Rate Limit Hits (HTTP 429)",
       "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "id": 7,
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kratos-db\"} |~ \"FATAL|ERROR\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Kratos DB Errors",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "id": 8,
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"keto-db\"} |~ \"FATAL|ERROR\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Keto DB Errors",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "id": 9,
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"promtail\"} |~ \"error|warn\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Promtail Pipeline Issues",
+      "type": "logs"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "id": 10,
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"loki\"} |~ \"error\"",
+          "refId": "A"
+        }
+      ],
+      "title": "Loki Internal Errors",
+      "type": "logs"
     }
   ],
   "schemaVersion": 39,

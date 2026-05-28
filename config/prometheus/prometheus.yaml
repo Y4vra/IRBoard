@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: kratos
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - kratos:4433
+
+  - job_name: keto
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - keto:4466
+  
+  - job_name: oathkeeper
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - oathkeeper:4456
+
+  - job_name: backend
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - backend:8080

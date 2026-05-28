@@ -176,7 +176,7 @@ services:
       - internal
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) || Host(`grafana.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.oathkeeper.rule=Host(`${AUTH_DOMAIN}`) || Host(`${API_DOMAIN}`) "
       - "traefik.http.services.oathkeeper.loadbalancer.server.port=4455"
       - "traefik.docker.network=irboard_public"
 
@@ -354,39 +354,60 @@ services:
   #   networks:
   #     - internal
 
-  # # --- OBSERVABILITY ---
-  # grafana:
-  #   image: grafana/grafana:12.3.5
-  #   environment:
-  #     - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
-  #     - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-  #     - GF_SECURITY_CSRF_ALWAYS_CHECK=false
-  #     - GF_SERVER_ROOT_URL=http://grafana.irboard.local
-  #     - GF_LIVE_ALLOWED_ORIGINS=http://grafana.irboard.local,http://irboard.local
-  #   volumes:
-  #     - ./config/grafana/provisioning:/etc/grafana/provisioning
-  #   networks:
-  #     - internal
-  
-  
-  # loki:
-  #   image: grafana/loki:3.5.12
-  #   networks:
-  #     - internal
+  # --- OBSERVABILITY ---
+  grafana:
+    image: grafana/grafana:12.3.5
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_SERVER_ROOT_URL=http://grafana.${DOMAIN_NAME}
+      - GF_LIVE_ALLOWED_ORIGINS=http://grafana.${DOMAIN_NAME}
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - public
+      - internal # serious network hardening is beyond the scope of this tfg
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=irboard_public"
 
-  # promtail:
-  #   image: grafana/promtail:3.5.12
-  #   container_name: promtail
-  #   user: root # Possible threat, but added as hardening the project's observability is beyond the project's scope
-  #   volumes:
-  #     - ./config/promtail/promtail-config.yaml:/etc/promtail/config.yaml
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
-  #   command: -config.file=/etc/promtail/config.yaml
-  #   networks:
-  #     - internal
-  #   depends_on:
-  #     - loki
+      # Router
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.routers.grafana.service=grafana-svc"
+
+      # Service (Grafana listens on 3000 internally)
+      - "traefik.http.services.grafana-svc.loadbalancer.server.port=3000"
+  
+  
+  loki:
+    image: grafana/loki:3.5.12
+    networks:
+      - internal
+
+  promtail:
+    image: grafana/promtail:3.5.12
+    container_name: promtail
+    user: root # Possible threat, but added as hardening the project's observability is beyond the project's scope
+    volumes:
+      - ./config/promtail/promtail-config.yaml:/etc/promtail/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - internal
+    depends_on:
+      - loki
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+    networks:
+      - internal
 
 volumes: # [PROD] remove volumes in production
   db_data_kratos:

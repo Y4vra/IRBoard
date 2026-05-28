@@ -26,6 +26,7 @@ import DocumentDetailView from './pages/Project/document/DocumentDetailView'
 import { FunctionalitiesProviderWrapper } from './components/wrappers/FunctionalitiesProviderWrapper'
 import FunctionalRequirementEdit from './pages/Project/fr/FunctionalRequirementEdit'
 import NonFunctionalRequirementEdit from './pages/Project/nfr/NonFunctionalRequirementEdit'
+import DiagramsView from './pages/Project/document/DiagramsView'
 
 const WindowLayout = () => (
   <div className="min-h-screen flex flex-col bg-background">
@@ -59,6 +60,7 @@ function App() {
               <Route element={<LockProvider><Outlet /></LockProvider>}>
                 <Route path="/" element={<Home />}/>
                 <Route path="/home" element={<Home />}/>
+                <Route path="/diagrams" element={<DiagramsView/>}/>
                 <Route path="/projects/new" element={<NewProject />}/>
               </Route>
               <Route element={<ProjectLockWrapper />}>

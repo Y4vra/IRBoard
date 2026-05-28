@@ -42,25 +42,3 @@
           X-User: "{{ .Subject }}"
   upstream:
     url: "http://backend:8080"
-
-- id: "grafana-protected"
-  match:
-    methods: ["GET", "POST"]
-    url: "http://grafana.irboard.local/<.*>"
-  authenticators:
-    - handler: "cookie_session"
-  authorizer:
-    handler: "remote_json"
-    config:
-      remote: "http://keto:4466/relation-tuples/check/openapi"
-      payload: |
-        {
-          "namespace": "User",
-          "object": "System",
-          "relation": "admin",
-          "subject_id": "{{ print .Subject }}"
-        }
-  mutators:
-    - handler: "noop"
-  upstream:
-    url: "http://grafana:3000"

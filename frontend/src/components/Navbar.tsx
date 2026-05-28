@@ -12,6 +12,7 @@ import {
   ChevronRight,
   MoreHorizontal,
   CornerDownLeft,
+  PencilRuler,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -238,6 +239,8 @@ export function NavBar() {
           </button>
         </div>
 
+        <hr className="border-slate-100 my-0.5" />
+
         {/* Expandable section */}
         <div className={cn(
           "grid transition-all duration-500 ease-in-out",
@@ -296,6 +299,8 @@ export function NavBar() {
               </div>
             )}
 
+            <hr className="border-slate-100 my-0.5" />
+
             {/* Nav links */}
             <div className="px-1 flex flex-col gap-2">
               <NavItem icon={<Folder className="h-4 w-4" />} label="Projects" to="/home" active={isProjectView} disabled={!finishedOpening} />
@@ -309,7 +314,7 @@ export function NavBar() {
                 </div>
               )}
 
-              {isProjectView && <hr className="border-slate-100 my-0.5" />}
+              <NavItem icon={<PencilRuler className="h-4 w-4"/>} label="Diagram generation" to="/diagrams" disabled={!finishedOpening} />
 
               {user.isAdmin && (
                 <NavItem icon={<Users className="h-4 w-4" />} label="User management" to="/admin/users" disabled={!finishedOpening} />
