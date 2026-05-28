@@ -362,7 +362,7 @@ function DiagramsView() {
         setIframeReady(true)
         iframe?.contentWindow?.postMessage(
           JSON.stringify({ action: "load", xml: selectedTemplateRef.current?.xml ?? "" }),
-          "*"
+          DRAWIO_URL
         )
       }
 
@@ -391,9 +391,9 @@ function DiagramsView() {
     if (!iframeReady || !selectedTemplate) return
     iframeRef.current?.contentWindow?.postMessage(
       JSON.stringify({ action: "load", xml: selectedTemplate.xml }),
-      "*"
+      DRAWIO_URL
     )
-  }, [selectedTemplate, iframeReady])
+  }, [selectedTemplate, iframeReady, DRAWIO_URL])
 
   // ── Actions ───────────────────────────────────────────────────────────────
 

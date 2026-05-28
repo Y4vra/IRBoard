@@ -327,12 +327,28 @@ services:
       - VITE_DOMAIN_NAME=${DOMAIN_NAME}
       - VITE_AUTH_DOMAIN=${AUTH_DOMAIN}
       - VITE_API_DOMAIN=${API_DOMAIN}
+      - VITE_DRAWIO_URL=${DRAWIO_DOMAIN}
     networks:
       - public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.services.frontend.loadbalancer.server.port=5173" # Default Vite port for Dev mode. Update to 80 for Production-stage (Nginx).
+
+  drawio:
+    image: jgraph/drawio:latest
+    restart: unless-stopped
+    networks:
+      - public
+    environment:
+      - DRAWIO_CORS_ORIGINS=http://${DOMAIN_NAME}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=irboard_public"
+      - "traefik.http.routers.drawio.rule=Host(`drawio.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.drawio.entrypoints=web"
+      - "traefik.http.routers.drawio.service=drawio-svc"
+      - "traefik.http.services.drawio-svc.loadbalancer.server.port=8080"
 
   # --- MAIL SERVER ---
   smtp-server:
