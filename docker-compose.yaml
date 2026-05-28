@@ -345,7 +345,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=irboard_public"
-      - "traefik.http.routers.drawio.rule=Host(`drawio.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.drawio.rule=Host(`${DRAWIO_DOMAIN}`)"
       - "traefik.http.routers.drawio.entrypoints=web"
       - "traefik.http.routers.drawio.service=drawio-svc"
       - "traefik.http.services.drawio-svc.loadbalancer.server.port=8080"
