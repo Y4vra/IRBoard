@@ -137,14 +137,14 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Postgres",
+      "title": "Oathkeeper",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "targets": [
         {
-          "expr": "up{job=\"postgres\"}"
+          "expr": "up{job=\"oathkeeper\"}"
         }
       ],
       "gridPos": {

@@ -314,7 +314,7 @@ export function NavBar() {
                 </div>
               )}
 
-              <NavItem icon={<PencilRuler className="h-4 w-4"/>} label="Diagram generation" to="/diagrams" disabled={!finishedOpening} />
+              <NavItem icon={<PencilRuler className="h-4 w-4"/>} label="Diagram generation" to="/diagrams" disabled={true/*!finishedOpening*/} /> {/*change upon adding it*/}
 
               {user.isAdmin && (
                 <NavItem icon={<Users className="h-4 w-4" />} label="User management" to="/admin/users" disabled={!finishedOpening} />
