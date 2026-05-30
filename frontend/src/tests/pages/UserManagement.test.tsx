@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
-import UserManagement from "../pages/UserManagement"
+import UserManagement from "../../pages/UserManagement"
 
 // ------------------------
 // Hoisted mocks

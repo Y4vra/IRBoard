@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
-import ProjectView from "../pages/Project/ProjectView"
+import ProjectView from "../../pages/Project/ProjectView"
 
 // ------------------------
 // Shared mocks

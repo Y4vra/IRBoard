@@ -2,7 +2,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
-import NewProject from "../pages/Project/NewProject"
+import NewProject from "../../pages/Project/NewProject"
 
 const { mockNavigate, mockFetch } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),

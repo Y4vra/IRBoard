@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
-import Registration from "../pages/Registration"
+import Registration from "../../pages/Registration"
 
 /* ─────────────────────────────────────────────────────────────
    Mocks
