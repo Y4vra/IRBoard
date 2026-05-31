@@ -6,6 +6,7 @@ import NewProject from "@/pages/Project/NewProject"
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
 
+// Match the path used in Home.test.tsx — one level up from the test file
 vi.mock("../lib/globalVars", () => ({
   API_BASE_URL: "http://api.irboard.local/v1",
 }))
@@ -244,14 +245,18 @@ describe("NewProject", () => {
     const user = userEvent.setup()
     // Never resolves — keeps loading state
     mockFetch.mockReturnValue(new Promise(() => {}))
-    renderNewProject()
+    const { container } = renderNewProject()
 
     await user.type(screen.getByPlaceholderText(/ir-board system/i), "X")
     await user.type(screen.getByPlaceholderText(/university of oviedo/i), "Y")
+
+    // Click while name is still visible (pre-loading)
     await user.click(screen.getByRole("button", { name: /initialize project/i }))
 
+    // Once loading starts the button replaces its text with a spinner icon so
+    // it loses its accessible name. Query by type="submit" to stay unambiguous.
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /initialize project/i })).toBeDisabled()
+      expect(container.querySelector("button[type='submit']")).toBeDisabled()
     )
   })
 })

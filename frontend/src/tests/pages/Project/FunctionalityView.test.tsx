@@ -3,10 +3,12 @@ import userEvent from "@testing-library/user-event"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 import FunctionalityView from "@/pages/Project/FunctionalityView"
+import type { Functionality } from "@/types/Functionality"
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
 
-vi.mock("../../lib/globalVars", () => ({
+// Match the path used in Home.test.tsx — one level up from the test file
+vi.mock("../lib/globalVars", () => ({
   API_BASE_URL: "http://api.irboard.local/v1",
 }))
 
@@ -39,14 +41,26 @@ const mockFunctionality = {
   entityIdentifier: "AUTH-001",
 }
 
-// useBackendResource returns different data per call — we control via sequence
-let backendResourceCallCount = 0
-const backendResourceResponses: Array<{
+// useBackendResource responses keyed by URL substring found in the fetcher's
+// toString(). This is stable across re-renders unlike a shared call counter.
+const backendResourceMap: Record<string, {
   data: unknown
   loading: boolean
   error: string | null
   refresh: ReturnType<typeof vi.fn>
-}> = []
+}> = {}
+
+vi.mock("@/hooks/useBackendResource", () => ({
+  useBackendResource: ({ fetcher }: { fetcher: () => Promise<unknown>; enabled?: boolean }) => {
+    const src = fetcher.toString()
+    // Match by the most specific URL segment each fetcher contains
+    const key =
+      src.includes("/removed") ? "removed" :
+      src.includes("/functionalRequirements") ? "reqs" :
+      "func"
+    return backendResourceMap[key] ?? { data: null, loading: false, error: null, refresh: vi.fn() }
+  },
+}))
 
 vi.mock("@/hooks/useProject", () => ({
   useProject: () => mockProjectState,
@@ -54,19 +68,6 @@ vi.mock("@/hooks/useProject", () => ({
 
 vi.mock("@/hooks/useFunctionalities", () => ({
   useFunctionalities: () => mockFunctionalitiesState,
-}))
-
-vi.mock("@/hooks/useBackendResource", () => ({
-  useBackendResource: () => {
-    const response = backendResourceResponses[backendResourceCallCount] ?? {
-      data: null,
-      loading: false,
-      error: null,
-      refresh: vi.fn(),
-    }
-    backendResourceCallCount++
-    return response
-  },
 }))
 
 vi.mock("@/hooks/useLocks", () => ({
@@ -163,23 +164,20 @@ vi.mock("@/hooks/useFunctionalityActions", () => ({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
- * Sets up the three useBackendResource responses in order:
- *   1. functionality detail
- *   2. active requirements
- *   3. removed requirements
+ * Populate the per-URL-key response map consumed by the useBackendResource mock.
+ * Keys match the URL-sniffing logic in the mock above:
+ *   "func"    → functionality detail endpoint
+ *   "reqs"    → active requirements endpoint
+ *   "removed" → removed requirements endpoint
  */
 function setBackendResponses({
-  func = { data: mockFunctionality, loading: false, error: null },
-  reqs = { data: [] as unknown[], loading: false, error: null },
-  removed = { data: [] as unknown[], loading: false, error: null },
+  func = { data: mockFunctionality as Functionality|null, loading: false, error: null as string|null },
+  reqs = { data: [] as unknown|null[], loading: false, error: null },
+  removed = { data: [] as unknown|null[], loading: false, error: null },
 } = {}) {
-  backendResourceCallCount = 0
-  backendResourceResponses.length = 0
-  backendResourceResponses.push(
-    { ...func, refresh: vi.fn() },
-    { ...reqs, refresh: vi.fn() },
-    { ...removed, refresh: vi.fn() },
-  )
+  backendResourceMap["func"]    = { ...func,    refresh: vi.fn() }
+  backendResourceMap["reqs"]    = { ...reqs,    refresh: vi.fn() }
+  backendResourceMap["removed"] = { ...removed, refresh: vi.fn() }
 }
 
 function renderFunctionalityView() {
@@ -200,8 +198,8 @@ function renderFunctionalityView() {
 describe("FunctionalityView", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    backendResourceCallCount = 0
-    backendResourceResponses.length = 0
+    // Clear the response map so each test starts clean
+    Object.keys(backendResourceMap).forEach(k => delete backendResourceMap[k])
 
     Object.assign(mockProjectState, {
       priorityStyle: "TERNARY",
@@ -541,7 +539,7 @@ describe("FunctionalityView", () => {
     renderFunctionalityView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /disable functionality/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /disable functionality/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Enable functionality' is disabled when state is ACTIVE", async () => {
@@ -551,7 +549,7 @@ describe("FunctionalityView", () => {
     renderFunctionalityView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /enable functionality/i })).toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /enable functionality/i })).toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Enable functionality' is enabled when state is DEACTIVATED", async () => {
@@ -559,7 +557,7 @@ describe("FunctionalityView", () => {
     mockProjectState.isManager = true
     setBackendResponses({
       func: {
-        data: { ...mockFunctionality, state: "DEACTIVATED" },
+        data: { ...mockFunctionality, state: "DEACTIVATED",projectId:1 },
         loading: false,
         error: null,
       },
@@ -567,7 +565,7 @@ describe("FunctionalityView", () => {
     renderFunctionalityView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /enable functionality/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /enable functionality/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Remove functionality' is enabled when state is DEACTIVATED", async () => {
@@ -575,7 +573,7 @@ describe("FunctionalityView", () => {
     mockProjectState.isManager = true
     setBackendResponses({
       func: {
-        data: { ...mockFunctionality, state: "DEACTIVATED" },
+        data: { ...mockFunctionality, state: "DEACTIVATED",projectId:1 },
         loading: false,
         error: null,
       },
@@ -583,7 +581,7 @@ describe("FunctionalityView", () => {
     renderFunctionalityView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /remove functionality/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /remove functionality/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Delete permanently' is enabled when state is REMOVED", async () => {
@@ -591,7 +589,7 @@ describe("FunctionalityView", () => {
     mockProjectState.isManager = true
     setBackendResponses({
       func: {
-        data: { ...mockFunctionality, state: "REMOVED" },
+        data: { ...mockFunctionality, state: "REMOVED", projectId:1 },
         loading: false,
         error: null,
       },
@@ -599,7 +597,7 @@ describe("FunctionalityView", () => {
     renderFunctionalityView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Delete permanently' is disabled when state is ACTIVE", async () => {
@@ -609,7 +607,7 @@ describe("FunctionalityView", () => {
     renderFunctionalityView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).toHaveAttribute("aria-disabled", "true")
   })
 
   // ── Approve button ────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import ProjectView from "@/pages/Project/ProjectView"
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
 
+// Match the path used in Home.test.tsx — one level up from the test file
 vi.mock("../lib/globalVars", () => ({
   API_BASE_URL: "http://api.irboard.local/v1",
 }))
@@ -120,6 +121,8 @@ vi.mock("@/hooks/useProjectActions", () => ({
   useDeleteProject:  () => ({ deleteProject:  vi.fn(), loading: false }),
 }))
 
+// useBackendResource is used for removed functionalities — mock it to return
+// empty data by default so the component doesn't try to fetch.
 vi.mock("@/hooks/useBackendResource", () => ({
   useBackendResource: () => ({ data: [], loading: false, error: null, refresh: vi.fn() }),
 }))
@@ -299,7 +302,9 @@ describe("ProjectView", () => {
   it("shows Create Functionality button when user has edit permission", () => {
     mockProjectState.editPermission = true
     renderProjectView()
-    expect(screen.getByRole("button", { name: /create functionality/i })).toBeInTheDocument()
+    // The source renders CreateFunctionalityDialog in both the section header and
+    // the empty-state, so two buttons appear. Verify at least one is present.
+    expect(screen.getAllByRole("button", { name: /create functionality/i }).length).toBeGreaterThanOrEqual(1)
   })
 
   it("does NOT show Create Functionality button without edit permission", () => {
@@ -355,7 +360,6 @@ describe("ProjectView", () => {
       none: [],
     }
     renderProjectView()
-    // "1 accessible · 0 restricted" summary line
     expect(screen.getByText(/accessible/i)).toBeInTheDocument()
   })
 
@@ -393,6 +397,9 @@ describe("ProjectView", () => {
   })
 
   // ── Actions dropdown — state machine ─────────────────────────────────────────
+  // Radix DropdownMenuItem uses aria-disabled="true" + data-disabled="" on a
+  // <div role="menuitem"> — NOT the HTML disabled attribute — so toBeDisabled()
+  // won't work. Use toHaveAttribute("aria-disabled", "true") instead.
 
   it("'Approve all entities' is enabled when state is ACTIVE", async () => {
     const user = userEvent.setup()
@@ -401,7 +408,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /approve all entities/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /approve all entities/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Approve all entities' is disabled when state is FINISHED", async () => {
@@ -411,7 +418,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /approve all entities/i })).toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /approve all entities/i })).toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Mark as finished' is enabled when state is ACTIVE", async () => {
@@ -421,7 +428,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /mark as finished/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /mark as finished/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Disable project' is enabled when state is ACTIVE", async () => {
@@ -431,7 +438,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /disable project/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /disable project/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Enable project' is disabled when state is ACTIVE", async () => {
@@ -441,7 +448,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /enable project/i })).toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /enable project/i })).toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Enable project' is enabled when state is DEACTIVATED", async () => {
@@ -451,7 +458,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /enable project/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /enable project/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Enable project' is enabled when state is FINISHED", async () => {
@@ -461,7 +468,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /enable project/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /enable project/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Remove project' is disabled when state is ACTIVE", async () => {
@@ -471,7 +478,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /remove project/i })).toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /remove project/i })).toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Remove project' is enabled when state is DEACTIVATED", async () => {
@@ -481,7 +488,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /remove project/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /remove project/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Delete permanently' is disabled when state is ACTIVE", async () => {
@@ -491,7 +498,7 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).toHaveAttribute("aria-disabled", "true")
   })
 
   it("'Delete permanently' is enabled when state is REMOVED", async () => {
@@ -501,6 +508,6 @@ describe("ProjectView", () => {
     renderProjectView()
 
     await user.click(screen.getByRole("button", { name: /actions/i }))
-    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).not.toBeDisabled()
+    expect(screen.getByRole("menuitem", { name: /delete permanently/i })).not.toHaveAttribute("aria-disabled", "true")
   })
 })
