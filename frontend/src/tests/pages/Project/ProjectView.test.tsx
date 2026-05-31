@@ -109,11 +109,8 @@ vi.mock("@/components/dialogs/ConfirmActionDialog", () => ({
   ConfirmActionDialog: ({ trigger }: { trigger: React.ReactNode }) => <>{trigger}</>,
 }))
 
-vi.mock("@/hooks/useApproveActions", () => ({
-  useApproveAll: () => ({ approveAll: vi.fn(), loading: false }),
-}))
-
 vi.mock("@/hooks/useProjectActions", () => ({
+  useApproveAll: () => ({ approveAll: vi.fn(), loading: false }),
   useFinishProject:  () => ({ finishProject:  vi.fn(), loading: false }),
   useDisableProject: () => ({ disableProject: vi.fn(), loading: false }),
   useEnableProject:  () => ({ enableProject:  vi.fn(), loading: false }),
