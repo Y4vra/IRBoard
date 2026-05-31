@@ -111,12 +111,16 @@ function Home() {
   // Derive unique filter options from the data
   const allStates = useMemo(() => {
     if (!currentProjects) return [];
-    return Array.from(new Set(currentProjects.map(p => p.state))).sort();
+    return Array.from(new Set(currentProjects.map(p => p.state))).sort(
+    (a, b) => a.localeCompare(b)
+    );
   }, [currentProjects]);
 
   const allPriorities = useMemo(() => {
     if (!currentProjects) return [];
-    return Array.from(new Set(currentProjects.map(p => p.priorityStyle))).sort();
+    return Array.from(new Set(currentProjects.map(p => p.priorityStyle))).sort(
+    (a, b) => a.localeCompare(b)
+    );
   }, [currentProjects]);
 
   // Filtered + sorted list

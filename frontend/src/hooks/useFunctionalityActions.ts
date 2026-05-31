@@ -7,7 +7,7 @@ interface ActionOptions {
   onSuccess?: () => void
 }
 
-type FunctionalityAction = "disable" | "enable" | "remove" | "delete" 
+type FunctionalityAction = "approve" | "disable" | "enable" | "remove" | "delete" 
 
 function useFunctionalityAction(action: FunctionalityAction, { projectId, functionalityId, onSuccess }: ActionOptions) {
   const [loading, setLoading] = useState(false)
@@ -32,9 +32,16 @@ function useFunctionalityAction(action: FunctionalityAction, { projectId, functi
     } finally {
       setLoading(false)
     }
-  }, [projectId, onSuccess])
+  }, [projectId, onSuccess,action,functionalityId])
 
   return { execute, loading, error }
+}
+
+// ── Approve Functionality ─────────────────────────────────────────────────────
+
+export function useApproveFunctionality(options: ActionOptions) {
+  const { execute, loading, error } = useFunctionalityAction("approve", options)
+  return { approveFunctionality: execute, loading, error }
 }
 
 // ── Disable Functionality ───────────────────────────────────────────────────────────

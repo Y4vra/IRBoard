@@ -23,7 +23,7 @@ import {
   type DropPreview,
 } from "@/lib/reorderUtils"
 import { collectPendingNFRIds } from "@/lib/requirementUtils"
-import { useApproveNFRequirements } from "@/hooks/useApproveActions"
+import { useApproveNFRequirements } from "@/hooks/useNFRequirementActions"
 import {
   Table,
   TableBody,

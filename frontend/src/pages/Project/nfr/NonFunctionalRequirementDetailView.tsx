@@ -32,15 +32,10 @@ import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
 import { sortByOrderValue } from "@/lib/reorderUtils";
-import { useApproveNFRequirements } from "@/hooks/useApproveActions";
 import { LockIndicator } from "@/components/LockIndicator";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
-import { useDisableNFRequirements } from "@/hooks/useDisableActions";
-import { useEnableNFRequirements } from "@/hooks/useEnableActions";
-import { useRemoveNFRequirements } from "@/hooks/useRemoveActions";
-import { useDeleteNFRequirements } from "@/hooks/useDeleteActions";
-import { useFinishNFRequirements } from "@/hooks/useFinishActions";
+import { useApproveNFRequirements,useDisableNFRequirements,useEnableNFRequirements,useRemoveNFRequirements,useDeleteNFRequirements,useFinishNFRequirements } from "@/hooks/useNFRequirementActions";
 import { useAuth } from "@/context/AuthContext";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 

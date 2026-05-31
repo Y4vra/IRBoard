@@ -13,12 +13,8 @@ import { LockIndicator } from "@/components/LockIndicator";
 import { EntityType } from "@/lib/lockUtils";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useProject } from "@/hooks/useProject";
-import { useApproveStakeholders } from "@/hooks/useApproveActions";
 import { useBackendResource } from "@/hooks/useBackendResource";
-import { useDeleteStakeholders } from "@/hooks/useDeleteActions";
-import { useRemoveStakeholders } from "@/hooks/useRemoveActions";
-import { useEnableStakeholders } from "@/hooks/useEnableActions";
-import { useDisableStakeholders } from "@/hooks/useDisableActions";
+import { useApproveStakeholders,useDeleteStakeholders,useRemoveStakeholders,useEnableStakeholders,useDisableStakeholders } from "@/hooks/useStakeholderActions";
 import { useAuth } from "@/context/AuthContext";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 

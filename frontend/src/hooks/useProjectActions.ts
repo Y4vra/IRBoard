@@ -70,3 +70,37 @@ export function useFinishProject(options: ActionOptions) {
   const { execute, loading, error } = useProjectAction("finish", options)
   return { finishProject: execute, loading, error }
 }
+
+// ── Project-wide approval ─────────────────────────────────────────────────────
+
+export function useApproveAll({ projectId, onSuccess }: ActionOptions) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const approveAll = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/projects/${projectId}/approveAll`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      )
+      if (!res.ok) {
+        const err = await res.json().catch(() => null)
+        throw new Error(err?.message || "Failed to approve all elements")
+      }
+      onSuccess?.()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error")
+      throw e
+    } finally {
+      setLoading(false)
+    }
+  }, [projectId, onSuccess])
+
+  return { approveAll, loading, error }
+}

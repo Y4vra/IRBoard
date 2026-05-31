@@ -22,7 +22,7 @@ import { BackToProjectButton } from "@/components/BackToProjectButton"
 import { useProject } from "@/hooks/useProject"
 import { StatsChart } from "@/components/graphics/StatsChart"
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge"
-import { useApproveDocuments } from "@/hooks/useApproveActions"
+import { useApproveDocuments } from "@/hooks/useDocumentActions"
 import type { ViewMode } from "@/types/ViewMode"
 import { ViewToggle } from "@/components/ViewToggle"
 

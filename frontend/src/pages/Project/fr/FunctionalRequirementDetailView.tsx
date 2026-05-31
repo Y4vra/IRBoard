@@ -37,14 +37,9 @@ import { RemoveButton } from "@/components/RemoveButton";
 import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { sortByOrderValue } from "@/lib/reorderUtils";
-import { useApproveRequirements } from "@/hooks/useApproveActions";
-import { useDisableFunctionalRequirements } from "@/hooks/useDisableActions";
-import { useEnableFunctionalRequirements } from "@/hooks/useEnableActions";
-import { useRemoveFunctionalRequirements } from "@/hooks/useRemoveActions";
-import { useDeleteFunctionalRequirements } from "@/hooks/useDeleteActions";
+import { useApproveFunctionalRequirements, useDisableFunctionalRequirements,useEnableFunctionalRequirements,useRemoveFunctionalRequirements, useDeleteFunctionalRequirements,useFinishFunctionalRequirements } from "@/hooks/useFunctionalRequirementActions";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
-import { useFinishFunctionalRequirements } from "@/hooks/useFinishActions";
 import { useAuth } from "@/context/AuthContext";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 
@@ -249,7 +244,7 @@ function FunctionalRequirementDetailView() {
     refresh,
   } = useBackendResource<FunctionalRequirement>({ fetcher });
 
-  const { approveFunctionalRequirements, loading: approving } = useApproveRequirements({
+  const { approveFunctionalRequirements, loading: approving } = useApproveFunctionalRequirements({
     projectId: projectId!,
     onSuccess: refresh,
   })

@@ -41,7 +41,7 @@ import { useFunctionalities } from "@/hooks/useFunctionalities";
 import { ProjectStatsSection } from "@/components/graphics/ProjectStatsSectionGraph";
 import { ProjectHealthBar } from "@/components/graphics/ProjectHealthBar";
 import { LinkUserToProjectDialog } from "@/components/dialogs/userLinking/LinkUserToProjectDialog";
-import { useApproveAll } from "@/hooks/useApproveActions";
+import { useApproveAll } from "@/hooks/useProjectActions";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 import { useDeleteProject, useDisableProject, useEnableProject, useFinishProject, useRemoveProject } from "@/hooks/useProjectActions";
 import { ProjectStateBadge } from "@/components/badges/ProjectStateBadge";

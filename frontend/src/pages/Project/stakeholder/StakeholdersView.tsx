@@ -24,7 +24,7 @@ import { EntityStateBadge } from "@/components/badges/EntityStateBadge"
 import { StatsChart } from "@/components/graphics/StatsChart"
 import { useProject } from "@/hooks/useProject"
 import { BackToProjectButton } from "@/components/BackToProjectButton"
-import { useApproveStakeholders } from "@/hooks/useApproveActions"
+import { useApproveStakeholders } from "@/hooks/useStakeholderActions"
 import type { ViewMode } from "@/types/ViewMode"
 import { ViewToggle } from "@/components/ViewToggle"
 

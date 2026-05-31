@@ -16,11 +16,7 @@ import { EntityStateBadge } from "@/components/badges/EntityStateBadge";
 import { LockIndicator } from "@/components/LockIndicator";
 import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
-import { useApproveDocuments } from "@/hooks/useApproveActions";
-import { useDisableDocuments } from "@/hooks/useDisableActions";
-import { useEnableDocuments } from "@/hooks/useEnableActions";
-import { useRemoveDocuments } from "@/hooks/useRemoveActions";
-import { useDeleteDocuments } from "@/hooks/useDeleteActions";
+import { useApproveDocuments,useDisableDocuments, useEnableDocuments, useRemoveDocuments, useDeleteDocuments} from "@/hooks/useDocumentActions";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {

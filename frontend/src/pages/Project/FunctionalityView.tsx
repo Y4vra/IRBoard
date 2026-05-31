@@ -58,7 +58,7 @@ import {
   midpointOrderValue,
   type DropPreview,
 } from "@/lib/reorderUtils"
-import { useApproveRequirements } from "@/hooks/useApproveActions"
+import { useApproveFunctionalRequirements } from "@/hooks/useFunctionalRequirementActions"
 import {
   Table,
   TableBody,
@@ -496,7 +496,7 @@ function FunctionalityView() {
   const frStats = functionalRequirementStats?.[functionalityId!] ?? {}
   const functionalityPrefix = functionality?.label ?? "FR"
 
-  const { approveFunctionality, loading: approving } = useApproveRequirements({
+  const { approveFunctionalRequirements, loading: approving } = useApproveFunctionalRequirements({
     projectId: projectId!,
     onSuccess: refreshRequirements,
   })
@@ -643,7 +643,7 @@ function FunctionalityView() {
                 />
                 <Button size="sm" variant="outline"
                   disabled={pendingIds.length === 0 || approving}
-                  onClick={() => approveFunctionality(functionalityId!, pendingIds)}>
+                  onClick={() => approveFunctionalRequirements(functionalityId!, pendingIds)}>
                   {approving ? "Approving..." : `Approve All (${pendingIds.length})`}
                 </Button>
 
