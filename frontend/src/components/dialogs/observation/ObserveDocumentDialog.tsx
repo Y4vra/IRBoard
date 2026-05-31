@@ -170,7 +170,7 @@ export function ObserveDocumentDialog({
                       {doc.mimeType}
                     </p>
                   )}
-                  {doc.fileSize && (
+                  {!!doc.fileSize && (
                     <p className="text-xs text-blue-400 truncate mt-0.5 pl-7">
                       {doc.fileSize}
                     </p>
