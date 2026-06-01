@@ -150,6 +150,7 @@ export function UploadDocumentDialog({ projectId, onSuccess }: UploadDocumentDia
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={() => {}}
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
                 file
                   ? "border-blue-300 bg-blue-50"

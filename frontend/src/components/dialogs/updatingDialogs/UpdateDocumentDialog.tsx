@@ -152,6 +152,7 @@ export function UpdateDocumentDialog({ projectId, document, disabled, onSuccess 
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               onClick={() => fileInputRef.current?.click()}
+              onKeyDown={() => {}}
               className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
                 file
                   ? "border-amber-300 bg-amber-50"

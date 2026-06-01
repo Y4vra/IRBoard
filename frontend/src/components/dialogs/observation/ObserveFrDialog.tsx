@@ -68,6 +68,7 @@ function FRItem({
               <span
                 role="button"
                 className="shrink-0 text-slate-400"
+                onKeyDown={() => {}}
                 onClick={(e) => {
                   e.stopPropagation();
                   setCollapsed((c) => !c);

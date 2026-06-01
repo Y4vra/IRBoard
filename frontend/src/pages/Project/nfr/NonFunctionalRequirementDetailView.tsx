@@ -284,6 +284,7 @@ function ChildNFRCard({
     >
       <div
         role="button"
+        onKeyDown={() => {}}
         className="flex items-center gap-4 px-5 py-4 cursor-pointer"
         onClick={() => navigate(`/project/${projectId}/nfr/${req.id}`)}
       >
