@@ -66,6 +66,7 @@ function FRItem({
           <div className="flex items-center gap-2 min-w-0">
             {hasChildren ? (
               <span
+                role="button"
                 className="shrink-0 text-slate-400"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -186,8 +187,10 @@ export function ObserveLinkedFRDialog({
       if (!res.ok) throw new Error("Failed to link requirement");
       onSuccess();
       onOpenChange(false);
-    } catch (e: any) {
-      setSubmitError(e.message ?? "Unknown error");
+    } catch (e) {
+      if (e instanceof Error){
+        setSubmitError(e.message ?? "Unknown error");
+      }
     } finally {
       setSubmitting(false);
     }

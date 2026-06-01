@@ -49,7 +49,7 @@ function ClickableList({
   return (
     <div className="space-y-1.5">
       {items.map((item) => (
-        <div
+        <button
           key={item}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg border bg-card hover:bg-accent/40 transition-colors cursor-pointer"
           onClick={() => navigate(buildHref(item))}
@@ -57,7 +57,7 @@ function ClickableList({
           <div className="p-1 bg-primary/10 text-primary rounded shrink-0">{icon}</div>
           <span className="text-sm font-mono flex-1 truncate">{item}</span>
           <ChevronRight className="h-3.5 w-3.5 text-slate-300 shrink-0" />
-        </div>
+        </button>
       ))}
     </div>
   )

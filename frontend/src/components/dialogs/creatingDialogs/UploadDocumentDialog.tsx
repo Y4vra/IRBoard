@@ -82,8 +82,10 @@ export function UploadDocumentDialog({ projectId, onSuccess }: UploadDocumentDia
       setStep("done");
       onSuccess();
       setTimeout(handleClose, 1200);
-    } catch (err: any) {
-      setError(err.message ?? "Unknown error");
+    } catch (err) {
+      if (err instanceof Error){
+        setError(err.message ?? "Unknown error");
+      }
       setStep("idle");
     }
   };
@@ -144,6 +146,7 @@ export function UploadDocumentDialog({ projectId, onSuccess }: UploadDocumentDia
               File <span className="text-red-500">*</span>
             </Label>
             <div
+              role="button"
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               onClick={() => fileInputRef.current?.click()}

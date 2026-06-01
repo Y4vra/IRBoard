@@ -344,10 +344,10 @@ function FunctionalRequirementCard({
           ↳ Nest inside "{r.name}"
         </div>
       )}
-      <div className="flex items-center gap-4 px-5 py-4 cursor-pointer"
+      <div role="button" className="flex items-center gap-4 px-5 py-4 cursor-pointer"
         onClick={() => navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`)}>
         {canEdit && (
-          <span className="shrink-0 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
+          <span role="button" className="shrink-0 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing"
             onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
             <GripVertical className="h-4 w-4" />
           </span>
@@ -371,7 +371,7 @@ function FunctionalRequirementCard({
           <RequirementStateBadge state={r.state} />
         </div>
         {canEdit && (
-          <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+          <div role="button" onClick={(e) => e.stopPropagation()} className="shrink-0">
             <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-1.5" /> Add Child FR
             </Button>
