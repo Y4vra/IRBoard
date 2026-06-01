@@ -471,7 +471,7 @@ function NonFunctionalRequirementDetailView() {
             <div className="flex items-center gap-3 flex-wrap">
               <RequirementStateBadge state={requirement.state} />
               {requirement.measurementUnit && (
-                <Badge variant="outline" className="text-xs font-mono text-slate-400">
+                <Badge variant="outline" data-testid="measurement-unit-badge" className="text-xs font-mono text-slate-400">
                   {requirement.measurementUnit}
                 </Badge>
               )}
