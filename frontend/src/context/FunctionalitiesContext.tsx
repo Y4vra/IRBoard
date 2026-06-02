@@ -2,7 +2,7 @@ import { type ReactNode } from "react";
 import { FunctionalitiesContext } from "./FunctionalitiesContextInstance";
 import type { FunctionalitiesResponse } from "@/types/Functionality";
 
-interface FunctionalitiesProviderProps {
+export interface FunctionalitiesProviderProps {
   children: ReactNode;
   functionalities: FunctionalitiesResponse | null;
   loading: boolean;

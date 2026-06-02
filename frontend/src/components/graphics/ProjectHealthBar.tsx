@@ -106,7 +106,7 @@ function StatPill({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-interface ProjectHealthBarProps {
+export interface ProjectHealthBarProps {
   project: Project
 }
 
@@ -122,6 +122,7 @@ export function ProjectHealthBar({ project }: ProjectHealthBarProps) {
 
   const hasAny =
     sumMap(project.stakeholderStats) > 0 ||
+    sumMap(project.documentStats) > 0 ||
     sumMap(project.nonFunctionalRequirementStats) > 0 ||
     sumMap(frStats) > 0
 

@@ -49,6 +49,7 @@ export function ConfirmActionDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
           <AlertDialogAction
+            data-testid="confirmButton"
             onClick={(e) => {
               e.preventDefault();
               onConfirm();
