@@ -5,7 +5,7 @@ interface UseBackendResourceOptions<T> {
   enabled?: boolean;          // default: true — set to false to defer fetching
 }
 
-interface UseBackendResourceResult<T> {
+export interface UseBackendResourceResult<T> {
   data:    T | null;
   loading: boolean;
   error:   string | null;

@@ -50,7 +50,7 @@ export function DocumentFilePicker({
 
   return (
     <div className="grid gap-2">
-      <Label className="text-sm font-semibold">
+      <Label className="text-sm font-semibold" htmlFor="document-file-input">
         File <span className="text-red-500">*</span>
       </Label>
 
@@ -74,6 +74,7 @@ export function DocumentFilePicker({
           ref={fileInputRef}
           type="file"
           className="hidden"
+          id="document-file-input"
           onChange={handleFileChange}
         />
 

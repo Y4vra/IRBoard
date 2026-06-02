@@ -15,7 +15,7 @@ import LoadingSpinner from "@/components/LoadingSpinner"
 import { useBackendResource } from "@/hooks/useBackendResource"
 import type { User } from "@/types/User"
 
-interface ProjectUsersMap {
+export interface ProjectUsersMap {
   managers: User[]
   not_managers: User[]
 }
