@@ -66,6 +66,7 @@ function FRItem({
           <div className="flex items-center gap-2 min-w-0">
             {hasChildren ? (
               <span
+              data-testid={"expand-fr-"+fr.id}
                 role="button"
                 className="shrink-0 text-slate-400"
                 onKeyDown={() => {}}

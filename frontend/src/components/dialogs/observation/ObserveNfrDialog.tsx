@@ -95,8 +95,12 @@ export function ObserveNFRDialog({
       if (!res.ok) throw new Error("Failed to link NFR");
       onSuccess();
       onOpenChange(false);
-    } catch (e: any) {
-      setSubmitError(e.message ?? "Unknown error");
+    } catch (e: unknown) {
+      if(e instanceof Error){
+        setSubmitError(e.message ?? "Unknown error");
+      }else{
+        console.error(e);
+      }
     } finally {
       setSubmitting(false);
     }
