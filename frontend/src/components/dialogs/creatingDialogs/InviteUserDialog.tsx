@@ -52,7 +52,8 @@ export function InviteUserDialog({ onSuccess }: InviteUserDialogProps) {
       setInvitationCode(result.oryId)
       onSuccess()
       setTimeout(() => handleClose(), 1000) 
-    } catch (err) {
+    } catch (e) {
+      console.error(e)
       alert("Error inviting user")
     } finally {
       setLoading(false)
@@ -147,7 +148,7 @@ export function InviteUserDialog({ onSuccess }: InviteUserDialogProps) {
                 <code className="flex-1 bg-white p-2 rounded border text-xs font-mono break-all font-bold">
                   {invitationCode}
                 </code>
-                <Button size="icon" variant="outline" className="h-9 w-9 bg-white" onClick={copyToClipboard}>
+                <Button size="icon" variant="outline" className="h-9 w-9 bg-white" aria-label="Copy invitation code" onClick={copyToClipboard}>
                   {isCopied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-slate-400" />}
                 </Button>
               </div>
