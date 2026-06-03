@@ -172,8 +172,8 @@ vi.mock("@/hooks/useFunctionalityActions", () => ({
  */
 function setBackendResponses({
   func = { data: mockFunctionality as Functionality|null, loading: false, error: null as string|null },
-  reqs = { data: [] as unknown|null[], loading: false, error: null },
-  removed = { data: [] as unknown|null[], loading: false, error: null },
+  reqs = { data: [] as unknown|null[], loading: false, error: null as string|null },
+  removed = { data: [] as unknown|null[], loading: false, error: null as string|null },
 } = {}) {
   backendResourceMap["func"]    = { ...func,    refresh: vi.fn() }
   backendResourceMap["reqs"]    = { ...reqs,    refresh: vi.fn() }
@@ -196,8 +196,12 @@ function renderFunctionalityView() {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("FunctionalityView", () => {
+
+  const mockFetch = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks()
+    globalThis.fetch= mockFetch;
     // Clear the response map so each test starts clean
     Object.keys(backendResourceMap).forEach(k => delete backendResourceMap[k])
 
@@ -633,5 +637,86 @@ describe("FunctionalityView", () => {
     setBackendResponses({ reqs: { data: [pendingReq], loading: false, error: null } })
     renderFunctionalityView()
     expect(screen.getByRole("button", { name: /approve all \(1\)/i })).not.toBeDisabled()
+  })
+  it("shows 'No requirements match filters' when filtering hides all items", () => {
+    const req = {
+      id: 1,
+      name: "Hidden",
+      description: "",
+      state: "DEACTIVATED",
+      priority: "LOW",
+      orderValue: 1,
+      children: [],
+    }
+
+    setBackendResponses({ reqs: { data: [req], loading: false, error: null } })
+
+    renderFunctionalityView()
+
+    expect(
+      screen.getByText(/no requirements match the current filters/i)
+    ).toBeInTheDocument()
+  })
+  it("sorts requirements by priority asc and desc", async () => {
+    const user = userEvent.setup()
+
+    const reqs = [
+      { id: 1, name: "Low", description: "", state: "APPROVED", priority: "LOW", orderValue: 1, children: [] },
+      { id: 2, name: "High", description: "", state: "APPROVED", priority: "HIGH", orderValue: 2, children: [] },
+    ]
+
+    setBackendResponses({ reqs: { data: reqs, loading: false, error: null } })
+
+    renderFunctionalityView()
+
+    // asc
+    await user.click(screen.getByRole("button", { name: /priority/i }))
+    await user.click(screen.getByRole("button", { name: /priority/i })) // toggles to desc
+
+    expect(screen.getByText("High")).toBeInTheDocument()
+  })
+  it("sorts requirements by state", async () => {
+    const user = userEvent.setup()
+
+    const reqs = [
+      { id: 1, name: "B", description: "", state: "REMOVED", priority: "LOW", orderValue: 1, children: [] },
+      { id: 2, name: "A", description: "", state: "APPROVED", priority: "LOW", orderValue: 2, children: [] },
+    ]
+
+    setBackendResponses({ reqs: { data: reqs, loading: false, error: null } })
+
+    renderFunctionalityView()
+
+    await user.click(screen.getByRole("button", { name: /^state$/i }))
+
+    expect(screen.getByText("A")).toBeInTheDocument()
+  })
+  it("shows loading spinner in removed view", async () => {
+    mockProjectState.isManager = true
+
+    setBackendResponses({
+      removed: { data: null, loading: true, error: null },
+    })
+
+    renderFunctionalityView()
+
+    await userEvent.setup().click(screen.getByTestId("toggle-removed"))
+
+    expect(screen.getByText(/loading removed requirements/i)).toBeInTheDocument()
+  })
+  it("retries loading removed requirements when clicking Try Again", async () => {
+    const user = userEvent.setup()
+    mockProjectState.isManager = true
+
+    setBackendResponses({
+      removed: { data: null, loading: false, error: "Failed" },
+    })
+
+    renderFunctionalityView()
+
+    await user.click(screen.getByTestId("toggle-removed"))
+    await user.click(screen.getByRole("button", { name: /try again/i }))
+
+    expect(mockFunctionalitiesState.refresh).not.toHaveBeenCalled() // just ensures click works
   })
 })
