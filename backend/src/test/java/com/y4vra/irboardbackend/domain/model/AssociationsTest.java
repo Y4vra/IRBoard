@@ -1,6 +1,5 @@
 package com.y4vra.irboardbackend.domain.model;
 
-import com.y4vra.irboardbackend.domain.model.enums.EntityState;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -245,6 +244,87 @@ class AssociationsTest {
             Associations.link(parent, child2);
 
             assertThat(parent.getChildren()).containsExactlyInAnyOrder(child1, child2);
+        }
+    }
+    // ── Requirement Observations ──────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("Requirement observations")
+    class RequirementObservations {
+
+        @Test
+        @DisplayName("observer links to stakeholder and observation is bidirectional")
+        void observe_requirementStakeholder() {
+            FunctionalRequirement observer = new FunctionalRequirement();
+            Stakeholder observed = new Stakeholder();
+
+            Associations.observe(observer, observed);
+
+            assertThat(observer.getObservedStakeholders()).contains(observed);
+            assertThat(observed.getObserverRequirements()).contains(observer);
+        }
+
+        @Test
+        @DisplayName("observer links to document and observation is bidirectional")
+        void observe_requirementDocument() {
+            FunctionalRequirement observer = new FunctionalRequirement();
+            Document observed = new Document();
+
+            Associations.observe(observer, observed);
+
+            assertThat(observer.getObservedDocuments()).contains(observed);
+            assertThat(observed.getObserverRequirements()).contains(observer);
+        }
+
+        @Test
+        @DisplayName("observer links to requirement and observation is bidirectional")
+        void observe_requirementToRequirement() {
+            FunctionalRequirement observer = new FunctionalRequirement();
+            FunctionalRequirement observed = new FunctionalRequirement();
+
+            Associations.observe(observer, observed);
+
+            assertThat(observer.getObservedRequirements()).contains(observed);
+            assertThat(observed.getObserverRequirements()).contains(observer);
+        }
+
+        @Test
+        @DisplayName("unobserve removes stakeholder observation bidirectionally")
+        void unobserve_requirementStakeholder() {
+            FunctionalRequirement observer = new FunctionalRequirement();
+            Stakeholder observed = new Stakeholder();
+
+            Associations.observe(observer, observed);
+            Associations.unobserve(observer, observed);
+
+            assertThat(observer.getObservedStakeholders()).doesNotContain(observed);
+            assertThat(observed.getObserverRequirements()).doesNotContain(observer);
+        }
+
+        @Test
+        @DisplayName("unobserve removes document observation bidirectionally")
+        void unobserve_requirementDocument() {
+            FunctionalRequirement observer = new FunctionalRequirement();
+            Document observed = new Document();
+
+            Associations.observe(observer, observed);
+            Associations.unobserve(observer, observed);
+
+            assertThat(observer.getObservedDocuments()).doesNotContain(observed);
+            assertThat(observed.getObserverRequirements()).doesNotContain(observer);
+        }
+
+        @Test
+        @DisplayName("unobserve removes requirement observation bidirectionally")
+        void unobserve_requirementToRequirement() {
+            FunctionalRequirement observer = new FunctionalRequirement();
+            FunctionalRequirement observed = new FunctionalRequirement();
+
+            Associations.observe(observer, observed);
+            Associations.unobserve(observer, observed);
+
+            assertThat(observer.getObservedRequirements()).doesNotContain(observed);
+            assertThat(observed.getObserverRequirements()).doesNotContain(observer);
         }
     }
 }

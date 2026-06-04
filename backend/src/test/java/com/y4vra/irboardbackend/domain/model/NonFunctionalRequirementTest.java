@@ -183,4 +183,127 @@ class NonFunctionalRequirementTest {
             assertThat(newNFR("NFR-01").getOperator()).isNull();
         }
     }
+
+// ── isPassing() logic ───────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("isPassing()")
+    class IsPassingTests {
+
+        @Test
+        @DisplayName("EQUAL_TO returns true when actual equals threshold")
+        void equalTo_passes() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.EQUAL_TO);
+            nfr.setActualValue(100.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isTrue();
+        }
+
+        @Test
+        @DisplayName("EQUAL_TO returns false when values differ")
+        void equalTo_fails() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.EQUAL_TO);
+            nfr.setActualValue(90.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isFalse();
+        }
+
+        @Test
+        @DisplayName("NOT_EQUAL_TO returns true when values differ")
+        void notEqualTo_passes() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.NOT_EQUAL_TO);
+            nfr.setActualValue(90.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isTrue();
+        }
+
+        @Test
+        @DisplayName("GREATER_THAN returns correct evaluation")
+        void greaterThan() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.GREATER_THAN);
+            nfr.setActualValue(150.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isTrue();
+        }
+
+        @Test
+        @DisplayName("GREATER_THAN_OR_EQUAL_TO boundary check")
+        void greaterThanOrEqual() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.GREATER_THAN_OR_EQUAL_TO);
+            nfr.setActualValue(100.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isTrue();
+        }
+
+        @Test
+        @DisplayName("LESS_THAN returns correct evaluation")
+        void lessThan() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.LESS_THAN);
+            nfr.setActualValue(50.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isTrue();
+        }
+
+        @Test
+        @DisplayName("LESS_THAN_OR_EQUAL_TO boundary check")
+        void lessThanOrEqual() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.LESS_THAN_OR_EQUAL_TO);
+            nfr.setActualValue(100.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isTrue();
+        }
+
+        @Test
+        @DisplayName("null operator returns false")
+        void nullOperator() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setActualValue(100.0);
+            nfr.setThresholdValue(100.0);
+
+            assertThat(nfr.isPassing()).isFalse();
+        }
+    }
+
+// ── Edge cases ─────────────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("Edge cases")
+    class EdgeCases {
+
+        @Test
+        @DisplayName("null values in comparison cause NPE")
+        void nullValuesThrow() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.GREATER_THAN);
+            nfr.setActualValue(null);
+            nfr.setThresholdValue(100.0);
+
+            assertThatThrownBy(nfr::isPassing)
+                    .isInstanceOf(NullPointerException.class);
+        }
+
+        @Test
+        @DisplayName("all fields can be null except operator-safe flow")
+        void allNullExceptOperator() {
+            NonFunctionalRequirement nfr = new NonFunctionalRequirement();
+            nfr.setOperator(ComparisonOperator.LESS_THAN);
+
+            assertThatThrownBy(nfr::isPassing)
+                    .isInstanceOf(NullPointerException.class);
+        }
+    }
 }

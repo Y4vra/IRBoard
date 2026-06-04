@@ -92,4 +92,80 @@ class UserTest {
             assertThat(u.getPendingActivationToken()).isEqualTo("tok-xyz-999");
         }
     }
+    // ── Identity (equals / hashCode) ───────────────────────────────────────────
+
+    @Nested
+    @DisplayName("Identity (equals / hashCode)")
+    class Identity {
+
+        @Test
+        @DisplayName("users with same id and oryId are equal")
+        void usersWithSameIdAndOryIdAreEqual() {
+            User u1 = new User();
+            u1.setId(1L);
+            u1.setOryId("abc");
+
+            User u2 = new User();
+            u2.setId(1L);
+            u2.setOryId("abc");
+
+            assertThat(u1).isEqualTo(u2);
+            assertThat(u1.hashCode()).isEqualTo(u2.hashCode());
+        }
+
+        @Test
+        @DisplayName("users with different id or oryId are not equal")
+        void usersWithDifferentIdentityAreNotEqual() {
+            User u1 = new User();
+            u1.setId(1L);
+            u1.setOryId("abc");
+
+            User u2 = new User();
+            u2.setId(2L);
+            u2.setOryId("abc");
+
+            User u3 = new User();
+            u3.setId(1L);
+            u3.setOryId("xyz");
+
+            assertThat(u1).isNotEqualTo(u2);
+            assertThat(u1).isNotEqualTo(u3);
+        }
+
+        @Test
+        @DisplayName("user is not equal to null or different type")
+        void userNotEqualToNullOrDifferentType() {
+            User u = new User();
+            u.setId(1L);
+            u.setOryId("abc");
+
+            assertThat(u).isNotEqualTo(null);
+            assertThat(u).isNotEqualTo("string");
+        }
+    }
+
+// ── Defaults edge cases ────────────────────────────────────────────────────
+
+    @Nested
+    @DisplayName("Default behavior edge cases")
+    class DefaultEdgeCases {
+
+        @Test
+        @DisplayName("active can be explicitly set to null (no validation in entity)")
+        void activeCanBeSetToNull() {
+            User u = new User();
+            u.setActive(null);
+
+            assertThat(u.getActive()).isNull();
+        }
+
+        @Test
+        @DisplayName("isAdmin can be explicitly set to null (no validation in entity)")
+        void isAdminCanBeSetToNull() {
+            User u = new User();
+            u.setIsAdmin(null);
+
+            assertThat(u.getIsAdmin()).isNull();
+        }
+    }
 }

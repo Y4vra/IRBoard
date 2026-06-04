@@ -3,6 +3,8 @@ package com.y4vra.irboardbackend.domain.model;
 import com.y4vra.irboardbackend.domain.model.enums.ComparisonOperator;
 import jakarta.persistence.*;
 
+import java.util.Objects;
+
 @Entity
 @DiscriminatorValue("NFR")
 public class NonFunctionalRequirement extends Requirement {
@@ -17,22 +19,16 @@ public class NonFunctionalRequirement extends Requirement {
     private Double actualValue;
 
     public boolean isPassing() {
-        switch (operator) {
-            case EQUAL_TO:
-                return actualValue == thresholdValue;
-            case NOT_EQUAL_TO:
-                return actualValue != thresholdValue;
-            case GREATER_THAN:
-                return actualValue > thresholdValue;
-            case GREATER_THAN_OR_EQUAL_TO:
-                return actualValue >= thresholdValue;
-            case LESS_THAN:
-                return actualValue < thresholdValue;
-            case LESS_THAN_OR_EQUAL_TO:
-                return actualValue <= thresholdValue;
-            default:
-                return false;
-        }
+        return switch (operator) {
+            case EQUAL_TO -> Objects.equals(actualValue, thresholdValue);
+            case NOT_EQUAL_TO -> !Objects.equals(actualValue, thresholdValue);
+            case GREATER_THAN -> actualValue > thresholdValue;
+            case GREATER_THAN_OR_EQUAL_TO -> actualValue >= thresholdValue;
+            case LESS_THAN -> actualValue < thresholdValue;
+            case LESS_THAN_OR_EQUAL_TO -> actualValue <= thresholdValue;
+            case null -> false;
+            default -> false;
+        };
     }
 
     public String getMeasurementUnit() { return measurementUnit; }
