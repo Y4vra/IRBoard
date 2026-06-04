@@ -42,7 +42,7 @@ public class NonFunctionalRequirementMapper {
         Long parentId = null;
 
         if (entity.getProject() != null) {
-            projectId = entity.getProjectId();
+            projectId = entity.getProject().getId();
         }
         if (entity.getParent() != null) {
             parentId = entity.getParent().getId();
