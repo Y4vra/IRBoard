@@ -4,9 +4,13 @@ import com.y4vra.irboardbackend.application.dtos.UserDTO;
 import com.y4vra.irboardbackend.application.mappers.UserMapper;
 import com.y4vra.irboardbackend.application.ports.IdentityService;
 import com.y4vra.irboardbackend.application.ports.PermissionService;
+import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
+import com.y4vra.irboardbackend.domain.model.Project;
 import com.y4vra.irboardbackend.domain.model.User;
+import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.projections.ProjectFunctionalityProjection;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
+import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.mapping.Any;
@@ -16,8 +20,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,8 +36,6 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private FunctionalityRepository funcitonalityRepository;
 
     @Mock
     private UserMapper userMapper;
@@ -41,6 +45,15 @@ class UserServiceTest {
 
     @Mock
     private IdentityService identService;
+
+    @Mock
+    private EntityLockService entityLockService;
+
+    @Mock
+    private ProjectRepository projectRepository;
+
+    @Mock
+    private FunctionalityRepository functionalityRepository;
 
     @InjectMocks
     private UserService userService;
@@ -99,7 +112,7 @@ class UserServiceTest {
         when(permService.getAuthorizedObjects(oryId, "Functionality", "engineers"))
                 .thenReturn(editableFunctionalities)
                 .thenReturn(viewableFunctionalities);
-        when(funcitonalityRepository.groupByIdsGroupedByProject(List.of(10L)))
+        when(functionalityRepository.groupByIdsGroupedByProject(List.of(10L)))
                 .thenReturn(List.of(projection));
         when(userMapper.toDtoWithPermissions(eq(user), eq(managedProjects), any(), any()))
                 .thenReturn(userDTO);
@@ -109,7 +122,7 @@ class UserServiceTest {
         assertThat(result).isEqualTo(userDTO);
         verify(permService).getAuthorizedObjects(oryId, "Project", "managers");
         verify(permService, times(2)).getAuthorizedObjects(oryId, "Functionality", "engineers");
-        verify(funcitonalityRepository, times(2)).groupByIdsGroupedByProject(List.of(10L));
+        verify(functionalityRepository, times(2)).groupByIdsGroupedByProject(List.of(10L));
         verify(userMapper).toDtoWithPermissions(eq(user), eq(managedProjects), any(), any());
     }
 
@@ -246,5 +259,349 @@ class UserServiceTest {
 
         assertThat(result).isEqualTo(userDTO);
         verify(userMapper).toDto(user);
+    }
+    @Test
+    void findAllForProject_returnsManagersAndNonManagers() {
+        User manager = new User();
+        manager.setOryId("manager");
+
+        User regular = new User();
+        regular.setOryId("regular");
+
+        UserDTO managerDto = mock(UserDTO.class);
+        UserDTO regularDto = mock(UserDTO.class);
+
+        when(permService.getSubjectsForObject("Project", "1", "managers"))
+                .thenReturn(List.of("manager"));
+
+        when(userRepository.findByOryIdIn(List.of("manager")))
+                .thenReturn(List.of(manager));
+
+        when(userRepository.findByOryIdNotIn(List.of("manager")))
+                .thenReturn(List.of(regular));
+
+        when(userMapper.toDto(manager)).thenReturn(managerDto);
+        when(userMapper.toDto(regular)).thenReturn(regularDto);
+
+        Map<String, List<UserDTO>> result = userService.findAllForProject(1L);
+
+        assertThat(result.get("managers")).containsExactly(managerDto);
+        assertThat(result.get("not_managers")).containsExactly(regularDto);
+    }
+    @Test
+    void deleteUser_removesIdentityAndPermissions() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        userService.deleteUser(userId);
+
+        verify(userRepository).deleteById(userId);
+        verify(identService).deleteIdentity(oryId);
+        verify(permService).removeAllTuplesForSubject(oryId);
+    }
+    @Test
+    void deleteUser_throwsWhenUserNotFound() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.deleteUser(userId))
+                .isInstanceOf(EntityNotFoundException.class);
+
+        verify(userRepository, never()).deleteById(any());
+    }
+    @Test
+    void requestEdit_locksUser() {
+        User editor = new User();
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        userService.requestEdit(userId, editor);
+
+        verify(entityLockService).lock(user, editor);
+    }
+    @Test
+    void requestEdit_throwsWhenUserNotFound() {
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                userService.requestEdit(userId, new User()))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+    @Test
+    void patch_updatesAndSavesUser() {
+        User editor = new User();
+
+        UserDTO patch = new UserDTO(
+                null,
+                null,
+                "Updated",
+                "Surname",
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(entityLockService.isLockedByUser(user, editor))
+                .thenReturn(true);
+
+        when(userRepository.save(user)).thenReturn(user);
+        when(userMapper.toDto(user)).thenReturn(userDTO);
+
+        UserDTO result = userService.patch(userId, patch, editor);
+
+        assertThat(result).isEqualTo(userDTO);
+
+        verify(userMapper).patchEntity(patch, user);
+        verify(userRepository).save(user);
+    }
+    @Test
+    void patch_throwsWhenUserDoesNotOwnLock() {
+        User editor = new User();
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(entityLockService.isLockedByUser(user, editor))
+                .thenReturn(false);
+
+        assertThatThrownBy(() ->
+                userService.patch(userId, userDTO, editor))
+                .isInstanceOf(LockableEntityException.class);
+    }
+    @Test
+    void findAllForProjectsFunctionality_returnsGroupedUsers() {
+
+        User manager = new User();
+        manager.setOryId("manager");
+
+        User engineer = new User();
+        engineer.setOryId("engineer");
+
+        User stakeholder = new User();
+        stakeholder.setOryId("stakeholder");
+
+        User other = new User();
+        other.setOryId("other");
+
+        UserDTO managerDto = new UserDTO(
+                1L,
+                "manager@mail.com",
+                "Manager",
+                "User",
+                true,
+                false,
+                null,
+                null,
+                null
+        );
+
+        UserDTO engineerDto = new UserDTO(
+                2L,
+                "engineer@mail.com",
+                "Engineer",
+                "User",
+                false,
+                false,
+                null,
+                null,
+                null
+        );
+
+        UserDTO stakeholderDto = new UserDTO(
+                3L,
+                "stakeholder@mail.com",
+                "Stakeholder",
+                "User",
+                false,
+                false,
+                null,
+                null,
+                null
+        );
+
+        UserDTO otherDto = new UserDTO(
+                4L,
+                "other@mail.com",
+                "Other",
+                "User",
+                false,
+                false,
+                null,
+                null,
+                null
+        );
+
+        when(permService.checkPermission(
+                "Project",
+                "1",
+                "linkProjectUsers",
+                oryId))
+                .thenReturn(true);
+
+        when(permService.getSubjectsForObject("Project", "1", "managers"))
+                .thenReturn(List.of("manager"));
+
+        when(permService.getSubjectsForObject("Functionality", "10", "engineers"))
+                .thenReturn(List.of("engineer"));
+
+        when(permService.getSubjectsForObject("Functionality", "10", "stakeholders"))
+                .thenReturn(List.of("stakeholder"));
+
+        when(userRepository.findByOryIdIn(List.of("manager")))
+                .thenReturn(List.of(manager));
+
+        when(userRepository.findByOryIdIn(List.of("engineer")))
+                .thenReturn(List.of(engineer));
+
+        when(userRepository.findByOryIdIn(List.of("stakeholder")))
+                .thenReturn(List.of(stakeholder));
+
+        when(userRepository.findByOryIdNotIn(any()))
+                .thenReturn(List.of(other));
+
+        when(userMapper.toDto(manager)).thenReturn(managerDto);
+        when(userMapper.toDto(engineer)).thenReturn(engineerDto);
+        when(userMapper.toDto(stakeholder)).thenReturn(stakeholderDto);
+        when(userMapper.toDto(other)).thenReturn(otherDto);
+
+        Map<String, List<UserDTO>> result =
+                userService.findAllForProjectsFunctionality(oryId, 1L, 10L);
+
+        assertThat(result.get("project_managers"))
+                .containsExactly(managerDto);
+
+        assertThat(result.get("requirement_engineers"))
+                .containsExactly(engineerDto);
+
+        assertThat(result.get("stakeholders"))
+                .containsExactly(stakeholderDto);
+
+        assertThat(result.get("others"))
+                .containsExactly(otherDto);
+    }
+    @Test
+    void findAllForProjectsFunctionality_throwsWhenUnauthorized() {
+        when(permService.checkPermission(
+                "Project",
+                "1",
+                "linkProjectUsers",
+                oryId))
+                .thenReturn(false);
+
+        assertThatThrownBy(() ->
+                userService.findAllForProjectsFunctionality(
+                        oryId,
+                        1L,
+                        10L))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+    @Test
+    void linkUserToProject_grantsManagerPermission() {
+
+        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE))
+                .thenReturn(Optional.of(mock(Project.class)));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        userService.linkUserToProject(1L, userId);
+
+        verify(permService)
+                .grantPermission(
+                        "Project",
+                        "1",
+                        "managers",
+                        oryId);
+    }
+    @Test
+    void unlinkUserFromProject_revokesManagerPermission() {
+
+        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE))
+                .thenReturn(Optional.of(mock(Project.class)));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        userService.unlinkUserFromProject(1L, userId);
+
+        verify(permService)
+                .revokePermission(
+                        "Project",
+                        "1",
+                        "managers",
+                        oryId);
+    }
+    @Test
+    void linkUserToProjectsFunctionality_grantsPermission() {
+
+        when(permService.checkPermission(
+                "Project",
+                "1",
+                "linkProjectUsers",
+                oryId))
+                .thenReturn(true);
+
+        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE))
+                .thenReturn(Optional.of(mock(Project.class)));
+
+        when(functionalityRepository.findByIdAndProjectId(10L, 1L))
+                .thenReturn(Optional.of(mock(com.y4vra.irboardbackend.domain.model.Functionality.class)));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        userService.linkUserToProjectsFunctionality(
+                oryId,
+                1L,
+                10L,
+                userId,
+                "engineers"
+        );
+
+        verify(permService)
+                .grantPermission(
+                        "Functionality",
+                        "10",
+                        "engineers",
+                        oryId);
+    }
+    @Test
+    void unlinkUserFromProjectsFunctionality_revokesPermission() {
+
+        when(permService.checkPermission(
+                "Project",
+                "1",
+                "linkProjectUsers",
+                oryId))
+                .thenReturn(true);
+
+        when(projectRepository.findByIdAndState(1L, ProjectState.ACTIVE))
+                .thenReturn(Optional.of(mock(Project.class)));
+
+        when(functionalityRepository.findByIdAndProjectId(10L, 1L))
+                .thenReturn(Optional.of(mock(com.y4vra.irboardbackend.domain.model.Functionality.class)));
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        userService.unlinkUserFromProjectsFunctionality(
+                oryId,
+                1L,
+                10L,
+                userId,
+                "engineers"
+        );
+
+        verify(permService)
+                .revokePermission(
+                        "Functionality",
+                        "10",
+                        "engineers",
+                        oryId);
     }
 }

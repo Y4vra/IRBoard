@@ -210,4 +210,298 @@ class DocumentServiceTest {
 
         verify(documentRepository, never()).save(any());
     }
+    @Test
+    void findDocumentsRemovedOfProject_returnsDocuments() {
+        when(permService.checkPermission("Project", "1", "view", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.findAllByProjectIdRemoved(projectId))
+                .thenReturn(List.of(document));
+
+        when(objStorageService.getDownloadUrl(document.getS3Key()))
+                .thenReturn(presignedUrl);
+
+        when(documentMapper.toDtoDetailed(document, presignedUrl))
+                .thenReturn(documentDTO);
+
+        List<DocumentDTO> result =
+                documentService.findDocumentsRemovedOfProject(oryId, projectId);
+
+        assertThat(result).containsExactly(documentDTO);
+    }
+    @Test
+    void findDocumentById_removedDocumentRequiresProjectManagerPermission() {
+        document.setState(EntityState.REMOVED);
+
+        when(permService.checkPermission("Project", "1", "view", oryId))
+                .thenReturn(true);
+
+        when(functionalityService.getViewableFunctionalityIds(oryId, projectId))
+                .thenReturn(viewableFunctionalities);
+
+        when(documentRepository.findByIdAndProjectId(documentId, projectId))
+                .thenReturn(Optional.of(document));
+
+        when(permService.checkPermission(
+                "Project",
+                String.valueOf(projectId),
+                "editProject",
+                oryId))
+                .thenReturn(false);
+
+        assertThatThrownBy(() ->
+                documentService.findDocumentById(oryId, projectId, documentId))
+                .isInstanceOf(AccessDeniedException.class);
+    }
+    @Test
+    void findObservableDocumentsForRequirement_returnsMappedDtos() {
+        when(permService.checkPermission("Project", "1", "view", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.findObservableDocumentsForRequirement(projectId, 5L))
+                .thenReturn(List.of(document));
+
+        when(documentMapper.toDtoList(List.of(document)))
+                .thenReturn(List.of(documentDTO));
+
+        List<DocumentDTO> result =
+                documentService.findObservableDocumentsForRequirement(
+                        oryId,
+                        projectId,
+                        5L
+                );
+
+        assertThat(result).containsExactly(documentDTO);
+    }
+    @Test
+    void updateDocument_replacesFileAndUpdatesMetadata() throws Exception {
+        Project project = new Project();
+        project.setState(ProjectState.ACTIVE);
+
+        document.setProject(project);
+        document.setState(EntityState.APPROVED);
+
+        when(permService.checkPermission("Project", "1", "edit", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.findByIdAndProjectId(documentId, projectId))
+                .thenReturn(Optional.of(document));
+
+        when(multipartFile.getInputStream())
+                .thenReturn(InputStream.nullInputStream());
+
+        when(multipartFile.getSize()).thenReturn(1024L);
+        when(multipartFile.getContentType()).thenReturn("application/pdf");
+
+        when(documentRepository.save(document))
+                .thenReturn(document);
+
+        when(objStorageService.getDownloadUrl(any()))
+                .thenReturn(presignedUrl);
+
+        when(documentMapper.toDtoDetailed(document, presignedUrl))
+                .thenReturn(documentDTO);
+
+        DocumentDTO result = documentService.updateDocument(
+                multipartFile,
+                inputDto,
+                projectId,
+                documentId,
+                oryId
+        );
+
+        assertThat(result).isEqualTo(documentDTO);
+
+        verify(objStorageService).deleteFile(document.getS3Key());
+        verify(objStorageService).uploadFile(
+                anyString(),
+                any(),
+                eq(1024L),
+                eq("application/pdf")
+        );
+        verify(documentMapper).patch(document, inputDto);
+    }
+    @Test
+    void updateDocument_throwsWhenDeleteFails() {
+        Project project = new Project();
+        project.setState(ProjectState.ACTIVE);
+
+        document.setProject(project);
+        document.setState(EntityState.APPROVED);
+
+        when(permService.checkPermission("Project", "1", "edit", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.findByIdAndProjectId(documentId, projectId))
+                .thenReturn(Optional.of(document));
+
+        doThrow(new RuntimeException("delete failed"))
+                .when(objStorageService)
+                .deleteFile(any());
+
+        assertThatThrownBy(() ->
+                documentService.updateDocument(
+                        multipartFile,
+                        inputDto,
+                        projectId,
+                        documentId,
+                        oryId))
+                .isInstanceOf(ObjectStorageException.class);
+    }
+    @Test
+    void approveDocuments_updatesState() {
+        List<Long> ids = List.of(1L, 2L);
+
+        when(permService.checkPermission(
+                "Project",
+                String.valueOf(projectId),
+                "editProject",
+                oryId))
+                .thenReturn(true);
+
+        when(documentRepository.allDocumentsBelongToProject(projectId, ids))
+                .thenReturn(true);
+
+        documentService.approveDocuments(oryId, projectId, ids);
+
+        verify(documentRepository)
+                .updateStateByIdsAndProject(
+                        ids,
+                        projectId,
+                        EntityState.APPROVED,
+                        EntityState.PENDING_APPROVAL
+                );
+    }
+    @Test
+    void approveDocuments_throwsWhenDocumentNotInProject() {
+        List<Long> ids = List.of(1L);
+
+        when(permService.checkPermission(
+                "Project",
+                String.valueOf(projectId),
+                "editProject",
+                oryId))
+                .thenReturn(true);
+
+        when(documentRepository.allDocumentsBelongToProject(projectId, ids))
+                .thenReturn(false);
+
+        assertThatThrownBy(() ->
+                documentService.approveDocuments(
+                        oryId,
+                        projectId,
+                        ids))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
+    @Test
+    void disableDocuments_changesStateToDeactivated() {
+        List<Long> ids = List.of(documentId);
+
+        document.setState(EntityState.APPROVED);
+
+        when(permService.checkPermission("Project", "1", "edit", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.allDocumentsBelongToProject(projectId, ids))
+                .thenReturn(true);
+
+        when(documentRepository.findAllByIdsAndProjectIdAndState(
+                eq(ids),
+                eq(projectId),
+                anyList()))
+                .thenReturn(List.of(document));
+
+        documentService.disableDocuments(oryId, projectId, ids);
+
+        assertThat(document.getState()).isEqualTo(EntityState.DEACTIVATED);
+    }
+    @Test
+    void enableDocuments_changesStateToPendingApproval() {
+        List<Long> ids = List.of(documentId);
+
+        document.setState(EntityState.DEACTIVATED);
+
+        when(permService.checkPermission("Project", "1", "edit", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.allDocumentsBelongToProject(projectId, ids))
+                .thenReturn(true);
+
+        when(documentRepository.findAllByIdsAndProjectIdAndState(
+                ids,
+                projectId,
+                EntityState.DEACTIVATED))
+                .thenReturn(List.of(document));
+
+        documentService.enableDocuments(oryId, projectId, ids);
+
+        assertThat(document.getState())
+                .isEqualTo(EntityState.PENDING_APPROVAL);
+    }
+    @Test
+    void removeDocuments_changesStateToRemoved() {
+        List<Long> ids = List.of(documentId);
+
+        document.setState(EntityState.DEACTIVATED);
+
+        when(permService.checkPermission("Project", "1", "edit", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.allDocumentsBelongToProject(projectId, ids))
+                .thenReturn(true);
+
+        when(documentRepository.findAllByIdsAndProjectIdAndState(
+                ids,
+                projectId,
+                EntityState.DEACTIVATED))
+                .thenReturn(List.of(document));
+
+        documentService.removeDocuments(oryId, projectId, ids);
+
+        assertThat(document.getState())
+                .isEqualTo(EntityState.REMOVED);
+    }
+    @Test
+    void deleteDocuments_removesStorageAndDatabaseRecord() {
+        List<Long> ids = List.of(documentId);
+
+        document.setState(EntityState.REMOVED);
+
+        when(permService.checkPermission("Project", "1", "edit", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.findAllByIdsAndProjectIdAndState(
+                ids,
+                projectId,
+                EntityState.REMOVED))
+                .thenReturn(List.of(document));
+
+        documentService.deleteDocuments(oryId, projectId, ids);
+
+        verify(objStorageService)
+                .deleteFile(document.getS3Key());
+
+        verify(documentRepository)
+                .deleteRemovedByIdAndProject(documentId, projectId);
+    }
+    @Test
+    void deleteDocuments_throwsWhenNotAllDocumentsFound() {
+        List<Long> ids = List.of(1L, 2L);
+
+        when(permService.checkPermission("Project", "1", "edit", oryId))
+                .thenReturn(true);
+
+        when(documentRepository.findAllByIdsAndProjectIdAndState(
+                ids,
+                projectId,
+                EntityState.REMOVED))
+                .thenReturn(List.of(document));
+
+        assertThatThrownBy(() ->
+                documentService.deleteDocuments(
+                        oryId,
+                        projectId,
+                        ids))
+                .isInstanceOf(EntityNotFoundException.class);
+    }
 }

@@ -131,4 +131,104 @@ class NonFunctionalRequirementServiceTest {
         var inOrder = inOrder(nfrRepository, permService);
         inOrder.verify(nfrRepository).save(nfr);
     }
+    @Test
+    void findNonFunctionalRequirementsRemovedOfProject_returnsListWhenAuthorized() {
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
+        when(nfrRepository.findAllByProjectIdRemoved(projectId)).thenReturn(List.of(nfr));
+        when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
+
+        List<NonFunctionalRequirementDTO> result =
+                nfrService.findNonFunctionalRequirementsRemovedOfProject(oryId, projectId);
+
+        assertThat(result)
+                .hasSize(1)
+                .containsExactly(nfrDTO);
+    }
+
+    @Test
+    void findNonFunctionalRequirementsRemovedOfProject_throwsAccessDeniedWhenUnauthorized() {
+        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
+
+        assertThatThrownBy(() ->
+                nfrService.findNonFunctionalRequirementsRemovedOfProject(oryId, projectId))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(nfrRepository, never()).findAllByProjectIdRemoved(any());
+    }
+
+    @Test
+    void createNonFunctionalRequirement_throwsAccessDeniedWhenUnauthorized() {
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(false);
+
+        assertThatThrownBy(() ->
+                nfrService.createNonFunctionalRequirement(oryId, nfrDTO, projectId))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(nfrRepository, never()).save(any());
+    }
+
+    @Test
+    void createNonFunctionalRequirement_throwsWhenProjectNotFound() {
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
+
+        when(projectRepository.findByIdAndState(
+                projectId,
+                ProjectState.ACTIVE))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                nfrService.createNonFunctionalRequirement(
+                        oryId,
+                        nfrDTO,
+                        projectId))
+                .isInstanceOf(jakarta.persistence.EntityNotFoundException.class);
+
+        verify(nfrRepository, never()).save(any());
+    }
+
+    @Test
+    void createNonFunctionalRequirement_setsPendingApprovalState() {
+
+        when(permService.checkPermission("Project", "1", "edit", oryId)).thenReturn(true);
+
+        when(projectRepository.findByIdAndState(
+                projectId,
+                ProjectState.ACTIVE))
+                .thenReturn(Optional.of(project));
+
+        when(nfrMapper.toEntity(nfrDTO)).thenReturn(nfr);
+
+        when(nfrRepository.save(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        when(nfrMapper.toDto(any()))
+                .thenReturn(nfrDTO);
+
+        nfrService.createNonFunctionalRequirement(
+                oryId,
+                nfrDTO,
+                projectId);
+
+        assertThat(nfr.getState())
+                .isEqualTo(RequirementState.PENDING_APPROVAL);
+    }
+
+    @Test
+    void findNonFunctionalRequirementsRemovedOfProject_returnsEmptyList() {
+
+        when(permService.checkPermission("Project", "1", "view", oryId))
+                .thenReturn(true);
+
+        when(nfrRepository.findAllByProjectIdRemoved(projectId))
+                .thenReturn(List.of());
+
+        List<NonFunctionalRequirementDTO> result =
+                nfrService.findNonFunctionalRequirementsRemovedOfProject(
+                        oryId,
+                        projectId);
+
+        assertThat(result).isEmpty();
+
+        verify(nfrMapper, never()).toDto(any());
+    }
 }
