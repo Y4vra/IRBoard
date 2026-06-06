@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.infrastructure.api.rest;
 
+import com.y4vra.irboardbackend.application.mappers.*;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.*;
 import com.y4vra.irboardbackend.domain.repositories.*;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,7 +44,6 @@ public abstract class IrBoardBaseTest {
 
     RestClient client;
 
-
     @Autowired
     ProjectRepository projectRepository;
     @Autowired
@@ -52,8 +53,26 @@ public abstract class IrBoardBaseTest {
     @Autowired
     NonFunctionalRequirementRepository nfrRepository;
     @Autowired
+    FunctionalRequirementRepository frRepository;
+    @Autowired
     DocumentRepository documentRepository;
-    @Autowired UserRepository userRepository;
+    @Autowired
+    UserRepository userRepository;
+
+    @Autowired
+    ProjectMapper projectMapper;
+    @Autowired
+    FunctionalityMapper functionalityMapper;
+    @Autowired
+    StakeholderMapper stakeholderMapper;
+    @Autowired
+    NonFunctionalRequirementMapper nfrMapper;
+    @Autowired
+    FunctionalRequirementMapper frMapper;
+    @Autowired
+    DocumentMapper documentMapper;
+    @Autowired
+    UserMapper userMapper;
 
     // ── fixtures ─────────────────────────────────────────────────────────────
     protected static final String SYSTEM_ADMIN_1_ORY_ID = "ory-admin-001";
@@ -94,6 +113,11 @@ public abstract class IrBoardBaseTest {
         userRepository.save(buildUser(SYSTEM_ADMIN_1_ORY_ID));
         setSystemAdmin(SYSTEM_ADMIN_1_ORY_ID, true);
 
+        userRepository.save(buildUser(PROJECT_MANAGER_1_ORY_ID));
+        userRepository.save(buildUser(PROJECT_MANAGER_2_ORY_ID));
+        userRepository.save(buildUser(REQUIREMENT_ENGINEER_1_ORY_ID));
+        userRepository.save(buildUser(STAKEHOLDER_1_ORY_ID));
+
         // Seed projects
         activeProject   = projectRepository.save(buildProject("Alpha", ProjectState.ACTIVE));
 
@@ -129,9 +153,29 @@ public abstract class IrBoardBaseTest {
                 .thenReturn(true);
     }
 
+    /** Stubs Keto 'viewRequirements' (functionality-level) permission for a given user. */
+    protected void allowViewRequirementsOfFunctionality(String oryId, Long functionalityId) {
+        when(ketoClient.checkPermission("Functionality", String.valueOf(functionalityId), "viewRequirements", oryId))
+                .thenReturn(true);
+    }
+
+    /** Stubs Keto 'editRequirements' (functionality-level) permission for a given user. */
+    protected void allowEditRequirementsOfFunctionality(String oryId, Long functionalityId) {
+        when(ketoClient.checkPermission("Functionality", String.valueOf(functionalityId), "editRequirements", oryId))
+                .thenReturn(true);
+    }
+
     // ── Helpers — request builders ───────────────────────────────────────────
 
     protected <T> ResponseEntity<T> get(String oryId, String uri, Class<T> type, Object... vars) {
+        return client.get()
+                .uri(uri, vars)
+                .header("X-User", oryId)
+                .retrieve()
+                .onStatus(status -> status.isError(), (req, res) -> {})
+                .toEntity(type);
+    }
+    protected <T> ResponseEntity<T> get(String oryId, String uri, ParameterizedTypeReference<T> type, Object... vars) {
         return client.get()
                 .uri(uri, vars)
                 .header("X-User", oryId)
@@ -149,6 +193,15 @@ public abstract class IrBoardBaseTest {
                 .retrieve()
                 .toEntity(type);
     }
+    protected <T> ResponseEntity<T> post(String oryId, String uri, Object body, ParameterizedTypeReference<T> type, Object... vars) {
+        return client.post()
+                .uri(uri, vars)
+                .header("X-User", oryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .toEntity(type);
+    }
 
     protected <T> ResponseEntity<T> patch(String oryId, String uri, Object body, Class<T> type, Object... vars) {
         return client.patch()
@@ -157,7 +210,15 @@ public abstract class IrBoardBaseTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
-                .onStatus(status -> status.isError(), (req, res) -> {})
+                .toEntity(type);
+    }
+    protected <T> ResponseEntity<T> patch(String oryId, String uri, Object body, ParameterizedTypeReference<T> type, Object... vars) {
+        return client.patch()
+                .uri(uri, vars)
+                .header("X-User", oryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
                 .toEntity(type);
     }
 
@@ -166,7 +227,13 @@ public abstract class IrBoardBaseTest {
                 .uri(uri, vars)
                 .header("X-User", oryId)
                 .retrieve()
-                .onStatus(status -> status.isError(), (req, res) -> {})
+                .toEntity(type);
+    }
+    protected <T> ResponseEntity<T> delete(String oryId, String uri, ParameterizedTypeReference<T> type, Object... vars) {
+        return client.delete()
+                .uri(uri, vars)
+                .header("X-User", oryId)
+                .retrieve()
                 .toEntity(type);
     }
 
@@ -184,7 +251,12 @@ public abstract class IrBoardBaseTest {
     }
 
     protected Project buildProject(String name, ProjectState state) {
-        return new Project(name, name + " description", PriorityStyle.TERNARY.name());
+        Project p = new Project();
+        p.setName(name);
+        p.setDescription(name + "-description");
+        p.setState(state);
+        p.setPriorityStyle(PriorityStyle.TERNARY);
+        return p;
     }
 
     protected Functionality buildFunctionality(String name, FunctionalityState state, Project project) {
@@ -193,7 +265,7 @@ public abstract class IrBoardBaseTest {
         f.setDescription(name + " description");
         f.setLabel(name.toUpperCase());
         f.setState(state);
-        f.setProject(project);
+        Associations.link(project, f);
         return f;
     }
 
@@ -203,6 +275,7 @@ public abstract class IrBoardBaseTest {
         s.setDescription(name + " description");
         s.setState(state);
         s.setProject(project);
+        Associations.link(project, s);
         return s;
     }
 
@@ -218,6 +291,7 @@ public abstract class IrBoardBaseTest {
         nfr.setThresholdValue(threshold);
         nfr.setTargetValue(target);
         nfr.setActualValue(actual);
+        Associations.link(project, nfr);
         return nfr;
     }
 
@@ -230,6 +304,8 @@ public abstract class IrBoardBaseTest {
         fr.setFunctionality(functionality);
         fr.setPriority("HIGH");
         fr.setStability("STABLE");
+        Associations.link(functionality, fr);
+        Associations.link(project, fr);
         return fr;
     }
 
@@ -241,6 +317,7 @@ public abstract class IrBoardBaseTest {
         d.setFileSize(1024L);
         d.setState(state);
         d.setProject(project);
+        Associations.link(project, d);
         return d;
     }
 

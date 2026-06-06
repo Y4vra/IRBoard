@@ -8,6 +8,7 @@ import com.y4vra.irboardbackend.domain.model.interfaces.ProjectElement;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Table(
@@ -55,5 +56,17 @@ public class Functionality extends ProjectElement {
         if (!state.equals(FunctionalityState.ACTIVE)){
             throw new FunctionalityStateException("Functionality is not able to be modified");
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Functionality that = (Functionality) o;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(description, that.description) && Objects.equals(label, that.label) && state == that.state;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description, label, state);
     }
 }

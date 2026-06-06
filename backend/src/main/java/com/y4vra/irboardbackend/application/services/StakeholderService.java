@@ -83,7 +83,7 @@ public class StakeholderService {
     }
     @Transactional(readOnly = true)
     public List<StakeholderDTO> findStakeholdersRemovedOfProject(String oryId, Long projectId) {
-        checkViewPermission(oryId,String.valueOf(projectId));
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
         return stakeholderRepository.findAllByProjectIdRemoved(projectId).stream()
                 .map(stakeholderMapper::toDto)
                 .collect(Collectors.toList());

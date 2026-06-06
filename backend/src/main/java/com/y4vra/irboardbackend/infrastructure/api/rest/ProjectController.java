@@ -48,7 +48,7 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.findById(((User) authentication.getPrincipal()).getOryId(), projectId));
     }
     @GetMapping("/{projectId}/isManager")
-    public ResponseEntity<Boolean> getCurrentUser(Authentication authentication, @PathVariable Long projectId) {
+    public ResponseEntity<Boolean> isManager(Authentication authentication, @PathVariable Long projectId) {
         return ResponseEntity.ok(permissionService.checkPermission("Project",String.valueOf(projectId),"editProject",((User)authentication.getPrincipal()).getOryId()));
     }
 
@@ -61,7 +61,7 @@ public class ProjectController {
         return ResponseEntity.ok(functionalityService.findRemovedFunctionalitiesOfProject(((User) authentication.getPrincipal()).getOryId(),projectId));
     }
     @GetMapping("/{projectId}/functionalRequirements/observable/{requirementId}")
-    public ResponseEntity<List<FunctionalityDTO>> getObservableStakeholdersForRequirement(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
+    public ResponseEntity<List<FunctionalityDTO>> findObservableFRequirementsGroupedByFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long requirementId) {
         return ResponseEntity.ok(functionalRequirementService.findObservableFRequirementsGroupedByFunctionality(((User) authentication.getPrincipal()).getOryId(),projectId, requirementId));
     }
 

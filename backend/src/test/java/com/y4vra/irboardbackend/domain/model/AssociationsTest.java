@@ -52,7 +52,9 @@ class AssociationsTest {
         @DisplayName("linking multiple functionalities to the same project")
         void link_multipleFunctionalities() {
             Functionality f1 = new Functionality();
+            f1.setName("f1");
             Functionality f2 = new Functionality();
+            f2.setName("f2");
             Associations.link(project, f1);
             Associations.link(project, f2);
 
@@ -63,7 +65,9 @@ class AssociationsTest {
         @DisplayName("unlinking one functionality does not affect others")
         void unlink_doesNotAffectOtherFunctionalities() {
             Functionality f1 = new Functionality();
+            f1.setName("f1");
             Functionality f2 = new Functionality();
+            f2.setName("f2");
             Associations.link(project, f1);
             Associations.link(project, f2);
 
