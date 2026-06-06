@@ -1,6 +1,5 @@
 package com.y4vra.irboardbackend.infrastructure.persistence;
 
-import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.Requirement;
 import com.y4vra.irboardbackend.domain.model.Stakeholder;
 import com.y4vra.irboardbackend.domain.model.enums.EntityState;
@@ -95,10 +94,6 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     }
 
     @Override
-    public List<Stakeholder> findAll() {
-        return jpaRepository.findAll();
-    }
-    @Override
     public List<Stakeholder> findAllById(Iterable<Long> ids) {
         return jpaRepository.findAllById(ids);
     }
@@ -155,5 +150,19 @@ public class StakeholderRepositoryImpl implements StakeholderRepository {
     @Override
     public List<Stakeholder> findAllByIdsAndProjectIdAndState(List<Long> stakeholderIds, Long projectId, List<EntityState> states) {
         return jpaRepository.findAllByIdsAndProjectIdAndState(stakeholderIds,projectId,states);
+    }
+
+    /*-------------------testing purposes----------------*/
+    @Override
+    public List<Stakeholder> findAll() {
+        return jpaRepository.findAll();
+    }
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
+    }
+    @Override
+    public void saveAll(List<Stakeholder> stakeholders) {
+        jpaRepository.saveAll(stakeholders);
     }
 }

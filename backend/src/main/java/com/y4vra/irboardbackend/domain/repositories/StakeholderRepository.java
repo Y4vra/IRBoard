@@ -11,7 +11,6 @@ import java.util.Set;
 
 public interface StakeholderRepository {
     //base queries to be avoided
-    List<Stakeholder> findAll();
     List<Stakeholder> findAllById(Iterable<Long> ids);
     Optional<Stakeholder> findByIdAndProjectId(Long id,Long projectId);
     Stakeholder save(Stakeholder stakeholder);
@@ -30,4 +29,9 @@ public interface StakeholderRepository {
 
     List<Stakeholder> findAllByIdsAndProjectIdAndState(List<Long> stakeholderIds, Long projectId, EntityState state);
     List<Stakeholder> findAllByIdsAndProjectIdAndState(List<Long> stakeholderIds, Long projectId, List<EntityState> states);
+
+    /*-------------------testing purposes----------------*/
+    List<Stakeholder> findAll();
+    void deleteAll();
+    void saveAll(List<Stakeholder> stakeholders);
 }

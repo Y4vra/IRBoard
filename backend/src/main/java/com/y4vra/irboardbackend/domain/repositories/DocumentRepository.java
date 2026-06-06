@@ -30,4 +30,9 @@ public interface DocumentRepository {
     List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states);
 
     List<String> findAllObjectStorageKeysByProjectId(Long projectId);
+
+    /*-------------------testing purposes----------------*/
+    List<Document> findAll();
+    void deleteAll();
+    void saveAll(List<Document> documents);
 }

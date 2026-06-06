@@ -31,4 +31,9 @@ public interface FunctionalityRepository {
     List<Functionality> findByStateNotAndProjectId(FunctionalityState functionalityState, Long projectId);
 
     Optional<Functionality> findByIdAndStatesAndProjectIdAndProjectState(Long functionalityId, List<FunctionalityState> active, Long projectId, ProjectState projectState);
+
+    /*-------------------testing purposes----------------*/
+    List<Functionality> findAll();
+    void deleteAll();
+    void saveAll(List<Functionality> functionalitys);
 }

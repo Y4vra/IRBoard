@@ -106,16 +106,6 @@ public class DocumentRepositoryImpl implements DocumentRepository {
         this.jpaRepository = jpaRepository;
     }
 
-//    @Override
-//    public List<Document> findAll() {
-//        return jpaRepository.findAll();
-//    }
-
-//    @Override
-//    public List<Document> findAllById(Iterable<Long> ids) {
-//        return jpaRepository.findAllById(ids);
-//    }
-
     @Override
     public List<String> findAllObjectStorageKeysByProjectId(Long projectId) {
         return jpaRepository.findAllObjectStorageKeysByProjectId(projectId);
@@ -176,5 +166,18 @@ public class DocumentRepositoryImpl implements DocumentRepository {
     @Override
     public List<Document> findAllByIdsAndProjectIdAndState(List<Long> documentIds, Long projectId, List<EntityState> states) {
         return jpaRepository.findAllByIdsAndProjectIdAndState(documentIds,projectId,states);
+    }
+    /*-------------------testing purposes----------------*/
+    @Override
+    public List<Document> findAll() {
+        return jpaRepository.findAll();
+    }
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
+    }
+    @Override
+    public void saveAll(List<Document> documents) {
+        jpaRepository.saveAll(documents);
     }
 }

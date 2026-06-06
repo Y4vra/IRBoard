@@ -181,4 +181,17 @@ public class NonFunctionalRequirementRepositoryImpl implements NonFunctionalRequ
     public List<NonFunctionalRequirement> findAllByIdsAndProjectIdAndState(List<Long> nonFunctionalRequirementIds, Long projectId, List<RequirementState> states) {
         return jpaRepository.findAllByIdsAndProjectIdAndState(nonFunctionalRequirementIds,projectId,states);
     }
+    /*-------------------testing purposes----------------*/
+    @Override
+    public List<NonFunctionalRequirement> findAll() {
+        return jpaRepository.findAll();
+    }
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
+    }
+    @Override
+    public void saveAll(List<NonFunctionalRequirement> nonFunctionalRequirements) {
+        jpaRepository.saveAll(nonFunctionalRequirements);
+    }
 }

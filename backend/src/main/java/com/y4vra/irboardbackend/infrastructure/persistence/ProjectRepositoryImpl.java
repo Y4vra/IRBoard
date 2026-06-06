@@ -116,11 +116,6 @@ public class ProjectRepositoryImpl implements ProjectRepository {
     }
 
     @Override
-    public List<Project> findAll() {
-        return jpaRepository.findAll();
-    }
-
-    @Override
     public List<Project> findAllByStateNot(ProjectState state) {
         return jpaRepository.findAllByStateNot(state);
     }
@@ -195,5 +190,18 @@ public class ProjectRepositoryImpl implements ProjectRepository {
 
     private boolean checkAllFunctionalRequirementsOfProjectAreFinished(Long projectId) {
         return jpaRepository.checkAllFunctionalRequirementsOfProjectAreInState(projectId,RequirementState.FINISHED);
+    }
+    /*-------------------testing purposes----------------*/
+    @Override
+    public List<Project> findAll() {
+        return jpaRepository.findAll();
+    }
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
+    }
+    @Override
+    public void saveAll(List<Project> projects) {
+        jpaRepository.saveAll(projects);
     }
 }

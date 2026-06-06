@@ -1,5 +1,6 @@
 package com.y4vra.irboardbackend.domain.repositories;
 
+import com.y4vra.irboardbackend.domain.model.Document;
 import com.y4vra.irboardbackend.domain.model.NonFunctionalRequirement;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 
@@ -27,4 +28,9 @@ public interface NonFunctionalRequirementRepository {
 
     List<NonFunctionalRequirement> findAllByIdsAndProjectIdAndState(List<Long> nonFunctionalRequirementIds, Long projectId, RequirementState state);
     List<NonFunctionalRequirement> findAllByIdsAndProjectIdAndState(List<Long> nonFunctionalRequirementIds, Long projectId, List<RequirementState> states);
+
+    /*-------------------testing purposes----------------*/
+    List<NonFunctionalRequirement> findAll();
+    void deleteAll();
+    void saveAll(List<NonFunctionalRequirement> nonFunctionalRequirements);
 }

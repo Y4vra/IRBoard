@@ -8,7 +8,6 @@ import java.util.Optional;
 public interface UserRepository {
     Optional<User> findByOryId(String oryId);
     Optional<User> findByEmail(String email);
-    List<User> findAll();
     Optional<User> findById(Long id);
     User save(User project);
     void deleteByIdAndActive(Long id,Boolean active);
@@ -19,4 +18,9 @@ public interface UserRepository {
     Optional<User> findByIdAndActive(Long id,Boolean active);
 
     void deleteById(Long id);
+
+    /*-------------------testing purposes----------------*/
+    List<User> findAll();
+    void deleteAll();
+    void saveAll(List<User> users);
 }

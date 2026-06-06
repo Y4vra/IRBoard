@@ -32,11 +32,6 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> findAll() {
-        return jpaRepository.findAll();
-    }
-
-    @Override
     public Optional<User> findById(Long id) {
         return jpaRepository.findById(id);
     }
@@ -78,5 +73,19 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findByIdAndActive(Long id,Boolean active) {
         return jpaRepository.findByIdAndActive(id,active);
+    }
+
+    /*-------------------testing purposes----------------*/
+    @Override
+    public List<User> findAll() {
+        return jpaRepository.findAll();
+    }
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
+    }
+    @Override
+    public void saveAll(List<User> users) {
+        jpaRepository.saveAll(users);
     }
 }
