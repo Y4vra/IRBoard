@@ -24,10 +24,11 @@ public class KratosClient implements IdentityService {
     private final String kratosPublicUrl;
     private final String apiKey;
 
-    public KratosClient(@Value("${kratos.admin.url}") String kratosAdminUrl,
+    public KratosClient(RestTemplate restTemplate,
+                        @Value("${kratos.admin.url}") String kratosAdminUrl,
                         @Value("${kratos.admin.api.key}") String apiKey,
                         @Value("${kratos.public.url}") String kratosPublicUrl) {
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
         this.kratosAdminUrl = kratosAdminUrl;
         this.apiKey = apiKey;
         this.kratosPublicUrl=kratosPublicUrl;

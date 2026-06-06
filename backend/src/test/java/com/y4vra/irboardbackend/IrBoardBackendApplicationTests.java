@@ -1,8 +1,7 @@
 package com.y4vra.irboardbackend;
 
 import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
-import com.y4vra.irboardbackend.infrastructure.clients.MinioService;
-import io.minio.MinioClient;
+import com.y4vra.irboardbackend.infrastructure.clients.MinioObjectStorageClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -16,10 +15,10 @@ class IrBoardBackendApplicationTests {
     private KetoClient ketoClient;
 
     @MockitoBean
-    private MinioClient minioClient;
+    private io.minio.MinioClient minioClient;
 
     @MockitoBean
-    private MinioService minioService;
+    private MinioObjectStorageClient minioService;
 
     @Test
     void contextLoads() {

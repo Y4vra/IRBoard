@@ -19,9 +19,10 @@ public class KetoClient implements PermissionService {
     private final String ketoReadUrl;
     private final String ketoWriteUrl;
 
-    public KetoClient(@Value("${keto.read.url}") String ketoReadUrl,
+    public KetoClient(RestTemplate restTemplate,
+                      @Value("${keto.read.url}") String ketoReadUrl,
                       @Value("${keto.write.url}") String ketoWriteUrl) {
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
         this.ketoReadUrl = ketoReadUrl;
         this.ketoWriteUrl = ketoWriteUrl;
     }

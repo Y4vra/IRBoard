@@ -3,7 +3,6 @@ package com.y4vra.irboardbackend.infrastructure.clients;
 import com.y4vra.irboardbackend.application.ports.ObjectStorageService;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.Http.Method;
-import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,14 +12,14 @@ import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class MinioService implements ObjectStorageService {
+public class MinioObjectStorageClient implements ObjectStorageService {
 
-    private final MinioClient minioClient;
+    private final io.minio.MinioClient minioClient;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
 
-    public MinioService(MinioClient minioClient) {
+    public MinioObjectStorageClient(io.minio.MinioClient minioClient) {
         this.minioClient = minioClient;
     }
 
