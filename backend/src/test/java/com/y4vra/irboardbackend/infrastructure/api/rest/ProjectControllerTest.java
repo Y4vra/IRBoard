@@ -23,18 +23,13 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("test")
 class ProjectControllerTest extends IrBoardBaseTest{
 
-    protected Project disabledProject;
-    @Autowired
-    private View view;
     @Autowired
     private PermissionService permissionService;
     @Autowired
     private StakeholderRepository stakeholderRepository;
 
     @Override
-    void setUp() {
-            disabledProject = projectRepository.save(buildProject("Beta", ProjectState.DEACTIVATED));
-    }
+    void setUp() {}
 
     // ════════════════════════════════════════════════════════════════════════
     // tests
