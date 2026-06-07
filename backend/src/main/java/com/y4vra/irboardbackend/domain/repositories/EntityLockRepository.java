@@ -14,4 +14,6 @@ public interface EntityLockRepository {
     EntityLock save(EntityLock entityLock);
     List<EntityLock> findByProjectId(Long projectId);
     List<EntityLock> findByIsSystemWide();
+
+    void deleteAll();
 }

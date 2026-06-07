@@ -60,7 +60,7 @@ public class NonFunctionalRequirementService extends RequirementService {
     }
     @Transactional(readOnly = true)
     public List<NonFunctionalRequirementDTO> findNonFunctionalRequirementsRemovedOfProject(String oryId, Long projectId) {
-        checkViewPermission(oryId,String.valueOf(projectId));
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
         return nfrRepository.findAllByProjectIdRemoved(projectId).stream()
                 .map(nfrMapper::toDto)
                 .collect(Collectors.toList());

@@ -73,7 +73,7 @@ public class DocumentService {
     }
     @Transactional(readOnly = true)
     public List<DocumentDTO> findDocumentsRemovedOfProject(String oryId, Long projectId) {
-        checkViewPermission(oryId,String.valueOf(projectId));
+        checkProjectManagerPermission(oryId,String.valueOf(projectId));
         return documentRepository.findAllByProjectIdRemoved(projectId).stream()
                 .map(doc -> {
                     String url = objStorageService.getDownloadUrl(doc.getS3Key());

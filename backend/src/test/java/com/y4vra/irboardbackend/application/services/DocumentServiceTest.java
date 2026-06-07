@@ -212,7 +212,7 @@ class DocumentServiceTest {
     }
     @Test
     void findDocumentsRemovedOfProject_returnsDocuments() {
-        when(permService.checkPermission("Project", "1", "view", oryId))
+        when(permService.checkPermission("Project", "1", "editProject", oryId))
                 .thenReturn(true);
 
         when(documentRepository.findAllByProjectIdRemoved(projectId))

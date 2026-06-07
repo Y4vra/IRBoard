@@ -67,4 +67,9 @@ public class EntityLockRepositoryImpl implements EntityLockRepository {
     public List<EntityLock> findByIsSystemWide() {
         return jpaRepository.findBySystemWide(true);
     }
+
+    @Override
+    public void deleteAll() {
+        jpaRepository.deleteAll();
+    }
 }

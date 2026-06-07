@@ -133,7 +133,7 @@ class NonFunctionalRequirementServiceTest {
     }
     @Test
     void findNonFunctionalRequirementsRemovedOfProject_returnsListWhenAuthorized() {
-        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(true);
+        when(permService.checkPermission("Project", "1", "editProject", oryId)).thenReturn(true);
         when(nfrRepository.findAllByProjectIdRemoved(projectId)).thenReturn(List.of(nfr));
         when(nfrMapper.toDto(nfr)).thenReturn(nfrDTO);
 
@@ -147,7 +147,7 @@ class NonFunctionalRequirementServiceTest {
 
     @Test
     void findNonFunctionalRequirementsRemovedOfProject_throwsAccessDeniedWhenUnauthorized() {
-        when(permService.checkPermission("Project", "1", "view", oryId)).thenReturn(false);
+        when(permService.checkPermission("Project", "1", "editProject", oryId)).thenReturn(false);
 
         assertThatThrownBy(() ->
                 nfrService.findNonFunctionalRequirementsRemovedOfProject(oryId, projectId))
@@ -216,7 +216,7 @@ class NonFunctionalRequirementServiceTest {
     @Test
     void findNonFunctionalRequirementsRemovedOfProject_returnsEmptyList() {
 
-        when(permService.checkPermission("Project", "1", "view", oryId))
+        when(permService.checkPermission("Project", "1", "editProject", oryId))
                 .thenReturn(true);
 
         when(nfrRepository.findAllByProjectIdRemoved(projectId))

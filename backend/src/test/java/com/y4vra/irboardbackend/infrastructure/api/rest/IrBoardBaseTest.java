@@ -16,8 +16,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestClient;
 
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -58,6 +56,8 @@ public abstract class IrBoardBaseTest {
     DocumentRepository documentRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    EntityLockRepository entityLockRepository;
 
     @Autowired
     ProjectMapper projectMapper;
@@ -102,6 +102,7 @@ public abstract class IrBoardBaseTest {
                 .thenAnswer(inv -> "https://minio.test/" + inv.getArgument(0));
 
         // Clean slate — RANDOM_PORT means no @Transactional rollback
+        entityLockRepository.deleteAll();
         documentRepository.deleteAll();
         nfrRepository.deleteAll();
         stakeholderRepository.deleteAll();
@@ -185,22 +186,28 @@ public abstract class IrBoardBaseTest {
     }
 
     protected <T> ResponseEntity<T> post(String oryId, String uri, Object body, Class<T> type, Object... vars) {
-        return client.post()
+        var request = client.post()
                 .uri(uri, vars)
                 .header("X-User", oryId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
-                .retrieve()
-                .toEntity(type);
+                .contentType(MediaType.APPLICATION_JSON);
+
+        if (body != null) {
+            request.body(body);
+        }
+
+        return request.retrieve().toEntity(type);
     }
     protected <T> ResponseEntity<T> post(String oryId, String uri, Object body, ParameterizedTypeReference<T> type, Object... vars) {
-        return client.post()
+        var request = client.post()
                 .uri(uri, vars)
                 .header("X-User", oryId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
-                .retrieve()
-                .toEntity(type);
+                .contentType(MediaType.APPLICATION_JSON);
+
+        if (body != null) {
+            request.body(body);
+        }
+
+        return request.retrieve().toEntity(type);
     }
 
     protected <T> ResponseEntity<T> patch(String oryId, String uri, Object body, Class<T> type, Object... vars) {
