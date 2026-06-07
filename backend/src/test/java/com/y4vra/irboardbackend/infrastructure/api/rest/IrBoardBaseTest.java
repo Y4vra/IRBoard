@@ -15,8 +15,11 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestClient;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.io.IOException;
 
@@ -28,7 +31,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public abstract class IrBoardBaseTest {
-
 
     // ── mocked external services ─────────────────────────────────────────────
     @MockitoBean
@@ -177,7 +179,7 @@ public abstract class IrBoardBaseTest {
                 .uri(uri, vars)
                 .header("X-User", oryId)
                 .retrieve()
-                .onStatus(status -> status.isError(), (req, res) -> {})
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toEntity(type);
     }
     protected <T> ResponseEntity<T> get(String oryId, String uri, ParameterizedTypeReference<T> type, Object... vars) {
@@ -185,7 +187,7 @@ public abstract class IrBoardBaseTest {
                 .uri(uri, vars)
                 .header("X-User", oryId)
                 .retrieve()
-                .onStatus(status -> status.isError(), (req, res) -> {})
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toEntity(type);
     }
 
@@ -215,24 +217,29 @@ public abstract class IrBoardBaseTest {
     }
 
     protected <T> ResponseEntity<T> patch(String oryId, String uri, Object body, Class<T> type, Object... vars) {
-        return client.patch()
+        var request = client.patch()
                 .uri(uri, vars)
                 .header("X-User", oryId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, (req, res) -> {})
-                .toEntity(type);
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        if (body != null) {
+            request.body(body);
+        }
+
+        return request.retrieve().onStatus(HttpStatusCode::isError, (req, res) -> {}).toEntity(type);
     }
     protected <T> ResponseEntity<T> patch(String oryId, String uri, Object body, ParameterizedTypeReference<T> type, Object... vars) {
-        return client.patch()
+        var request= client.patch()
                 .uri(uri, vars)
                 .header("X-User", oryId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, (req, res) -> {})
-                .toEntity(type);
+                .contentType(MediaType.APPLICATION_JSON);
+
+        if (body != null) {
+            request.body(body);
+        }
+
+        return request.retrieve().onStatus(HttpStatusCode::isError, (req, res) -> {}).toEntity(type);
     }
 
     protected <T> ResponseEntity<T> delete(String oryId, String uri, Class<T> type, Object... vars) {

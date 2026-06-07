@@ -13,9 +13,7 @@ import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
 import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +25,6 @@ import java.util.stream.Collectors;
 public class FunctionalRequirementService extends RequirementService {
 
     private final ProjectRepository projectRepository;
-    @PersistenceContext
-    private EntityManager entityManager;
 
     private final FunctionalRequirementRepository frRepository;
     private final FunctionalRequirementMapper frMapper;
