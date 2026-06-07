@@ -6,15 +6,19 @@ import com.y4vra.irboardbackend.domain.model.enums.*;
 import com.y4vra.irboardbackend.domain.repositories.*;
 import com.y4vra.irboardbackend.infrastructure.clients.KetoClient;
 import com.y4vra.irboardbackend.infrastructure.clients.MinioObjectStorageClient;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.client.RestClient;
+
+import java.io.IOException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -195,7 +199,7 @@ public abstract class IrBoardBaseTest {
             request.body(body);
         }
 
-        return request.retrieve().toEntity(type);
+        return request.retrieve().onStatus(HttpStatusCode::isError, (req, res) -> {}).toEntity(type);
     }
     protected <T> ResponseEntity<T> post(String oryId, String uri, Object body, ParameterizedTypeReference<T> type, Object... vars) {
         var request = client.post()
@@ -207,7 +211,7 @@ public abstract class IrBoardBaseTest {
             request.body(body);
         }
 
-        return request.retrieve().toEntity(type);
+        return request.retrieve().onStatus(HttpStatusCode::isError, (req, res) -> {}).toEntity(type);
     }
 
     protected <T> ResponseEntity<T> patch(String oryId, String uri, Object body, Class<T> type, Object... vars) {
@@ -242,6 +246,45 @@ public abstract class IrBoardBaseTest {
                 .header("X-User", oryId)
                 .retrieve()
                 .toEntity(type);
+    }
+
+    /** Multipart POST helper for /upload. */
+    protected  <T> org.springframework.http.ResponseEntity<T> postMultipart(
+            String oryId, String uri, MockMultipartFile file, Object metadata,
+            Class<T> type, Object... vars) throws IOException {
+        // Serialize metadata to JSON and send as a multipart request
+        return client.post()
+                .uri(uri, vars)
+                .header("X-User", oryId)
+                .contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
+                .body(buildMultipartBody(file, metadata))
+                .retrieve()
+                .onStatus(status -> status.isError(), (req, res) -> {})
+                .toEntity(type);
+    }
+
+    /** Multipart PUT helper for /{documentId}. */
+    protected  <T> org.springframework.http.ResponseEntity<T> putMultipart(
+            String oryId, String uri, MockMultipartFile file, Object metadata,
+            Class<T> type, Object... vars) throws IOException {
+        return client.put()
+                .uri(uri, vars)
+                .header("X-User", oryId)
+                .contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
+                .body(buildMultipartBody(file, metadata))
+                .retrieve()
+                .onStatus(status -> status.isError(), (req, res) -> {})
+                .toEntity(type);
+    }
+
+    protected org.springframework.util.MultiValueMap<String, Object> buildMultipartBody(
+            MockMultipartFile file, Object metadata) throws IOException {
+        var body = new org.springframework.util.LinkedMultiValueMap<String, Object>();
+        body.add("file", new org.springframework.core.io.ByteArrayResource(file.getBytes()) {
+            @Override public String getFilename() { return file.getOriginalFilename(); }
+        });
+        body.add("metadata", metadata);
+        return body;
     }
 
     // ── Helpers — entity builders ────────────────────────────────────────────
@@ -328,4 +371,30 @@ public abstract class IrBoardBaseTest {
         return d;
     }
 
+    //---------------- reloaders --------------
+
+    protected Project reload(Project doc) {
+        return projectRepository.findById(doc.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Project not found"));
+    }
+    protected Document reload(Document doc,Project project) {
+        return documentRepository.findByIdAndProjectId(doc.getId(), project.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Document not found"));
+    }
+    protected Stakeholder reload(Stakeholder doc,Project project) {
+        return stakeholderRepository.findByIdAndProjectId(doc.getId(), project.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Stakeholder not found"));
+    }
+    protected NonFunctionalRequirement reload(NonFunctionalRequirement doc,Project project) {
+        return nfrRepository.findByIdAndProjectId(doc.getId(), project.getId())
+                .orElseThrow(() -> new EntityNotFoundException("NonFunctionalRequirement not found"));
+    }
+    protected Functionality reload(Functionality doc,Project project) {
+        return functionalityRepository.findByIdAndProjectId(doc.getId(), project.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Functionality not found"));
+    }
+    protected FunctionalRequirement reload(FunctionalRequirement doc,Functionality functionality,Project project) {
+        return frRepository.findByIdAndFunctionalityIdAndProjectId(doc.getId(), functionality.getId(), project.getId())
+                .orElseThrow(() -> new EntityNotFoundException("FunctionalRequirement not found"));
+    }
 }
