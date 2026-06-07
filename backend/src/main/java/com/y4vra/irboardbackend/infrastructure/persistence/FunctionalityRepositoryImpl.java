@@ -108,7 +108,11 @@ public class FunctionalityRepositoryImpl implements FunctionalityRepository {
 
     @Override
     public List<Long> getActiveRootRequirementIds(Long projectId, Long functionalityId) {
-        return jpaRepository.getActiveRootRequirementIds(projectId,functionalityId,List.of(RequirementState.REMOVED,RequirementState.DEACTIVATED));
+        return jpaRepository.getActiveRootRequirementIds(projectId,functionalityId,List.of(RequirementState.REMOVED,RequirementState.DEACTIVATED,RequirementState.FINISHED));
+    }
+    @Override
+    public List<Long> getActiveAndDeactivatedRootRequirementIds(Long projectId, Long functionalityId) {
+        return jpaRepository.getActiveRootRequirementIds(projectId,functionalityId,List.of(RequirementState.REMOVED,RequirementState.APPROVED,RequirementState.FINISHED));
     }
 
     @Override

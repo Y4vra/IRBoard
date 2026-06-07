@@ -221,6 +221,7 @@ public abstract class IrBoardBaseTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toEntity(type);
     }
     protected <T> ResponseEntity<T> patch(String oryId, String uri, Object body, ParameterizedTypeReference<T> type, Object... vars) {
@@ -230,6 +231,7 @@ public abstract class IrBoardBaseTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toEntity(type);
     }
 
@@ -238,6 +240,7 @@ public abstract class IrBoardBaseTest {
                 .uri(uri, vars)
                 .header("X-User", oryId)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toEntity(type);
     }
     protected <T> ResponseEntity<T> delete(String oryId, String uri, ParameterizedTypeReference<T> type, Object... vars) {
@@ -245,6 +248,7 @@ public abstract class IrBoardBaseTest {
                 .uri(uri, vars)
                 .header("X-User", oryId)
                 .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toEntity(type);
     }
 
@@ -259,7 +263,7 @@ public abstract class IrBoardBaseTest {
                 .contentType(org.springframework.http.MediaType.MULTIPART_FORM_DATA)
                 .body(buildMultipartBody(file, metadata))
                 .retrieve()
-                .onStatus(status -> status.isError(), (req, res) -> {})
+                .onStatus(HttpStatusCode::isError, (req, res) -> {})
                 .toEntity(type);
     }
 
@@ -350,8 +354,6 @@ public abstract class IrBoardBaseTest {
         fr.setName(name);
         fr.setDescription(name + " description");
         fr.setState(state);
-        fr.setProject(project);
-        fr.setFunctionality(functionality);
         fr.setPriority("HIGH");
         fr.setStability("STABLE");
         Associations.link(functionality, fr);

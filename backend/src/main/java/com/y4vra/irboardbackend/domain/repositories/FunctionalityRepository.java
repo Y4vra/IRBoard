@@ -18,6 +18,7 @@ public interface FunctionalityRepository {
     List<ProjectFunctionalityProjection> groupByIdsGroupedByProject(List<Long> functionalityIds);
 
     List<Long> getActiveRootRequirementIds(Long projectId, Long functionalityId);
+    List<Long> getActiveAndDeactivatedRootRequirementIds(Long projectId, Long functionalityId);
 
     Optional<Functionality> findByIdAndProjectIdAndStateNot(Long functionalityId, Long projectId, FunctionalityState functionalityState);
 
@@ -36,4 +37,5 @@ public interface FunctionalityRepository {
     List<Functionality> findAll();
     void deleteAll();
     void saveAll(List<Functionality> functionalitys);
+
 }

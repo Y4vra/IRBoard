@@ -2,7 +2,6 @@ package com.y4vra.irboardbackend.infrastructure.api.rest;
 
 import com.y4vra.irboardbackend.application.dtos.*;
 import com.y4vra.irboardbackend.application.services.*;
-import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,8 +46,6 @@ public class FunctionalityController {
     @Transactional
     public ResponseEntity<Void> disableFunctionality(Authentication authentication, @PathVariable Long projectId,@PathVariable Long functionalityId) {
         String oryId= ((User)authentication.getPrincipal()).getOryId();
-        List<Long> rootRequirementIds = functionalityService.getRootRequirementIds(projectId,functionalityId);
-        functionalRequirementService.disableFunctionalRequirements(oryId,projectId,functionalityId,rootRequirementIds);
         functionalityService.disableFunctionality(oryId,projectId,functionalityId);
         return ResponseEntity.ok().build();
     }
@@ -61,8 +58,6 @@ public class FunctionalityController {
     @Transactional
     public ResponseEntity<Void> removeFunctionality(Authentication authentication, @PathVariable Long projectId, @PathVariable Long functionalityId) {
         String oryId = ((User)authentication.getPrincipal()).getOryId();
-        List<Long> rootRequirementIds = functionalityService.getRootRequirementIds(projectId,functionalityId);
-        functionalRequirementService.removeFunctionalRequirements(oryId,projectId,functionalityId,rootRequirementIds);
         functionalityService.removeFunctionality(oryId,projectId,functionalityId);
         return ResponseEntity.ok().build();
     }

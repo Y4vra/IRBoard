@@ -202,12 +202,6 @@ class FunctionalityServiceTest {
     }
     @Test
     void findFunctionalityById_throwsWhenMissing() {
-        when(permService.checkPermission(
-                "Functionality",
-                "10",
-                "viewRequirements",
-                "ory"))
-                .thenReturn(true);
 
         when(functionalityRepository.findByIdAndProjectId(10L, 1L))
                 .thenReturn(Optional.empty());

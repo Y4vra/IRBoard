@@ -8,7 +8,6 @@ import com.y4vra.irboardbackend.domain.errors.LockableEntityException;
 import com.y4vra.irboardbackend.domain.model.*;
 import com.y4vra.irboardbackend.domain.model.enums.FunctionalityState;
 import com.y4vra.irboardbackend.domain.model.enums.ProjectState;
-import com.y4vra.irboardbackend.domain.model.enums.RequirementState;
 import com.y4vra.irboardbackend.domain.repositories.FunctionalityRepository;
 import com.y4vra.irboardbackend.domain.repositories.ProjectRepository;
 import com.y4vra.irboardbackend.domain.service.EntitySlugGenerator;
@@ -97,8 +96,9 @@ public class FunctionalityService {
     }
     @Transactional(readOnly = true)
     public FunctionalityDTO findFunctionalityById(String oryId, long projectId, long functionalityId) {
-        checkViewFunctionalityPermission(oryId,String.valueOf(functionalityId));
         Functionality functionality = functionalityRepository.findByIdAndProjectId(functionalityId,projectId).orElseThrow(()-> new EntityNotFoundException("Functionality with id " + functionalityId + " not found"));
+
+        checkViewFunctionalityPermission(oryId,String.valueOf(functionalityId));
 
         if (functionality.getState()== FunctionalityState.REMOVED){
             checkProjectManagerPermission(oryId,String.valueOf(projectId));
@@ -178,8 +178,14 @@ public class FunctionalityService {
     /**
      * Does not check permissions, use as data obtaining only
      */
-    public List<Long> getRootRequirementIds(Long projectId, Long functionalityId) {
+    public List<Long> getActiveRootRequirementIds(Long projectId, Long functionalityId) {
         return functionalityRepository.getActiveRootRequirementIds(projectId,functionalityId);
+    }
+    /**
+     * Does not check permissions, use as data obtaining only
+     */
+    public List<Long> getActiveAndDeactivatedRootRequirementIds(Long projectId, Long functionalityId) {
+        return functionalityRepository.getActiveAndDeactivatedRootRequirementIds(projectId,functionalityId);
     }
 
     @Transactional
