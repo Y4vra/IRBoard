@@ -109,11 +109,11 @@ public abstract class IrBoardBaseTest {
 
         // Clean slate — RANDOM_PORT means no @Transactional rollback
         entityLockRepository.deleteAll();
+        projectRepository.deleteAll();
         documentRepository.deleteAll();
         nfrRepository.deleteAll();
         stakeholderRepository.deleteAll();
         functionalityRepository.deleteAll();
-        projectRepository.deleteAll();
         userRepository.deleteAll();
 
         // Seed users — the filter looks these up by oryId
