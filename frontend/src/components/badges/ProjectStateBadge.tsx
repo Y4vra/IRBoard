@@ -22,7 +22,7 @@ const STATE_CONFIG: Record<ProjectState, { label: string; className: string }> =
 } as const;
 
 interface ProjectStateBadgeProps {
-  state: ProjectState
+  state: ProjectState|undefined
 }
 
 export function ProjectStateBadge({ state }: ProjectStateBadgeProps) {

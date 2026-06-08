@@ -58,7 +58,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<WindowLayout />}>
               <Route element={<LockProvider><Outlet /></LockProvider>}>
-                <Route path="/" element={<Home />}/>
+                <Route path="/" element={<Navigate to="/home"/>}/>
                 <Route path="/home" element={<Home />}/>
                 <Route path="/diagrams" element={<DiagramsView/>}/>
                 <Route path="/projects/new" element={<NewProject />}/>

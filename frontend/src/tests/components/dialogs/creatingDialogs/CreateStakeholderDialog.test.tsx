@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CreateStakeholderDialog } from "@/components/dialogs/creatingDialogs/CreateStakeholderDialog";
 
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe("CreateStakeholderDialog", () => {
   const mockOnSuccess = vi.fn();

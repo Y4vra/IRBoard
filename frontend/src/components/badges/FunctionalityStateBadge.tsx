@@ -18,7 +18,7 @@ const STATE_CONFIG: Record<FunctionalityState, { label: string; className: strin
 } as const;
 
 interface FunctionalityStateBadgeProps {
-  state: FunctionalityState
+  state: FunctionalityState|undefined
 }
 
 export function FunctionalityStateBadge({ state }: FunctionalityStateBadgeProps) {

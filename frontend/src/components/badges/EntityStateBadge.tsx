@@ -21,7 +21,7 @@ const STATE_CONFIG: Record<EntityState, { label: string; className: string }> = 
 } as const;
 
 interface EntityStateBadgeProps {
-  state: EntityState
+  state: EntityState|undefined
 }
 
 export function EntityStateBadge({ state }: EntityStateBadgeProps) {

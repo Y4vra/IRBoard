@@ -227,6 +227,7 @@ export function NavBar() {
 
           <button
             onClick={(e) => { e.preventDefault(); logout(); }}
+            data-testid="logout_button"
             className={cn(
               "flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 px-2 py-1 rounded-lg hover:bg-red-50 shrink-0 transition-all duration-500 ease-in-out mr-1",
               open && finishedOpening

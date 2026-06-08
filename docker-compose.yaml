@@ -181,9 +181,9 @@ services:
       - "traefik.docker.network=irboard_public"
 
       # rate limiting on traefik to prevent dictionary attacks
-      - "traefik.http.middlewares.kratos-ratelimit.ratelimit.average=3"
+      - "traefik.http.middlewares.kratos-ratelimit.ratelimit.average=60"
       - "traefik.http.middlewares.kratos-ratelimit.ratelimit.period=1m"
-      - "traefik.http.middlewares.kratos-ratelimit.ratelimit.burst=3"
+      - "traefik.http.middlewares.kratos-ratelimit.ratelimit.burst=20"
       
       - "traefik.http.routers.kratos-login.rule=Host(`${AUTH_DOMAIN}`) && PathPrefix(`/self-service/login`)"
       - "traefik.http.routers.kratos-login.entrypoints=web"

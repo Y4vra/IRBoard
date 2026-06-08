@@ -196,7 +196,7 @@ function Home() {
       {/* Header */}
       <header className="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-700">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-2">Projects</h1>
+          <h1 data-testid="home_header" className="text-3xl font-extrabold text-slate-900 flex items-center gap-2">Projects</h1>
           <p className="text-slate-500 mt-1">
             {viewMode === "removed"
               ? "Removed projects archive. Visible to administrators only."

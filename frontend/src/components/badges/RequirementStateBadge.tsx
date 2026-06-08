@@ -25,7 +25,7 @@ export const REQUIREMENT_STATE_CONFIG = {
 } as const;
 
 interface RequirementStateBadgeProps {
-  state: RequirementState;
+  state: RequirementState|undefined
 }
 
 export function RequirementStateBadge({ state }: RequirementStateBadgeProps) {
