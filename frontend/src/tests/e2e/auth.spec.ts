@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 const ADMIN_EMAIL = process.env.INITIAL_ADMIN_EMAIL ?? (() => { throw new Error('INITIAL_ADMIN_EMAIL is not set') })();
 const ADMIN_PASSWORD = process.env.INITIAL_ADMIN_PASSWORD ?? (() => { throw new Error('INITIAL_ADMIN_PASSWORD is not set') })();
 
-async function login(page:Page, email: string, password: string) {
+export async function login(page:Page, email: string, password: string) {
   await page.goto('/login');
 
   await expect(page.getByText('Welcome to IR-Board!')).toBeVisible();
@@ -16,7 +16,7 @@ async function login(page:Page, email: string, password: string) {
 
   await page.waitForURL(/\/(home)?$/);
 }
-async function logout(page:Page){
+export async function logout(page:Page){
 await page.locator('.fixed.top-4.left-4').hover();
   const logoutButton = page.getByTestId('logout_button');
   await expect(logoutButton).toBeVisible();
