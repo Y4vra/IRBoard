@@ -204,7 +204,7 @@ services:
         condition: service_started
       keto:
         condition: service_started
-      backend-db:
+      backend:
         condition: service_healthy
     networks:
       - internal
@@ -309,6 +309,12 @@ services:
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - internal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
     extra_hosts:
     - "${OBJS_DOMAIN}:host-gateway"
     working_dir: /app # [PROD] remove for production, this allows hot-reload
