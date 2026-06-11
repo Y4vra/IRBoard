@@ -70,6 +70,7 @@ function DocumentsTable({ documents, onRowClick }: DocumentsTableProps) {
       <TableBody>
         {documents.map((doc) => (
           <TableRow
+            data-testid={"document_"+doc.fileName}
             key={doc.id}
             className="cursor-pointer hover:bg-slate-50"
             onClick={() => onRowClick(doc.id)}
@@ -224,7 +225,7 @@ function DocumentsView() {
 
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900">Documents</h1>
+          <h1 data-testid="document_view_header" className="text-3xl font-extrabold text-slate-900">Documents</h1>
           <p className="text-slate-500 mt-1">Manage project files and references.</p>
         </div>
         <div className="flex items-stretch gap-3">

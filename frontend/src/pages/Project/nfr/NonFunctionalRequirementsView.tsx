@@ -210,6 +210,7 @@ function NFRCard({
 
   return (
     <div
+      data-testid={"nfr_"+r.name}
       className={[
         "rounded-xl border bg-white shadow-sm transition-all select-none",
         depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : "",
@@ -467,7 +468,7 @@ function NonFunctionalRequirementsView() {
 
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900">Non-Functional Requirements</h1>
+          <h1 data-testid="nfr_view_header" className="text-3xl font-extrabold text-slate-900">Non-Functional Requirements</h1>
           <p className="text-slate-500 mt-1">Manage quality attributes and system constraints.</p>
           {editPermission && viewMode === "active" && (
             <p className="text-xs text-slate-300 mt-0.5">
@@ -502,7 +503,7 @@ function NonFunctionalRequirementsView() {
             )}
             {editPermission && viewMode === "active" && (
               <>
-                <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
+                <Button data-testid="create_nfr_button_open_dialog" size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-1.5" />
                   Add NFR
                 </Button>

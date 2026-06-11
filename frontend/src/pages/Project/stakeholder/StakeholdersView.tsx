@@ -117,7 +117,7 @@ function StakeholdersView() {
 
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900">Stakeholders</h1>
+          <h1 data-testid="stakeholder_view_header" className="text-3xl font-extrabold text-slate-900">Stakeholders</h1>
           <p className="text-slate-500 mt-1">Manage project actors and interest groups.</p>
         </div>
         <div className="flex items-stretch gap-3">
@@ -203,6 +203,7 @@ function StakeholdersView() {
             <TableBody>
               {currentStakeholders.map((s) => (
                 <TableRow
+                  data-testid={"stakeholder_"+s.name}
                   key={s.id}
                   className="cursor-pointer hover:bg-slate-50"
                   onClick={() => navigate(`/project/${projectId}/stakeholders/${s.id}`)}

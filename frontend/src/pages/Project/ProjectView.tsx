@@ -139,7 +139,7 @@ function FunctionalityCard({
   if (isDisabled) return <div>{cardContent}</div>;
 
   return (
-    <Link to={`/project/${projectId}/functionalities/${functionality.id}`} className="group">
+    <Link data-testid={"functionality_link_"+functionality.name} to={`/project/${projectId}/functionalities/${functionality.id}`} className="group">
       {cardContent}
     </Link>
   );
@@ -242,18 +242,21 @@ function ProjectView() {
       description: "Identify and manage project actors and interest groups.",
       href: `/project/${project.id}/stakeholders`,
       icon: <Users className="h-6 w-6" />,
+      testid: "stakeholders_link"
     },
     {
       title: "Non-Functional Requirements",
       description: "Security, performance, and technical constraints.",
       href: `/project/${project.id}/nfr`,
       icon: <ShieldAlert className="h-6 w-6" />,
+      testid: "nfrs_link"
     },
     {
       title: "Documents",
       description: "Technical documentation and linked project files.",
       href: `/project/${project.id}/documents`,
       icon: <FileText className="h-6 w-6" />,
+      testid: "documents_link"
     },
   ];
 
@@ -282,7 +285,7 @@ function ProjectView() {
       <header className="flex items-start justify-between gap-8">
         <div className="space-y-3 flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-4xl font-black tracking-tight">{project.name}</h1>
+            <h1 data-testid={"project_header_"+project.name} className="text-4xl font-black tracking-tight">{project.name}</h1>
             <Badge className="bg-primary/10 text-primary border-none uppercase text-xs">
               {project.priorityStyle}
             </Badge>
@@ -349,7 +352,7 @@ function ProjectView() {
 
                   <DropdownMenuSeparator />
 
-                  <DropdownMenuItem disabled={!canDisable || disabling} onClick={() => disableProject()}>
+                  <DropdownMenuItem data-testid="disable_project" disabled={!canDisable || disabling} onClick={() => disableProject()}>
                     <PowerOff className="mr-2 h-4 w-4" />
                     Disable project
                   </DropdownMenuItem>
@@ -364,6 +367,7 @@ function ProjectView() {
                   <ConfirmActionDialog
                     trigger={
                       <DropdownMenuItem
+                        data-testid="remove_project"
                         disabled={!canRemove || removing}
                         onSelect={e => e.preventDefault()}
                         className="text-amber-600 focus:text-amber-600"
@@ -383,6 +387,7 @@ function ProjectView() {
                   <ConfirmActionDialog
                     trigger={
                       <DropdownMenuItem
+                        data-testid="delete_project"
                         disabled={!canDelete || deleting}
                         onSelect={e => e.preventDefault()}
                         className="text-destructive focus:text-destructive"
@@ -411,7 +416,7 @@ function ProjectView() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {navigationLinks.map((link) => (
-            <Link key={link.href} to={link.href} className="group">
+            <Link data-testid={link.testid} key={link.href} to={link.href} className="group">
               <Card className="h-full transition-all duration-300 hover:border-primary hover:shadow-lg hover:shadow-primary/5 group-hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <div className="flex items-center gap-4">

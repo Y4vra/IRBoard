@@ -212,8 +212,8 @@ function Home() {
               removedCount={removedProjects?.length}
             />
           )}
-          {isAdmin && viewMode === "active" && projects && projects.length > 0 && (
-            <Button asChild className="shadow-md animate-in zoom-in-95 duration-500">
+          {isAdmin && viewMode === "active" && projects && (
+            <Button data-testid="create_project_link" asChild className="shadow-md animate-in zoom-in-95 duration-500">
               <Link to="/projects/new" className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 New Project
@@ -403,7 +403,7 @@ function Home() {
                       <ProjectStateBadge state={project.state} />
                     </div>
                   </div>
-                  <CardTitle className={cn("text-xl line-clamp-1", viewMode === "removed" && "text-slate-500")}>
+                  <CardTitle data-testid={"h1_"+project.name} className={cn("text-xl line-clamp-1", viewMode === "removed" && "text-slate-500")}>
                     {project.name}
                   </CardTitle>
                   <CardDescription className="line-clamp-3 min-h-[4.5rem]">
@@ -423,7 +423,7 @@ function Home() {
                     variant={viewMode === "removed" ? "outline" : "default"}
                     className="w-full shadow-sm transition-colors"
                   >
-                    <Link to={`/project/${project.id}`}>
+                    <Link data-testid={"more_link_"+project.name} to={`/project/${project.id}`}>
                       More...
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

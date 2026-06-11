@@ -331,6 +331,7 @@ function FunctionalRequirementCard({
 
   return (
     <div
+      data-testid={`functional_requirement_${r.name}`}
       className={["rounded-xl border bg-white shadow-sm transition-all select-none",
         depth > 0 ? "ml-6 border-l-4 border-l-slate-200" : "",
         r.state === "DEACTIVATED" ? "opacity-50" : "",
@@ -603,7 +604,7 @@ function FunctionalityView() {
       <header className="flex items-center justify-between gap-6">
         <div className="space-y-3 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Functionality</p>
-          <h1 className="text-4xl font-black tracking-tight">{functionality.name}</h1>
+          <h1 data-testid="functionality_view_header" className="text-4xl font-black tracking-tight">{functionality.name}</h1>
           <p className="text-xs font-mono text-slate-400 pt-2">{functionality.entityIdentifier}</p>
           {functionality.description && (
             <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{functionality.description}</p>
@@ -745,7 +746,7 @@ function FunctionalityView() {
           </div>
           {canEdit && viewMode === "active" && (
             <>
-              <Button size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
+              <Button data-testid="generate_fr" size="sm" variant="outline" onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-1.5" /> Add FR
               </Button>
               <CreateFunctionalRequirementDialog

@@ -17,7 +17,7 @@ export async function login(page:Page, email: string, password: string) {
   await page.waitForURL(/\/(home)?$/);
 }
 export async function logout(page:Page){
-await page.locator('.fixed.top-4.left-4').hover();
+  await page.locator('.fixed.top-4.left-4').hover();
   const logoutButton = page.getByTestId('logout_button');
   await expect(logoutButton).toBeVisible();
 

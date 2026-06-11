@@ -12,6 +12,7 @@ export function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewTo
   return (
     <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1 gap-1">
       <button
+        data-testid="view_toggle_active"
         onClick={() => onChange("active")}
         className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
           mode === "active"
@@ -30,6 +31,7 @@ export function ViewToggle({ mode, onChange, activeCount, removedCount }: ViewTo
         )}
       </button>
       <button
+        data-testid="view_toggle_removed"
         onClick={() => onChange("removed")}
         className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
           mode === "removed"

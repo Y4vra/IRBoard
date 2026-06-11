@@ -81,7 +81,7 @@ export function CreateStakeholderDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button data-testid="create_stakeholder_button_open_dialog" size="sm" variant="outline">
           <UserPlus className="mr-2 h-4 w-4" /> Add Stakeholder
         </Button>
       </DialogTrigger>

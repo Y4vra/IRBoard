@@ -134,7 +134,7 @@ export function CreateFunctionalityDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
       <DialogTrigger asChild>
-        <Button size="sm" className="shadow-md">
+        <Button data-testid="generate_functionality" size="sm" className="shadow-md">
           <Plus className="mr-2 h-4 w-4" /> Add Functionality
         </Button>
       </DialogTrigger>
