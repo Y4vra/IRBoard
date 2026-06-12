@@ -821,6 +821,7 @@ function FunctionalityView() {
                       ) : (
                         removedRequirements.map((r) => (
                           <TableRow
+                            data-testid={`functional_requirement_${r.name}`}
                             key={r.id}
                             className="cursor-pointer hover:bg-slate-50"
                             onClick={() => navigate(`/project/${projectId}/functionalities/${functionalityId}/functionalRequirements/${r.id}`)}

@@ -32,6 +32,7 @@ function requirementPath(r: RequirementSummaryDTO, projectId: string): string {
 // --- Extracted sub-components ---
 
 interface ActionButtonProps {
+  testId?: string;
   label: string;
   loadingLabel: string;
   loading: boolean;
@@ -39,9 +40,9 @@ interface ActionButtonProps {
   onClick: () => void;
 }
 
-function ActionButton({ label, loadingLabel, loading, disabled, onClick }: ActionButtonProps) {
+function ActionButton({ testId, label, loadingLabel, loading, disabled, onClick }: ActionButtonProps) {
   return (
-    <Button variant="outline" size="sm" disabled={disabled} onClick={onClick}>
+    <Button data-testid={testId} variant="outline" size="sm" disabled={disabled} onClick={onClick}>
       {loading ? loadingLabel : label}
     </Button>
   );
@@ -146,7 +147,7 @@ function StakeholderDetailView() {
           <div className="flex-1 min-w-0 space-y-1">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Stakeholder</p>
             <div>
-              <h1 className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
+              <h1 data-testid="stakeholder_detail_header" className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
               <p className="text-xs font-mono text-slate-400 pt-2">{stakeholder.entityIdentifier}</p>
             </div>
             {stakeholder.description && (
@@ -170,7 +171,7 @@ function StakeholderDetailView() {
               >
                 <Pencil className="mr-2 h-4 w-4" /> Modify Stakeholder
               </Button>
-              <ActionButton label="Disable stakeholder" loadingLabel="Disabling..." loading={disabling} disabled={isDeactivated} onClick={() => disableStakeholders([stakeholder.id])} />
+              <ActionButton testId="disable_project_element" label="Disable stakeholder" loadingLabel="Disabling..." loading={disabling} disabled={isDeactivated} onClick={() => disableStakeholders([stakeholder.id])} />
               <ActionButton label="Enable stakeholder" loadingLabel="Enabling..." loading={enabling} disabled={!isDeactivated} onClick={() => enableStakeholders([stakeholder.id])} />
             </>
           )}
@@ -180,7 +181,7 @@ function StakeholderDetailView() {
               <ActionButton label="Approve Stakeholder" loadingLabel="Approving..." loading={approving} disabled={stakeholder.state !== "PENDING_APPROVAL"} onClick={() => approveStakeholders([stakeholder.id])} />
               <ConfirmActionDialog
                 trigger={
-                  <Button variant="outline" size="sm" disabled={!isDeactivated || removing}>
+                  <Button data-testid="remove_project_element" variant="outline" size="sm" disabled={!isDeactivated || removing}>
                     {removing ? "Removing..." : "Remove stakeholder"}
                   </Button>
                 }
@@ -197,7 +198,7 @@ function StakeholderDetailView() {
           {isManager && isRemoved && (
             <ConfirmActionDialog
               trigger={
-                <Button variant="outline" size="sm" disabled={deleting}>
+                <Button data-testid="delete_project_element" variant="outline" size="sm" disabled={deleting}>
                   {deleting ? "Deleting..." : "Delete stakeholder permanently"}
                 </Button>
               }

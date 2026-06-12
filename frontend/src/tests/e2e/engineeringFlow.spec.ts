@@ -59,23 +59,27 @@ export async function accessRemovedProject(page: Page, projectName: string) {
     page.getByTestId("project_header_" + projectName)
   ).toBeVisible();
 }
-export async function accessRemovedElementFromElementView(page: Page, elementName: string,elementViewHeaderDataTestId:string,elementHeaderDataTestIdSuffix:string) {
-  await expect(page.getByTestId(elementViewHeaderDataTestId)).toBeVisible();
+export async function accessRemovedElementFromElementView(page: Page, elementName: string,pageHeaderDataTestId:string,elementViewHeaderDataTestId:string,elementHeaderDataTestIdSuffix:string) {
+    await expect(page.getByTestId(elementViewHeaderDataTestId)).toBeVisible();
 
-  await page.getByTestId("view_toggle_removed").click();
+    await page.getByTestId("view_toggle_removed").click();
 
-  await expect(
-    page.getByText("Removed projects archive")
-  ).toBeVisible();
+    const projectLink = page.getByTestId(elementHeaderDataTestIdSuffix + elementName);
 
-  const projectLink = page.getByTestId("more_link_" + elementName);
+    await expect(projectLink).toBeVisible();
+    await projectLink.click();
 
-  await expect(projectLink).toBeVisible();
-  await projectLink.click();
+    await expect(page.getByTestId(pageHeaderDataTestId)).toBeVisible();
+}
+export async function accessAvailableElementFromElementView(page: Page, elementName: string,pageHeaderDataTestId:string,elementViewHeaderDataTestId:string,elementHeaderDataTestIdSuffix:string) {
+    await expect(page.getByTestId(elementViewHeaderDataTestId)).toBeVisible();
 
-  await expect(
-    page.getByTestId(elementHeaderDataTestIdSuffix + elementName)
-  ).toBeVisible();
+    const projectLink = page.getByTestId(elementHeaderDataTestIdSuffix + elementName);
+
+    await expect(projectLink).toBeVisible();
+    await projectLink.click();
+
+    await expect(page.getByTestId(pageHeaderDataTestId)).toBeVisible();
 }
 
 export async function accessAvailableFunctionalityFromProjectView(page:Page,projectName:string,functionalityName:string){
@@ -86,6 +90,23 @@ export async function accessAvailableFunctionalityFromProjectView(page:Page,proj
     await expect(page.getByTestId("functionality_view_header")).toBeVisible();
 }
 
+export async function accessStakeholderViewFromProjectView(page:Page){
+    await page.getByTestId("stakeholders_link").click();   
+    await page.waitForURL(/\/stakeholders\/?$/);
+    await expect(page.getByTestId("stakeholder_view_header")).toBeVisible();
+}
+
+export async function accessNfrViewFromProjectView(page:Page){
+    await page.getByTestId("nfrs_link").click();
+    await page.waitForURL(/\/nfr\/?$/);
+    await expect(page.getByTestId("nfr_view_header")).toBeVisible();
+}
+
+export async function accessDocumentViewFromProjectView(page:Page){
+    await page.getByTestId("documents_link").click();
+    await page.waitForURL(/\/documents\/?$/);
+    await expect(page.getByTestId("document_view_header")).toBeVisible();
+}
 
 export async function disableProject(page:Page) {
     await page.getByRole("button", { name: "Actions" }).click();
@@ -105,22 +126,18 @@ export async function deleteProject(page:Page) {
     await page.getByTestId("confirmButton").click();
 }
 
-export async function disableProjectElement(page:Page) {
-    await page.getByRole("button", { name: "Actions" }).click();
-    await page.getByTestId("disable_button").click();
+export async function disableProjectElement(page: Page) {
+  await page.getByTestId("disable_project_element").click();
 }
 
-export async function removeProjectElement(page:Page) {
-    await page.getByRole("button", { name: "Actions" }).click();
-    await page.getByTestId("remove_button").click();
-
-    await page.getByTestId("confirmButton").click();
+export async function removeProjectElement(page: Page) {
+  await page.getByTestId("remove_project_element").click();
+  await page.getByTestId("confirmButton").click();
 }
-export async function deleteProjectElement(page:Page) {
-    await page.getByRole("button", { name: "Actions" }).click();
-    await page.getByTestId("delete_button").click();
 
-    await page.getByTestId("confirmButton").click();
+export async function deleteProjectElement(page: Page) {
+  await page.getByTestId("delete_project_element").click();
+  await page.getByTestId("confirmButton").click();
 }
 
 export async function deleteProjectFromHomeView(page:Page,projectName:string) {
@@ -134,22 +151,20 @@ export async function deleteProjectFromHomeView(page:Page,projectName:string) {
     await accessRemovedProject(page,projectName);
     await deleteProject(page);
 }
-export async function deleteProjectElementFromDetailView(page:Page,elementName:string,pageHeaderDataTestId:string,elementViewHeaderDataTestId:string,elementHeaderDataTestIdSuffix:string){
+export async function deleteProjectElementFromElementsView(page:Page,elementName:string,pageHeaderDataTestId:string,elementViewHeaderDataTestId:string,elementHeaderDataTestIdSuffix:string){
+    await accessAvailableElementFromElementView(page,elementName,pageHeaderDataTestId,elementViewHeaderDataTestId,elementHeaderDataTestIdSuffix);
+
     await disableProjectElement(page);
     await removeProjectElement(page);
 
-    await expect(page.getByTestId(pageHeaderDataTestId)).toBeVisible();
+    await expect(page.getByTestId(elementViewHeaderDataTestId)).toBeVisible();
 
-    await accessRemovedElementFromElementView(page,elementName,elementViewHeaderDataTestId,elementHeaderDataTestIdSuffix);
+    await accessRemovedElementFromElementView(page,elementName,pageHeaderDataTestId,elementViewHeaderDataTestId,elementHeaderDataTestIdSuffix);
     await deleteProjectElement(page);
 }
 
 export async function generateStakeholderFromProjectView(page:Page,projectName:string,stakeholderName:string,stakeholderDescription:string) {
-    await page.getByTestId("stakeholders_link").click();
-
-    await page.waitForURL(/\/stakeholders\/?$/);
-
-    await expect(page.getByTestId("stakeholder_view_header")).toBeVisible();
+    await accessStakeholderViewFromProjectView(page);
 
     await page.getByTestId("create_stakeholder_button_open_dialog").click();
 
@@ -189,12 +204,7 @@ export async function generateNfrFromProjectView(page:Page,
         targetValue: string = "50",
         actualValue: string = "0"
     ) {
-    
-    await page.getByTestId("nfrs_link").click();
-
-    await page.waitForURL(/\/nfr\/?$/);
-
-    await expect(page.getByTestId("nfr_view_header")).toBeVisible();
+    await accessNfrViewFromProjectView(page);
 
     await page.getByTestId("create_nfr_button_open_dialog").click();
 
@@ -236,11 +246,7 @@ export async function generateDocumentFromProjectView(
     projectName:string,
     fileName: string
 ) {
-    await page.getByTestId("documents_link").click();
-
-    await page.waitForURL(/\/documents\/?$/);
-
-    await expect(page.getByTestId("document_view_header")).toBeVisible();
+    await accessDocumentViewFromProjectView(page);
 
     await page.getByRole("button", { name: "Upload Document" }).click();
 
@@ -312,7 +318,7 @@ export async function generateFunctionalRequirementFromFunctionalityView(
     frName: string,
     frDescription: string,
     priority: string = "MUST",
-    stability: string = "STABLE"
+    stability: string = "UNSTABLE"
 ) {
     await expect(
         page.getByTestId("functionality_view_header")
@@ -368,12 +374,20 @@ test.describe("Expected requirement engineering flow", () => {
         await login(page,ADMIN_EMAIL,ADMIN_PASSWORD);
 
         const projectName = `test-${Date.now()}`;
+        const elementName = `test_Project_manager_${Date.now()}`;
+        const pageHeaderDataTestId = "stakeholder_detail_header";
+        const elementViewHeaderDataTestId = "stakeholder_view_header";
+        const elementHeaderDataTestIdSuffix = "stakeholder_";
 
         await loggedInUserCreateProject(page,projectName,"Project automatically created by Playwright E2E tests.","OpenAI Testing");
 
         await accessAvailableProjectFromHomeView(page,projectName);
         
-        await generateStakeholderFromProjectView(page,projectName,"Project_manager","Responsible for coordinating stakeholders and validating requirements.");
+        await generateStakeholderFromProjectView(page,projectName,elementName,"Responsible for coordinating stakeholders and validating requirements.");
+
+        await accessStakeholderViewFromProjectView(page);
+
+        await deleteProjectElementFromElementsView(page,elementName,pageHeaderDataTestId,elementViewHeaderDataTestId,elementHeaderDataTestIdSuffix);
 
         await deleteProjectFromHomeView(page,projectName);
     });
@@ -382,12 +396,20 @@ test.describe("Expected requirement engineering flow", () => {
         await login(page,ADMIN_EMAIL,ADMIN_PASSWORD);
 
         const projectName = `test-${Date.now()}`;
+        const elementName = `test_Nfr_test_name_${Date.now()}`;
+        const pageHeaderDataTestId = "nfr_detail_header";
+        const elementViewHeaderDataTestId = "nfr_view_header";
+        const elementHeaderDataTestIdSuffix = "nfr_";
 
         await loggedInUserCreateProject(page,projectName,"Project automatically created by Playwright E2E tests.","OpenAI Testing");
 
         await accessAvailableProjectFromHomeView(page,projectName);
 
-        await generateNfrFromProjectView(page,projectName,"Nfr_test_name","description_for_nfr","example_measurement_unit","1.0","1.0","1.0");
+        await generateNfrFromProjectView(page,projectName,elementName,"description_for_nfr","example_measurement_unit","1.0","1.0","1.0");
+
+        await accessNfrViewFromProjectView(page);
+
+        await deleteProjectElementFromElementsView(page,elementName,pageHeaderDataTestId,elementViewHeaderDataTestId,elementHeaderDataTestIdSuffix);
 
         await deleteProjectFromHomeView(page,projectName);
     });
@@ -396,12 +418,20 @@ test.describe("Expected requirement engineering flow", () => {
         await login(page,ADMIN_EMAIL,ADMIN_PASSWORD);
 
         const projectName = `test-${Date.now()}`;
+        const elementName = `sample.txt_${Date.now()}`;
+        const pageHeaderDataTestId = "document_detail_header";
+        const elementViewHeaderDataTestId = "document_view_header";
+        const elementHeaderDataTestIdSuffix = "document_";
 
         await loggedInUserCreateProject(page,projectName,"Project automatically created by Playwright E2E tests.","OpenAI Testing");
 
         await accessAvailableProjectFromHomeView(page,projectName);
         
-        await generateDocumentFromProjectView(page,projectName,"sample.txt")
+        await generateDocumentFromProjectView(page,projectName,elementName)
+
+        await accessDocumentViewFromProjectView(page);
+
+        await deleteProjectElementFromElementsView(page,elementName,pageHeaderDataTestId,elementViewHeaderDataTestId,elementHeaderDataTestIdSuffix);
 
         await deleteProjectFromHomeView(page,projectName);
     });
@@ -426,6 +456,10 @@ test.describe("Expected requirement engineering flow", () => {
 
         const projectName = `test-${Date.now()}`;
         const functionalityName = `test_funct_${Date.now()}`;
+        const elementName = `fr_${Date.now()}`;
+        const pageHeaderDataTestId = "functional_requirement_detail_header";
+        const elementViewHeaderDataTestId = "functionality_view_header";
+        const elementHeaderDataTestIdSuffix = "functional_requirement_";
 
         await loggedInUserCreateProject(page,projectName,"Project automatically created by Playwright E2E tests.","OpenAI Testing");
 
@@ -435,7 +469,9 @@ test.describe("Expected requirement engineering flow", () => {
         
         await accessAvailableFunctionalityFromProjectView(page,projectName,functionalityName);
 
-        await generateFunctionalRequirementFromFunctionalityView(page,`fr_${Date.now()}`,"test_description","HIGH","STABLE");
+        await generateFunctionalRequirementFromFunctionalityView(page,elementName,"test_description","HIGH","UNSTABLE");
+
+        await deleteProjectElementFromElementsView(page,elementName,pageHeaderDataTestId,elementViewHeaderDataTestId,elementHeaderDataTestIdSuffix);
 
         await deleteProjectFromHomeView(page,projectName);
     });

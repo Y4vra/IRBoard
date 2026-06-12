@@ -124,7 +124,7 @@ function DocumentDetailView() {
                 <FileText className="h-8 w-8" />
               </div>
               <div>
-                <h1 className="text-4xl font-black tracking-tight">{document.fileName}</h1>
+                <h1 data-testid="document_detail_header" className="text-4xl font-black tracking-tight">{document.fileName}</h1>
                 <p className="text-xs font-mono text-slate-400 pt-2">{document.entityIdentifier}</p>
                 <p className="text-sm text-muted-foreground mt-1 font-mono">{document.mimeType}</p>
               </div>
@@ -163,6 +163,7 @@ function DocumentDetailView() {
                   onSuccess={refresh} 
                   />
                 <Button variant="outline" size="sm" 
+                  data-testid="disable_project_element"
                   disabled={document.state === "DEACTIVATED"?true:disabling}
                   onClick={() => disableDocuments([document.id])}>
                   {disabling ? "Disabling..." : "Disable document"}
@@ -183,7 +184,7 @@ function DocumentDetailView() {
                 </Button>
                 <ConfirmActionDialog
                   trigger={
-                    <Button variant="outline" size="sm" disabled={document.state !== "DEACTIVATED" || removing}>
+                    <Button data-testid="remove_project_element" variant="outline" size="sm" disabled={document.state !== "DEACTIVATED" || removing}>
                       {removing ? "Removing..." : "Remove document"}
                     </Button>
                   }
@@ -199,7 +200,7 @@ function DocumentDetailView() {
             {isManager && document.state === "REMOVED" &&
               <ConfirmActionDialog
                 trigger={
-                  <Button variant="outline" size="sm" disabled={deleting}>
+                  <Button data-testid="delete_project_element" variant="outline" size="sm" disabled={deleting}>
                     {deleting ? "Deleting..." : "Delete document permanently"}
                   </Button>
                 }

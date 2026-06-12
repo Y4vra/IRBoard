@@ -580,6 +580,7 @@ function NonFunctionalRequirementsView() {
                   ) : (
                     removedRequirements.map((r) => (
                       <TableRow
+                        data-testid={"nfr_"+r.name}
                         key={r.id}
                         className="cursor-pointer hover:bg-slate-50"
                         onClick={() => navigate(`/project/${projectId}/nfr/${r.id}`)}

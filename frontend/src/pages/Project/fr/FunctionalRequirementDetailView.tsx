@@ -350,7 +350,7 @@ function FunctionalRequirementDetailView() {
             Functional Requirement
           </p>
           <div>
-            <h1 className="text-4xl font-black tracking-tight">{requirement.name}</h1>
+            <h1 data-testid="functional_requirement_detail_header" className="text-4xl font-black tracking-tight">{requirement.name}</h1>
             <p className="text-xs font-mono text-slate-400 pt-2">{requirement.entityIdentifier}</p>
           </div>
           {requirement.description && (
@@ -385,6 +385,7 @@ function FunctionalRequirementDetailView() {
                 <Pencil className="mr-2 h-4 w-4" /> Edit Requirement
               </Button>
               <Button variant="outline" size="sm" 
+                data-testid="disable_project_element"
                 disabled={requirement.state === "DEACTIVATED"?true:disabling}
                 onClick={() => disableFunctionalRequirements(functionalityId!,[requirement.id])}>
                 {disabling ? "Disabling..." : "Disable requirement"}
@@ -412,7 +413,7 @@ function FunctionalRequirementDetailView() {
               </Button>
               <ConfirmActionDialog
                 trigger={
-                  <Button variant="outline" size="sm" disabled={requirement.state !== "DEACTIVATED" || removing}>
+                  <Button data-testid="remove_project_element" variant="outline" size="sm" disabled={requirement.state !== "DEACTIVATED" || removing}>
                     {removing ? "Removing..." : "Remove requirement"}
                   </Button>
                 }
@@ -428,7 +429,7 @@ function FunctionalRequirementDetailView() {
           {project.isManager && requirement.state === "REMOVED" &&
             <ConfirmActionDialog
               trigger={
-                <Button variant="outline" size="sm" disabled={deleting}>
+                <Button data-testid="delete_project_element" variant="outline" size="sm" disabled={deleting}>
                   {deleting ? "Deleting..." : "Delete requirement permanently"}
                 </Button>
               }
