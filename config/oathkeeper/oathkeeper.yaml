@@ -21,7 +21,7 @@ serve:
 
 access_rules:
   repositories:
-    - file:///etc/config/oathkeeper/access-rules.yaml
+    - file:///tmp/access-rules.yaml
 
 errors:
   fallback:
