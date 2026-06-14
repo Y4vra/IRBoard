@@ -2,12 +2,18 @@ version: v1.1.0
 serve:
   public:
     port: 4433
+    base_url: ${SERVE_PUBLIC_BASE_URL}
     cors:
       enabled: false
   admin:
-    port: 4434 
+    port: 4434
+    base_url: ${SERVE_ADMIN_BASE_URL}
 
 selfservice:
+  allowed_return_urls:
+    - ${SELFSERVICE_ALLOWED_RETURN_URLS}
+  default_browser_return_url: ${SELFSERVICE_DEFAULT_BROWSER_RETURN_URL}
+
   methods:
     link:
       enabled: false
@@ -26,25 +32,26 @@ selfservice:
       enabled: false
     recovery: 
       enabled: true
-      ui_url: http://placeholder/recovery
+      ui_url: ${SELFSERVICE_FLOWS_RECOVERY_UI_URL}
       use: code 
     error:
-      ui_url: http://placeholder/error
+      ui_url: ${SELFSERVICE_FLOWS_ERROR_UI_URL}
     settings:
-      ui_url: http://placeholder/settings
+      ui_url: ${SELFSERVICE_FLOWS_SETTINGS_UI_URL}
       privileged_session_max_age: 15m
     logout:
       after:
-        default_browser_return_url: http://placeholder/login
+        default_browser_return_url: ${SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL}
     login:
-      ui_url: http://placeholder/login
+      ui_url: ${SELFSERVICE_FLOWS_LOGIN_UI_URL}
 
 session:
   lifespan: 24h
   cookie:
-    domain: irboard.local
+    domain: ${DOMAIN_NAME}
     name: irboard_session
     same_site: Lax
+    secure: "${SESSIONS_COOKIE_SECURE}"
 
 identity:
   default_schema_id: default

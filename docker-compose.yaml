@@ -42,12 +42,30 @@ services:
     networks:
       - internal
   kratos-migrate:
-    image: oryd/kratos:v25.4.0
+    build:
+      context: ./config/kratos
     environment:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - AUTH_DOMAIN=${AUTH_DOMAIN}
+      - SERVE_PUBLIC_BASE_URL=http://${AUTH_DOMAIN}/
+      - SERVE_ADMIN_BASE_URL=http://kratos:4434/
+      - SESSIONS_COOKIE_SECURE=false
+      - SELFSERVICE_ALLOWED_RETURN_URLS=http://${DOMAIN_NAME}
+      - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/home
+      - SELFSERVICE_FLOWS_ERROR_UI_URL=http://${DOMAIN_NAME}/error
+      - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://${DOMAIN_NAME}/login
+      - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://${DOMAIN_NAME}/registration
+      - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://${DOMAIN_NAME}/settings
+      - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://${DOMAIN_NAME}/setup-password
+      - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/kratos:/etc/config/kratos
-    command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
+    command:
+      - migrate
+      - sql
+      - -e
+      - --yes
     depends_on:
       kratos-db:
         condition: service_healthy
@@ -87,7 +105,8 @@ services:
       - db_data_keto:/var/lib/postgresql/data
 
   kratos:
-    image: oryd/kratos:v25.4.0
+    build:
+      context: ./config/kratos
     depends_on:
       kratos-migrate:
         condition: service_completed_successfully
@@ -97,10 +116,11 @@ services:
         condition: service_healthy
     environment:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - AUTH_DOMAIN=${AUTH_DOMAIN}
       - SERVE_PUBLIC_BASE_URL=http://${AUTH_DOMAIN}/
       - SERVE_ADMIN_BASE_URL=http://kratos:4434/
       - SESSIONS_COOKIE_SECURE=false
-      - SESSIONS_COOKIE_DOMAIN=${DOMAIN_NAME}
       - SELFSERVICE_ALLOWED_RETURN_URLS=http://${DOMAIN_NAME}
       - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/home
       - SELFSERVICE_FLOWS_ERROR_UI_URL=http://${DOMAIN_NAME}/error
@@ -111,7 +131,9 @@ services:
       - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/kratos:/etc/config/kratos
-    command: serve -c /etc/config/kratos/kratos.yaml --dev
+    command:
+      - serve
+      - --dev
     networks:
       - internal
 
@@ -160,17 +182,21 @@ services:
       - internal
 
   oathkeeper:
-    image: oryd/oathkeeper:v25.4.0
+    build:
+      context: ./config/oathkeeper
+      dockerfile: Dockerfile
     depends_on:
       - kratos
       - keto
+    env_file:
+      - .env
     environment:
+      - SERVE_PROXY_CORS_ALLOWED_ORIGINS=http://${DOMAIN_NAME}
       - AUTHENTICATORS_COOKIE_SESSION_CONFIG_CHECK_SESSION_URL=http://kratos:4433/sessions/whoami
       - AUTHORIZERS_REMOTE_JSON_CONFIG_REMOTE=http://keto:4466/relation-tuples/check/openapi
       - ERRORS_HANDLERS_REDIRECT_CONFIG_TO=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/oathkeeper:/etc/config/oathkeeper
-    command: serve proxy -c /etc/config/oathkeeper/oathkeeper.yaml
     networks:
       - public
       - internal

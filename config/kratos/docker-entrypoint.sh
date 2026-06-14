@@ -1,0 +1,35 @@
+#!/bin/sh
+set -e
+
+echo "Rendering kratos.yaml..."
+
+envsubst '
+${DSN}
+${DOMAIN_NAME}
+${AUTH_DOMAIN}
+
+${SERVE_PUBLIC_BASE_URL}
+${SERVE_ADMIN_BASE_URL}
+
+${SESSIONS_COOKIE_SECURE}
+
+${SELFSERVICE_ALLOWED_RETURN_URLS}
+${SELFSERVICE_DEFAULT_BROWSER_RETURN_URL}
+
+${SELFSERVICE_FLOWS_ERROR_UI_URL}
+${SELFSERVICE_FLOWS_LOGIN_UI_URL}
+${SELFSERVICE_FLOWS_REGISTRATION_UI_URL}
+${SELFSERVICE_FLOWS_SETTINGS_UI_URL}
+${SELFSERVICE_FLOWS_RECOVERY_UI_URL}
+${SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL}
+' \
+< /etc/config/kratos/kratos.yaml.tpl \
+> /tmp/kratos.yaml
+
+
+echo "Starting:"
+echo "$@"
+
+exec kratos \
+  -c /tmp/kratos.yaml \
+  "$@"

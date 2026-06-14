@@ -3,7 +3,7 @@ serve:
     cors:
       enabled: true
       allowed_origins:
-        - http://irboard.local
+        - http://placeholder # replaced by env on docker compose
       allowed_methods:
         - POST
         - GET
