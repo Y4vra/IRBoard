@@ -138,7 +138,8 @@ services:
       - internal
 
   kratos-courier:
-    image: oryd/kratos:v25.4.0
+    build:
+      context: ./config/kratos
     depends_on:
       kratos-migrate:
         condition: service_completed_successfully
@@ -148,21 +149,25 @@ services:
         condition: service_healthy
     environment:
       - DSN=postgres://${KRATOS_DB_USER}:${KRATOS_DB_PASSWORD}@kratos-db:5432/${KRATOS_DB_NAME}?sslmode=disable
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - AUTH_DOMAIN=${AUTH_DOMAIN}
       - SERVE_PUBLIC_BASE_URL=http://${AUTH_DOMAIN}/
       - SERVE_ADMIN_BASE_URL=http://kratos:4434/
       - SESSIONS_COOKIE_SECURE=false
-      - SESSIONS_COOKIE_DOMAIN=${DOMAIN_NAME}
+
       - SELFSERVICE_ALLOWED_RETURN_URLS=http://${DOMAIN_NAME}
       - SELFSERVICE_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/home
       - SELFSERVICE_FLOWS_ERROR_UI_URL=http://${DOMAIN_NAME}/error
       - SELFSERVICE_FLOWS_LOGIN_UI_URL=http://${DOMAIN_NAME}/login
-      - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://${DOMAIN_NAME}/registration
+      - SELFSERVICE_FLOWS_REGISTRATION_UI_URL=http://${DOMAIN_NAME}/registration
       - SELFSERVICE_FLOWS_SETTINGS_UI_URL=http://${DOMAIN_NAME}/settings
       - SELFSERVICE_FLOWS_RECOVERY_UI_URL=http://${DOMAIN_NAME}/setup-password
       - SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL=http://${DOMAIN_NAME}/login
     volumes:
       - ./config/kratos:/etc/config/kratos
-    command: courier watch -c /etc/config/kratos/kratos.yaml
+    command:
+      - courier
+      - watch
     networks:
       - internal
 
@@ -387,18 +392,23 @@ services:
     image: axllent/mailpit:v1.29
     ports:
       - "8025:8025" 
-      - "1025:1025" 
+      - "25:1025" 
     networks:
       - internal
 
-  # smtp-relay:
+  # smtp-server:
   #   image: boky/postfix
-  #   container_name: smtp-relay
   #   environment:
-  #     - RELAYHOST=[smtp.your-provider.com]:587
-  #     - RELAYHOST_USERNAME=${SMTP_USER}
-  #     - RELAYHOST_PASSWORD=${SMTP_PASS}
   #     - ALLOWED_SENDER_DOMAINS=${DOMAIN_NAME}
+  #     - POSTFIX_myhostname=mail.${DOMAIN_NAME}
+  #     - POSTFIX_myorigin=${DOMAIN_NAME}
+  #     - POSTFIX_mynetworks=127.0.0.0/8,172.16.0.0/12
+  #     - POSTFIX_mydestination=localhost
+  #     - POSTFIX_message_size_limit=0
+  #     - POSTFIX_smtp_tls_security_level=none
+  #     - POSTFIX_smtpd_tls_security_level=none
+  #     - POSTFIX_always_add_missing_headers=yes
+  #     - DKIM_AUTOGENERATE=true
   #   networks:
   #     - internal
 

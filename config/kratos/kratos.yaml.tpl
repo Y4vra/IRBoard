@@ -70,9 +70,9 @@ hashers:
 courier:
   delivery_strategy: smtp
   smtp:
-    connection_uri: smtp://smtp-server:1025/?skip_ssl_verify=true&disable_starttls=true
+    connection_uri: smtp://smtp-server:25/?skip_ssl_verify=true&disable_starttls=true
     from_name: IR-Board System
-    from_address: no-reply@ir-board.com
+    from_address: no-reply@${DOMAIN_NAME}
   templates:
     recovery_code:
       valid:

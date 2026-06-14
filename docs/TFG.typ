@@ -185,7 +185,39 @@ At the same time, there is an increasing demand for more sophisticated system ca
 Within this landscape, open-source alternatives remain relatively limited in scope and maturity. Existing open-source tools tend to focus on either issue tracking or lightweight Agile backlog management rather than providing a full requirements engineering lifecycle aligned with formal standards such as IEEE 830 and ISO/IEC/IEEE 29148. As a result, there is a clear gap in the market for an open, extensible, and standards-compliant platform that combines structured requirements engineering, Agile methodologies, advanced access control mechanisms, and collaborative lifecycle management within a single coherent system.
 
 == Definitions and Abbreviations
-ReBAC explain
+=== General concepts
+- #strong("RMP (Requirements Management Platform)"): A software system designed to support the full lifecycle of software requirements, including elicitation, specification, validation, traceability, and change management.
+- #strong("Requirements Engineering (RE)"): A discipline of software engineering focused on defining, documenting, and maintaining software requirements throughout the system lifecycle.
+- #strong("IEEE 830"): A legacy IEEE standard for software requirements specification, defining structure and content of Software Requirements Specifications (SRS).
+- #strong("ISO/IEC/IEEE 29148"): The current international standard for requirements engineering processes and requirements specification quality.
+- #strong("Agile Methodology"): An iterative software development approach that emphasizes incremental delivery, collaboration, and adaptability to change.
+- #strong("User Story"): A short description of a feature from an end-user perspective, commonly used in Agile development.
+- #strong("Use Case"): A structured description of a system’s behavior in response to external actors.
+=== Security and access control
+- #strong("ReBAC (Relation-Based Access Control)"): An authorization model where access permissions are determined by relationships between entities (e.g., user–project, user–role–resource), rather than static roles.
+- #strong("RBAC (Role-Based Access Control)"): A traditional access control model where permissions are assigned to roles, and users inherit permissions through assigned roles.
+- #strong("Zero-Trust Architecture"): A security model that assumes no implicit trust in any user or system component, requiring continuous verification of identity and permissions.
+- #strong("OIDC (OpenID Connect) (implied via Ory ecosystem context)"): An authentication layer built on OAuth 2.0 used for identity verification.
+=== Protocols and data modelling concepts
+- #strong("SMTP (Simple Mail Transfer Protocol)"): The standard protocol used for sending emails between servers.
+- #strong("Internal Unique Identifier (ID)"): A system-generated identifier used internally to uniquely identify an entity in the database.
+- #strong("Dynamic Identifier"): A human-readable structured identifier generated from relationships and context (e.g., FR-UM-001).
+- #strong("Slug"): A URL-safe unique string identifier, typically used for routing or external references.
+- #strong("Floating Point Ordering"): A technique for ordering entities (e.g., requirements) using floating-point values to allow efficient reordering without full renumbering.
+- #strong("Entity"): A domain object within the system such as a project, requirement, stakeholder, or document.
+- #strong("Audit Log"): A record of system actions used for traceability and accountability.
+=== Abbreviations
+- API – Application Programming Interface
+- DNS – Domain Name System
+- UI – User Interface
+- UX – User Experience
+- SRS – Software Requirements - Specification
+- MTA – Mail Transfer Agent
+- TLS – Transport Layer Security
+- JWT – JSON Web Token
+- CLI – Command Line Interface
+- CI/CD – Continuous Integration / Continuous Deployment
+
 == Scope
 
 == Assumptions and Constraints
