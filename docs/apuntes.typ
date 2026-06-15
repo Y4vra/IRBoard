@@ -129,16 +129,11 @@ traceability
 IEEE 830
 ISO/IEC/IEEE 29148
 
-== Requirements Traceability and Identification
-requirement IDs
-entity references
-versioning concepts
-
 == Agile Methodologies
 user stories
 story maps
 
-== Access Control Models
+== Access Control Models //alternatives
 DAC
 MAC
 RBAC

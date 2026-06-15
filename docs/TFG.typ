@@ -260,7 +260,7 @@ But first, it is necessary to explain what a #strong("stakeholder") is. A stakeh
 
 A #strong("requirement") represents a formal, documented statement describing a capability, condition, or constraint that a system must satisfy. Requirements act as the communication bridge between stakeholders and the development team, allowing the expected behavior of a system to be understood, evaluated, and implemented.
 
-=== Criteria
+=== Criteria <requirements_criteria>
 
 Generally, requirements are classified according to different criteria, including their abstraction level and whether they are functional or non-functional. Regarding abstraction, requirements are commonly organized in a hierarchical structure, where high-level requirements are progressively refined into more specific ones.This hierarchy allows requirements to be represented using identifiers, commonly composed of a unique identifier followed by a structured notation for their refinements. Sub-requirements can be nested within parent requirements, often using dot-separated numbering schemes that represent their position within the hierarchy.
 
@@ -299,22 +299,281 @@ One common approach to implementing these concepts is #strong[identifier-based] 
 
 Another commonly used strategy is #strong[traceability matrices], where relationships between different artifacts are represented in a structured table. For example, a requirements-to-test matrix can demonstrate that every requirement has associated validation activities, while a requirements-to-design matrix can show how each requirement is translated into system components.
 
-== Requirements documentation standards
+== Requirements Documentation Standards
+
+Requirements documentation standards provide guidelines and recommendations for creating consistent, complete, and understandable descriptions of software requirements. Their main objective is to reduce ambiguity between stakeholders and development teams by defining common structures, terminology, and practices for representing system needs.
+
+=== IEEE 830
+
+The IEEE 830 standard, formally known as *IEEE Recommended Practice for Software Requirements Specifications*, defines recommendations for writing Software Requirements Specifications (SRS).
+
+The standard establishes characteristics that a good requirement specification should have. A requirements document should be:
+
+- *Correct:* The documented requirements should represent the actual needs of the stakeholders and system objectives.
+- *Unambiguous:* Each requirement should have only one possible interpretation, avoiding unclear or subjective language.
+- *Complete:* All relevant requirements, constraints, and system behaviors should be included.
+- *Consistent:* Requirements should not contradict each other or define incompatible system behavior.
+- *Verifiable:* Each requirement should be testable through objective validation methods.
+- *Modifiable:* The document structure should allow changes without introducing inconsistencies.
+- *Traceable:* Each requirement should be uniquely identifiable and linked to its origin and related artifacts.
+
+Although modern Agile methodologies often favor lighter documentation approaches, the principles introduced by IEEE 830 remain applicable, especially regarding clarity, traceability, and verification.
+
+=== ISO/IEC/IEEE 29148
+
+The ISO/IEC/IEEE 29148 standard, *Systems and software engineering - Life cycle processes - Requirements engineering*, provides a more modern and comprehensive framework for requirements engineering. While IEEE 830 focuses mainly on the structure of the requirements specification document, ISO/IEC/IEEE 29148 covers the complete requirements lifecycle.
+
+This standard defines processes for requirements definition, analysis, management, validation, and maintenance throughout the entire system lifecycle. It emphasizes that requirements should not be considered static documents, but rather managed entities that evolve together with the system.
+
+ISO/IEC/IEEE 29148 introduces concepts such as:
+
+- *Stakeholder requirements and system requirements:* The criteria about requirement abstraction based on levels seen on the #link(<requirements_criteria>)[criteria] section. Stakeholder requirements are the equivalent of lower level, project-specific business requirements, as in some contexts, a business requirement may be broader, to affect the whole business.
+- *Requirements management:* The continuous process of controlling requirement changes, relationships, versions, and status throughout the lifecycle.
+- *Requirements verification and validation:* Activities that ensure requirements are correctly defined (verification) and that they represent the intended system (validation).
+
+The standard also reinforces the importance of requirements attributes beyond their textual description. These attributes may include identifiers, priority, source, rationale, status, dependencies, and verification criteria. These elements support traceability and enable better impact analysis when requirements change.
+
+Compared to IEEE 830, ISO/IEC/IEEE 29148 provides a broader lifecycle-oriented perspective, making it more suitable for modern development environments where requirements continuously evolve. For this reason, IR-Board follows the principles of both standards: using structured requirement documentation inspired by IEEE 830 while applying lifecycle management concepts defined by ISO/IEC/IEEE 29148.
 
 == Agile methodologies
+Agile methodologies are software development approaches that prioritize adaptability, continuous feedback, and incremental delivery over rigid, sequential planning. They emerged as a response to traditional development models, where requirements were often defined completely at the beginning of the project and changes were expensive to introduce later.
 
-== Access control models
+Their approach is based on the idea that software requirements evolve as stakeholders gain a better understanding of their needs and as the project progresses. Instead of attempting to define the complete system beforehand, Agile teams work through short development iterations or sprints, frequently delivering functional increments of the system and incorporating feedback from users and stakeholders.
+
+Common principles of Agile development include close collaboration between developers and stakeholders, continuous improvement, prioritization of valuable features, and responding to changes rather than strictly following an initial plan.
+
+Although Agile methodologies generally favor lightweight documentation, they do not eliminate the need for requirements management. Instead, requirements are commonly represented through simpler and more flexible artifacts that can evolve during development, like user stories.
+
+*User stories* are an Agile technique used to describe system requirements from the perspective of the user or stakeholder. Rather than focusing on technical implementation details, user stories express the expected value and purpose of a feature. They generally follow a structure like so:
+
+As a [type of user], I want [goal], so that [reason or benefit].
+
 
 == Security principles
+Software security principles are fundamental concepts used to design systems that protect data, users, and operations against unauthorized access, misuse, or failure. Security is not only implemented through specific mechanisms but also through architectural decisions and development practices.
+
+A common principle is the principle of *least privilege*, which states that users and components should only have the permissions required to perform their intended tasks. This reduces the potential impact of compromised accounts or services.
+
+Another important principle is defense in depth, where multiple independent security layers are applied instead of relying on a single protection mechanism. If one layer fails, additional controls can still prevent or limit damage.
+
+Modern security approaches also emphasize concepts such as secure-by-design, where security considerations are incorporated from the beginning of the system lifecycle rather than added as a final step.
 
 == Software architectures
+Software architecture describes the high-level structure of a software system, including its components, their responsibilities, and the communication mechanisms between them. Architectural decisions influence scalability, maintainability, security, and the ability of the system to evolve. It not only defines how software is organized internally, but also how different parts of the system interact with each other and with external services.
+
+=== Monolithic Architecture
+
+A monolithic architecture is a software architecture where the different system components are developed, deployed, and executed as a single application unit.
+
+In a monolithic system, business logic, data access, authentication, and other application concerns usually exist within the same deployment artifact. This approach is simple to develop and deploy, especially for smaller systems, as communication between components occurs through internal method calls.
+
+However, as the system grows, monolithic architectures can become harder to maintain because changes in one component may require redeploying the entire application. Scaling individual parts independently is also more difficult, since the complete application is scaled as a single unit.
+
+=== Microservices Architecture
+
+A microservices architecture divides an application into a collection of smaller, independent services. Each service is responsible for a specific business capability and communicates with other services through well-defined interfaces.
+
+Microservices allow independent deployment, scaling, and development of different system components. They also provide stronger isolation, as failures in one service can potentially be contained without affecting the entire system.
+
+However, this approach introduces additional complexity, including network communication, service discovery, distributed data management, monitoring requirements, and more complex deployment processes.
+
+For this reason, microservices architectures are often combined with supporting infrastructure such as API gateways, centralized logging, authentication services, and monitoring systems.
 
 == Observability
+Observability is the ability to understand the internal state and behavior of a software system by analyzing its external outputs. It allows operators and developers to detect failures, investigate problems, and understand system performance.
 
-==
+Modern distributed systems require observability because failures are often not limited to a single component. Instead, they may result from interactions between several services, infrastructure components, or external dependencies.
 
+The three main pillars of observability are logs, metrics, and traces.
+
+=== Logs
+
+Logs are timestamped records of events produced by applications and infrastructure components. They provide detailed information about what happened at a specific point in time. Examples of logged events include application errors, authentication attempts, configuration changes, or important business operations.
+
+Logs are especially useful for debugging and investigating incidents because they provide contextual information about individual events.
+
+=== Metrics
+
+Metrics are numerical measurements that represent the state or performance of a system over time. Unlike logs, which describe individual events, metrics provide aggregated information that can be analyzed through trends and comprehensive dashboards.
+
+Common examples include CPU usage, memory consumption, request latency, error rates, or the number of active users.
+
+=== Traces
+
+Traces represent the path of a request as it travels through different components of a system. They are particularly important in distributed architectures where a single user action may involve multiple services.
+
+A trace is composed of multiple spans, where each span represents an operation performed by a specific component. By analyzing traces, developers can identify bottlenecks, latency sources, or failures across service boundaries.
+
+Together, logs, metrics, and traces provide a complete view of system behavior, supporting reliability, maintenance, and operational decision-making.
 
 = Feasibility Study and Alternatives Analysis <alternatives_analysis> //3
+Before starting the implementation of IR-Board, an analysis of the technical feasibility and the different alternatives available was performed. The objective of this analysis was to identify the most appropriate technologies and architectural decisions according to the characteristics of the system to be implemented, the expected complexity, the security requirements, and the available development resources.
+
+The main factors considered during the evaluation were maintainability, scalability, security, development complexity, ecosystem maturity, integration capabilities, and suitability for the requirements management domain.
+
+Given the collaborative nature of requirements engineering systems, the decision was made to develop IR-Board as a web-based platform rather than as a standalone desktop application. A web architecture provides easier deployment, multiplatform access, and a better foundation for collaborative workflows where several users may interact with the same project simultaneously.
+
+The selected architecture separates the frontend and backend into independent projects. This separation improves maintainability and allows each layer to evolve independently. Additionally, it facilitates future deployment scenarios where the frontend could be served independently or replaced without requiring modifications to the core business logic.
+
+== Deferral or self-implementation of security environment
+Security was identified as a critical aspect of the system due to the collaborative nature of requirements management and the need for controlled access between users, projects, and functionalities.
+
+Two approaches were considered: implementing security mechanisms directly inside the application, or delegating security responsibilities to specialized external components.
+
+#figure(
+  table(
+    columns: 3,
+    [
+      #strong[Criteria]
+    ],
+    [#strong[Custom implementation]],
+    [#strong[External security ecosystem]],
+
+    [Control], [Maximum control], [Controlled through configuration],
+    [Development effort], [Very high], [Lower],
+    [Security assurance], [Depends on implementation quality], [Based on mature solutions],
+    [Maintainability], [Higher responsibility], [Separated components],
+  ),
+  caption: "Security implementation alternatives comparison",
+)
+
+A custom implementation would provide maximum control over authentication, authorization, and session management. However, implementing a complete security environment would significantly increase the complexity of the project. Features such as secure password management, session handling, authorization policies, token management, and protection against common vulnerabilities require extensive development and testing.
+
+For this reason, the project decided to use specialized open-source identity and security components from the Ory ecosystem. Their specific licensing is documented over on the #link(<appendices>)[appendices].
+
+Ory Kratos is responsible for identity management and user sessions. Ory Oathkeeper acts as an authorization gateway, validating requests before they reach internal services. Ory Keto provides relationship-based access control (ReBAC), which is particularly appropriate for the project because permissions depend on relationships between users, projects, and functionalities.
+
+Similarly, Traefik was selected as the API gateway and entry point due to its maturity and previous experience with the technology.
+
+The use of these components follows the security principle of defense in depth, separating responsibilities and reducing the amount of security-critical code maintained by the project.
+
+== Backend framework selection
+
+The backend was approached as a system exposing a REST API from the beginning. Three main alternatives were considered: Spring Boot, Express.js, and FastAPI.
+
+#figure(
+  table(
+    columns: 3,
+    [#strong[Framework]], [#strong[Advantages]], [#strong[Disadvantages]],
+
+    [Spring Boot],
+    [Mature ecosystem, strong security support, dependency injection, Spring Data JPA integration, suitable for complex domain models],
+    [Higher initial complexity and more verbose configuration compared with lightweight alternatives],
+
+    [Express.js],
+    [Simple architecture, rapid development, large JavaScript ecosystem, direct compatibility with React and TypeScript],
+    [Minimal framework approach requires manual decisions for architecture, security, validation, and application structure],
+
+    [FastAPI],
+    [Modern API design, automatic OpenAPI generation, type-based validation, high performance, simple development model],
+    [Less opinionated architecture, fewer enterprise-oriented patterns, additional design decisions required for complex systems],
+  ),
+  caption: "Backend framework alternatives comparison",
+)
+
+=== Spring Boot
+Spring Boot was selected as the backend framework due to its maturity, strong ecosystem, and extensive support for enterprise-oriented applications. Its opinionated structure provides several development and security advantages, including dependency management, validation support, integrated configuration management, security modules, and mature database access through Spring Data JPA.
+
+Additionally, the IR-Board domain requires complex relationships between entities, lifecycle management, state transitions, and strict data consistency. The object-relational mapping capabilities provided by JPA allow these relationships to be represented naturally while maintaining control over the resulting database structure. The Spring ecosystem also provides mature integration possibilities with authentication systems, authorization layers, and observability tools.
+
+=== Express.js
+Express.js was considered due to its simplicity, lightweight nature, and strong integration with JavaScript-based frontend ecosystems. Since the frontend was planned using React and TypeScript, using a JavaScript-based backend would allow sharing the same programming language across the stack, potentially simplifying development and reducing context switching.
+
+However, Express.js is intentionally minimal and provides fewer architectural constraints. This means that important aspects such as project structure, validation, security practices, dependency management, and error handling need to be manually defined. For a system where security, traceability, and long-term maintainability are important objectives, this additional responsibility increases implementation complexity and risk.
+
+=== FastAPI
+FastAPI was also considered as a modern alternative for REST API development. Its use of Python type hints and Pydantic models provides automatic validation, clear API contracts, and automatic OpenAPI documentation generation. Additionally, its asynchronous architecture can provide excellent performance for I/O-heavy applications while maintaining a relatively simple development experience.
+
+Despite these advantages, FastAPI was not selected. Although it is a strong framework for API-focused applications, it provides fewer built-in architectural conventions for large domain-oriented systems compared with Spring Boot. More decisions regarding dependency injection patterns, application organization, security integration, and persistence architecture would need to be defined independently. While this flexibility is valuable in many contexts, the additional design decisions would increase the complexity of maintaining a consistent architecture.
+
+The final decision was Spring Boot because the additional structure, mature security ecosystem, database integration capabilities, and established enterprise patterns better match the requirements of IR-Board. The framework reduces implementation risks and development efforts while providing a solid foundation for future expansion.
+
+== Frontend framework selection
+
+The frontend is responsible for presenting the requirements management interface and enabling user interaction with complex entities such as requirements, documents, stakeholders, and project structures. Due to the collaborative and data-intensive nature of the system, the frontend needed to support reusable components, responsive layouts, maintainable state management, and a flexible design system.
+
+The main frontend framework alternatives considered were React and Angular.
+
+React with TypeScript was selected as the frontend framework due to its flexibility, ecosystem maturity, and previous experience with the technology. React provides a component-based development model, allowing the creation of reusable interface elements and facilitating the development of complex interactive views. The use of TypeScript adds static typing, reducing potential errors and improving maintainability in a project with a large number of entities and interactions.
+
+Angular was considered because it provides a complete frontend framework including routing, dependency injection, and a predefined application structure. This approach improves consistency and can simplify development in large teams by reducing the number of architectural decisions required during implementation. However, Angular's broader framework scope, stricter conventions, and larger set of integrated concepts introduce additional complexity compared with lighter approaches. Since IR-Board requires flexibility in interface design and integration with external services, React offered a better balance between structure, adaptability, and control over the selected tooling.
+
+#figure(
+  table(
+    columns: 3,
+    [
+      #strong[Criteria]
+    ],
+    [
+      #strong[React + TypeScript]
+    ],
+    [
+      #strong[Angular]
+    ],
+
+    [Architecture],
+    [Flexible component-based approach; additional tooling chosen according to project needs],
+    [Complete framework with predefined application structure],
+
+    [Flexibility],
+    [High; developers choose supporting libraries and patterns],
+    [Moderate; framework conventions guide implementation],
+
+    [Learning curve], [Moderate; requires selecting additional tools], [Higher initially due to wider framework scope],
+
+    [Ecosystem], [Large ecosystem and extensive third-party integrations], [Large ecosystem with official tooling],
+
+    [Decision], [Selected], [Rejected],
+  ),
+  caption: "Frontend framework alternatives comparison",
+)
+
+== Database selection
+
+The system requires persistent storage for projects, requirements, users, documents, relationships, and lifecycle information. The database solution needed to provide reliable persistence, transactional guarantees, support for complex relationships between entities, and enough flexibility to evolve as the system grows.
+
+A relational database management system (RDBMS) was selected because the problem domain is primarily composed of structured entities with well-defined relationships. Requirements engineering involves maintaining consistency between projects, functionalities, requirements, stakeholders, and documents, where modifications to one entity may affect others. Therefore, transactional operations, referential integrity, and explicit relationship modelling are important characteristics for the system.
+
+PostgreSQL was selected due to its maturity, reliability, and extensive feature set. It provides strong relational guarantees while also supporting semi-structured data through features such as JSONB columns. This allows storing flexible attributes when required without abandoning the advantages of a relational model.
+
+Alternative database solutions based on document-oriented databases, such as MongoDB, were considered due to their flexible schema and ability to represent changing data structures. However, this flexibility is less relevant for the IR-Board domain, where consistency, traceability, and explicit relationships between entities are critical. A document-oriented approach would require additional application-level logic to maintain relationships and enforce integrity constraints.
+
+Another important consideration was the integration with the selected security architecture. The Ory ecosystem used by the project relies on relational database support, and PostgreSQL is a mature option compatible with these components, as commented #link("https://github.com/ory/kratos/discussions/3007")[here]. Using the same database technology across the system reduces deployment complexity, simplifies maintenance, and avoids introducing unnecessary infrastructure differences.
+
+The final decision was PostgreSQL because it provides the required balance between consistency, flexibility, ecosystem compatibility, and long-term maintainability.
+
+#figure(
+  table(
+    columns: 4,
+    [#strong[Criteria]], [#strong[PostgreSQL]], [#strong[MongoDB]], [#strong[Evaluation]],
+
+    [Data consistency],
+    [Strong ACID transactions and relational integrity],
+    [Flexible schema with weaker relationship enforcement],
+    [PostgreSQL preferred],
+
+    [Entity relationships],
+    [Native foreign keys and relational modelling],
+    [Relationships require additional application logic],
+    [PostgreSQL preferred],
+
+    [Traceability],
+    [Suitable for immutable identifiers, lifecycle states, and audit information],
+    [Possible but requires additional modelling],
+    [PostgreSQL preferred],
+
+    [Schema flexibility],
+    [JSONB allows semi-structured fields while maintaining relations],
+    [Highly flexible document model],
+    [Both viable],
+
+    [Ory ecosystem compatibility],
+    [Supported and commonly used],
+    [Not suitable for the selected deployment],
+    [PostgreSQL preferred],
+  ),
+  caption: "Database alternatives comparison",
+)
 
 = Initial Project Planning and Management //4
 
@@ -327,7 +586,7 @@ Another commonly used strategy is #strong[traceability matrices], where relation
 == Risk Analysis
 
 == Initial Budget
-cite the DPPI enterprise definition
+
 = System Analysis //5
 
 == Users and Characteristics
@@ -845,10 +1104,8 @@ All designs provided were shared and accepted by the tutors, and are free to be 
 = Conclusions and Future Work //11
 
 = References //12
-- https://vite.dev/config/
-- https://typst.app/docs/
 - [1] “Welcome to Ory! | Ory,” Ory.com, Oct. 15, 2025. https://www.ory.com/docs/ (accessed Mar. 07, 2026).
 - [2] “Configuring Vite,” vitejs, 2025. https://vite.dev/config/
 - [3] “Typst Documentation,” Typst, 2024. https://typst.app/docs/
-= Appendices
+= Appendices <appendices>
 == Supplementary Material
