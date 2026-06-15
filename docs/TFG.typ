@@ -248,6 +248,27 @@ The following elements are considered outside the scope of this project:
 
 The final result of this project is therefore a functional and extensible prototype of a requirements management platform that demonstrates secure architecture design, requirements lifecycle management, traceability, collaboration capabilities, and basic operational visibility, while leaving production infrastructure concerns and external ecosystem integrations as future extensions.
 == Assumptions and Constraints
+The development of IR-Board is based on several assumptions and constraints regarding the environment, users, and expected usage of the platform.
+
+It is assumed that the system will primarily be used by software development teams or academic/project environments where requirements need to be collected, structured, reviewed, and maintained throughout a software lifecycle. The platform is not intended to replace complete enterprise Application Lifecycle Management (ALM) suites, but rather provide a focused requirements engineering environment combining formal documentation practices with Agile techniques.
+
+The project is constrained by the available development time and the scope of a bachelor's thesis. Therefore, some enterprise-level functionalities commonly found in commercial requirements management platforms are not implemented.
+
+It is assumed that users interacting with the system have basic knowledge of software development concepts and requirements engineering terminology. Although the platform provides mechanisms to guide the creation and validation of requirements, it does not attempt to automatically determine whether a requirement is correct from a business perspective; this responsibility remains with stakeholders and project members, and therefore those actions are fundamentally manual by design.
+
+The system assumes that requirements are created and maintained following a structured lifecycle. Requirements may evolve over time, and changes are expected to occur through controlled modification, validation, and approval processes rather than direct deletion. Therefore, the platform assumes that maintaining historical information and traceability is more valuable than permanently removing data in a quick manner.
+
+The project assumes that the group using the system may have different projects at a time, operated by different groups of developers, and therefore static global roles are unfit for access control.
+
+The project assumes that external security services such as identity management, authentication, and authorization providers can be integrated through standardized interfaces. Therefore, solutions such as the Ory ecosystem are treated as replaceable infrastructure components rather than business logic dependencies.
+
+It is assumed that PostgreSQL provides enough flexibility for the domain model, including structured relational data and semi-structured information through JSONB fields. The system does not require a dedicated NoSQL database because the main entities require strong consistency and traceability.
+
+The document management subsystem assumes that uploaded documents act mainly as requirement-related artifacts. Advanced document processing, version control systems, collaborative document editing, or automatic content extraction are outside the expected functionality.
+
+The observability layer assumes that basic logging, metrics, and monitoring capabilities are sufficient for system administration and debugging. The project does not assume the need for security monitoring, automated incident response, or a complete observability platform.
+
+The deployment environment assumes containerized execution. Components are expected to run through container orchestration tools such as Docker Compose during development and testing, allowing the same architecture to be adapted to more advanced deployment environments if required.
 
 = Theoretical Background //2
 To better understand the system developed, here is a brief summary of the concepts related and used on it.
