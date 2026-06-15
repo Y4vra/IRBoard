@@ -115,3 +115,47 @@ The system must allow a user to search requirements by text
 i18n of frontend & databases with AI
 smtp server
 showing how many elements are affected by removal/deactivation.
+
+
+= Theoretical Background
+
+== Software Requirements Engineering
+lifecycle
+elicitation
+validation
+traceability
+
+== Requirements Documentation Standards
+IEEE 830
+ISO/IEC/IEEE 29148
+
+== Requirements Traceability and Identification
+requirement IDs
+entity references
+versioning concepts
+
+== Agile Methodologies
+user stories
+story maps
+
+== Access Control Models
+DAC
+MAC
+RBAC
+ABAC
+ReBAC
+
+== Security Principles
+Zero Trust
+least privilege
+defense in depth
+
+== Software Architectures
+monolith
+microservices
+API gateways
+
+== Observability
+logs
+metrics
+traces

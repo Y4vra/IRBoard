@@ -1,0 +1,18 @@
+@startuml SpiralRequirementsEngineeringProcess
+title Spiral Requirements Engineering Process
+
+[*] -down-> elicitation
+
+state "Requirements\nElicitation" as elicitation
+state "Requirements\nAnalysis" as analysis
+state "Requirements\nSpecification" as specification
+state "Requirements\nValidation" as validation
+
+elicitation -right-> analysis
+analysis --> specification
+specification --> validation
+
+validation --> elicitation : Needs refinement
+validation --> [*] : Accepted
+
+@enduml
