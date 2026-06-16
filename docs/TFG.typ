@@ -652,7 +652,7 @@ Domain and infrastructure providers are not included as stakeholders, since the 
 This section presents the Product Breakdown Structure (PBS) and Organization Breakdown Structure (OBS) of the IR-Board project. The PBS provides a hierarchical view of the main components and modules that compose the final product, while the OBS defines the organizational structure and the distribution of responsibilities among the roles involved in the project.
 
 The purpose of these structures is to establish a clear understanding of the system scope, its main elements, and the relationship between the product components and the theoretical teams responsible for their development and management.
-=== PBS
+=== PBS <pbs>
 The Product Breakdown Structure (PBS) shown below decomposes IR-Board into its main functional components. At the highest level, the system is divided into several modules that represent the main capabilities offered by the platform.
 
 The security and access control module contains the mechanisms required to protect the system, including authentication, Relation-Based Access Control (ReBAC), and the Zero-Trust security model. The requirements management module represents the core functionality of the platform, covering functional and non-functional requirements, their lifecycle, and traceability between related elements.
@@ -701,6 +701,146 @@ The following matrix defines the responsibility distribution for the main projec
 )
 
 == Initial Planning
+The initial project planning was developed based on the Product Breakdown Structure (PBS) of the system, which can be found #link(<pbs>)[here]. The PBS was defined through an iterative process of refinement with the client (outside the theoretical context, this process was carried out with the project tutors) until a suitable system scope and set of functional requirements were established.
+
+From the identified requirements, the main system modules were derived and used as the basis for creating the project breakdown structure and the initial planning. It should be noted that this planning does not consider strict execution deadlines or real resource constraints, as its main objective is to estimate the required resources and project budget. Therefore, no distinction has been made between individual team members within the same professional profile; for example, tasks assigned to junior developers are considered equivalent regardless of whether they are performed by Junior Developer 1 or Junior Developer 2.
+
+The estimated effort, task durations, and assignment of professional profiles were defined using expert judgement, considering the complexity of each activity and the expected workload required for its completion.
+
+#pagebreak()
+#page(paper: "a4", flipped: true)[
+  #table(
+    columns: (0.75fr, 4fr, 1fr, 2.25fr, 1.5fr, 1.5fr),
+    align: left,
+
+    [*ID*], [*Task*], [*Work*], [*Profile*], [*Start*], [*End*],
+
+    [0], [*IRBoard development*], [300 hrs], [], [Thu 01/01/26], [Fri 13/02/26],
+    [1], [Project management], [30 hrs], [], [Thu 01/01/26], [Fri 13/02/26],
+    [1.1], [Design project schedule], [2 hrs], [Project manager], [Thu 01/01/26], [Thu 01/01/26],
+    [1.2], [Generate budget], [2 hrs], [Project manager], [Thu 01/01/26], [Thu 01/01/26],
+    [1.3], [Periodic project management], [26 hrs], [], [Fri 02/01/26], [Fri 13/02/26],
+    [1.3.1], [Periodic project management 1], [2 hrs], [Project manager], [Fri 02/01/26], [Fri 02/01/26],
+    [1.3.2], [Periodic project management 2], [2 hrs], [Project manager], [Mon 05/01/26], [Mon 05/01/26],
+    [1.3.3], [Periodic project management 3], [2 hrs], [Project manager], [Fri 09/01/26], [Fri 09/01/26],
+    [1.3.4], [Periodic project management 4], [2 hrs], [Project manager], [Mon 12/01/26], [Mon 12/01/26],
+    [1.3.5], [Periodic project management 5], [2 hrs], [Project manager], [Fri 16/01/26], [Fri 16/01/26],
+    [1.3.6], [Periodic project management 6], [2 hrs], [Project manager], [Mon 19/01/26], [Mon 19/01/26],
+    [1.3.7], [Periodic project management 7], [2 hrs], [Project manager], [Fri 23/01/26], [Fri 23/01/26],
+    [1.3.8], [Periodic project management 8], [2 hrs], [Project manager], [Mon 26/01/26], [Mon 26/01/26],
+    [1.3.9], [Periodic project management 9], [2 hrs], [Project manager], [Fri 30/01/26], [Fri 30/01/26],
+    [1.3.10], [Periodic project management 10], [2 hrs], [Project manager], [Mon 02/02/26], [Mon 02/02/26],
+    [1.3.11], [Periodic project management 11], [2 hrs], [Project manager], [Fri 06/02/26], [Fri 06/02/26],
+    [1.3.12], [Periodic project management 12], [2 hrs], [Project manager], [Mon 09/02/26], [Mon 09/02/26],
+    [1.3.13], [Periodic project management 13], [2 hrs], [Project manager], [Fri 13/02/26], [Fri 13/02/26],
+    [2], [Analysis/Software Requirements], [54 hrs], [], [Thu 01/01/26], [Fri 09/01/26],
+    [2.1], [Determine project scope], [1 hr], [System Analyst], [Thu 01/01/26], [Thu 01/01/26],
+    [2.2], [Review Regulatory Standards], [4 hrs], [Technology consultant], [Thu 01/01/26], [Thu 01/01/26],
+    [2.3], [Identify required Documentation], [2 hrs], [System Analyst], [Thu 01/01/26], [Thu 01/01/26],
+    [2.4], [Determine hand-ins for the project], [1 hr], [System Analyst], [Thu 01/01/26], [Thu 01/01/26],
+    [2.5], [Adapt project template to typst], [2 hrs], [System Analyst], [Fri 02/01/26], [Fri 02/01/26],
+    [2.6], [Analyze existing systems], [6 hrs], [Technology consultant], [Fri 02/01/26], [Fri 02/01/26],
+    [2.7], [Draft preliminary software requirements], [22 hrs], [System Analyst], [Mon 05/01/26], [Wed 07/01/26],
+    [2.8], [Model auxiliary diagrams], [6 hrs], [System Analyst], [Wed 07/01/26], [Thu 08/01/26],
+    [2.9], [Review software requirements], [2 hrs], [System Analyst], [Thu 08/01/26], [Thu 08/01/26],
+    [2.10], [Modify requirements with feedback], [8 hrs], [System Analyst], [Thu 08/01/26], [Fri 09/01/26],
+    [3], [Analysis complete], [0 hrs], [], [Fri 09/01/26], [Fri 09/01/26],
+    [4], [Design], [51 hrs], [], [Fri 09/01/26], [Fri 16/01/26],
+    [4.1], [Design architecture], [10 hrs], [Software architect], [Fri 09/01/26], [Mon 12/01/26],
+    [4.2], [Design brand identity], [3 hrs], [Junior software engineer], [Fri 09/01/26], [Mon 12/01/26],
+    [4.3], [Design project management], [8 hrs], [Senior software engineer], [Mon 12/01/26], [Tue 13/01/26],
+    [4.4], [Design stakeholder management], [4 hrs], [Senior software engineer], [Tue 13/01/26], [Tue 13/01/26],
+    [4.5], [Design requirement management], [6 hrs], [Senior software engineer], [Tue 13/01/26], [Wed 14/01/26],
+    [4.6], [Design user management], [10 hrs], [Senior software engineer], [Wed 14/01/26], [Thu 15/01/26],
+    [4.7],
+    [Design document management and diagram modelling],
+    [10 hrs],
+    [Senior software engineer],
+    [Thu 15/01/26],
+    [Fri 16/01/26],
+
+    [5], [Design complete], [0 hrs], [], [Fri 16/01/26], [Fri 16/01/26],
+    [6], [Set up SonarQube for Quality Assurance], [3 hrs], [Senior software engineer], [Fri 16/01/26], [Mon 19/01/26],
+    [7], [Development], [105 hrs], [], [Mon 19/01/26], [Thu 05/02/26],
+    [7.1], [Set up architecture], [4 hrs], [Software architect], [Mon 19/01/26], [Mon 19/01/26],
+    [7.2], [Set up development enviroment], [3 hrs], [Software architect], [Mon 19/01/26], [Tue 20/01/26],
+    [7.3], [Develop code], [98 hrs], [], [Tue 20/01/26], [Thu 05/02/26],
+    [7.3.1], [Develop project management module], [22 hrs], [Junior software engineer], [Tue 20/01/26], [Thu 22/01/26],
+    [7.3.2],
+    [Develop stakeholder management module],
+    [10 hrs],
+    [Junior software engineer],
+    [Thu 22/01/26],
+    [Mon 26/01/26],
+
+    [7.3.3],
+    [Develop requirement management module],
+    [25 hrs],
+    [Senior software engineer],
+    [Mon 26/01/26],
+    [Thu 29/01/26],
+
+    [7.3.4], [Develop user management module], [6 hrs], [Junior software engineer], [Thu 29/01/26], [Thu 29/01/26],
+    [7.3.5], [Develop document management], [15 hrs], [Senior software engineer], [Fri 30/01/26], [Mon 02/02/26],
+    [7.3.6],
+    [Develop modifying concurrency system],
+    [10 hrs],
+    [Senior software engineer],
+    [Mon 02/02/26],
+    [Wed 04/02/26],
+
+    [7.3.7], [Develop search and filtering], [10 hrs], [Junior software engineer], [Wed 04/02/26], [Thu 05/02/26],
+    [8], [Development complete], [0 hrs], [], [Thu 05/02/26], [Thu 05/02/26],
+    [9], [Testing], [27 hrs], [], [Fri 16/01/26], [Thu 05/02/26],
+    [9.1], [Test project management module], [4 hrs], [Junior software engineer], [Mon 26/01/26], [Mon 26/01/26],
+    [9.2], [Test stakeholder management module], [3 hrs], [Junior software engineer], [Mon 26/01/26], [Mon 26/01/26],
+    [9.3], [Test requirement management module], [5 hrs], [Junior software engineer], [Fri 30/01/26], [Fri 30/01/26],
+    [9.4], [Test user management module], [3 hrs], [Junior software engineer], [Fri 30/01/26], [Fri 30/01/26],
+    [9.5], [Test document management], [3 hrs], [Junior software engineer], [Mon 02/02/26], [Tue 03/02/26],
+    [9.6], [Test modifying concurrency system], [2 hrs], [Junior software engineer], [Thu 05/02/26], [Thu 05/02/26],
+    [9.7], [Test search and filtering], [3 hrs], [Junior software engineer], [Thu 05/02/26], [Thu 05/02/26],
+    [9.8], [Accesibility testing], [2 hrs], [Junior software engineer], [Fri 16/01/26], [Mon 19/01/26],
+    [9.9], [Load testing], [2 hrs], [Senior software engineer], [Mon 19/01/26], [Tue 20/01/26],
+    [10], [Testing complete], [0 hrs], [], [Thu 05/02/26], [Thu 05/02/26],
+    [11], [Documentation], [30 hrs], [], [Thu 01/01/26], [Mon 09/02/26],
+    [11.1],
+    [Document declaration of originality, abstract and keywords],
+    [1 hr],
+    [Project manager],
+    [Thu 01/01/26],
+    [Thu 01/01/26],
+
+    [11.2], [Document introduction], [1 hr], [Project manager], [Thu 01/01/26], [Thu 01/01/26],
+    [11.3], [Document theoretical background], [1 hr], [Technology consultant], [Thu 01/01/26], [Thu 01/01/26],
+    [11.4],
+    [Document feasibility study and alternative analysis],
+    [2 hrs],
+    [Technology consultant],
+    [Thu 01/01/26],
+    [Thu 01/01/26],
+
+    [11.5],
+    [Document Initial project planning and management],
+    [2 hrs],
+    [Project manager],
+    [Fri 02/01/26],
+    [Fri 02/01/26],
+
+    [11.6], [Document system analysis], [3 hrs], [System Analyst], [Fri 02/01/26], [Fri 02/01/26],
+    [11.7], [Document system design], [5 hrs], [Software architect], [Tue 13/01/26], [Tue 13/01/26],
+    [11.8], [Document system implementation], [5 hrs], [Senior software engineer], [Thu 05/02/26], [Thu 05/02/26],
+    [11.9], [Document test plan execution], [2 hrs], [Senior software engineer], [Fri 06/02/26], [Fri 06/02/26],
+    [11.10], [Document system manuals], [5 hrs], [Senior software engineer], [Fri 06/02/26], [Fri 06/02/26],
+    [11.11], [Document final project closure], [2 hrs], [Project manager], [Fri 06/02/26], [Mon 09/02/26],
+    [11.12], [Document conclusions and future work], [1 hr], [Project manager], [Mon 09/02/26], [Mon 09/02/26],
+    [12], [Documentation complete], [0 hrs], [], [Mon 09/02/26], [Mon 09/02/26],
+  )
+  Which gives the following Gantt chart:
+  #figure(image("/docs/assets/screenshots/gantt_diagram_1.png"), caption: "Project management Gantt chart")
+  #figure(image("/docs/assets/screenshots/gantt_diagram_2.png"), caption: "Analysis and design Gantt chart")
+  #figure(image("/docs/assets/screenshots/gantt_diagram_3.png"), caption: "Development and testing Gantt chart")
+  #figure(image("/docs/assets/screenshots/gantt_diagram_4.png"), caption: "Documentation Gantt chart")
+]
 
 == Risk Analysis
 
