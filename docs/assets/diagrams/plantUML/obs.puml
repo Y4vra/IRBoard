@@ -1,0 +1,40 @@
+@startuml obs
+title Organization Chart
+
+skinparam linetype ortho
+skinparam rectangle {
+  roundCorner 0
+}
+
+rectangle "Project Manager" as PM
+
+rectangle "Technology Consultant" as TC
+rectangle "Software Architect" as SA
+rectangle "Service Coordinator" as SC
+rectangle "Systems Analyst" as SYA
+
+rectangle "Senior Developer\n1" as SD1
+rectangle "Senior Developer\n2" as SD2
+
+rectangle "Junior Developer 1" as JD1
+rectangle "Junior Developer 2" as JD2
+rectangle "Junior Developer 3" as JD3
+rectangle "Junior Developer 4" as JD4
+
+' Top level
+PM -down- TC
+PM -down- SA
+PM -down- SC
+PM -down- SYA
+
+' Architect hierarchy
+SA -down- SD1
+SA -down- SD2
+
+SD1 -down- JD1
+SD1 -down- JD2
+
+SD2 -down- JD3
+SD2 -down- JD4
+
+@enduml

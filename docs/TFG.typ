@@ -597,10 +597,108 @@ The final decision was PostgreSQL because it provides the required balance betwe
 )
 
 = Initial Project Planning and Management //4
+== Theoretical client petition
+To be able to appropiately create a project's budget aligned with the needs of the client, and ensure a complete enough context, the planning was done with the following fictional scenario in mind:
+
+The theoretical client, NorthTech Solutions, is a company located in a nearby city to where the development team operates. The company requests the creation of a customized software platform to improve its internal processes and digital management.
+
+The project involves collaboration between different parties, including NorthTech Solutions, the development team, the company's management department, technical staff, and the future users of the application. The requested work covers the complete software lifecycle, including requirements analysis, custom development, deployment on the internal network of the company, load testing, usability testing, and technical documentation.
+
+The objective is to deliver a functional, maintainable, and scalable solution while applying professional software engineering practices within the scope of this TFG.
 
 == Stakeholder Identification
 
+#table(
+  columns: (1fr, 3fr, 6fr),
+  align: left,
+  [*ID*], [*Stakeholder*], [*Description*],
+
+  [ST-1],
+  [NorthTech Solutions],
+  [Fictional company requesting the software solution, defining business needs and validating the final product],
+
+  [ST-2],
+  [Company Management Department],
+  [Area responsible for organizational decisions, providing objectives, priorities, and project approval],
+
+  [ST-3],
+  [Technical Department],
+  [Employees responsible for IT systems, providing technical requirements and supporting deployment],
+
+  [ST-4],
+  [End Users (Software Development Teams)],
+  [Teams that will use the application daily for their development activities, providing usability feedback and validating workflows],
+
+  [ST-5],
+  [Development Team],
+  [TFG development group responsible for the solution, analyzing, designing, developing, testing, and documenting the system],
+
+  [ST-6],
+  [Client Development Team],
+  [Technical personnel from the client organization who may review the solution and support future improvements],
+
+  [ST-7],
+  [Future Maintenance Team],
+  [Hypothetical team responsible for future evolution, requiring documentation and maintainability information],
+
+  [ST-8],
+  [NorthTech Systems Administration Team],
+  [Hypothetical team responsible for infrastructure management, deployment support, and system monitoring],
+)
+
+Domain and infrastructure providers are not included as stakeholders, since the deployment environment will rely on the theoretical client's existing infrastructure and no external provisioning or management is required within the scope of this project.
+
 == OBS and PBS
+This section presents the Product Breakdown Structure (PBS) and Organization Breakdown Structure (OBS) of the IR-Board project. The PBS provides a hierarchical view of the main components and modules that compose the final product, while the OBS defines the organizational structure and the distribution of responsibilities among the roles involved in the project.
+
+The purpose of these structures is to establish a clear understanding of the system scope, its main elements, and the relationship between the product components and the theoretical teams responsible for their development and management.
+=== PBS
+The Product Breakdown Structure (PBS) shown below decomposes IR-Board into its main functional components. At the highest level, the system is divided into several modules that represent the main capabilities offered by the platform.
+
+The security and access control module contains the mechanisms required to protect the system, including authentication, Relation-Based Access Control (ReBAC), and the Zero-Trust security model. The requirements management module represents the core functionality of the platform, covering functional and non-functional requirements, their lifecycle, and traceability between related elements.
+
+Project management provides the necessary tools to organize projects, manage their functionalities, and control approval workflows. User management handles users and permissions, while the project element management module groups additional entities managed within projects, such as documents and stakeholders.
+
+Finally, collaboration services provide support for concurrent work through entity locking, and the search and filtering module improves accessibility by allowing users to efficiently locate and organize project information.
+
+This decomposition defines the main product boundaries and provides a high-level overview of the system architecture from a functional perspective.
+#figure(image("/docs/assets/diagrams/pbs.svg"), caption: "PBS")
+
+=== OBS
+#figure(image("/docs/assets/diagrams/obs.svg"), caption: "OBS")
+A RACI responsibility matrix has been used to define the responsibilities and participation of each stakeholder throughout the project. This matrix helps clarify the involvement of each role during the different project activities.
+
+The RACI model defines the following categories:
+
+- R (Responsible): Person or role responsible for carrying out the activity.
+- A (Accountable): Person or role who approves the result and has the final responsibility.
+- C (Consulted): Person or role whose expertise or opinion is required.
+- I (Informed): Person or role who must be notified about the progress or results.
+
+The roles considered in the project are:
+
+- Project Manager (PM)
+- Systems Analyst (SA)
+- Service Coordinator (SC)
+- Technology Consultant (TC)
+- Software Architect (SWA)
+- Senior Developers (SD)
+- Junior Developers (JD)
+
+The following matrix defines the responsibility distribution for the main project activities:
+#table(
+  columns: (3fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr, 1fr),
+  align: center,
+
+  [*Activity*], [*PM*], [*SA*], [*SC*], [*TC*], [*SWA*], [*SD*], [*JD*],
+
+  [Project Management], [R], [I], [I], [I], [I], [I], [I],
+  [Requirements Analysis], [A], [R], [R], [I], [I], [I], [I],
+  [Software Design], [I], [A], [C], [R], [R], [I], [I],
+  [Software Development], [I], [I], [I], [C], [A], [R], [C],
+  [Testing and Validation], [I], [A], [C], [I], [I], [R], [R],
+  [Documentation], [A], [I], [I], [I], [C], [R], [R],
+)
 
 == Initial Planning
 
@@ -979,7 +1077,6 @@ A crucial process for the system is the updates triggered by modifications betwe
     [The system must unlink any requirements linked to the document.],
   ),
   [The system must allow a project manager to delete permanently a removed document.],
-  [The system must allow a project manager or requirement engineer to model diagrams using a Draw.io integration.],
 )
 ==== Concurrency
 #C_List(

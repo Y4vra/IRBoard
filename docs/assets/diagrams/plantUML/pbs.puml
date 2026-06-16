@@ -1,0 +1,73 @@
+@startuml pbs
+title Product Breakdown Structure - IR-Board
+
+left to right direction
+skinparam linetype ortho
+
+usecase "IR-Board\nRequirements\nManagement Platform" as IRB
+
+usecase "Security and\nAccess Control" as SEC
+usecase "Requirements\nManagement" as RM
+usecase "Project\nManagement" as PM
+usecase "User\nManagement" as USM
+usecase "Project element\nManagement" as PEM
+usecase "Collaboration\nServices" as COL
+usecase "Search and\nFiltering" as SF
+
+
+usecase "Authentication" as SEC1
+usecase "ReBAC\nAuthorization" as SEC2
+usecase "Zero Trust\nModel" as SEC3
+
+
+usecase "Functional\nRequirements" as RM1
+usecase "Non Functional\nRequirements" as RM2
+usecase "Lifecycle\nManagement" as RM3
+usecase "Traceability" as RM4
+
+
+usecase "Project\nManagement" as PM1
+usecase "Functionality\nManagement" as PM2
+usecase "Approval\nWorkflow" as PM3
+
+
+usecase "User\nManagement" as USM1
+usecase "Permission\nManagement" as USM2
+
+
+usecase "Document Storage\nand management" as PEM1
+usecase "Stakeholder\nManagement" as PEM2
+
+usecase "Entity Locking\nModule" as COL1
+
+
+IRB -- SEC
+IRB -- RM
+IRB -- PM
+IRB -- USM
+IRB -- PEM
+IRB -- COL
+IRB -- SF
+
+SEC -- SEC1
+SEC -- SEC2
+SEC -- SEC3
+
+RM -- RM1
+RM -- RM2
+RM -- RM3
+RM -- RM4
+
+PM -- PM1
+PM -- PM2
+PM -- PM3
+
+USM -- USM1
+USM -- USM2
+
+PEM -- PEM1
+PEM -- PEM2
+
+COL -- COL1
+
+@enduml
