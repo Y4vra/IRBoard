@@ -843,9 +843,38 @@ The estimated effort, task durations, and assignment of professional profiles we
 ]
 
 == Risk Analysis
-
+TODO comprehensive risk analysis
 == Initial Budget
+// #pagebreak()
+// #page(paper: "a4", flipped: true)[
 
+// ]
+The budget is divided into three stages. The first stage describes the provider's financial reality, establishing the internal cost model. The second stage calculates the specific cost of executing the project. The third stage converts this cost into the final client offer, diluting the non-billable costs into each main task.
+
+=== Provider finantial reality
+The provider financial reality represents the internal economic structure of the company delivering the project. It includes the personnel required to operate the organization, their annual employment costs (salary plus employer costs), and the resulting hourly cost rates. The hourly rate without profit represents the minimum cost recovery rate, while the hourly rate with profit incorporates the expected commercial margin applied when billing clients.
+
+The complete spreadsheet can be found #link(<provider_finantial_reality_budget>)[here].
+
+#table(
+  columns: (2.5fr, 0.8fr, 1.5fr, 1.5fr, 1.5fr),
+  align: left,
+
+  [*Resource*], [*Num.*], [*Annual employment cost*], [*Hourly rate (without profit)*], [*Hourly rate (with profit)*],
+
+  [General manager], [1], [91.781,35 €], [-], [-],
+  [Project manager], [1], [53.039,40 €], [49,78 €], [55,62 €],
+  [Service coordinator], [1], [32.876,58 €], [46,75 €], [54,35 €],
+  [Systems analyst], [1], [46.530,79 €], [42,16 €], [46,91 €],
+  [Technology consultant], [1], [54.920,30 €], [45,22 €], [49,69 €],
+  [Software architect], [1], [58.034,65 €], [49,15 €], [54,22 €],
+  [Senior developer], [2], [104.323,46 €], [43,85 €], [48,31 €],
+  [Junior developer], [4], [135.362,32 €], [38,55 €], [43,98 €],
+  [Sales representative], [1], [35.118,49 €], [-], [-],
+
+  [*TOTAL*], [*13*], [*611.987,34 €*], [], [],
+)
+TODO add the other two budget areas
 = System Analysis //5
 
 == Users and Characteristics
@@ -1366,4 +1395,7 @@ All designs provided were shared and accepted by the tutors, and are free to be 
 - [2] “Configuring Vite,” vitejs, 2025. https://vite.dev/config/
 - [3] “Typst Documentation,” Typst, 2024. https://typst.app/docs/
 = Appendices <appendices>
+== Budget
+=== Provider finantial reality <provider_finantial_reality_budget>
+
 == Supplementary Material
