@@ -863,6 +863,7 @@ The estimated effort, task durations, and assignment of professional profiles we
 
 == Risk Analysis
 TODO comprehensive risk analysis
+
 == Initial Budget
 The budget is divided into three stages. The first stage describes the provider's financial reality, establishing the internal cost model. The second stage calculates the specific cost of executing the project for the theoretical provider. Finally, the third stage converts this cost into the final client offer, diluting the non-billable costs into each main task. In a situation where hardware is to be purchased, or where a price is standard or set by the market, these budget lines would be avoided for the dilution, as it is expected to match the market.
 
@@ -1545,7 +1546,6 @@ As stated previously, the client-facing budget includes only directly billable c
 )
 
 = System Analysis //5
-
 == Users and Characteristics
 In this project, instead of conventional system-wide roles, the approach I found fit best the nature of requirement management systems was a relation-based role system. Therefore, two sets of user permissions can be defined: system-level permissions and project-level permissions.
 #figure(
@@ -1586,7 +1586,6 @@ It's a complex state to ease development, as the pending review can be seen as a
 #strong[Removed] - A requirement entity that has been deemed innecessary to the project. It is hidden from view, archived.
 
 == System Analysis
-
 === Class Analysis
 #figure(image("/docs/assets/diagrams/backendDomainDiagram.svg"), caption: "Analysis domain class diagram")
 The backend domain model defines the main entities involved in requirements management and their relationships. The model is centered around the *Project* entity, which acts as the main container for functionalities, requirements, stakeholders, and documents.
@@ -1616,45 +1615,24 @@ The backend domain model defines the main entities involved in requirements mana
 #strong[ComparisonOperator] - Defines the comparison logic used by non-functional requirements, such as equality or numerical comparisons.
 
 === Data Modeling
-The domain model is implemented using *JPA (Java Persistence API)*, where each
-domain entity is mapped to a database table. The relationships defined in the
-class diagram are represented using JPA associations such as one-to-many,
-many-to-one, and many-to-many mappings.
+The domain model will be implemented using *JPA (Java Persistence API)*, where each domain entity will be mapped to a relational database table. The relationships defined in the class diagram are translated into JPA associations such as one-to-many, many-to-one, and many-to-many mappings.
 
-Entities are generated from the domain model using annotations that define the
-database structure, relationships, constraints, and lifecycle behaviour.
-Inheritance between entities, such as *Requirement* and its specialized types,
-is handled through JPA inheritance mapping.
+==== Entity identifiers
+The system uses three distinct identifier strategies depending on the purpose of each entity. Each persistent entity contains an internal numeric primary key (`id : bigint`) managed by the database and not intended to be exposed externally. Certain entities also carry a human-readable `entity_identifier`, generated dynamically from contextual information such as the containing project or functionality. Finally, the `Requirement` entity exposes an `order_value` used to support floating-point ordering, allowing requirements to be reordered efficiently without renumbering the entire list.
 
-#strong[Entity Identifiers] - The system uses different kinds of identifiers
-depending on the purpose of the entity.
+==== Inheritance mapping
+The abstract `Requirement` entity uses JPA's single-table inheritance strategy: both `FunctionalRequirement` and `NonFunctionalRequirement` are stored in the same `requirement` table, distinguished by a `requirement_type` discriminator column. Fields specific to non-functional requirements (`measurement_unit`, `operator`, `actual_value`, `target_value`, `threshold_value`) are nullable for functional requirement rows.
 
-#strong[Internal Identifier] - Each persistent entity contains a unique internal
-identifier used by the database to reference records. These identifiers are
-managed by JPA and are not intended to be exposed externally.
+==== Relationship representation
+Parent–child requirement nesting is modelled as a self-referential foreign key (`parent_id`) on the `requirement` table. The many-to-many associations between requirements and stakeholders, between requirements and documents, and the peer cross-linking between requirements themselves are each represented as dedicated join tables (`stakeholder_observer_requirement`, `document_observer_requirement`, and `requirement_observing` respectively). This separation makes the observer relationships explicit at the schema level and enables efficient traversal in both directions.
 
-#strong[Dynamic Identifier] - Some entities may use generated identifiers that
-are created dynamically, allowing objects to be uniquely referenced during their
-lifecycle.
+==== Enumerated state fields
 
-#strong[Entity Slug] - Some entities expose a human-readable identifier, called
-a slug, which can be used in external references or URLs. Unlike internal
-identifiers, slugs are designed to be readable and stable.
+Lifecycle states such as `ProjectState` and `RequirementState`, as well as the `ComparisonOperator` and `requirement_type` discriminator, are stored as database enumerations, ensuring that only controlled values can be persisted and that state transitions are enforced at the application layer before they reach the database.
 
-#strong[Relationships] - Entity relationships are persisted through foreign keys
-and join tables generated by JPA. For example, a *Project* stores relations to
-its *Requirements*, *Functionalities*, *Stakeholders*, and *Documents*.
+==== Concurrency control record
 
-#strong[Inheritance Mapping] - The abstract *Requirement* entity is persisted
-using JPA inheritance, allowing different requirement types to share common
-fields while storing their specialized attributes.
-
-#strong[Enumerations] - States such as *ProjectState* and *RequirementState* are
-stored as enumerated values, ensuring controlled lifecycle transitions.
-
-These annotations result in the following relational database schema:
-
-#figure(image("/docs/assets/diagrams/backendDatabaseDiagram.svg"), caption: "Relational database schema")
+The `EntityLock` entity is not part of the business domain but acts as an infrastructure record. It identifies the entity being locked by a (`entity_id`, `entity_type`) pair rather than a typed foreign key, allowing a single table to cover locks on any entity type without schema changes. A lock is always associated with the user who holds it and the project it belongs to.
 
 === Process Modeling
 A crucial process for the system is the updates triggered by modifications between observed and observer entities. To illustrate the flows depicted on the system, the following diagram is provided:
@@ -1663,11 +1641,7 @@ A crucial process for the system is the updates triggered by modifications betwe
 #strong[Linking Arrows] - The arrows in this diagram refer to linked entities in a modified observer pattern, to allow to search for linked elements from both sides of the relation. The direction of the arrow expresses the flow from a observed element to the observer element, for example, a modification on a Stakeholder element would trigger an update() call to all requirements observing it.
 
 === User Interface Definition
-
 == Requirements Specification
-
-=== External Interfaces
-
 === Functional Requirements
 #let PM_List = efilrst.reflist.with(
   name: "PM_List",
@@ -2012,17 +1986,17 @@ A crucial process for the system is the updates triggered by modifications betwe
 )
 
 === Usability Requirements
-
+TODO
 === Performance Requirements
-
+TODO
 === Logical Database Requirements
-
+TODO
 === Design Constraints
-
+TODO
 === System Attributes
-
+TODO
 === Supporting Information
-
+TODO
 == Test Plan Analysis
 To ensure the reliability, maintainability, and performance of the IR-Board system, a multi-dimensional testing strategy has been defined. This plan covers the entire development lifecycle, from code quality to system behavior under stress.
 
@@ -2040,14 +2014,13 @@ For the load testing phase, the primary focus will be on stressing the critical 
 Regarding usability testing, the plan involves observing real users interacting with the React interface to validate that the integration of Grafana dashboards feels intuitive and seamless. Special attention will be paid to how easily users can navigate between Loki logs and the core business logic, ensuring that the underlying complexity of the microservices architecture remains completely transparent to the end user. The ultimate objective is to confirm that authentication flows do not create unnecessary friction and that the frontend information hierarchy allows for efficient data management without requiring prior technical knowledge from the operator.
 
 = System Design //6
-
 == System Architecture
 === General architecture desing
 The system architecture follows a Microservices approach based on the Zero Trust security model. This ensures flexibility and scalability while maintaining a high level of isolation between business logic and infrastructure concerns. To guarantee a professional security standard while maintaining a manageable project scope, core identity and access management responsibilities have been delegated to the Ory Open Source ecosystem.
 
 The figure below shows the main flow of the application represented by solid arrows, and secondary messaging between microservices represented by a dotted arrows.
 
-#figure(image("./assets/diagrams/ArchitectureC2.svg"), caption: "Architecture C2 component diagram")
+#figure(image("./assets/diagrams/ArchitectureC2.svg"), caption: "Architecture C2 container diagram")
 
 #strong[Traefik] - Acts as the system's entry point and TLS Termination Proxy. It handles dynamic routing and load balancing, effectively hiding the internal network topology and eliminating the need to expose multiple ports to the public internet.
 
@@ -2062,67 +2035,91 @@ The figure below shows the main flow of the application represented by solid arr
 #strong[RMS Backend] - The core service developed using Spring Boot, containing the domain-specific business logic and data persistence. It interacts with keto both to write Relation-Based Access Control (ReBAC) tuples and to filter by permissions.
 
 #strong[Mailpit] - A simple email server that receives all messages sent by Ory Kratos. Acts as a placeholder for development instead of a real email server, to ensure the signup works.
-TODO add the other containers
-TODO add another C1, C3
+
+Aditionally, the following containers are present on the deployment:
+
+#strong[Draw.io] - A self-hosted instance of the draw.io diagramming tool, embedded in the frontend to allow users to create and edit diagrams (flowcharts, use case diagrams, and similar) directly within the platform. It is served on its own subdomain and configured to allow cross-origin embedding from the main application domain.
+
+#strong[Grafana] - The observability dashboard, accessible on a dedicated subdomain through Traefik. It aggregates logs from Loki and metrics from Prometheus to provide visibility into infrastructure health and application behaviour.
+
+#strong[Loki] - A log aggregation system operating on the internal network. It receives container logs forwarded by Promtail and exposes them to Grafana for querying.
+
+#strong[Promtail] - A log collection agent that reads container stdout/stderr logs from the Docker socket and forwards them to Loki. It runs with root privileges solely to access the Docker daemon, a trade-off acknowledged as a hardening concern outside the scope of this project.
+
+#strong[Prometheus] - A metrics collection server that scrapes operational metrics from instrumented services, making them available to Grafana for time-series visualisation and alerting.
+
+These are not added to the diagram, given their additional nature and non-essential uses, as to ensure clear readability.
+
 === Backend system design
-
+TODO
 === Frontend system design
-
+TODO
 == Real Use Case Design
-
+TODO
 == Class Design
 
 #figure(image("./assets/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
 
 #strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value isActive is also delegated to the ReBAC system, as it represents a user-to-system relationship.
 
+TODO add all remaining classes
+
 == Database Design
-(explain both jpa resulting database and keto relationship db)
+#figure(image("/docs/assets/diagrams/backendDatabaseDiagram.svg"), caption: "Relational database schema")
 
+The relational schema is a direct projection of the domain model onto PostgreSQL, with several design decisions worth highlighting.
 
+*Central aggregation around `project`.* Every primary entity () `functionality`, `requirement`, `stakeholder`, and `document`) carries a `project_id` foreign key. This makes the project the natural access-control boundary and simplifies bulk operations such as project export or archival.
 
+*Flat requirement table with discriminator.* Rather than splitting functional and non-functional requirements into separate tables, a single `requirement` table is used with a `requirement_type` enum column acting as a discriminator. Fields exclusive to non-functional requirements (`measurement_unit`, `operator`, `actual_value`, `target_value`, `threshold_value`) are nullable. This avoids a join on every requirement query while keeping the schema compact.
+
+*Self-referential nesting.* The `parent_id` column on `requirement` implements hierarchical nesting without a separate closure table. The dynamic identifier and floating-point `order_value` are recalculated at the application layer whenever requirements are reordered, so the database stores only the raw float rather than a sequence integer, avoiding full-table renumbering.
+
+*Explicit observer join tables.* The many-to-many relationships between requirements and their observers (stakeholders, documents, peer requirements) are represented as three dedicated join tables (`stakeholder_observer_requirement`, `document_observer_requirement`, `requirement_observing`). Keeping these separate makes the observer pattern explicit at the schema level and allows indexed traversal from either side of each relationship.
+
+*Type-agnostic entity lock.* The `entity_lock` table uses a (`entity_id`, `entity_type`) pair rather than typed foreign keys, so a single table can hold locks on any entity type. A `system_wide` flag distinguishes locks that span the entire system from those scoped to a project.
+
+*Deferred integration for access control.* The `app_user` table stores only identity and administrative attributes. No schema-level relationship links users to projects or functionalities, because those associations are managed entirely by Ory Keto as ReBAC tuples. The only structural link is through `entity_lock`, where a `user_id` foreign key records who holds each lock.
 
 == User Interface Design
-To design the user interfaces, the design tool moqups was used to model the UI wireframes.
-All designs provided were shared and accepted by the tutors, and are free to be inspected here:
+The user interfaces were first modelled as wireframes to be accepted by the tutors. Here are the models:
 
-#link("https://app.moqups.com/YJhvDCqTutTvP6fK9lrmLLpEvfYlnCLR/view/page/a662b029d", "TFG moqups")
+TODO add wireframes
 == Test Plan Specification
-
+TODO
 = System Implementation //7
-
+TODO document
 = Test Plan Execution //8
 == Unit Testing
-
+TODO
 == Integration and System Testing
-
+TODO
 == Usability Testing
-
+TODO
 == Accessibility Testing
-
+TODO
 == Load Testing
-
+TODO
 == Acceptance Testing
-
+TODO
 = System manuals //9
 == Installation Guide
-
+TODO
 == User Manual
-
+TODO
 == Developer Guide
-
+TODO
 = Project Closure //10
-
 == Final Schedule
-
+TODO
 == Final Risk Report
-
+TODO
 == Final Budget
-
+TODO
 == Project Closure Analysis
-
+TODO
 = Conclusions and Future Work //11
-
+TODO
 = References //12
 - [1] “Welcome to Ory! | Ory,” Ory.com, Oct. 15, 2025. https://www.ory.com/docs/ (accessed Mar. 07, 2026).
 - [2] “Configuring Vite,” vitejs, 2025. https://vite.dev/config/
