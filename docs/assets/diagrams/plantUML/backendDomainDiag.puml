@@ -1,0 +1,98 @@
+@startuml backendDomainDiagram
+title Backend Domain Diagram
+
+enum ProjectState {
+    ACTIVE
+    FINISHED
+    DEACTIVATED
+    REMOVED
+}
+
+enum RequirementState {
+    PENDING_APPROVAL
+    APPROVED
+    FINISHED
+    DEACTIVATED
+    REMOVED
+}
+
+enum ComparisonOperator {
+    EQUAL_TO
+    LESS_THAN
+    GREATER_THAN
+    ...
+}
+
+class Project {
+    id
+    name
+    description
+    state
+}
+
+class Functionality {
+    id
+    name
+    label
+    state
+}
+
+abstract class Requirement {
+    id
+    name
+    description
+    state
+}
+
+class FunctionalRequirement
+class NonFunctionalRequirement {
+    measurementUnit
+    operator
+}
+
+class Stakeholder {
+    id
+    name
+    description
+}
+
+class Document {
+    id
+    name
+}
+
+class User {
+    id
+    email
+    name
+}
+
+class EntityLock {
+    id
+    entityType
+    entityId
+    lockedAt
+}
+
+' --- Core structure ---
+Project "1" -- "0..*" Functionality
+Project "1" -- "0..*" Requirement
+Project "1" -- "0..*" Stakeholder
+Project "1" -- "0..*" Document
+
+Functionality "1" -- "0..*" FunctionalRequirement
+
+Requirement <|-- FunctionalRequirement
+Requirement <|-- NonFunctionalRequirement
+
+Requirement "0..*" -- "0..*" Stakeholder
+Requirement "0..*" -- "0..*" Document
+Requirement "1" -- "0..*" Requirement : parent/child
+
+User "1" -- "0..*" EntityLock
+
+Project "1" .. "1" ProjectState
+Requirement "1" .. "1" RequirementState
+NonFunctionalRequirement "1" .. "1" ComparisonOperator
+
+@enduml

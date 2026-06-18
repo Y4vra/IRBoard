@@ -1469,7 +1469,8 @@ The complete spreadsheet is available #link(<provider_finantial_reality_budget>)
   - Dilution increase per billable hour: 11,58 €
 ]
 === Client's budget
-As stated before, on the client's budget only the directly billable budget lines are shown. Any line with an standard or expected market value cannot be increased to dilute the amounts non-billable (profit, trips, meals...), but in this case this is not necessary as no hardware adquisition is needed.
+As stated previously, the client-facing budget includes only directly billable cost items. Budget lines with established or market-standard values cannot be artificially increased to absorb non-billable expenses such as profit margins, travel costs, or meal allowances. In this case, however, such adjustments are unnecessary because no hardware acquisition is required for the project.
+
 #figure(
   table(
     columns: (0.5fr, 0.5fr, 3fr, 1fr, 1fr),
@@ -1587,10 +1588,74 @@ It's a complex state to ease development, as the pending review can be seen as a
 == System Analysis
 
 === Class Analysis
+#figure(image("/docs/assets/diagrams/backendDomainDiagram.svg"), caption: "Analysis domain class diagram")
+The backend domain model defines the main entities involved in requirements management and their relationships. The model is centered around the *Project* entity, which acts as the main container for functionalities, requirements, stakeholders, and documents.
+
+#strong[Project] - Represents a software project and its lifecycle. A project groups the main elements required for requirements engineering, including functionalities, requirements, stakeholders, and documentation.
+
+#strong[Functionality] - Represents a system capability or feature within a project. Functional requirements are associated with functionalities to define the expected behavior of the system.
+
+#strong[Requirement] - Abstract entity representing a project requirement, as most of the core logic for one is indistinct from whether it is functional or non functional.
+
+#strong[FunctionalRequirement] - Represents a requirement describing what the system must do. It is linked to a specific functionality.
+
+#strong[NonFunctionalRequirement] - Represents a requirement describing measurable quality constraints. It uses a measurement unit and a comparison operator to define conditions such as performance limits.
+
+#strong[Stakeholder] - Represents an actor interested in the project. Stakeholders can be associated with projects and requirements to maintain traceability.
+
+#strong[Document] - Represents documentation artifacts related to projects or requirements, supporting requirement traceability.
+
+#strong[User] - Represents an authenticated user. Users are not directly linked to domain entities, as authorization relationships are managed externally through ReBAC (Relationship-Based Access Control).
+
+#strong[EntityLock] - Represents a temporary lock over an entity to prevent conflicting modifications during collaborative work.
+
+#strong[ProjectState] - Defines the possible lifecycle states of a project: active, finished, deactivated, or removed.
+
+#strong[RequirementState] - Defines the lifecycle states of a requirement: pending approval, approved, finished, deactivated, or removed.
+
+#strong[ComparisonOperator] - Defines the comparison logic used by non-functional requirements, such as equality or numerical comparisons.
 
 === Data Modeling
-On this document, several different kinds of identifiers are referenced, be dynamic, internal unique identifier, or "entity slug".
-TODO explain more
+The domain model is implemented using *JPA (Java Persistence API)*, where each
+domain entity is mapped to a database table. The relationships defined in the
+class diagram are represented using JPA associations such as one-to-many,
+many-to-one, and many-to-many mappings.
+
+Entities are generated from the domain model using annotations that define the
+database structure, relationships, constraints, and lifecycle behaviour.
+Inheritance between entities, such as *Requirement* and its specialized types,
+is handled through JPA inheritance mapping.
+
+#strong[Entity Identifiers] - The system uses different kinds of identifiers
+depending on the purpose of the entity.
+
+#strong[Internal Identifier] - Each persistent entity contains a unique internal
+identifier used by the database to reference records. These identifiers are
+managed by JPA and are not intended to be exposed externally.
+
+#strong[Dynamic Identifier] - Some entities may use generated identifiers that
+are created dynamically, allowing objects to be uniquely referenced during their
+lifecycle.
+
+#strong[Entity Slug] - Some entities expose a human-readable identifier, called
+a slug, which can be used in external references or URLs. Unlike internal
+identifiers, slugs are designed to be readable and stable.
+
+#strong[Relationships] - Entity relationships are persisted through foreign keys
+and join tables generated by JPA. For example, a *Project* stores relations to
+its *Requirements*, *Functionalities*, *Stakeholders*, and *Documents*.
+
+#strong[Inheritance Mapping] - The abstract *Requirement* entity is persisted
+using JPA inheritance, allowing different requirement types to share common
+fields while storing their specialized attributes.
+
+#strong[Enumerations] - States such as *ProjectState* and *RequirementState* are
+stored as enumerated values, ensuring controlled lifecycle transitions.
+
+These annotations result in the following relational database schema:
+
+#figure(image("/docs/assets/diagrams/backendDatabaseDiagram.svg"), caption: "Relational database schema")
+
 === Process Modeling
 A crucial process for the system is the updates triggered by modifications between observed and observer entities. To illustrate the flows depicted on the system, the following diagram is provided:
 #figure(image("./assets/diagrams/ObservationFlows.svg"), caption: "Possible observation processes between entities")

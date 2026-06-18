@@ -1,0 +1,163 @@
+@startuml backendDatabaseDiagram
+
+title Backend Database Relational Diagram
+
+hide circle
+skinparam linetype ortho
+
+entity app_user {
+    * id : bigint <<PK>>
+    --
+    email : varchar <<UNIQUE>>
+    name : varchar <<UNIQUE>>
+    surname : varchar
+    active : boolean
+    is_admin : boolean
+    ory_id : varchar <<UNIQUE>>
+    pending_activation_token : varchar
+}
+
+entity project {
+    * id : bigint <<PK>>
+    --
+    name : varchar <<UNIQUE>>
+    description : varchar
+    state : enum
+    priority_style : enum
+    created_at : timestamp
+}
+
+entity functionality {
+    * id : bigint <<PK>>
+    --
+    entity_identifier : varchar
+    project_id : bigint <<FK>>
+    name : varchar
+    label : varchar
+    description : varchar
+    state : enum
+}
+
+entity requirement {
+    * id : bigint <<PK>>
+    --
+    requirement_type : enum(FR,NFR)
+    --
+    entity_identifier : varchar
+    project_id : bigint <<FK>>
+    functionality_id : bigint <<FK>>
+    parent_id : bigint <<FK>>
+
+    name : varchar
+    description : varchar
+    state : enum
+
+    priority : varchar
+    stability : varchar
+    order_value : bigint
+
+    measurement_unit : varchar
+    operator : enum
+    actual_value : double
+    target_value : double
+    threshold_value : double
+
+    is_pending_review : boolean
+}
+
+
+entity stakeholder {
+    * id : bigint <<PK>>
+    --
+    entity_identifier : varchar
+    project_id : bigint <<FK>>
+
+    name : varchar
+    description : varchar
+    state : enum
+}
+
+
+entity document {
+    * id : bigint <<PK>>
+    --
+    entity_identifier : varchar
+    project_id : bigint <<FK>>
+
+    file_name : varchar
+    mime_type : varchar
+    file_size : bigint
+    s3_key : varchar <<UNIQUE>>
+    state : enum
+}
+
+
+entity entity_lock {
+    * id : bigint <<PK>>
+    --
+    entity_id : bigint
+    entity_type : varchar
+
+    locked_at : timestamp
+
+    project_id : bigint
+    user_id : bigint <<FK>>
+
+    system_wide : boolean
+}
+
+
+entity requirement_observing {
+    * observer_id : bigint <<PK,FK>>
+    * observed_id : bigint <<PK,FK>>
+}
+
+
+entity document_observer_requirement {
+    * document_id : bigint <<PK,FK>>
+    * requirement_id : bigint <<PK,FK>>
+}
+
+
+entity stakeholder_observer_requirement {
+    * stakeholder_id : bigint <<PK,FK>>
+    * requirement_id : bigint <<PK,FK>>
+}
+
+
+' ===========================
+' Relationships
+' ===========================
+
+project ||--o{ functionality
+project ||--o{ requirement
+project ||--o{ stakeholder
+project ||--o{ document
+
+
+functionality ||--o{ requirement
+
+
+requirement ||--o{ requirement : parent
+
+
+requirement }o--o{ stakeholder
+requirement }o--o{ document
+
+
+document_observer_requirement }o--|| document
+document_observer_requirement }o--|| requirement
+
+
+stakeholder_observer_requirement }o--|| stakeholder
+stakeholder_observer_requirement }o--|| requirement
+
+
+requirement_observing }o--|| requirement : observer
+requirement_observing }o--|| requirement : observed
+
+
+app_user ||--o{ entity_lock
+
+
+@enduml

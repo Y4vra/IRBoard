@@ -1,5 +1,5 @@
 @startuml backendClassDiagram
-title Backend Class DiagramBorderColor
+title Backend Class Diagram
 
 enum PriorityStyle {
     TERNARY
@@ -15,6 +15,12 @@ enum ProjectState {
 
 enum FunctionalityState {
     ACTIVE
+    DEACTIVATED
+    REMOVED
+}
+enum EntityState {
+    PENDING_APPROVAL
+    APPROVED
     DEACTIVATED
     REMOVED
 }
@@ -76,6 +82,7 @@ class Stakeholder {
     - long id
     - String name
     - String description
+    - EntityState state
 }
 
 class Document {
@@ -83,6 +90,7 @@ class Document {
     - String fileName
     - String mimeType
     - byte[] content
+    - EntityState state
 }
 
 class User {
@@ -93,9 +101,21 @@ class User {
     - Boolean active
 }
 
+class EntityLock {
+    - long id
+    - String entityType
+    - long entityId
+    - LocalDateTime lockedAt
+    - Long projectId
+    - boolean systemWide
+}
+
+
 Project "1" .. "1" ProjectState
 Functionality "1" .. "1" FunctionalityState
 Requirement "1" .. "1" RequirementState
+Stakeholder "1" .. "1" EntityState
+Document "1" .. "1" EntityState
 Requirement "1" .. "1" PriorityStyle
 NonFunctionalRequirement "1" .. "1" ComparisonOperator
 
@@ -113,5 +133,8 @@ Requirement "0..*" -- "0..*" Stakeholder : linked
 Requirement "1" o-- "0..*" Requirement : (Parent/Child)
 Requirement "0..*" -- "0..*" Requirement : crossed trazability
 Requirement "0..*" -- "0..*" Document : linked
+
+
+User "1" -- "0..*" EntityLock : owns
 
 @enduml
