@@ -2349,7 +2349,24 @@ TODO add wireframes
 == Test Plan Specification
 TODO
 = System Implementation //7
-TODO document
+== Standards and regulations followed
+TODO
+== Programming languages used
+TODO
+== Tools and Software used
+TODO
+=== Visual Studio Code
+TODO
+=== Docker Desktop
+TODO
+=== Intellij IDEA Ultimate
+TODO
+=== Git & Github
+TODO
+=== PlantUML
+TODO
+== Issues encountered
+TODO
 = Test Plan Execution //8
 == Unit Testing
 TODO
