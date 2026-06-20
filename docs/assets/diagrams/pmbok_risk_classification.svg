@@ -1,0 +1,133 @@
+<svg viewBox="0 0 760 560"
+     width="100%"
+     height="100%"
+     preserveAspectRatio="xMidYMid meet"
+     xmlns="http://www.w3.org/2000/svg"
+     font-family="Helvetica, Arial, sans-serif">
+
+<!-- Column centers -->
+<!-- 100 | 280 | 460 | 640 -->
+
+<!-- ================= CONNECTORS ================= -->
+<g stroke="#666666" stroke-width="2" fill="none">
+
+  <!-- Root -->
+  <line x1="380" y1="76" x2="380" y2="110"/>
+  <line x1="100" y1="110" x2="640" y2="110"/>
+
+  <line x1="100" y1="110" x2="100" y2="150"/>
+  <line x1="280" y1="110" x2="280" y2="150"/>
+  <line x1="460" y1="110" x2="460" y2="150"/>
+  <line x1="640" y1="110" x2="640" y2="150"/>
+
+  <!-- Trunks -->
+  <line x1="40" y1="196" x2="40" y2="480"/>
+  <line x1="220" y1="196" x2="220" y2="480"/>
+  <line x1="400" y1="196" x2="400" y2="424"/>
+  <line x1="580" y1="196" x2="580" y2="424"/>
+
+  <!-- Side connectors -->
+  <path d="M40 256 H55 M40 312 H55 M40 368 H55 M40 424 H55 M40 480 H55"/>
+  <path d="M220 256 H235 M220 312 H235 M220 368 H235 M220 424 H235 M220 480 H235"/>
+  <path d="M400 256 H415 M400 312 H415 M400 368 H415 M400 424 H415"/>
+  <path d="M580 256 H595 M580 312 H595 M580 368 H595 M580 424 H595"/>
+
+</g>
+
+<!-- ================= ROOT ================= -->
+
+<rect x="290" y="30" width="180" height="44" rx="8"
+      fill="white" stroke="black" stroke-width="2"/>
+
+<text x="380" y="57" text-anchor="middle"
+      font-size="15" font-weight="bold">
+Project Risk
+</text>
+
+<!-- ================= CATEGORY BOXES ================= -->
+
+<g fill="white" stroke="black" stroke-width="2">
+
+<rect x="25"  y="150" width="150" height="44" rx="8"/>
+<rect x="205" y="150" width="150" height="44" rx="8"/>
+<rect x="385" y="150" width="150" height="44" rx="8"/>
+<rect x="565" y="150" width="150" height="44" rx="8"/>
+
+</g>
+
+<g font-size="13.5" font-weight="bold" text-anchor="middle">
+
+<text x="100" y="177">Technical Risk</text>
+<text x="280" y="177">External Risk</text>
+<text x="460" y="177">Organizational Risk</text>
+<text x="640" y="177">Project Management</text>
+
+</g>
+
+<!-- ================= CHILD BOXES ================= -->
+
+<g fill="white" stroke="black" stroke-width="1.5">
+
+<!-- width 140, aligned to connectors -->
+
+<!-- Technical -->
+<rect x="55" y="235" width="140" height="40" rx="6"/>
+<rect x="55" y="291" width="140" height="40" rx="6"/>
+<rect x="55" y="347" width="140" height="40" rx="6"/>
+<rect x="55" y="403" width="150" height="40" rx="6"/>
+<rect x="55" y="459" width="140" height="40" rx="6"/>
+
+<!-- External -->
+<rect x="235" y="235" width="140" height="40" rx="6"/>
+<rect x="235" y="291" width="140" height="40" rx="6"/>
+<rect x="235" y="347" width="140" height="40" rx="6"/>
+<rect x="235" y="403" width="140" height="40" rx="6"/>
+<rect x="235" y="459" width="140" height="40" rx="6"/>
+
+<!-- Organizational -->
+<rect x="415" y="235" width="140" height="40" rx="6"/>
+<rect x="415" y="291" width="140" height="40" rx="6"/>
+<rect x="415" y="347" width="140" height="40" rx="6"/>
+<rect x="415" y="403" width="140" height="40" rx="6"/>
+
+<!-- Project Management -->
+<rect x="595" y="235" width="140" height="40" rx="6"/>
+<rect x="595" y="291" width="140" height="40" rx="6"/>
+<rect x="595" y="347" width="140" height="40" rx="6"/>
+<rect x="595" y="403" width="140" height="40" rx="6"/>
+
+</g>
+
+<!-- ================= TEXT ================= -->
+
+<g font-size="12.5" text-anchor="middle" dominant-baseline="middle">
+
+<!-- Technical -->
+<text x="125" y="255">Requirements &amp; scope</text>
+<text x="125" y="311">Technology</text>
+<text x="125" y="367">Complexity &amp; Interfaces</text>
+<text x="130" y="423">Performance &amp; Reliability</text>
+<text x="125" y="479">Quality</text>
+
+<!-- External -->
+<text x="305" y="255">Suppliers</text>
+<text x="305" y="311">Regulations</text>
+<text x="305" y="367">Market</text>
+<text x="305" y="423">External customer</text>
+<text x="305" y="479">Environment</text>
+
+<!-- Organizational -->
+<text x="485" y="255">Dependencies</text>
+<text x="485" y="311">Resources</text>
+<text x="485" y="367">Funding</text>
+<text x="485" y="423">Priorities</text>
+
+<!-- Project Management -->
+<text x="665" y="255">Estimating</text>
+<text x="665" y="311">Planning</text>
+<text x="665" y="367">Controlling</text>
+<text x="665" y="423">Communication</text>
+
+</g>
+
+</svg>
