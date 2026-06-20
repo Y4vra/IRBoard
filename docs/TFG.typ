@@ -93,10 +93,8 @@
 #pagebreak()
 #set page(numbering: "I")
 = Declaration of originality
-I, <Name>, with DNI <DNI> and UO294532, hereby declare that this work is completely original and all sources used during the development of it have been correctly cited.
+I, Javier Carrasco Arango, with DNI 71905728T and UO294532, hereby declare that this work is completely original and all sources used during the development of it have been correctly cited.
 In Avilés, Asturias, on the xx of xx of 2026,
-
-
 
 Signed: <Sign>
 #pagebreak()
@@ -461,7 +459,7 @@ Two approaches were considered: implementing security mechanisms directly inside
 
 A custom implementation would provide maximum control over authentication, authorization, and session management. However, implementing a complete security environment would significantly increase the complexity of the project. Features such as secure password management, session handling, authorization policies, token management, and protection against common vulnerabilities require extensive development and testing.
 
-For this reason, the project decided to use specialized open-source identity and security components from the Ory ecosystem. Their specific licensing is documented over on the #link(<appendices>)[appendices].
+For this reason, the project decided to use specialized open-source identity and security components from the Ory ecosystem. Their specific licensing is documented over on the #link(<open_source_licenses>)[appendices].
 
 Ory Kratos is responsible for identity management and user sessions. Ory Oathkeeper acts as an authorization gateway, validating requests before they reach internal services. Ory Keto provides relationship-based access control (ReBAC), which is particularly appropriate for the project because permissions depend on relationships between users, projects, and functionalities.
 
@@ -711,6 +709,8 @@ From the identified requirements, the main system modules were derived and used 
 
 The estimated effort, task durations, and assignment of professional profiles were defined using expert judgement, considering the complexity of each activity and the expected workload required for its completion.
 
+It should also be noted that, since this project is developed by a single student rather than a complete professional team, this schedule should not be read as a literal, day-by-day execution plan. Tasks, durations, and resource assignments are modeled as if carried out by a full team of differentiated professional profiles, in order to provide a realistic and comparable basis for budgeting and to preserve the professional context each role would represent. In practice, every task is carried out by the same person, frequently interleaved, paused, or resumed in ways this schedule does not capture. The planning therefore prioritizes representing the effort, structure, and professional context of the project over strict accuracy in its day-to-day execution.
+
 #pagebreak()
 #page(paper: "a4", flipped: true)[
   #figure(
@@ -861,8 +861,214 @@ The estimated effort, task durations, and assignment of professional profiles we
   #figure(image("/docs/assets/screenshots/gantt_diagram_4.png"), caption: "Documentation Gantt chart")
 ]
 
-== Risk Analysis
-TODO comprehensive risk analysis
+== Risk Analysis <initial_risk_analysis>
+Having defined the objectives pursued, the tasks required to achieve them, and the people involved in the project, this section addresses risk management for the risks identified during the planning phase. It presents the guidelines, techniques, and assessments carried out to counteract their possible effects on the project, following the proposal defined in the PMBOK. Accordingly, the phases of risk management planning, risk identification, and an analysis including prioritization and the corresponding response planning are carried out below.
+
+=== Risk Management Planning
+To correctly address the risks applicable to the project, each identified risk is classified according to different metrics in order to relate them and obtain a prioritization that facilitates their management. First, each identified risk can be assigned a category, in this case following the PMBOK classification shown in the figure below.
+
+#figure(image("assets/diagrams/pmbok_risk_classification.svg"), caption: "Risk classification according to PMBOK")
+
+Once each risk has been classified, two important metrics are defined for prioritization purposes. First, the probability of occurrence is defined, since some risks may be especially harmful to the project but, if their probability of occurrence is very low, their relevance to the project is also reduced. Second, the impact is defined, presented on a five-level scale according to its influence on different aspects of project development, namely cost, schedule, scope, and quality. These two metrics are jointly used to build a probability/impact matrix that provides a direct prioritization based on both variables.
+
+#figure(
+  table(
+    columns: 11,
+    inset: 6pt,
+    stroke: 0.5pt,
+
+    // HEADER
+    table.cell(colspan: 1)[*Probability*],
+    table.cell(colspan: 5, align: center)[*Threats*],
+    table.cell(colspan: 5, align: center)[*Opportunities*],
+
+    // =========================
+    // ROW 0.90
+    // =========================
+    table.cell(fill: none)[*0.90*],
+    table.cell(fill: green.lighten(25%))[0.09],
+    table.cell(fill: orange.lighten(25%))[0.18],
+    table.cell(fill: red.lighten(25%))[0.36],
+    table.cell(fill: red.lighten(25%))[0.54],
+    table.cell(fill: red.lighten(25%))[0.72],
+    table.cell(fill: red.lighten(25%))[0.72],
+    table.cell(fill: red.lighten(25%))[0.54],
+    table.cell(fill: red.lighten(25%))[0.36],
+    table.cell(fill: orange.lighten(25%))[0.18],
+    table.cell(fill: green.lighten(25%))[0.09],
+
+    // =========================
+    // ROW 0.70
+    // =========================
+    table.cell(fill: none)[*0.70*],
+    table.cell(fill: green.lighten(25%))[0.07],
+    table.cell(fill: orange.lighten(25%))[0.14],
+    table.cell(fill: orange.lighten(25%))[0.28],
+    table.cell(fill: red.lighten(25%))[0.42],
+    table.cell(fill: red.lighten(25%))[0.56],
+    table.cell(fill: red.lighten(25%))[0.56],
+    table.cell(fill: red.lighten(25%))[0.42],
+    table.cell(fill: orange.lighten(25%))[0.28],
+    table.cell(fill: orange.lighten(25%))[0.14],
+    table.cell(fill: green.lighten(25%))[0.07],
+
+    // =========================
+    // ROW 0.45
+    // =========================
+    table.cell(fill: none)[*0.45*],
+    table.cell(fill: green.lighten(25%))[0.045],
+    table.cell(fill: green.lighten(25%))[0.09],
+    table.cell(fill: orange.lighten(25%))[0.18],
+    table.cell(fill: orange.lighten(25%))[0.27],
+    table.cell(fill: red.lighten(25%))[0.36],
+    table.cell(fill: red.lighten(25%))[0.36],
+    table.cell(fill: orange.lighten(25%))[0.27],
+    table.cell(fill: orange.lighten(25%))[0.18],
+    table.cell(fill: green.lighten(25%))[0.09],
+    table.cell(fill: green.lighten(25%))[0.045],
+
+    // =========================
+    // ROW 0.20
+    // =========================
+    table.cell(fill: none)[*0.20*],
+    table.cell(fill: green.lighten(25%))[0.02],
+    table.cell(fill: green.lighten(25%))[0.04],
+    table.cell(fill: green.lighten(25%))[0.08],
+    table.cell(fill: orange.lighten(25%))[0.12],
+    table.cell(fill: orange.lighten(25%))[0.16],
+    table.cell(fill: orange.lighten(25%))[0.16],
+    table.cell(fill: orange.lighten(25%))[0.12],
+    table.cell(fill: green.lighten(25%))[0.08],
+    table.cell(fill: green.lighten(25%))[0.04],
+    table.cell(fill: green.lighten(25%))[0.02],
+
+    // =========================
+    // ROW 0.05
+    // =========================
+    table.cell(fill: none)[*0.05*],
+    table.cell(fill: green.lighten(25%))[0.005],
+    table.cell(fill: green.lighten(25%))[0.01],
+    table.cell(fill: green.lighten(25%))[0.02],
+    table.cell(fill: green.lighten(25%))[0.03],
+    table.cell(fill: green.lighten(25%))[0.04],
+    table.cell(fill: green.lighten(25%))[0.04],
+    table.cell(fill: green.lighten(25%))[0.03],
+    table.cell(fill: green.lighten(25%))[0.02],
+    table.cell(fill: green.lighten(25%))[0.01],
+    table.cell(fill: green.lighten(25%))[0.005],
+
+    table.cell(rowspan: 2)[],
+    table.cell(fill: gray.lighten(90%))[*0.05* #text(size: 8pt)[Very low]],
+    table.cell(fill: gray.lighten(90%))[*0.10* #text(size: 8pt)[Low]],
+    table.cell(fill: gray.lighten(90%))[*0.20* #text(size: 8pt)[Moderate]],
+    table.cell(fill: gray.lighten(90%))[*0.40* #text(size: 8pt)[High]],
+    table.cell(fill: gray.lighten(90%))[*0.80* #text(size: 8pt)[Very high]],
+    table.cell(fill: gray.lighten(90%))[*0.80* #text(size: 8pt)[Very high]],
+    table.cell(fill: gray.lighten(90%))[*0.40* #text(size: 8pt)[High]],
+    table.cell(fill: gray.lighten(90%))[*0.20* #text(size: 8pt)[Moderate]],
+    table.cell(fill: gray.lighten(90%))[*0.10* #text(size: 8pt)[Low]],
+    table.cell(fill: gray.lighten(90%))[*0.05* #text(size: 8pt)[Very low]],
+
+    table.cell(colspan: 5, align: center)[*Negative Impact*],
+    table.cell(colspan: 5, align: center)[*Positive Impact*],
+  ),
+  caption: "Probability and impact risk matrix",
+)
+
+As a last relevant characteristic for correct risk management, the response to be given to each risk is defined once the previous variables have been identified. In general terms, these responses are: avoidance of the exposure to the risk, transfer to a third party who assumes it, mitigation by keeping the risk factors under control, and acceptance by the responsible parties, who then live with the consequences should the risk materialize.
+
+Given the limited budget and reduced team size of this project (a single developer), every response strategy considered below is designed to be absorbed within the existing schedule slack and assigned resources, without requiring additional budget or the creation of a contingency reserve.
+
+=== Risk and opportunity Identification
+Once the metrics and behaviors to adopt against risks and opportunities have been defined, research was carried out during the initial phases of the project regarding the most realistic situations that could materialize during its development. These are presented below.
+
+==== Risk: Erroneous identification of requirements
+This risk arises from a poor definition of requirements (given the little to no experience of the software engineer) during the phases intended for that purpose at the beginning of the project, or from needs expressed by the theoretical product owner (the project tutors, acting as the client's representatives) that are overlooked by the developer when building the system.
+
+==== Risk: Modification of weekly working schedule
+Due to the developer's current situation, who throughout the development of the entire project is simultaneously completing the Bachelor's Degree in Software Engineering and undertaking a professional internship at an external company, along with the possible academic needs that combining both activities may involve, or other factors such as illness, injury, holidays, or specific interests/needs of the rest of the people involved, the calendar set out in the planning may be prone to weekly variation and irregularity.
+
+==== Risk: Lack of experience with the Ory ecosystem and ReBAC implementation
+The selected security architecture relies on components from the Ory ecosystem (Kratos, Oathkeeper, and Keto) to implement identity management and Relation-Based Access Control. As these components had not been used previously by the developer, their integration, configuration, and the correct modelling of relationship-based permissions may require a learning process longer than initially estimated.
+
+==== Risk: Incompatibility of expected workflow with ory ecosystem
+This risk arises from potential mismatches between the designed system workflows (particularly around authentication flows, authorization decisions, and ReBAC-driven permission resolution) and the actual behavior, constraints, or configuration complexity of the selected Ory ecosystem components, namely Ory Kratos, Ory Oathkeeper, and Ory Keto.
+
+Although these tools provide powerful and flexible security primitives, their declarative nature and strict separation of concerns may lead to integration friction when attempting to align them with custom application workflows, especially those involving multi-entity permissions, dynamic project hierarchies, and fine-grained state transitions.
+==== Opportunity: Acceleration and robustness gained through Ory ecosystem integration
+
+This opportunity arises from the strategic adoption of the Ory ecosystem components, which can significantly reduce the implementation effort required for identity management, authentication, and authorization while improving the overall security robustness of the system. By leveraging Ory Kratos, Ory Oathkeeper, and Ory Keto, the project can benefit from production-grade security patterns without needing to implement complex security logic internally.
+
+This also creates an opportunity to focus development effort on core domain functionalities (requirements lifecycle, traceability, collaboration, and workflow automation), while delegating security-critical concerns to specialized and widely adopted open-source solutions.
+
+=== Risk Analysis
+Below is the prioritized list of the risks previously described, the first being the one with the greatest impact and the last the one with the least impact, after carrying out the corresponding probability and impact measurements, together with the strategy to adopt and the specific response to be taken. As can be seen, it is clear that the modification of the weekly schedule is the risk with the greatest impact, so it must be more closely controlled to avoid changes, particularly to the project planning. After that, special attention must be paid to the tests carried out and their possible failures, while the lack of experience with the Ory ecosystem represents a moderate but manageable risk, and the possibility of a change in the developer's professional situation is present, although at a fairly low probability.
+
+TODO poner tablas como ejemplo, con nombre encima priorizar.
+#table(
+  columns: (1fr, 1fr, 1fr, 1fr),
+  [*Cost*], [*Schedule*], [*Scope*], [*Quality*],
+  [Medium], [Critical], [Medium], [Low],
+
+  table.cell(colspan: 4)[*Category:* Project management: Schedule],
+  table.cell(colspan: 4)[*Probability:* Very High (0.81)],
+  table.cell(colspan: 4)[*Strategy:* Mitigation],
+  table.cell(
+    colspan: 4,
+  )[*Response:* Controlled redistribution of working hours between weeks to comply with the planned weekly workload, compensating shortfalls in subsequent weeks without altering the overall project deadline.],
+)
+
+#table(
+  columns: (1fr, 1fr, 1fr, 1fr),
+  [*Cost*], [*Schedule*], [*Scope*], [*Quality*],
+  [Medium], [High], [High], [Critical],
+
+  table.cell(colspan: 4)[*Category:* Technical: Requirements],
+  table.cell(colspan: 4)[*Probability:* Medium (0.45)],
+  table.cell(colspan: 4)[*Strategy:* Mitigation],
+  table.cell(
+    colspan: 4,
+  )[*Response:* Close involvement of and clarification with the project tutors during the initial identification process, together with continued review in periodic meetings to control possible misalignments before they propagate into design and development.],
+)
+
+#table(
+  columns: (1fr, 1fr, 1fr, 1fr),
+  [*Cost*], [*Schedule*], [*Scope*], [*Quality*],
+  [Medium], [High], [Low], [Medium],
+
+  table.cell(colspan: 4)[*Category:* Technical: Complexity and Interfaces],
+  table.cell(colspan: 4)[*Probability:* Medium (0.28)],
+  table.cell(colspan: 4)[*Strategy:* Mitigation],
+  table.cell(
+    colspan: 4,
+  )[*Response:* Allocation of additional self-study hours within the existing schedule slack, reliance on official Ory documentation and community examples, and early prototyping of the most critical Kratos/Oathkeeper/Keto integration points to surface issues before they affect later phases.],
+)
+
+#table(
+  columns: (1fr, 1fr, 1fr, 1fr),
+  [*Cost*], [*Schedule*], [*Scope*], [*Quality*],
+  [Medium], [High], [Medium], [High],
+
+  table.cell(colspan: 4)[*Category:* Technical: Architecture / Integration],
+  table.cell(colspan: 4)[*Probability:* Medium (0.42)],
+  table.cell(colspan: 4)[*Strategy:* Mitigation],
+  table.cell(
+    colspan: 4,
+  )[*Response:* Introduce an abstraction layer between the application domain model and the Ory ecosystem services, allowing internal workflows (requirements, projects, and permissions) to remain stable even if underlying authentication or authorization flows require adaptation. Where necessary, simplify the ReBAC model to align with Ory Keto capabilities and restrict overly complex relationship patterns that cannot be efficiently expressed in the external authorization layer.],
+)
+
+#table(
+  columns: (1fr, 1fr, 1fr, 1fr),
+  [*Benefit*], [*Schedule*], [*Scope*], [*Quality*],
+  [High], [High], [Medium], [High],
+
+  table.cell(colspan: 4)[*Category:* Technical: Security / Architecture],
+  table.cell(colspan: 4)[*Likelihood:* High (0.78)],
+  table.cell(colspan: 4)[*Strategy:* Exploitation / Enhancement],
+  table.cell(
+    colspan: 4,
+  )[*Response:* Maximize reuse of Ory ecosystem capabilities by aligning system design with native authentication and authorization flows, enabling faster implementation of secure access control, reducing custom security code, and improving long-term maintainability and auditability of the platform.],
+)
 
 == Initial Budget
 The budget is divided into three stages. The first stage describes the provider's financial reality, establishing the internal cost model. The second stage calculates the specific cost of executing the project for the theoretical provider. Finally, the third stage converts this cost into the final client offer, diluting the non-billable costs into each main task. In a situation where hardware is to be purchased, or where a price is standard or set by the market, these budget lines would be avoided for the dilution, as it is expected to match the market.
@@ -2112,6 +2318,9 @@ TODO
 = Project Closure //10
 == Final Schedule
 Once the project was carried out, the schedule was updated with the actual effort and duration recorded for each task, replacing the estimates used during initial planning. Unlike the initial planning, this final schedule distinguishes between *Work* (the actual effort invested in each task) and *Duration* (the elapsed time the task occupied on the calendar), since these values no longer coincide for higher-level summary tasks once real start/end dates and partial dedications are taken into account.
+
+As with the initial planning, this final schedule should not be read as a literal record of the day-by-day timing of execution. Since the project was developed by a single student rather than a complete professional team, work was not necessarily carried out with the parallelization or strict role separation that the modeled professional profiles assume, so the distribution of tasks across the calendar is approximate. The Work values shown here, however, are the actual hours invested in each task; only their placement and overlap on the calendar (not the effort itself) should be read as an approximation aligned with the structure of the initial planning, rather than an exact, audit-level account of daily execution.
+
 #page(paper: "a4", flipped: true)[
   #figure(
     table(
@@ -2392,7 +2601,76 @@ Once the project was carried out, the schedule was updated with the actual effor
 ]
 
 == Final Risk Report
-TODO
+TODO cleanup this section.
+
+This section evaluates the outcome of the risks and opportunities identified during the planning phase (#link(<initial_risk_analysis>)[Section 4.5]). It assesses whether each risk materialized, the effectiveness of the planned response strategies, and the observed impact on project execution.
+
+The classification model, probability/impact assessment, and response strategies remain those defined in the planning phase and are not reintroduced here. Instead, this section focuses on the real-world manifestation and mitigation effectiveness of each risk and opportunity.
+
+As the project was developed under a constrained environment (single developer with academic and professional commitments), the observed deviations are interpreted as operational indicators rather than precise causal measurements, and should be understood in the context of an iterative, best-effort execution model.
+
+=== Modification of weekly working schedule — Materialized (expected and controlled)
+
+This risk materialized as anticipated due to the concurrent workload of academic studies and external internship commitments. The execution log shows multiple weeks with reduced effective workload compared to the planned baseline, confirming the expected irregularity in weekly availability.
+
+However, the mitigation strategy (redistribution of effort across subsequent weeks) proved effective. Although local fluctuations in workload were observed, the overall schedule was preserved with minimal deviation, resulting in only a minor delay in final delivery. This confirms that the planning assumption of internal slack absorption was valid.
+
+=== Erroneous identification of requirements — Materialized (low impact)
+
+This risk materialized to a limited extent during the early analysis phase, primarily due to initial ambiguity in requirement interpretation and the learning curve associated with requirements engineering practices.
+
+Nevertheless, continuous validation sessions with project tutors acted as an effective control mechanism, preventing propagation of incorrect requirements into design and implementation. As a result, the impact remained confined to minor rework in the analysis stage, without affecting downstream development significantly.
+
+=== Lack of experience with the Ory ecosystem and ReBAC — Materialized (contained impact)
+
+The learning curve associated with
+:contentReference[oaicite:0]{index=0},
+:contentReference[oaicite:1]{index=1},
+and
+:contentReference[oaicite:2]{index=2}
+materialized during the implementation of authentication and authorization modules.
+
+The expected increase in effort was primarily concentrated in the user management and access control components. However, the mitigation approach—early prototyping and structured self-study—successfully prevented cascading delays into unrelated modules. The impact remained localized and manageable within the planned schedule slack.
+
+=== Incompatibility of expected workflow with Ory ecosystem — Partially materialized (mitigated through design adaptation)
+
+Some misalignment between the intended system workflow and the constraints of the Ory ecosystem was observed, particularly in the modeling of complex relationship-based permissions and dynamic project hierarchies.
+
+However, this issue was resolved through the introduction of an abstraction layer between the domain model and the external security services. This architectural decision allowed the system to maintain its intended workflow while adapting internal authorization logic to the constraints of the underlying tools. As a result, the risk did not escalate into structural redesign.
+
+=== Opportunity: Acceleration and robustness through Ory ecosystem integration — Fully realized
+
+The adoption of the Ory ecosystem proved beneficial beyond initial expectations. The integration of
+:contentReference[oaicite:3]{index=3},
+:contentReference[oaicite:4]{index=4},
+and
+:contentReference[oaicite:5]{index=5}
+significantly reduced the need for custom security implementation.
+
+This allowed development effort to be redirected toward core domain functionalities such as requirements lifecycle management, traceability, and collaboration mechanisms. Additionally, the use of established security components improved system robustness, maintainability, and architectural separation of concerns, confirming the validity of the initial architectural decision.
+
+=== Risk Closure Summary
+
+#figure(
+  table(
+    columns: 3,
+    table.header([*Risk*], [*Outcome*], [*Impact*]),
+
+    [Modification of weekly working schedule], [Materialized], [Low–Moderate schedule variance],
+    [Erroneous identification of requirements], [Materialized], [Low],
+    [Lack of experience with Ory ecosystem], [Materialized], [Contained],
+    [Workflow incompatibility with Ory ecosystem], [Partially materialized], [Mitigated through architecture],
+    [Ory ecosystem opportunity], [Fully realized], [Positive impact],
+  ),
+  caption: "Final risk and opportunity closure summary",
+)
+
+=== Overall conclusion
+
+The risk management strategy proved effective in ensuring that all identified risks remained within controllable bounds. No risk required budget expansion or contingency activation, and all deviations were absorbed within the planned schedule slack.
+
+The only structural adaptation required was the introduction of an abstraction layer for external identity and authorization services, which ultimately reinforced system modularity rather than weakening it.
+
 == Final Budget
 As noted in the initial budget, the provider's financial reality (the annual employment cost and hourly rates for each professional profile) depends on the structural cost of the organization rather than on the specific execution of this project, and therefore remains unchanged. For this reason it is not repeated here.
 
@@ -3874,4 +4152,5 @@ TODO
     caption: "Initial Budget: Simplified client budget",
   )
 ]
+== Licensing of the used open source component <open_source_licenses>
 == Supplementary Material
