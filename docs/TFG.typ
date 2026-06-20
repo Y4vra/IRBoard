@@ -217,7 +217,7 @@ Within this landscape, open-source alternatives remain relatively limited in sco
 - CLI – Command Line Interface
 - CI/CD – Continuous Integration / Continuous Deployment
 
-== Scope
+== Scope <scope>
 The scope of this project is the design and implementation of IR-Board, a Requirements Management Platform focused on supporting the complete lifecycle of software requirements engineering. The system aims to provide a centralized environment where software projects can define, organize, validate, and maintain requirements while preserving traceability between the different elements involved in the requirements process.
 
 The project covers the analysis, design, development, and validation of the core platform functionalities required to manage software requirements in a structured manner.
@@ -269,7 +269,7 @@ The observability layer assumes that basic logging, metrics, and monitoring capa
 
 The deployment environment assumes containerized execution. Components are expected to run through container orchestration tools such as Docker Compose during development and testing, allowing the same architecture to be adapted to more advanced deployment environments if required.
 
-= Theoretical Background //2
+= Theoretical Background <theoretical_background>//2
 To better understand the system developed, here is a brief summary of the concepts related and used on it.
 == Software requirements engineering
 Requirements engineering is the structured and systematic approach to formalizing the needs and expectations of stakeholders for a system. It encompasses different processes for identifying, eliciting, analyzing, specificating, validating and their management.
@@ -1972,7 +1972,6 @@ A crucial process for the system is the updates triggered by modifications betwe
   ),
   [The system must allow a project manager to reactivate a functionality.],
   [The system must allow a project manager to mark as approved all elements in a functionality.],
-  [The system must allow a project manager to export the project's requirements onto a pdf file.],
 )
 ==== Stakeholders management
 #SM_List(
@@ -3411,8 +3410,51 @@ As with the initial budget, the client-facing final budget includes only directl
 )
 == Project Closure Analysis
 TODO
-= Conclusions and Future Work //11
-TODO
+= Conclusions and Future Work <conclusions_future_work> //11
+== Dependency maturity: migration away from MinIO
+At the time of writing, MinIO's open-source Community Edition is in a fragile position. Following the removal of administrative functionality from its web console in 2025 and the subsequent transition of the upstream project to "maintenance mode" in December 2025, MinIO is no longer actively developed as a community project, even though its AGPLv3-licensed source remains available and usable.
+
+Since IR-Board's `object-storage` service is used purely as an S3-compatible backend for document persistence, accessed entirely through the standard S3 API and the `mc` CLI rather than through the now-deprecated web console, the immediate functional impact on the project is limited. However, relying on an unmaintained dependency for production deployment is not a sustainable long-term decision, particularly regarding unpatched security vulnerabilities.
+
+As future work, two paths are proposed:
+
+- *Pin and isolate the current dependency.* In the short term, replace the unpinned `minio/minio:latest` and `minio/mc:latest` images used in the current deployment with explicit, audited version tags, to avoid unpredictable behaviour from future upstream changes to an effectively frozen codebase.
+- *Evaluate actively maintained alternatives.* In the medium term, migrate the object storage layer to an actively maintained, S3-compatible alternative, such as Garage, SeaweedFS, or Ceph's RGW component. Given that the backend already interacts with object storage exclusively through the standard S3 API using a driver, this migration is expected to require minimal changes to the application layer, mainly limited to deployment configuration and credentials management.
+
+== Standardization of frontend data-fetching
+The current frontend implementation relies on a `useBackendResource`-style hook pattern for interacting with the backend API, but error handling is not yet centralized. As a result, different parts of the application may handle failed requests inconsistently, with no guarantee that all unrecoverable errors lead to the same user-facing behaviour.
+
+As future work, a custom fetch wrapper is proposed, shared across all data-fetching hooks, that intercepts failed requests and uniformly redirects the user to the `/error` page (or an equivalent contextual error state) according to the type of failure encountered. This would centralize error handling logic, reduce duplicated boilerplate across components, and ensure a consistent user experience regardless of which part of the system triggered the failure.
+
+== Hardening of cross-service consistency on partial API failures
+Several operations exposed by the backend involve coordinated changes across more than one external service, most notably the combination of the relational database and the object storage backend used for document management. These operations are not currently wrapped in a distributed transaction or compensating-action mechanism, meaning that a failure partway through a multi-step operation can leave the system in an inconsistent, though recoverable, state.
+
+A representative example is the bulk deletion of documents linked to a project: if the deletion of a given document succeeds in the database but the corresponding object fails to be removed from MinIO (or vice versa), documents already processed before the failure remain deleted, while the failing document and any subsequent ones in the batch remain present in one system without their counterpart in the other. The system does not currently detect or repair this kind of divergence automatically; recovering from it requires manual intervention.
+
+As future work, this should be addressed either through an explicit compensating-transaction (saga) pattern around multi-step operations, or through a periodic reconciliation process that detects and reports orphaned records between the database and object storage. At minimum, this limitation should be made explicit to administrators through observability tooling, so that inconsistencies can be identified and resolved before they affect traceability guarantees.
+
+== Adoption of presigned URLs for document transfer
+The current implementation of document upload and download routes the full file content through the backend API, meaning that documents are passed through the Spring Boot service before reaching, or after leaving, the object storage backend. While functional, this is not the standard approach for systems built around an S3-compatible object storage layer, and was a result of limited prior experience with object storage integration patterns at the time the document management module was designed.
+
+The industry-standard approach is to use presigned URLs, generated by the backend (which holds the necessary credentials) but used by the client to upload or download a document directly against the object storage service, without the file ever passing through the backend itself. This reduces backend load, avoids unnecessary memory and bandwidth usage on an intermediate service, and is the pattern generally expected when integrating with S3-compatible storage.
+
+As future work, document upload and download flows should be refactored to use presigned URLs for both storing and retrieving objects, with the backend's role limited to authorization, presigned URL generation, and persistence of document metadata.
+
+== Adoption of a safer deployment strategy
+The current deployment model, based on a single Docker Compose stack brought up and down as a whole, follows what is effectively a big-bang deployment strategy: all services are replaced simultaneously, with no intermediate state between the previous and new versions of the system. While acceptable for the development and demonstration context of this project, this approach is not appropriate for a production environment, as it offers no rollback path, no traffic shifting, and a non-trivial downtime window during redeployment.
+
+As future work, a more resilient deployment strategy should be adopted, such as a blue-green or rolling deployment model, where a new version of the system is brought up alongside the previous one and traffic is gradually or atomically switched over only once the new version is confirmed healthy. This would also be a natural point to reconsider container orchestration beyond Docker Compose, as discussed as outside the scope of this project in the #link(<scope>)[Scope] section, since orchestrators such as Kubernetes or Docker Swarm provide native primitives for these deployment strategies.
+
+== Completion of the draw.io integration
+The self-hosted draw.io (diagrams.net) container and its supporting infrastructure, including routing through Traefik, CORS configuration, and the corresponding frontend embedding points, are already fully provisioned as part of the system's architecture. However, the integration was not brought to a fully operational state by the end of this project, as development time was prioritized toward ensuring testing coverage, usability testing and the observability stack were present and complete instead.
+
+As future work, the remaining effort consists of completing and validating the end-to-end integration of the self-hosted draw.io instance with the rest of the platform, confirming that diagrams can be created, embedded, and persisted correctly from within the frontend, and that the existing infrastructure configuration (CORS, routing, and iframe embedding) behaves as intended in practice. No architectural changes are expected to be required; this is treated as a completion task rather than an open design problem.
+
+== Completion of requirements export to PDF
+Due to time constraints during development, this functionality was not implemented within the scope of this project, even though it was a planned extension of the scope. Currently, a project manager has no built-in way to generate a portable, shareable snapshot of a project's requirements outside the platform itself.
+
+As future work, this export capability should be implemented, most likely by composing a structured PDF document from the existing requirement, functionality, and stakeholder data already exposed by the backend, following a presentation format suitable for external stakeholders who do not have direct access to the platform. This would also be a natural point to consider exposing additional export formats (such as a traceability matrix or a Word document), aligned with the documentation standards discussed in the #link(<theoretical_background>)[Theoretical Background] section.
+
 = References //12
 - [1] “Welcome to Ory! | Ory,” Ory.com, Oct. 15, 2025. https://www.ory.com/docs/ (accessed Mar. 07, 2026).
 - [2] “Configuring Vite,” vitejs, 2025. https://vite.dev/config/
@@ -4234,5 +4276,81 @@ TODO
     caption: "Initial Budget: Simplified client budget",
   )
 ]
-== Licensing of the used open source component <open_source_licenses>
+== Licensing of the used open source components <open_source_licenses>
+IR-Board relies on a set of third-party open source components, both for its core security architecture and for its observability and supporting infrastructure. Although none of these components are distributed as part of the final product (they run as independent containers integrated through APIs), their licenses determine the conditions under which they can be used, self-hosted, and, where applicable, modified.
+
+Open source licenses can be broadly grouped into two categories relevant to this project. *Permissive licenses* (such as MIT, Apache 2.0, or the PostgreSQL License) allow free use, modification, and redistribution, including in commercial or proprietary contexts, generally only requiring preservation of copyright and license notices. *Copyleft licenses*, and in particular network copyleft licenses such as the GNU Affero General Public License (AGPLv3), additionally require that, if a modified version of the software is made available to users over a network, the corresponding source code must also be made available to those users. This distinction is particularly relevant for the observability stack, as detailed below.
+
+#figure(
+  table(
+    columns: (1.5fr, 2fr, 1.3fr, 4.2fr),
+    align: left,
+    table.header([*Component*], [*Role in IR-Board*], [*License*], [*Relevant conditions*]),
+
+    [Ory Kratos],
+    [Identity and session management],
+    [Apache 2.0],
+    [Permissive. Free use, modification, and redistribution; requires preservation of copyright notices and a copy of the license.],
+
+    [Ory #linebreak() Oathkeeper], [Authorization gateway], [Apache 2.0], [Same conditions as above.],
+    [Ory Keto], [ReBAC authorization server], [Apache 2.0], [Same conditions as above.],
+    [Traefik],
+    [API gateway / reverse proxy],
+    [MIT],
+    [Permissive. Minimal restrictions; requires preservation of copyright notice and license text.],
+
+    [draw.io],
+    [Self-hosted diagramming tool embedded in the frontend],
+    [Apache 2.0],
+    [Permissive; self-hosting and embedding via iframe is explicitly supported by the project's deployment model.],
+
+    [Mailpit],
+    [Development email testing server],
+    [MIT],
+    [Permissive. Used strictly as a development-only component, not intended for production deployment.],
+
+    [Grafana],
+    [Observability dashboard],
+    [AGPLv3],
+    [Network copyleft. Since self-hosting Grafana and exposing it to users over a network constitutes "making the software available" under the AGPL, the source code of any modified version must be made available to those users. As IR-Board uses an unmodified upstream image, no source disclosure obligation is triggered, but this constraint must be respected if the component is ever customized.],
+
+    [Loki],
+    [Log aggregation],
+    [AGPLv3],
+    [Same network copyleft conditions as Grafana, since both were relicensed by Grafana Labs from Apache 2.0 to AGPLv3 in 2021.],
+
+    [Promtail],
+    [Log shipping agent (Docker log collection)],
+    [AGPLv3],
+    [Distributed as part of the Loki repository and therefore subject to the same AGPLv3 conditions.],
+
+    [Prometheus],
+    [Metrics collection],
+    [Apache 2.0],
+    [Permissive; not affected by the Grafana Labs relicensing, as it is a CNCF project independent of Grafana Labs.],
+
+    [PostgreSQL],
+    [Relational database],
+    [PostgreSQL License],
+    [Permissive, similar in spirit to the MIT/BSD family. Free use, modification, and redistribution with minimal conditions.],
+
+    [Spring Boot (and Spring ecosystem)], [Backend application framework], [Apache 2.0], [Permissive.],
+    [React], [Frontend application framework], [MIT], [Permissive.],
+
+    [MinIO],
+    [Object storage for documents],
+    [AGPLv3],
+    [Network copyleft, same conditions as Grafana/Loki. Additionally, the upstream open-source project was placed into maintenance mode and effectively archived in December 2025 after earlier (2025) removal of administrative features from the Community Edition's web console; treated here as a frozen, unmaintained-but-licensed dependency rather than an actively supported one. The project pins `minio/minio` and `minio/mc` to `latest`, which should be revisited given this status.],
+  ),
+  caption: "License summary of open source components used by IR-Board",
+)
+
+=== Implications for the project
+The large majority of the components used by IR-Board (the Ory ecosystem, Traefik, draw.io, Mailpit, Prometheus, PostgreSQL, Spring Boot, and React) are licensed under permissive terms, imposing no meaningful restriction on their use within the project, whether for academic purposes or in a hypothetical commercial deployment for the theoretical client described in #link(<pbs>)[the initial planning].
+
+The exception is the logging and dashboarding portion of the observability stack (Grafana, Loki, and Promtail), licensed under AGPLv3 since Grafana Labs' 2021 relicensing. Because these components are deployed unmodified, directly from their official container images, and are not redistributed as part of IR-Board's own codebase, no source-disclosure obligation is triggered by their use within this project. This distinction is, however, an important constraint to document: were the project to fork or modify any of these components (for example, to build a custom plugin or a tailored dashboard distribution) and expose that modified version to other users over the network, the AGPLv3 would require the corresponding source code to be made available to those users. This has been factored into the architecture by keeping observability components clearly isolated as independent, unmodified infrastructure services, consistent with the scope boundaries already established in the #link(<scope>)[Scope] section.
+
+The same network-copyleft reasoning applies to MinIO, used for document object storage: it is deployed unmodified and not redistributed, so no source-disclosure obligation is triggered. Independently of licensing, MinIO's open-source edition has been in maintenance mode since December 2025, following the earlier removal of administrative features from its Community Edition console. This is noted here as a dependency-maturity concern rather than a licensing issue; its implications for the project are discussed as a future extension in #link(<conclusions_future_work>)[Conclusions and Future Work].
+
+No component used by the project carries licensing terms that would prevent its use in an academic deliverable, and none requires the payment of licensing fees for self-hosted deployment.
 == Supplementary Material
