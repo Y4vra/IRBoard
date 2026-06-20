@@ -306,7 +306,7 @@ Requirements must also be validated before being considered complete. #strong("R
 
 Finally, requirements engineering includes #strong("requirements management"), which handles changes to requirements during the lifecycle of a project. Software systems frequently evolve due to changes in business needs, regulations, technology, or user expectations. Managing these changes ensures that modifications are controlled and that the relationship between requirements, design decisions, implementation, and testing remains clear.
 
-=== Traceability
+=== Traceability <traceability>
 A key concept within requirements management is #strong("traceability"). Requirements traceability refers to the ability to follow the relationship between a requirement and other elements associated with it, such as stakeholders, design components, implementation artifacts, tests, or related requirements. Traceability improves impact analysis, change management, and verification by providing visibility into how modifications affect the overall system.
 
 #strong[Forward traceability] ensures that every requirement can be followed from its original stakeholder need towards its implementation and verification artifacts. This helps confirm that all requested functionality has been addressed.
@@ -1879,13 +1879,31 @@ Lifecycle states such as `ProjectState` and `RequirementState`, as well as the `
 
 The `EntityLock` entity is not part of the business domain but acts as an infrastructure record. It identifies the entity being locked by a (`entity_id`, `entity_type`) pair rather than a typed foreign key, allowing a single table to cover locks on any entity type without schema changes. A lock is always associated with the user who holds it and the project it belongs to.
 
-=== Process Modeling
+=== Process Modeling <process_modeling>
 A crucial process for the system is the updates triggered by modifications between observed and observer entities. To illustrate the flows depicted on the system, the following diagram is provided:
 #figure(image("./assets/diagrams/ObservationFlows.svg"), caption: "Possible observation processes between entities")
 
 #strong[Linking Arrows] - The arrows in this diagram refer to linked entities in a modified observer pattern, to allow to search for linked elements from both sides of the relation. The direction of the arrow expresses the flow from a observed element to the observer element, for example, a modification on a Stakeholder element would trigger an update() call to all requirements observing it.
 
 === User Interface Definition
+TODO
+==== User Interface Description <user_interface_description>
+TODO
+==== Navegability Diagram
+#figure(image("/docs/assets/diagrams/navigabilityDiagram.svg"), caption: "Navigability diagram")
+
+The navigability diagram models the application as a state machine, where each state represents a distinct page or view, and each transition represents a user-triggered navigation action. States are grouped into two top-level regions according to the access control boundary enforced by `ProtectedRoute`: a *Public Area*, accessible without an authenticated session, and an *Authenticated Area*, only reachable once a valid session has been established.
+
+The Public Area groups the *Login*, *Registration*, and *Error Page* views. A successful authentication transitions the user into the Authenticated Area, while logging out returns them to the Public Area. Any unrecoverable error, whether an authentication failure or an attempt to access an invalid or unauthorized route, redirects the user to the Error Page, from which they can return to the application's entry point.
+
+Within the Authenticated Area, *Home*, *New Project*, *Diagrams*, and *User Management* are top-level views reachable directly from the persistent NavBar described in the #link(<user_interface_description>)[User Interface Description], independently of where the user is currently located in the application; this is noted explicitly in the diagram rather than drawn as individual transitions, to avoid cluttering the layout with redundant arrows. *User Management* is additionally constrained by the `adminOnly` route guard, and is therefore only reachable for users with administrative privileges.
+
+Selecting or creating a project transitions the user into the *Project Context*, a composite region scoped to a single project and corresponding to the `ProjectLockWrapper`, `ProjectProviderWrapper`, and `FunctionalitiesProviderWrapper` route guards described in the #link(<class_design>)[Class Design] section. Within this context, the *Project Dashboard* acts as the central hub, from which a project manager can reach the *Edit Project* view or navigate, through the project-scoped NavBar links, into any of the project's main entity collections: *Functionalities*, *Stakeholders*, *Non-Functional Requirements*, and *Documents*. Each of these collections follows the same internal pattern, modelled as a nested composite state: a list view transitions into a detail view upon selecting an entity, and the detail view transitions into an edit view when the user requests a modification, returning to the detail view once the change is saved or cancelled.
+
+A dedicated *Slug Search* feature, also part of the persistent NavBar, is modelled as a shortcut transition that bypasses the regular hierarchical navigation entirely: given a valid entity slug, it allows the user to jump directly into the corresponding functional requirement, non-functional requirement, stakeholder, functionality, or document detail view from anywhere within the Authenticated Area, reflecting the identifier-based traceability mechanism discussed in the #link(<theoretical_background>)[Theoretical Background].
+
+Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non-Functional Requirement Detail*, *Stakeholder Detail*, and *Document Detail* views represent the horizontal traceability relationships described in the #link(<traceability>)[Traceability] section: from a requirement's detail view, a user may navigate directly to a linked stakeholder, a linked document, or a related peer requirement, including other functional requirements observed by the same requirement, modelled here as a self-transition. Unlike the structural transitions described above, these links do not follow the entity hierarchy; they instead reflect the observer relationships maintained at the data layer, as illustrated earlier in the #link(<process_modeling>)[Process Modeling] section's observation flow diagram.
+
 == Requirements Specification
 === Functional Requirements
 #let PM_List = efilrst.reflist.with(
@@ -2300,8 +2318,7 @@ TODO
 TODO
 == Real Use Case Design
 TODO
-== Class Design
-
+== Class Design <class_design>
 #figure(image("./assets/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
 
 #strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value isActive is also delegated to the ReBAC system, as it represents a user-to-system relationship.
