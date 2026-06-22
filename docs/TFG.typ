@@ -1892,9 +1892,26 @@ The user interface of IR-Board is designed around a minimalist philosophy, prior
 Before authentication, the user only encounters the *Login* and *Registration* pages, which are simple standalone forms. Once authenticated, the persistent NavBar becomes the structural backbone of the interface, present across all views and adapting its visible links depending on whether the user is currently inside a project context or not: at the top level it shows home and administrative links, and when navigating within a project it additionally exposes the project-scoped section links for stakeholders, non-functional requirements, and documents.
 
 ==== User Interface Description <user_interface_description>
-The following wireframes represent the preliminary interface models defined during the analysis phase, prior to implementation. They establish the intended structure, layout, and content of each view, and were used as the basis for validation with the project tutors before development began.
+The following sketches represent the preliminary interface models defined during the analysis phase, prior to implementation. They establish the intended structure, layout, and content of each view, and were modified live with the tutor's feedback.
 
-TODO add drawings
+#figure(image("/docs/assets/screenshots/ui/initial_design_designs/ui_homepage.png"), caption: "Home page sketch")
+#figure(
+  image("/docs/assets/screenshots/ui/initial_design_designs/ui_login_signup.png"),
+  caption: "Login and signup page sketch",
+)
+#figure(
+  image("/docs/assets/screenshots/ui/initial_design_designs/ui_nav_bar.png"),
+  caption: "Navigation bar component sketch",
+)
+#figure(image("/docs/assets/screenshots/ui/initial_design_designs/ui_error_page.png"), caption: "Error page sketch")
+#figure(
+  image("/docs/assets/screenshots/ui/initial_design_designs/ui_project_element_lists.png"),
+  caption: "Project element list views sketch",
+)
+#figure(
+  image("/docs/assets/screenshots/ui/initial_design_designs/ui_project_page_&_dashboard.png"),
+  caption: "Project view and its dashboard sketch",
+)
 
 ==== Navegability Diagram
 #figure(image("/docs/assets/diagrams/navigabilityDiagram.svg"), caption: "Navigability diagram")
