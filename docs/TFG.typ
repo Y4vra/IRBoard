@@ -2376,25 +2376,43 @@ The most structurally significant interface element is the persistent navigation
 
 In its collapsed state the NavBar presents only a neutral icon. Upon hovering it expands to show the authenticated user's name and email, a logout button, a slug-based entity search field, and a set of contextual navigation links. When inside a project context, a secondary set of project-scoped links appears beneath the top-level links, providing direct access to the project's stakeholders, non-functional requirements, and documents. Links that are not yet operational are rendered in a visually disabled state to communicate their planned but incomplete status.
 
-TODO add screenshot
+#figure(image("assets/screenshots/ui_nav_bar_closed.png"), caption: "Closed navigation bar")
+#figure(image("assets/screenshots/ui_nav_bar_opened.png"), caption: "Opened navigation bar")
+#figure(image("assets/screenshots/ui_nav_bar_opened.png"), caption: "Navigation bar within a project's context")
 
 === Public Area
-TODO add screenshots
+#figure(image("/docs/assets/screenshots/ui_login_page.png"), caption: "User login page")
+#figure(image("/docs/assets/screenshots/ui_activation_page.png"), caption: "User account activation page")
+#figure(image("assets/screenshots/ui_error_page.png"), caption: "Error page for invalid url")
 
 === Home View
-TODO add screenshots
+#figure(image("assets/screenshots/ui_homepage_empty.png"), caption: "Empty homepage")
+#figure(image("assets/screenshots/ui_homepage.png"), caption: "Homepage with a single project")
+Logically, upon exceeding the maximum amount of projects per page, a basic pagination menu appears on the bottom of the page.
 
 === Project Dashboard
-TODO add screenshots
+#figure(image("assets/screenshots/ui_project_empty.png"), caption: "Empty project page")
+#figure(image("assets/screenshots/ui_project_populated.png"), caption: "Example project page")
+#figure(image("assets/screenshots/ui_project_dashboard.png"), caption: "Project's dashboard")
 
 === Functionality View
-TODO add screenshots
+#figure(image("assets/screenshots/ui_functionality_view.png"), caption: "Functionality view")
+
+=== Project entity views
+The pages for documents and stakeholders follow the same table design, therefore their main distinction is the update dialog for documents.
+#figure(image("assets/screenshots/ui_stakeholder_view.png"), caption: "Stakeholders view")
+#figure(image("assets/screenshots/ui_document_view.png"), caption: "Documents view")
+#figure(image("assets/screenshots/ui_document_removed.png"), caption: "Removed documents view")
+Similarly, both functional and non functional requirements share the same design, as they are modeled in fundamentally identical ways.
+#figure(image("assets/screenshots/ui_nfr_view.png"), caption: "Nfr view")
 
 === Entity Detail and Edit Views
-TODO add screenshots
+Given the similarities between views, the most relevant example for an entity's detail view is the functional requirement's one: #figure(image("assets/screenshots/ui_fr_detail_1.png"), caption: "Functional requirement detail view")
+#figure(image("assets/screenshots/ui_fr_detail_2.png"), caption: "Functional requirement detail view, linked elements")
+And below would be the linked documents and other functional requirements, but are ommited as in the example none are provided and their sections have the exact same appearance.
 
 === User Management View
-TODO add screenshots
+#figure(image("assets/screenshots/ui_user_management.png"), caption: "User management view")
 
 == Test Plan Specification
 The purpose of this section is to present the specification of the test plan that will be carried out to verify the correct functioning of the system's different components. The tests executed over the system aim to find and resolve errors in internal functionalities, infrastructure integration, and user interface design. The different types of tests, whose execution is reflected in the #link(<test_plan_analysis>)[initial analysis] presented earlier in this document, are described below.
