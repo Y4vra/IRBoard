@@ -6,6 +6,7 @@
 #show link: set text(fill: blue)
 #show link: underline
 #show figure: set block(breakable: true)
+
 #set page(
   margin: (top: 2.5cm, bottom: 2.5cm, left: 3cm, right: 3cm),
   footer: context {
@@ -119,8 +120,8 @@ It has been adapted and modified to fit the specific needs of the project during
 // Índice
 #outline(
   title: [Index],
-  indent: auto,
-  depth: 2,
+  indent: 2em,
+  depth: 3,
 )
 #pagebreak()
 // Índice de Figuras
@@ -1886,9 +1887,15 @@ A crucial process for the system is the updates triggered by modifications betwe
 #strong[Linking Arrows] - The arrows in this diagram refer to linked entities in a modified observer pattern, to allow to search for linked elements from both sides of the relation. The direction of the arrow expresses the flow from a observed element to the observer element, for example, a modification on a Stakeholder element would trigger an update() call to all requirements observing it.
 
 === User Interface Definition
-TODO
+The user interface of IR-Board is designed around a minimalist philosophy, prioritizing clarity and reducing cognitive overhead for users managing complex requirement structures across multiple projects. Rather than exposing all available functionality at once, the interface reveals contextual actions progressively as the user navigates deeper into the entity hierarchy. The design language relies on a neutral color palette with indigo accents for interactive and active elements, using iconography and spatial layout to communicate structure without verbose labels.
+
+Before authentication, the user only encounters the *Login* and *Registration* pages, which are simple standalone forms. Once authenticated, the persistent NavBar becomes the structural backbone of the interface, present across all views and adapting its visible links depending on whether the user is currently inside a project context or not: at the top level it shows home and administrative links, and when navigating within a project it additionally exposes the project-scoped section links for stakeholders, non-functional requirements, and documents.
+
 ==== User Interface Description <user_interface_description>
-TODO
+The following wireframes represent the preliminary interface models defined during the analysis phase, prior to implementation. They establish the intended structure, layout, and content of each view, and were used as the basis for validation with the project tutors before development began.
+
+TODO add drawings
+
 ==== Navegability Diagram
 #figure(image("/docs/assets/diagrams/navigabilityDiagram.svg"), caption: "Navigability diagram")
 
@@ -2361,10 +2368,34 @@ The relational schema is a direct projection of the domain model onto PostgreSQL
 
 *Deferred integration for access control.* The `app_user` table stores only identity and administrative attributes. No schema-level relationship links users to projects or functionalities, because those associations are managed entirely by Ory Keto as ReBAC tuples. The only structural link is through `entity_lock`, where a `user_id` foreign key records who holds each lock.
 
-== User Interface Design
-The user interfaces were first modelled as wireframes to be accepted by the tutors. Here are the models:
+== User Interface Design <user_interface_design>
+Following validation of the wireframes and navigability diagram presented in the #link(<user_interface_description>)[User Interface Definition], the final interface was implemented maintaining the structural decisions established during analysis while refining visual details, interaction patterns, and component behavior based on feedback received during the design phase. The sections below describe each view as implemented, and the screenshots shown represent the final deployed interface rather than preliminary models.
 
-TODO add wireframes
+=== Navigation Bar
+The most structurally significant interface element is the persistent navigation bar, present throughout the entire authenticated area. Unlike conventional top-mounted navigation bars, the IR-Board NavBar is implemented as a collapsible panel fixed to the top-left corner of the screen, expanding on hover and collapsing back to a compact icon state when not in use, keeping navigation accessible at all times without consuming permanent screen real estate.
+
+In its collapsed state the NavBar presents only a neutral icon. Upon hovering it expands to show the authenticated user's name and email, a logout button, a slug-based entity search field, and a set of contextual navigation links. When inside a project context, a secondary set of project-scoped links appears beneath the top-level links, providing direct access to the project's stakeholders, non-functional requirements, and documents. Links that are not yet operational are rendered in a visually disabled state to communicate their planned but incomplete status.
+
+TODO add screenshot
+
+=== Public Area
+TODO add screenshots
+
+=== Home View
+TODO add screenshots
+
+=== Project Dashboard
+TODO add screenshots
+
+=== Functionality View
+TODO add screenshots
+
+=== Entity Detail and Edit Views
+TODO add screenshots
+
+=== User Management View
+TODO add screenshots
+
 == Test Plan Specification
 The purpose of this section is to present the specification of the test plan that will be carried out to verify the correct functioning of the system's different components. The tests executed over the system aim to find and resolve errors in internal functionalities, infrastructure integration, and user interface design. The different types of tests, whose execution is reflected in the #link(<test_plan_analysis>)[initial analysis] presented earlier in this document, are described below.
 
