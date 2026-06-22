@@ -1904,7 +1904,7 @@ A dedicated *Slug Search* feature, also part of the persistent NavBar, is modell
 
 Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non-Functional Requirement Detail*, *Stakeholder Detail*, and *Document Detail* views represent the horizontal traceability relationships described in the #link(<traceability>)[Traceability] section: from a requirement's detail view, a user may navigate directly to a linked stakeholder, a linked document, or a related peer requirement, including other functional requirements observed by the same requirement, modelled here as a self-transition. Unlike the structural transitions described above, these links do not follow the entity hierarchy; they instead reflect the observer relationships maintained at the data layer, as illustrated earlier in the #link(<process_modeling>)[Process Modeling] section's observation flow diagram.
 
-== Requirements Specification
+== Requirements Specification <requirements_specification>
 === Functional Requirements
 #let PM_List = efilrst.reflist.with(
   name: "PM_List",
@@ -2259,7 +2259,7 @@ TODO
 TODO
 === Supporting Information
 TODO
-== Test Plan Analysis
+== Test Plan Analysis <test_plan_analysis>
 To ensure the reliability, maintainability, and performance of the IR-Board system, a multi-dimensional testing strategy has been defined. This plan covers the entire development lifecycle, from code quality to system behavior under stress.
 
 === Code maintainability and unit testing with SonarQube
@@ -2269,11 +2269,30 @@ The project utilizes SonarQube as a Static Application Security Testing (SAST) t
 - Reliability: Detection of potential bugs and logic errors through automated pattern matching.
 - Security: Scanning for common vulnerabilities and ensuring compliance with industry standards (e.g., OWASP Top 10).
 
+=== Integration and acceptance tests
+Integration testing validates that independently developed components behave correctly when combined, targeting the boundaries between layers and services rather than the internal correctness of individual units.
+
+Acceptance testing is treated as a natural extension of integration testing at the boundary between the system and its functional requirements. Each integration test scenario is traceable to one or more functional requirements defined in the #link(<requirements_specification>)[Requirements Specification], providing a structured record of which requirements have been verified at the integration level.
+
+
+=== End-to-end testing
+End-to-end (E2E) testing validates the system as a whole, exercising the full deployed stack from the browser through Traefik, Oathkeeper, Kratos, Keto, the backend, and the database, exactly as a real user would interact with it. The selected tool for this layer is *Playwright*, which drives a real browser instance and provides reliable cross-browser support, network interception capabilities, and a robust selector model suited to the component structure of the React frontend.
+
+E2E test scenarios are organized around the main user journeys identified in the requirements specification, covering the complete lifecycle of the system's primary entities. Representative scenarios include the full project creation and configuration flow, the creation and management of functional and non-functional requirements, the approval and state transition workflows, the creation and management of stakeholders and documents...
+
+Each scenario is run against a dedicated deployment of the full Docker Compose stack in a clean state, with the initial administrator account seeded by the same `initial-setup-admin` service used in regular deployment. This ensures that E2E tests validate not only the application logic but also the correctness of the infrastructure configuration, including routing rules, CORS policies, authorization rules defined in Keto, and session handling by Kratos.
+
 === Load testing
 For the load testing phase, the primary focus will be on stressing the critical entry points of the system, specifically the traffic flow passing through Traefik and Oathkeeper toward the Spring Boot backend. The goal is to simulate bursts of concurrent users to identify the exact point where identity validation latency begins to degrade the user experience or if Kratos' session management can handle the expected volume. This process goes beyond checking for server crashes; it involves using the Grafana stack to monitor how container resources scale and ensuring the internal network routing maintains stability under heavy pressure.
 
 === Usability testing
-Regarding usability testing, the plan involves observing real users interacting with the React interface to validate that the integration of Grafana dashboards feels intuitive and seamless. Special attention will be paid to how easily users can navigate between Loki logs and the core business logic, ensuring that the underlying complexity of the microservices architecture remains completely transparent to the end user. The ultimate objective is to confirm that authentication flows do not create unnecessary friction and that the frontend information hierarchy allows for efficient data management without requiring prior technical knowledge from the operator.
+Usability testing validates that the system can be used efficiently and without unnecessary friction by the professional profiles who constitute its target audience. Their objective is to identify interaction patterns, navigation structures, or interface elements that cause confusion, hesitation, or error in real users performing realistic tasks.
+
+Test participants are selected from software-related professional profiles, including individuals with experience in software development, requirements engineering, or project management, as these represent the system's primary user groups as defined in the stakeholder list. Participants who have no prior familiarity with IR-Board are preferred, to avoid familiarity bias distorting the results.
+
+Each session follows a task-based protocol: participants are given a set of realistic tasks to complete without assistance, such as creating a project, adding a functionality, writing a functional requirement with a given set of attributes, linking it to a stakeholder, and navigating to that stakeholder's detail view from the requirement. Observers record task completion rates, time-on-task, navigation errors, and points of visible hesitation, while participants are encouraged to verbalize their thought process using a think-aloud protocol.
+
+Results are analyzed to identify recurring friction points and prioritized by frequency and severity of impact. Any findings that point to structural navigability problems are cross-referenced against the navigability diagram, while findings related to form behavior or state visibility are cross-referenced against the functional requirements specification, to determine whether a deficiency represents an implementation gap or a design decision that should be revisited in future work.
 
 = System Design //6
 == System Architecture
@@ -2347,7 +2366,184 @@ The user interfaces were first modelled as wireframes to be accepted by the tuto
 
 TODO add wireframes
 == Test Plan Specification
-TODO
+The purpose of this section is to present the specification of the test plan that will be carried out to verify the correct functioning of the system's different components. The tests executed over the system aim to find and resolve errors in internal functionalities, infrastructure integration, and user interface design. The different types of tests, whose execution is reflected in the #link(<test_plan_analysis>)[initial analysis] presented earlier in this document, are described below.
+
+=== Code quality and unit testing
+Unit tests evaluate the isolated behavior of individual components within the codebase. In the particular case of this project, they are applied over the backend's domain model, drivers and service layers to verify that the adapters for the ory enviroment correctly translate the system calls to the appropiate set of calls, that state transition rules are correctly enforced, and that domain logic behaves as expected in isolation from external dependencies.
+
+The selected tool for this layer is *SonarQube*, integrated into the development workflow as a Static Application Security Testing (SAST) tool. SonarQube will be configured to analyze the backend codebase on each significant development checkpoint, measuring code coverage, detecting code smells, identifying reliability issues through automated pattern matching, and scanning for common security vulnerabilities according to industry standards such as the OWASP Top 10. A minimum coverage threshold will be enforced to ensure that critical business logic is systematically exercised by automated tests before the system is considered ready for integration.
+
+=== Integration and acceptance testing
+Integration tests verify that independently developed components interact correctly with one another, targeting the boundaries between layers and services rather than the internal behavior of individual units.
+
+For the *backend*, integration tests will be implemented using Spring Boot's testing support in combination with *Testcontainers*, which provisions isolated PostgreSQL container instances for each test run to guarantee full reproducibility. Each test scenario will exercise a complete vertical slice of the system, from the HTTP layer through the service and repository layers to the database, with the Ory ecosystem components replaced by a controlled test security configuration that injects pre-authenticated contexts directly. This approach will validate that backend API contracts, requirement lifecycle state transitions, traceability relationships, concurrency control mechanisms, and document management operations all behave correctly when the full application context is active.
+
+On the *frontend*, integration tests are written using React Testing Library in combination with Vitest, targeting individual pages and composite components in isolation from the live backend. API calls are intercepted by stubbing the global `fetch` function directly through Vitest's `vi.stubGlobal` mechanism, allowing each test scenario to return controlled responses for specific call sequences without requiring a running server. This approach validates component rendering under different response scenarios, form interaction behavior, error handling, and access-control-driven interface differences such as the conditional visibility of administrative actions.
+
+Acceptance testing is treated as an extension of integration testing: each integration test scenario will be traceable to one or more functional requirements defined in the Requirements Specification, providing a structured verification record at the component level.
+
+=== End-to-end testing
+End-to-end tests validate the system as a deployed whole, exercising the complete stack from the browser through Traefik, Oathkeeper, Kratos, Keto, the backend, and the database, as a real user would interact with it. The selected tool for this layer is *Playwright*, which provides reliable cross-browser test execution, network interception capabilities, and a robust element selector model suited to the component structure of the React frontend.
+
+Test scenarios are organized around the main user journeys identified in the requirements specification. Each scenario is executed against a deployment of the full Docker Compose stack, with the initial administrator account seeded by the same `initial-setup-admin` service used in regular deployment, ensuring that the infrastructure configuration is also exercised as part of each run. Timestamps are appended to dynamically generated entity names to allow parallelization and guarantee isolation between consecutive test executions without requiring a full database reset between runs.
+
+The implemented scenarios are organized into two suites. The first covers the authentication flow:
+
+#figure(
+  table(
+    columns: (2fr, 5fr),
+    align: left,
+    table.header([*Scenario*], [*Description*]),
+
+    [Successful login],
+    [The administrator authenticates with valid credentials and is redirected to the home page, which is verified to render correctly.],
+
+    [Login page redirect when already authenticated],
+    [A user who already holds a valid session and navigates to the login page is automatically redirected to the home page without re-authenticating.],
+
+    [Logout removes session],
+    [An authenticated user logs out through the NavBar. The session is verified to be cleared by confirming that the home view is no longer accessible and the login form is presented again.],
+
+    [Invalid credentials],
+    [A login attempt with incorrect email and password is rejected. The user remains on the login page and an error is surfaced.],
+  ),
+  caption: "E2E scenario specification: authentication",
+)
+
+The second suite covers the core requirements engineering lifecycle, following the full create–operate–delete cycle for each entity type to ensure that creation, navigation, state transitions, and removal all function correctly end-to-end:
+
+#figure(
+  table(
+    columns: (2fr, 5fr),
+    align: left,
+    table.header([*Scenario*], [*Description*]),
+
+    [Project creation and deletion],
+    [An administrator creates a project with name, description, and stakeholder fields, verifies it appears on the home view, then takes it through the full removal lifecycle: disabling it, moving it to the removed archive, and permanently deleting it.],
+
+    [Stakeholder management],
+    [A project is created, a stakeholder is added to it with name and description, the stakeholder is navigated to and then taken through its full removal lifecycle from the stakeholder list view. The project is then cleaned up.],
+
+    [Non-functional requirement management],
+    [A project is created, a non-functional requirement is added with measurement unit, comparison operator, threshold, target, and actual values, and the requirement is taken through its full removal lifecycle. The project is then cleaned up.],
+
+    [Document management],
+    [A project is created, a plain-text file is uploaded as a document through the upload dialog, the document is verified to appear in the document list, and it is then taken through its full removal lifecycle. The project is then cleaned up.],
+
+    [Functionality management],
+    [A project is created, a functionality is added with a custom label, and the functionality view is confirmed to be reachable from the project dashboard. The project is then cleaned up.],
+
+    [Functional requirement management],
+    [A project is created, a functionality is added, and a functional requirement is created within it with name, description, priority, and stability values. The requirement is taken through its full removal lifecycle from the functionality view. The project is then cleaned up.],
+  ),
+  caption: "E2E scenario specification: requirements engineering lifecycle",
+)
+
+It should be noted that the concurrency control, slug-based search, and multi-user access control scenarios identified in the test plan analysis were not implemented within the scope of this project, and are documented as future work alongside the other testing improvements described in #link(<conclusions_future_work>)[Conclusions and Future Work].
+
+=== Load testing
+Load testing will evaluate the robustness and responsiveness of the system under varying concurrent user conditions, focusing specifically on the critical path that passes through Traefik and Oathkeeper into the Spring Boot backend, as this chain involves the highest per-request overhead due to session validation against Kratos and permission checks against Keto.
+
+The selected tool is *K6*, an open-source load testing framework that allows scripted execution of concurrent virtual user scenarios and produces detailed throughput, latency, and error-rate metrics. Tests will be executed directly against the deployed Docker Compose stack, simulating realistic usage patterns: gradual ramp-up of concurrent users, sustained load periods, and burst scenarios. During execution, the Grafana observability stack will be used to correlate K6 metrics with container-level resource usage and internal service latency, allowing the identification of bottlenecks at specific layers of the architecture rather than only at the system boundary.
+
+The primary metrics to be observed are mean and percentile request latency, error rate under sustained load, session management stability in Kratos, and the behavior of the internal network routing under heavy pressure.
+
+=== Usability testing
+Usability testing evaluates the degree to which the system can be used by its target professional profiles efficiently, without unnecessary friction, and without requiring prior knowledge of its internal structure. Its objective is to identify interaction patterns, navigability issues, or interface elements that produce confusion, hesitation, or error in realistic usage scenarios.
+
+Test participants will be selected from software-related professional profiles, including individuals with experience in software development, requirements engineering, or project management, as these represent the system's primary user groups. Participants with no prior familiarity with IR-Board will be preferred, and no time to explore or familiarize themselves with the system will be provided before the session begins, to avoid familiarity bias influencing the results.
+
+Each session will follow a structured task-based protocol, during which the participant will be asked to complete the following sequence of operations without assistance from the observer. Participants will be encouraged to verbalize their thought process using a think-aloud protocol throughout the session.
+
++ Sign in to the system using provided credentials.
++ Navigate to an existing project and identify its dashboard metrics.
++ Add a new stakeholder to the project.
++ Add a new functionality to the project.
++ Create a functional requirement within the new functionality, filling in all available fields.
++ Link the created requirement to the previously created stakeholder.
++ Navigate to the stakeholder's detail view from the requirement's detail view.
++ Create a non-functional requirement with a measurement unit and a target value.
++ Upload a document and link it to the previously created functional requirement.
++ Approve all pending requirements in the functionality.
++ Search for a specific entity using its slug in the NavBar search field.
++ Deactivate the created functional requirement and verify its new state.
++ Log out of the system.
+
+The observer will not intervene at any point during the session, unless the user locks up or is unwilling to go on. All observations are recorded using the following sheets.
+
+The per-step recording sheet is used to track objective measurements and any remarks for each individual task:
+
+#figure(
+  table(
+    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
+    align: center,
+    table.header(
+      [*Step*],
+      table.cell(align: left)[*Task*],
+      [*Time*],
+      [*Completed*],
+      table.cell(align: left)[*Doubts / Issues / Comments*],
+    ),
+    [1], table.cell(align: left)[Sign in], [], [], [],
+    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [], [], [],
+    [3], table.cell(align: left)[Add a new stakeholder], [], [], [],
+    [4], table.cell(align: left)[Add a new functionality], [], [], [],
+    [5], table.cell(align: left)[Create a functional requirement (all fields)], [], [], [],
+    [6], table.cell(align: left)[Link requirement to stakeholder], [], [], [],
+    [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [], [], [],
+    [8], table.cell(align: left)[Create a non-functional requirement], [], [], [],
+    [9], table.cell(align: left)[Upload document and link to requirement], [], [], [],
+    [10], table.cell(align: left)[Approve all pending requirements], [], [], [],
+    [11], table.cell(align: left)[Search for entity by slug], [], [], [],
+    [12], table.cell(align: left)[Deactivate requirement and verify state], [], [], [],
+    [13], table.cell(align: left)[Log out], [], [], [],
+  ),
+  caption: "Usability test: per-step recording sheet",
+)
+
+The general observation sheet is used to record broader behavioral impressions throughout the session:
+
+#figure(
+  table(
+    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    table.header(
+      table.cell(align: left)[*Aspect observed*],
+      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    ),
+    table.cell(align: left)[Does the user know where they are within the application?], [], [], [], [],
+    table.cell(align: left)[Is navigation through the application intuitive?], [], [], [], [],
+    table.cell(align: left)[Does the user know how to authenticate and log out?], [], [], [], [],
+    table.cell(align: left)[Does each action produce the expected result?], [], [], [], [],
+    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], [],
+    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], [],
+    table.cell(align: left)[Is the requirement creation form easy to complete?], [], [], [], [],
+    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], [], [],
+  ),
+  caption: "Usability test: general observation sheet",
+)
+
+The session summary sheet is completed by the observer at the end of each session:
+
+#figure(
+  table(
+    columns: (2fr, 5fr),
+    align: left,
+    table.header([*Aspect*], [*Notes*]),
+    [Time to begin first task without prompting], [],
+    [Total session duration], [],
+    [Number of steps completed without assistance], [],
+    [Steps that required the most time], [],
+    [Recurring points of hesitation or confusion], [],
+    [Errors committed and recovery behavior], [],
+    [Overall impression of participant confidence], [],
+    [Any additional free-form observations], [],
+  ),
+  caption: "Usability test: session summary sheet",
+)
+
+Results will be analyzed across participants to identify recurring friction points, prioritized by frequency and severity of observed impact, and cross-referenced against the functional requirements specification and the navigability diagram to determine whether each finding represents an implementation gap or a design decision to be addressed in future work.
+
 = System Implementation //7
 == Standards and regulations followed
 TODO
@@ -2370,15 +2566,13 @@ TODO
 = Test Plan Execution //8
 == Unit Testing
 TODO
-== Integration and System Testing
+== Integration and Acceptance testing
 TODO
 == Usability Testing
 TODO
 == Accessibility Testing
 TODO
 == Load Testing
-TODO
-== Acceptance Testing
 TODO
 = System manuals //9
 == Installation Guide
@@ -3445,6 +3639,26 @@ As with the initial budget, the client-facing final budget includes only directl
 == Project Closure Analysis
 TODO
 = Conclusions and Future Work <conclusions_future_work> //11
+== Extended E2E scenario coverage
+The E2E test suite implemented within the scope of this project covers the core requirements engineering lifecycle and the authentication flow, as documented in the test plan specification. Several scenarios identified during planning were not implemented due to time constraints and are proposed here as future work. It should be noted that all of the areas described below have been manually validated during development and are confirmed to work correctly in the deployed system; the absence of automated coverage represents a gap in regression safety rather than unverified functionality.
+
+The most significant gap is the absence of multi-user and access control scenarios. The current suite exercises only the administrator role, meaning that the permission boundaries between project managers, requirement engineers, and stakeholder users have not been validated end-to-end against the live Ory Keto authorization layer. Future E2E tests should cover user invitation and the signup flow triggered by a received signup code, linking a user to a project functionality in each available role, verifying that each role can access only the operations permitted by the ReBAC model, and confirming that cross-functionality access restrictions are correctly enforced at the infrastructure level rather than only at the frontend.
+
+The concurrency control mechanism also lacks E2E coverage, despite having been manually verified to behave correctly during development. Testing this scenario in an automated context requires two browser contexts to be active simultaneously against the same deployment, which Playwright supports natively through its multi-page and browser context APIs. A future test should verify that a second user attempting to edit an entity already held by another user is presented with the lock indicator, that the lock is released when the first user saves or navigates away, and that changes submitted by a non-holding user are correctly rejected by the backend.
+
+Finally, the slug-based search navigation flow has not been covered at the E2E level, though it has been manually exercised across all supported entity types. A future scenario should verify that entering a valid slug in the NavBar search field navigates the user to the correct entity detail view, and that invalid slugs, access-restricted slugs, and partial slugs produce the correct feedback states described in the navigability diagram.
+
+== Load testing //TODO remove if load testing is done.
+Load testing was planned as part of the test strategy but could not be executed within the available project timeline. Manual observation during development suggests that the system responds within acceptable latency bounds under light, single-user load, but no systematic measurement has been performed under concurrent usage conditions. The following describes the intended approach, which is proposed as future work.
+
+The selected tool is *K6*, an open-source, script-based load testing framework that integrates well with the Grafana observability stack already deployed as part of the system. K6 allows virtual user scenarios to be defined as JavaScript scripts, executed from the command line, and configured with ramp-up profiles, sustained load phases, and burst scenarios using its built-in executor model.
+
+Tests should be executed directly against the full Docker Compose stack, targeting the critical path that passes through Traefik and Oathkeeper into the Spring Boot backend, since this chain carries the highest per-request overhead due to the session validation call to Kratos and the permission check against Keto on every authorized request. A representative scenario would simulate a realistic number of concurrent authenticated users performing a mix of read and write operations across different project entities, reflecting the expected usage pattern of a small development team working simultaneously on the same project.
+
+The primary metrics to be collected and analyzed are mean and percentile request latency at each layer, error rate under sustained and burst load, session management stability in Kratos, and container-level resource utilization as observed through the Grafana and Prometheus stack already provisioned. The Loki log aggregation layer should also be monitored during test runs to surface any error patterns or retry storms that do not appear in the top-level latency metrics.
+
+A minimum acceptance threshold should be defined before running the tests, for example a p95 latency below 500ms under a load representative of the expected user base, so that results can be evaluated against a concrete criterion rather than interpreted subjectively.
+
 == Dependency maturity: migration away from MinIO
 At the time of writing, MinIO's open-source Community Edition is in a fragile position. Following the removal of administrative functionality from its web console in 2025 and the subsequent transition of the upstream project to "maintenance mode" in December 2025, MinIO is no longer actively developed as a community project, even though its AGPLv3-licensed source remains available and usable.
 
