@@ -1,3 +1,9 @@
+FROM maven:3.9.6-eclipse-temurin-21 AS dev
+
+WORKDIR /app
+COPY . .
+CMD ["mvn", "spring-boot:run"]
+
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 RUN apt-get update \
@@ -13,7 +19,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre-jammy AS production
 WORKDIR /app
 
 COPY --from=build --chmod=755 /app/target/app-exec.jar /app/app.jar

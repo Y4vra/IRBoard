@@ -316,15 +316,13 @@ services:
       "
 
   backend:
-    image: maven:3.9.6-eclipse-temurin-21 # [PROD] substitute for build: ./backend
+    build:
+      context: ./backend
     depends_on:
       backend-db:
         condition: service_healthy
       object-storage: 
         condition: service_healthy
-    volumes:
-      - ./backend:/app
-      - ~/.m2:/root/.m2
     environment:
       - KETO_READ_URL=http://keto:4466
       - KETO_WRITE_URL=http://keto:4467
@@ -337,7 +335,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://backend-db:5432/${RMS_DB_NAME}
       - SPRING_DATASOURCE_USERNAME=${RMS_DB_USER}
       - SPRING_DATASOURCE_PASSWORD=${RMS_DB_PASSWORD}
-      - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - internal
     healthcheck:
@@ -345,32 +342,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 180s
+      start_period: 300s
     extra_hosts:
-    - "${OBJS_DOMAIN}:host-gateway"
-    working_dir: /app # [PROD] remove for production, this allows hot-reload
-    command: mvn spring-boot:run # [PROD] remove for production, this allows hot-reload
+      - "${OBJS_DOMAIN}:host-gateway"
 
   frontend:
     build: 
       context: ./frontend
-      target: build-stage # [PROD] remove for production
-    working_dir: /app
-    command: npm run dev -- --host 0.0.0.0 # [PROD] remove for production
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - VITE_DOMAIN_NAME=${DOMAIN_NAME}
-      - VITE_AUTH_DOMAIN=${AUTH_DOMAIN}
-      - VITE_API_DOMAIN=${API_DOMAIN}
-      - VITE_DRAWIO_URL=${DRAWIO_DOMAIN}
+      args:
+        VITE_DOMAIN_NAME: ${DOMAIN_NAME}
+        VITE_AUTH_DOMAIN: ${AUTH_DOMAIN}
+        VITE_API_DOMAIN: ${API_DOMAIN}
+        VITE_DRAWIO_URL: ${DRAWIO_DOMAIN}
     networks:
       - public
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=5173" # Default Vite port for Dev mode. Update to 80 for Production-stage (Nginx).
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   drawio:
     image: jgraph/drawio:latest

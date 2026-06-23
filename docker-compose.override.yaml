@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    volumes:
+      - ./backend:/app
+      - ~/.m2:/root/.m2
+    environment:
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - MAVEN_OPTS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC
+
+  frontend:
+    build:
+      context: ./frontend
+      target: build-stage
+    working_dir: /app
+    environment:
+      - VITE_DOMAIN_NAME=${DOMAIN_NAME}
+      - VITE_AUTH_DOMAIN=${AUTH_DOMAIN}
+      - VITE_API_DOMAIN=${API_DOMAIN}
+      - VITE_DRAWIO_URL=${DRAWIO_DOMAIN}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+    labels:
+      - "traefik.http.services.frontend.loadbalancer.server.port=5173"
