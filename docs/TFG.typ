@@ -2662,6 +2662,108 @@ TODO
 == Integration and Acceptance testing
 TODO
 == Usability Testing
+=== User 1
+#figure(
+  table(
+    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
+    align: center,
+    table.header(
+      [*Step*],
+      table.cell(align: left)[*Task*],
+      [*Time*],
+      [*Completed*],
+      table.cell(align: left)[*Doubts / Issues / Comments*],
+    ),
+    [1], table.cell(align: left)[Sign in], [3.0s], [], [],
+    [2],
+    table.cell(align: left)[Navigate to project and read dashboard metrics],
+    [2s],
+    [],
+    [not clicl on the card to enter confused he],
+    [3], table.cell(align: left)[Add a new stakeholder], [14], [], [dudas con estados "quien lo tiene que aprovar"],
+    [4], table.cell(align: left)[Add a new functionality], [31], [], [a bit struggle to find where],
+    [5],
+    table.cell(align: left)[Create a functional requirement (all fields)],
+    [35],
+    [],
+    [almost didnt put description but was forced to by the system],
+    [6], table.cell(align: left)[Link requirement to stakeholder], [10s], [], [],
+    [7],
+    table.cell(align: left)[Navigate to stakeholder from requirement detail],
+    [3],
+    [],
+    [correctly pressed the shortcut],
+    [8],
+    table.cell(align: left)[Create a non-functional requirement],
+    [26],
+    [],
+    [did not understand threshold and actual values],
+    [9],
+    table.cell(align: left)[Upload document and link to requirement],
+    [65s],
+    [],
+    [first looked at the document detail view first],
+    [10],
+    table.cell(align: left)[Approve all pending requirements],
+    [20],
+    [],
+    [manually pressed each due to only being 3 (he created a child).],
+    [11],
+    table.cell(align: left)[Search for entity by slug],
+    [200s],
+    [lack of partial search, slug unknown, not a lot of contrast between the slug and background],
+    [searched online what an entity slug was, not very obvious what one is. not visible],
+    [12],
+    table.cell(align: left)[Deactivate requirement and verify state],
+    [114s],
+    [did not see the filters at all],
+    [looked at the child's badge instead of the requirement's badge, found unexpected that the requirement dissapeared],
+    [13], table.cell(align: left)[Log out], [4s], [], [],
+  ),
+  caption: "Usability test: per-step recording sheet",
+)
+
+The general observation sheet is used to record broader behavioral impressions throughout the session:
+
+#figure(
+  table(
+    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    table.header(
+      table.cell(align: left)[*Aspect observed*],
+      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    ),
+    table.cell(align: left)[Does the user know where they are within the application?], [], [X], [], [],
+    table.cell(align: left)[Is navigation through the application intuitive?], [], [X], [], [],
+    table.cell(align: left)[Does the user know how to authenticate and log out?], [X], [], [], [],
+    table.cell(align: left)[Does each action produce the expected result?], [], [], [X], [],
+    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [X], [], [],
+    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [X], [],
+    table.cell(align: left)[Is the requirement creation form easy to complete?], [], [X], [], [],
+    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [X], [], [],
+  ),
+  caption: "Usability test: general observation sheet",
+)
+
+The session summary sheet is completed by the observer at the end of each session:
+
+#figure(
+  table(
+    columns: (2fr, 5fr),
+    align: left,
+    table.header([*Aspect*], [*Notes*]),
+    [Time to begin first task without prompting], [],
+    [Total session duration], [],
+    [Number of steps completed without assistance], [],
+    [Steps that required the most time], [],
+    [Recurring points of hesitation or confusion], [],
+    [Errors committed and recovery behavior], [],
+    [Overall impression of participant confidence], [],
+    [Any additional free-form observations], [no sabia el tamaño total de la aplicación],
+  ),
+  caption: "Usability test: session summary sheet",
+)
+=== User 2
 TODO
 == Accessibility Testing
 TODO
