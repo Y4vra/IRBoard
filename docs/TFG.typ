@@ -2549,7 +2549,7 @@ Test participants will be selected from software-related professional profiles, 
 Each session will follow a structured task-based protocol, during which the participant will be asked to complete the following sequence of operations without assistance from the observer. Participants will be encouraged to verbalize their thought process using a think-aloud protocol throughout the session.
 
 + Sign in to the system using provided credentials.
-+ Navigate to an existing project and identify its dashboard metrics.
++ Create a project, navigate to it and identify its dashboard metrics.
 + Add a new stakeholder to the project.
 + Add a new functionality to the project.
 + Create a functional requirement within the new functionality, filling in all available fields.
@@ -2662,7 +2662,9 @@ TODO
 == Integration and Acceptance testing
 TODO
 == Usability Testing
+TODO
 === User 1
+TODO
 #figure(
   table(
     columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
@@ -2720,11 +2722,8 @@ TODO
     [looked at the child's badge instead of the requirement's badge, found unexpected that the requirement dissapeared],
     [13], table.cell(align: left)[Log out], [4s], [], [],
   ),
-  caption: "Usability test: per-step recording sheet",
+  caption: "User 1 - per-step recording sheet",
 )
-
-The general observation sheet is used to record broader behavioral impressions throughout the session:
-
 #figure(
   table(
     columns: (3fr, 1fr, 1fr, 1fr, 1fr),
@@ -2742,11 +2741,8 @@ The general observation sheet is used to record broader behavioral impressions t
     table.cell(align: left)[Is the requirement creation form easy to complete?], [], [X], [], [],
     table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [X], [], [],
   ),
-  caption: "Usability test: general observation sheet",
+  caption: "User 1 - general observation sheet",
 )
-
-The session summary sheet is completed by the observer at the end of each session:
-
 #figure(
   table(
     columns: (2fr, 5fr),
@@ -2761,10 +2757,232 @@ The session summary sheet is completed by the observer at the end of each sessio
     [Overall impression of participant confidence], [],
     [Any additional free-form observations], [no sabia el tamaño total de la aplicación],
   ),
-  caption: "Usability test: session summary sheet",
+  caption: "User 1 - session summary sheet",
 )
 === User 2
+#figure(
+  table(
+    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
+    align: center,
+    table.header(
+      [*Step*],
+      table.cell(align: left)[*Task*],
+      [*Time*],
+      [*Completed*],
+      table.cell(align: left)[*Doubts / Issues / Comments*],
+    ),
+    [1], table.cell(align: left)[Sign in], [5s], [], [],
+    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [35s], [], [],
+    [3], table.cell(align: left)[Add a new stakeholder], [17s], [], [],
+    [4],
+    table.cell(align: left)[Add a new functionality],
+    [29s],
+    [],
+    [looks for the functionality link where the other three are],
+    [5],
+    table.cell(align: left)[Create a functional requirement (all fields)],
+    [44s],
+    [],
+    [plays around with the move requirement.],
+    [6], table.cell(align: left)[Link requirement to stakeholder], [12s], [], [],
+    [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [2s], [], [],
+    [8],
+    table.cell(align: left)[Create a non-functional requirement],
+    [31s],
+    [],
+    [does not realize that he does not need to populate the threshold values],
+    [9],
+    table.cell(align: left)[Upload document and link to requirement],
+    [49s],
+    [],
+    [dislikes that the linking is only allowed from the requirement],
+    [10], table.cell(align: left)[Approve all pending requirements], [13s], [], [Found the approve all button],
+    [11],
+    table.cell(align: left)[Search for entity by slug],
+    [71s],
+    [],
+    [Found counterintuitive that enter key does not goto the found entity.],
+    [12],
+    table.cell(align: left)[Deactivate requirement and verify state],
+    [57s],
+    [],
+    [mistook the functionality deactivation for requirement],
+    [13], table.cell(align: left)[Log out], [12s], [], [],
+  ),
+  caption: "User 2 - per-step recording sheet",
+)
+#figure(
+  table(
+    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    table.header(
+      table.cell(align: left)[*Aspect observed*],
+      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    ),
+    table.cell(align: left)[Does the user know where they are within the application?], [], [X], [], [],
+    table.cell(align: left)[Is navigation through the application intuitive?], [X], [], [], [],
+    table.cell(align: left)[Does the user know how to authenticate and log out?], [X], [], [], [],
+    table.cell(align: left)[Does each action produce the expected result?], [X], [], [], [],
+    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [X], [],
+    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], [X],
+    table.cell(align: left)[Is the requirement creation form easy to complete?], [X], [], [], [],
+    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [X], [], [], [],
+  ),
+  caption: "User 2 - general observation sheet",
+)
+#figure(
+  table(
+    columns: (2fr, 5fr),
+    align: left,
+    table.header([*Aspect*], [*Notes*]),
+    [Time to begin first task without prompting], [],
+    [Total session duration], [],
+    [Number of steps completed without assistance], [],
+    [Steps that required the most time], [],
+    [Recurring points of hesitation or confusion], [],
+    [Errors committed and recovery behavior], [],
+    [Overall impression of participant confidence], [],
+    [Any additional free-form observations], [entity slug is not explained what is anywhere.],
+  ),
+  caption: "User 2 - session summary sheet",
+)
+=== User 3
 TODO
+#figure(
+  table(
+    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
+    align: center,
+    table.header(
+      [*Step*],
+      table.cell(align: left)[*Task*],
+      [*Time*],
+      [*Completed*],
+      table.cell(align: left)[*Doubts / Issues / Comments*],
+    ),
+    [1], table.cell(align: left)[Sign in], [10s], [], [],
+    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [12s], [], [],
+    [3], table.cell(align: left)[Add a new stakeholder], [10s], [], [],
+    [4], table.cell(align: left)[Add a new functionality], [25s], [], [Did not inmediately see functionalities],
+    [5],
+    table.cell(align: left)[Create a functional requirement (all fields)],
+    [61s],
+    [],
+    [Did not knew where to create the fr whithin the functionality, and did not recognise FR as Functional Requirement],
+    [6], table.cell(align: left)[Link requirement to stakeholder], [13s], [], [],
+    [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [1s], [], [],
+    [8],
+    table.cell(align: left)[Create a non-functional requirement],
+    [32s],
+    [],
+    [dislikes acronyms instead of full text],
+    [9], table.cell(align: left)[Upload document and link to requirement], [31s], [], [],
+    [10], table.cell(align: left)[Approve all pending requirements], [17s], [], [Used the approve all button],
+    [11], table.cell(align: left)[Search for entity by slug], [117s], [], [Missed it completely],
+    [12], table.cell(align: left)[Deactivate requirement and verify state], [13s], [], [],
+    [13], table.cell(align: left)[Log out], [17s], [], [Clicked the user image and went into an invalid route.],
+  ),
+  caption: "User 3 - per-step recording sheet",
+)
+#figure(
+  table(
+    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    table.header(
+      table.cell(align: left)[*Aspect observed*],
+      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    ),
+    table.cell(align: left)[Does the user know where they are within the application?], [X], [], [], [],
+    table.cell(align: left)[Is navigation through the application intuitive?], [], [X], [], [],
+    table.cell(align: left)[Does the user know how to authenticate and log out?], [], [X], [], [],
+    table.cell(align: left)[Does each action produce the expected result?], [X], [], [], [],
+    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], [X],
+    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [X], [],
+    table.cell(align: left)[Is the requirement creation form easy to complete?], [X], [], [], [],
+    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], [X], [],
+  ),
+  caption: "User 3 - general observation sheet",
+)
+#figure(
+  table(
+    columns: (2fr, 5fr),
+    align: left,
+    table.header([*Aspect*], [*Notes*]),
+    [Time to begin first task without prompting], [],
+    [Total session duration], [],
+    [Number of steps completed without assistance], [],
+    [Steps that required the most time], [],
+    [Recurring points of hesitation or confusion], [],
+    [Errors committed and recovery behavior], [],
+    [Overall impression of participant confidence], [],
+    [Any additional free-form observations],
+    [Finds unintuitive the collapsible nav bar, suggested that the badges should be besides the slug or right below the name],
+  ),
+  caption: "User 3 - session summary sheet",
+)
+=== User 4
+TODO
+#figure(
+  table(
+    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
+    align: center,
+    table.header(
+      [*Step*],
+      table.cell(align: left)[*Task*],
+      [*Time*],
+      [*Completed*],
+      table.cell(align: left)[*Doubts / Issues / Comments*],
+    ),
+    [1], table.cell(align: left)[Sign in], [], [], [],
+    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [], [], [],
+    [3], table.cell(align: left)[Add a new stakeholder], [], [], [],
+    [4], table.cell(align: left)[Add a new functionality], [], [], [],
+    [5], table.cell(align: left)[Create a functional requirement (all fields)], [], [], [],
+    [6], table.cell(align: left)[Link requirement to stakeholder], [], [], [],
+    [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [], [], [],
+    [8], table.cell(align: left)[Create a non-functional requirement], [], [], [],
+    [9], table.cell(align: left)[Upload document and link to requirement], [], [], [],
+    [10], table.cell(align: left)[Approve all pending requirements], [], [], [],
+    [11], table.cell(align: left)[Search for entity by slug], [], [], [],
+    [12], table.cell(align: left)[Deactivate requirement and verify state], [], [], [],
+    [13], table.cell(align: left)[Log out], [], [], [],
+  ),
+  caption: "User 4 - per-step recording sheet",
+)
+#figure(
+  table(
+    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+    align: center,
+    table.header(
+      table.cell(align: left)[*Aspect observed*],
+      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    ),
+    table.cell(align: left)[Does the user know where they are within the application?], [], [], [], [],
+    table.cell(align: left)[Is navigation through the application intuitive?], [], [], [], [],
+    table.cell(align: left)[Does the user know how to authenticate and log out?], [], [], [], [],
+    table.cell(align: left)[Does each action produce the expected result?], [], [], [], [],
+    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], [],
+    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], [],
+    table.cell(align: left)[Is the requirement creation form easy to complete?], [], [], [], [],
+    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], [], [],
+  ),
+  caption: "User 4 - general observation sheet",
+)
+#figure(
+  table(
+    columns: (2fr, 5fr),
+    align: left,
+    table.header([*Aspect*], [*Notes*]),
+    [Time to begin first task without prompting], [],
+    [Total session duration], [],
+    [Number of steps completed without assistance], [],
+    [Steps that required the most time], [],
+    [Recurring points of hesitation or confusion], [],
+    [Errors committed and recovery behavior], [],
+    [Overall impression of participant confidence], [],
+    [Any additional free-form observations], [],
+  ),
+  caption: "User 4 - session summary sheet",
+)
 == Accessibility Testing
 TODO
 == Load Testing
