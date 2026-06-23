@@ -66,9 +66,13 @@ If your `.env` contains `DOMAIN_NAME=irboard.local`, add the following line:
 If you use a domain other than the default `irboard.local`, you must configure the API and Grafana domains in `config/oathkeeper/access-rules.yaml`.
 5. **Deployment:**
 The current supported deployment strategy is 
-With docker installed, run the following command on the root of the repository:
+With docker installed, run the following command on the root of the repository for development enviroment:
 ```bash
 docker compose up -d --build
+```
+Or if you prefer a production enviroment, run the following command on the root of the repository:
+```bash
+docker compose -f docker-compose.yaml up -d --build
 ```
 
 ---
