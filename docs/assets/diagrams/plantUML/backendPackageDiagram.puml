@@ -1,0 +1,94 @@
+@startuml backendframeDiagram
+title IR-Board Backend – frame Diagram
+
+top to bottom direction
+
+frame "domain" as domain {
+    ["model"] as model
+    note bottom of model
+        Main entities and their
+        lifecycle state enumerations
+    end note
+
+    ["error"] as error
+    note bottom of error
+        Business exceptions and
+        domain-specific error types
+    end note
+
+    ["repository"] as repository
+    note bottom of repository
+        Repository interfaces defining
+        persistence contracts
+    end note
+
+    ["domain_service"] as domain_service
+    note bottom of domain_service
+        EntitySlugService —
+        slug generation as
+        core business logic
+    end note
+}
+
+frame "application" as application {
+    ["dto"] as dto
+    note bottom of dto
+        Request and response transfer
+        objects for each entity type
+    end note
+
+    ["mapper"] as mapper
+    note bottom of mapper
+        Translators between domain
+        entities and DTOs
+    end note
+
+    ["port"] as port
+    note bottom of port
+        IdentityService · PermissionService
+        ObjectStorageService —
+        abstractions for Kratos, Keto, MinIO
+    end note
+
+    ["app_service"] as app_service
+    note bottom of app_service
+        Use case orchestrators:
+        Project · Requirement · Stakeholder
+        Document · Functionality
+        EntityLock · User · Search
+    end note
+}
+
+frame "infrastructure" as infrastructure {
+    ["api_rest"] as api_rest
+    note bottom of api_rest
+        REST controllers — HTTP mapping,
+        request validation, response
+        serialization and error handling
+    end note
+
+    ["client"] as client
+    note bottom of client
+        Port implementations:
+        KratosClient · KetoClient
+        MinioClient
+    end note
+
+    ["persistence"] as persistence
+    note bottom of persistence
+        JPA repository implementations
+        of the domain repository interfaces
+    end note
+
+    ["config"] as config
+    note bottom of config
+        Spring context wiring, security,
+        external client parameters and
+        environment properties
+    end note
+}
+
+application --up--> domain 
+infrastructure --up--> application
+
+@enduml

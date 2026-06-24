@@ -817,7 +817,7 @@ It should also be noted that, since this project is developed by a single studen
       [9.5], [Test document management], [3 hrs], [Junior software engineer], [Mon 02/02/26], [Tue 03/02/26],
       [9.6], [Test modifying concurrency system], [2 hrs], [Junior software engineer], [Thu 05/02/26], [Thu 05/02/26],
       [9.7], [Test search and filtering], [3 hrs], [Junior software engineer], [Thu 05/02/26], [Thu 05/02/26],
-      [9.8], [Usability and accesibility testing], [2 hrs], [Junior software engineer], [Fri 16/01/26], [Mon 19/01/26],
+      [9.8], [Usability and accessibility testing], [2 hrs], [Junior software engineer], [Fri 16/01/26], [Mon 19/01/26],
       [9.9], [Load testing], [2 hrs], [Senior software engineer], [Mon 19/01/26], [Tue 20/01/26],
       [10], [Testing complete], [0 hrs], [], [Thu 05/02/26], [Thu 05/02/26],
       [11], [Documentation], [30 hrs], [], [Thu 01/01/26], [Mon 09/02/26],
@@ -1760,7 +1760,7 @@ As stated previously, the client-facing budget includes only directly billable c
     [], [005], [Test document management], [150,40 €], [],
     [], [006], [Test modifying concurrency system], [100,26 €], [],
     [], [007], [Test search and filtering], [150,40 €], [],
-    [], [008], [Usability and accesibility testing], [100,26 €], [],
+    [], [008], [Usability and accessibility testing], [100,26 €], [],
     [], [009], [Load testing], [110,85 €], [],
     [07], [], [Documentation], [], [1.729,94 €],
     [], [001], [Document declaration of originality, abstract and keywords], [61,36 €], [],
@@ -2272,17 +2272,90 @@ Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non
 )
 
 === Usability Requirements
-TODO
-=== Performance Requirements
-TODO
+#let Usability_Requirements = efilrst.reflist.with(
+  name: "UR",
+  list-style: "UR.1.1.1.",
+)
+#Usability_Requirements(
+  [The system must be usable by professionals with software development or requirements engineering backgrounds without prior training on the platform.],
+  ([Usability testing must be performed to ensure any issues identified during use are addressed.],),
+  [All destructive or irreversible actions must require explicit confirmation before execution.],
+  [State labels and lifecycle transitions must be clearly communicated to users regardless of their role within a project.],
+)
+
+=== Performance Requirements 
+TODO check values with load testing
+#let Performance_Requirements = efilrst.reflist.with(
+  name: "PR",
+  list-style: "PR.1.1.1.",
+)
+#Performance_Requirements(
+  [The system must remain responsive under the concurrent usage conditions expected of a small software development team of up to 20 simultaneous authenticated users.],
+  (
+    [Under this load, the p95 response latency for any API request must not exceed 500ms.],
+    [Under this load, the p95 response latency for the slug-based search endpoint must not exceed 300ms.],
+  ),
+  [Entity locking timeouts must not exceed 1 hour per single lock before it is automatically released, to avoid blocking collaborative workflows for extended periods.],
+  [The above thresholds are to be validated during load testing as described in the #link(<test_plan_analysis>)[Test Plan Analysis].],
+)
+
 === Logical Database Requirements
-TODO
+#let DB_Requirements = efilrst.reflist.with(
+  name: "DBR",
+  list-style: "DBR.1.1.1.",
+)
+#DB_Requirements(
+  [All primary entities must be uniquely identifiable through an internal numeric identifier managed by the database.],
+  [Entities that support external reference must additionally carry a unique semantic identifier called entity slug, and in the case of requirements, a human-readable dynamic identifier as well.],
+  [Lifecycle states must be stored as controlled enumeration values, enforced at the application layer before persistence.],
+  [Traceability relationships between requirements, stakeholders, and documents must be represented as explicit join tables rather than embedded references, to support bidirectional traversal and impact analysis.],
+  [No entity may be permanently deleted without passing through the defined deactivation and removal states first.],
+  ([In case of parent removal, the appropiate states must have been traversed at least on the parent.],)
+)
+
 === Design Constraints
-TODO
+#let Design_Constraints = efilrst.reflist.with(
+  name: "DC",
+  list-style: "DC.1.1.1.",
+)
+#Design_Constraints(
+  [The system must be deployable as a containerized stack using Docker Compose, without requiring cloud-specific infrastructure.],
+  [The security architecture must follow Zero-Trust principles, delegating identity management, session handling, and authorization enforcement to the Ory ecosystem rather than implementing these concerns within the business application.],
+  [The frontend must communicate with backend services exclusively through the API gateway; no direct internal service access is permitted from the client.],
+  [The backend must expose a RESTful API and must not embed frontend concerns.],
+)
+
 === System Attributes
-TODO
+#let System_Attributes = efilrst.reflist.with(
+  name: "SA",
+  list-style: "SA.1.1.1.",
+)
+#System_Attributes(
+  [Security:],
+  (
+    [All requests to protected resources must pass through Oathkeeper for session validation and permission verification before reaching internal services.],
+    [Passwords must be salted per user and must meet the length requirements defined in the user management requirements.],
+    [The system must apply rate limiting on authentication endpoints to mitigate brute-force attacks.],
+  ),
+  [Maintainability:],
+  (
+    [The codebase must meet the minimum coverage threshold enforced by SonarQube, that is, >80%.],
+    [The codebase must not accumulate critical code smells or reliability issues as defined by the configured quality gate.],
+  ),
+  [Traceability:],
+  (
+    [Every requirement must carry a stable, unique identifier throughout its lifecycle.],
+    [Changes to linked entities must propagate review flags to observing requirements automatically.],
+  ),
+  [Extensibility:],
+  (
+    [Infrastructure components such as the identity provider, authorization server, mail server, and object storage backend must be replaceable without requiring changes to the core business logic, as they are accessed through abstraction layers rather than direct dependencies.],
+  ),
+)
+
 === Supporting Information
-TODO
+The system is intended to operate in a containerized environment during both development and demonstration. The deployment configuration is defined in the Docker Compose file described in the #link(<alternatives_analysis>)[Alternatives Analysis] and #link(<scope>)[Scope] sections. All development-time components, including the local mail server and object storage, are replaceable with production-grade alternatives when deploying outside a development context, as noted in the assumptions and constraints. The observability stack provides operational visibility through Grafana, Loki, and Prometheus, as described in the #link(<system_architecture>)[System Architecture] section.
+
 == Test Plan Analysis <test_plan_analysis>
 To ensure the reliability, maintainability, and performance of the IR-Board system, a multi-dimensional testing strategy has been defined. This plan covers the entire development lifecycle, from code quality to system behavior under stress.
 
@@ -2319,7 +2392,7 @@ Each session follows a task-based protocol: participants are given a set of real
 Results are analyzed to identify recurring friction points and prioritized by frequency and severity of impact. Any findings that point to structural navigability problems are cross-referenced against the navigability diagram, while findings related to form behavior or state visibility are cross-referenced against the functional requirements specification, to determine whether a deficiency represents an implementation gap or a design decision that should be revisited in future work.
 
 = System Design //6
-== System Architecture
+== System Architecture <system_architecture>
 === General architecture desing
 The system architecture follows a Microservices approach based on the Zero Trust security model. This ensures flexibility and scalability while maintaining a high level of isolation between business logic and infrastructure concerns. To guarantee a professional security standard while maintaining a manageable project scope, core identity and access management responsibilities have been delegated to the Ory Open Source ecosystem.
 
@@ -2356,7 +2429,22 @@ Aditionally, the following containers are present on the deployment:
 These are not added to the diagram, given their additional nature and non-essential uses, as to ensure clear readability.
 
 === Backend system design
-TODO
+The backend follows an architecture that blends *hexagonal architecture* (ports and adapters, as described by Alistair Cockburn #link(<reference_4>)[[4]]) with the explicit layering conventions of *Clean Architecture* #link(<reference_5>)[[5]] (Robert C. Martin). In pure hexagonal architecture the only structural distinction is between the inside of the hexagon (domain and application logic) and the outside (adapters to external systems). Clean Architecture refines this by naming three explicit concentric layers — domain, application, and infrastructure — and formalizing the dependency rule: outer layers depend on inner layers, and the domain at the center has no knowledge of any external technology or framework. The result is a structure that is hexagonal in its port-and-adapter organization and clean-architecture in its explicit package decomposition.
+
+#figure(image("assets/diagrams/backendPackageDiagram.svg"), caption: "Backend package diagram")
+
+TODO CHECK THIS
+The *domain layer* forms the innermost core and contains only pure business logic with no framework dependencies. It defines the main entities and their lifecycle rules, the repository interfaces through which persistence is accessed, the enumerated types and value objects used across the domain, and a single `EntitySlugService` responsible for generating the structured, semantically meaningful slugs assigned to each entity. Slug generation is treated as core business logic rather than an infrastructure concern because the slug format encodes domain knowledge — specifically the project, the entity type, and a collision-resistant random component — making it inseparable from the domain model.
+
+The *application layer* sits above the domain and orchestrates use cases by coordinating domain entities, repositories, and external service ports. It contains the service classes that implement the system's operations, the Data Transfer Objects (DTOs) used to communicate with the outside world, the mappers that translate between domain entities and DTOs, and three port interfaces that represent the external dependencies the application requires: `IdentityService`, `PermissionService`, and `ObjectStorageService`, abstracting Ory Kratos, Ory Keto, and MinIO respectively. These interfaces are the ports in the hexagonal sense: they define what the application needs from the outside world without prescribing how those needs are fulfilled. By keeping the port definitions inside the application layer, the business logic remains fully decoupled from the specific technologies chosen to fulfil each role.
+
+The *infrastructure layer* is the outermost layer and contains all technology-specific implementations, which correspond to the adapters in hexagonal terminology. It is subdivided into four main areas: the REST API controllers that expose the system's endpoints and handle HTTP concerns; the port implementations, namely the Kratos, Keto, and MinIO clients that adapt the external service APIs to the interfaces defined in the application layer; the persistence package, which contains the Spring Data JPA repository implementations of the domain repository interfaces; and the configuration package, which wires together the Spring context, security settings, external client parameters, and environment-specific properties.
+
+TODO FIX THIS
+#figure(image("./assets/diagrams/backendHexagonalDiagram.svg"), caption: "Backend hexagonal architecture diagram")
+
+This separation provides several practical benefits for IR-Board. The domain and application layers can be tested in complete isolation from infrastructure concerns, with the Ory ecosystem components replaced by test mocks injected through the port interfaces. The port abstraction also means that any of the three external services can be replaced — for example substituting Kratos with a different identity provider, or MinIO with an alternative S3-compatible store — without touching any business logic. Finally, the clear boundary between the REST layer and the application services ensures that HTTP-level concerns such as request mapping, response serialization, and error translation do not leak into the domain model.
+
 === Frontend system design
 TODO
 == Real Use Case Design
@@ -2541,8 +2629,10 @@ The selected tool is *K6*, an open-source load testing framework that allows scr
 
 The primary metrics to be observed are mean and percentile request latency, error rate under sustained load, session management stability in Kratos, and the behavior of the internal network routing under heavy pressure.
 
-=== Usability testing
+=== Usability and Accessibility testing
 Usability testing evaluates the degree to which the system can be used by its target professional profiles efficiently, without unnecessary friction, and without requiring prior knowledge of its internal structure. Its objective is to identify interaction patterns, navigability issues, or interface elements that produce confusion, hesitation, or error in realistic usage scenarios.
+
+Accessibility testing is the process of evaluating a website or application to ensure it is usable by people with disabilities. Given the MVP nature of this project, accessibility testing has remained minimal, as the color pallette from the frontend has remained primarily black and white. Despite this, test user behaviour will be analyzed to check whether they have been able to spot low contrast elements without being asked to.
 
 Test participants will be selected from software-related professional profiles, including individuals with experience in software development, requirements engineering, or project management, as these represent the system's primary user groups. Participants with no prior familiarity with IR-Board will be preferred, and no time to explore or familiarize themselves with the system will be provided before the session begins, to avoid familiarity bias influencing the results.
 
@@ -2573,12 +2663,12 @@ The per-step recording sheet is used to track objective measurements and any rem
     table.header(
       [*Step*],
       table.cell(align: left)[*Task*],
-      [*Time*],
+      [*Time (s)*],
       [*Completed*],
       table.cell(align: left)[*Doubts / Issues / Comments*],
     ),
     [1], table.cell(align: left)[Sign in], [], [], [],
-    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [], [], [],
+    [2], table.cell(align: left)[Create project and read dashboard metrics], [], [], [],
     [3], table.cell(align: left)[Add a new stakeholder], [], [], [],
     [4], table.cell(align: left)[Add a new functionality], [], [], [],
     [5], table.cell(align: left)[Create a functional requirement (all fields)], [], [], [],
@@ -2623,7 +2713,6 @@ The session summary sheet is completed by the observer at the end of each sessio
     columns: (2fr, 5fr),
     align: left,
     table.header([*Aspect*], [*Notes*]),
-    [Time to begin first task without prompting], [],
     [Total session duration], [],
     [Number of steps completed without assistance], [],
     [Steps that required the most time], [],
@@ -2659,332 +2748,247 @@ TODO
 = Test Plan Execution //8
 == Unit Testing
 TODO
-== Integration and Acceptance testing
+== Integration and Acceptance testing <usability_testing_execution>
 TODO
-== Usability Testing
-TODO
-=== User 1
-TODO
-#figure(
-  table(
-    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
-    align: center,
-    table.header(
-      [*Step*],
-      table.cell(align: left)[*Task*],
-      [*Time*],
-      [*Completed*],
-      table.cell(align: left)[*Doubts / Issues / Comments*],
+#page(flipped: true)[
+  == Usability & Accessibility Testing
+  The results documented from the four rounds of usability testing are recorded below. As all users completed successfully the scenarios, the "completed" column was removed from the table.
+  
+  Similarly, the errors are documented upon each step, and every user was quite confident on their actions and feedback until the identity slug step. Therefore, their appropiate rows have been removed from the session summary.
+  
+  === User 1
+  #figure(
+    table(
+      columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
+      align: center,
+      table.header(
+        [*Step*],table.cell(align: left)[*Task*],[*Time*],table.cell(align: left)[*Doubts / Issues / Comments*],
+      ),
+      [1], table.cell(align: left)[Sign in], [3s], [],
+      [2],table.cell(align: left)[Create project and read dashboard metrics],[2s],[Expected the project card to be clickable, not just the "more..." button on the bottom.],
+      [3], table.cell(align: left)[Add a new stakeholder], [14s], [Did not understand the states elements could be in.],
+      [4], table.cell(align: left)[Add a new functionality], [31s], [Struggled to see the functionalities a bit. expecting functionalities to be with the three links above (stakeholders, nfrs and documents).],
+      [5],table.cell(align: left)[Create a functional requirement (all fields)],[35s],[almost didnt put description but was forced to by the system],
+      [6], table.cell(align: left)[Link requirement to stakeholder], [10s], [-],
+      [7],table.cell(align: left)[Navigate to stakeholder from requirement detail],[3s],[Correctly used the shortcut from the detail view],
+      [8],table.cell(align: left)[Create a non-functional requirement],[26s],[Did not understand nfr numerical values until detail view.],
+      [9],table.cell(align: left)[Upload document and link to requirement],[65s],[Attempted to link it from document detail view.],
+      [10],table.cell(align: left)[Approve all pending requirements],[20s],[As only 3 requirements existed, (he created a child) he did each manually.],
+      [11],table.cell(align: left)[Search for entity by slug],[200s],[Did not understand what a slug was, had not seen it due to low contrast.],
+      [12],table.cell(align: left)[Deactivate requirement and verify state],[114s],[Looked at the child's state badge instead of the current one, and did not see the filters at all. Found unexpected that the disabled requirements were hidden by default],
+      [13], table.cell(align: left)[Log out], [4s], [],
     ),
-    [1], table.cell(align: left)[Sign in], [3.0s], [], [],
-    [2],
-    table.cell(align: left)[Navigate to project and read dashboard metrics],
-    [2s],
-    [],
-    [not clicl on the card to enter confused he],
-    [3], table.cell(align: left)[Add a new stakeholder], [14], [], [dudas con estados "quien lo tiene que aprovar"],
-    [4], table.cell(align: left)[Add a new functionality], [31], [], [a bit struggle to find where],
-    [5],
-    table.cell(align: left)[Create a functional requirement (all fields)],
-    [35],
-    [],
-    [almost didnt put description but was forced to by the system],
-    [6], table.cell(align: left)[Link requirement to stakeholder], [10s], [], [],
-    [7],
-    table.cell(align: left)[Navigate to stakeholder from requirement detail],
-    [3],
-    [],
-    [correctly pressed the shortcut],
-    [8],
-    table.cell(align: left)[Create a non-functional requirement],
-    [26],
-    [],
-    [did not understand threshold and actual values],
-    [9],
-    table.cell(align: left)[Upload document and link to requirement],
-    [65s],
-    [],
-    [first looked at the document detail view first],
-    [10],
-    table.cell(align: left)[Approve all pending requirements],
-    [20],
-    [],
-    [manually pressed each due to only being 3 (he created a child).],
-    [11],
-    table.cell(align: left)[Search for entity by slug],
-    [200s],
-    [lack of partial search, slug unknown, not a lot of contrast between the slug and background],
-    [searched online what an entity slug was, not very obvious what one is. not visible],
-    [12],
-    table.cell(align: left)[Deactivate requirement and verify state],
-    [114s],
-    [did not see the filters at all],
-    [looked at the child's badge instead of the requirement's badge, found unexpected that the requirement dissapeared],
-    [13], table.cell(align: left)[Log out], [4s], [], [],
-  ),
-  caption: "User 1 - per-step recording sheet",
-)
-#figure(
-  table(
-    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
-    align: center,
-    table.header(
-      table.cell(align: left)[*Aspect observed*],
-      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    caption: "User 1 - per-step recording sheet",
+  )
+  #figure(
+    table(
+      columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+      align: center,
+      table.header(
+        table.cell(align: left)[*Aspect observed*],
+        [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+      ),
+      table.cell(align: left)[Does the user know where they are within the application?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Is navigation through the application intuitive?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Does the user know how to authenticate and log out?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Does each action produce the expected result?], [], [], table.cell("",fill:black.lighten(20%)), [],
+      table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], table.cell("",fill:black.lighten(20%)), [],
+      table.cell(align: left)[Is the requirement creation form easy to complete?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], table.cell("",fill:black.lighten(20%)), [], [],
     ),
-    table.cell(align: left)[Does the user know where they are within the application?], [], [X], [], [],
-    table.cell(align: left)[Is navigation through the application intuitive?], [], [X], [], [],
-    table.cell(align: left)[Does the user know how to authenticate and log out?], [X], [], [], [],
-    table.cell(align: left)[Does each action produce the expected result?], [], [], [X], [],
-    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [X], [], [],
-    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [X], [],
-    table.cell(align: left)[Is the requirement creation form easy to complete?], [], [X], [], [],
-    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [X], [], [],
-  ),
-  caption: "User 1 - general observation sheet",
-)
-#figure(
-  table(
-    columns: (2fr, 5fr),
-    align: left,
-    table.header([*Aspect*], [*Notes*]),
-    [Time to begin first task without prompting], [],
-    [Total session duration], [],
-    [Number of steps completed without assistance], [],
-    [Steps that required the most time], [],
-    [Recurring points of hesitation or confusion], [],
-    [Errors committed and recovery behavior], [],
-    [Overall impression of participant confidence], [],
-    [Any additional free-form observations], [no sabia el tamaño total de la aplicación],
-  ),
-  caption: "User 1 - session summary sheet",
-)
-=== User 2
-#figure(
-  table(
-    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
-    align: center,
-    table.header(
-      [*Step*],
-      table.cell(align: left)[*Task*],
-      [*Time*],
-      [*Completed*],
-      table.cell(align: left)[*Doubts / Issues / Comments*],
+    caption: "User 1 - general observation sheet",
+  )
+  #figure(
+    table(
+      columns: (2fr, 5fr),
+      align: left,
+      table.header([*Aspect*], [*Notes*]),
+      [Total session duration], [45 minutes, as issues with deployment caused the testing to be done with a LAN VPN],
+      [Number of steps completed without assistance], [All],
+      [Steps that required the most time], [The identity slug searching and deactivation. Clearly, the application does not explain correctly what one is.],
+      [Any additional free-form observations], [The user commented how he did know where he was always, but could not grasp the actual size of the application.],
     ),
-    [1], table.cell(align: left)[Sign in], [5s], [], [],
-    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [35s], [], [],
-    [3], table.cell(align: left)[Add a new stakeholder], [17s], [], [],
-    [4],
-    table.cell(align: left)[Add a new functionality],
-    [29s],
-    [],
-    [looks for the functionality link where the other three are],
-    [5],
-    table.cell(align: left)[Create a functional requirement (all fields)],
-    [44s],
-    [],
-    [plays around with the move requirement.],
-    [6], table.cell(align: left)[Link requirement to stakeholder], [12s], [], [],
-    [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [2s], [], [],
-    [8],
-    table.cell(align: left)[Create a non-functional requirement],
-    [31s],
-    [],
-    [does not realize that he does not need to populate the threshold values],
-    [9],
-    table.cell(align: left)[Upload document and link to requirement],
-    [49s],
-    [],
-    [dislikes that the linking is only allowed from the requirement],
-    [10], table.cell(align: left)[Approve all pending requirements], [13s], [], [Found the approve all button],
-    [11],
-    table.cell(align: left)[Search for entity by slug],
-    [71s],
-    [],
-    [Found counterintuitive that enter key does not goto the found entity.],
-    [12],
-    table.cell(align: left)[Deactivate requirement and verify state],
-    [57s],
-    [],
-    [mistook the functionality deactivation for requirement],
-    [13], table.cell(align: left)[Log out], [12s], [], [],
-  ),
-  caption: "User 2 - per-step recording sheet",
-)
-#figure(
-  table(
-    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
-    align: center,
-    table.header(
-      table.cell(align: left)[*Aspect observed*],
-      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    caption: "User 1 - session summary sheet",
+  )
+  === User 2
+  #figure(
+    table(
+      columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
+      align: center,
+      table.header(
+        [*Step*],table.cell(align: left)[*Task*],[*Time*],table.cell(align: left)[*Doubts / Issues / Comments*],
+      ),
+      [1], table.cell(align: left)[Sign in], [5s], [-],
+      [2], table.cell(align: left)[Create project and read dashboard metrics], [35s], [-],
+      [3], table.cell(align: left)[Add a new stakeholder], [17s], [-],
+      [4], table.cell(align: left)[Add a new functionality],[29s],[Expected a functionality link with the other top three.],
+      [5], table.cell(align: left)[Create a functional requirement (all fields)],[44s],[Complemented the requirement nesting and reordering.],
+      [6], table.cell(align: left)[Link requirement to stakeholder], [12s], [-],
+      [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [2s], [-],
+      [8],table.cell(align: left)[Create a non-functional requirement],[31s],[Thought he had to change the numerical values on the form.],
+      [9],table.cell(align: left)[Upload document and link to requirement],[49s],[Dislikes the linking being only allowed from the requirement.],
+      [10], table.cell(align: left)[Approve all pending requirements], [13s], [Used the approve all helper button.],
+      [11],table.cell(align: left)[Search for entity by slug],[71s],[Found counterintuitive that enter key does not goto the found entity.],
+      [12],table.cell(align: left)[Deactivate requirement and verify state],[57s],[Mistook the functionality deactivation for requirement.],
+      [13], table.cell(align: left)[Log out], [12s], [-],
     ),
-    table.cell(align: left)[Does the user know where they are within the application?], [], [X], [], [],
-    table.cell(align: left)[Is navigation through the application intuitive?], [X], [], [], [],
-    table.cell(align: left)[Does the user know how to authenticate and log out?], [X], [], [], [],
-    table.cell(align: left)[Does each action produce the expected result?], [X], [], [], [],
-    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [X], [],
-    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], [X],
-    table.cell(align: left)[Is the requirement creation form easy to complete?], [X], [], [], [],
-    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [X], [], [], [],
-  ),
-  caption: "User 2 - general observation sheet",
-)
-#figure(
-  table(
-    columns: (2fr, 5fr),
-    align: left,
-    table.header([*Aspect*], [*Notes*]),
-    [Time to begin first task without prompting], [],
-    [Total session duration], [],
-    [Number of steps completed without assistance], [],
-    [Steps that required the most time], [],
-    [Recurring points of hesitation or confusion], [],
-    [Errors committed and recovery behavior], [],
-    [Overall impression of participant confidence], [],
-    [Any additional free-form observations], [entity slug is not explained what is anywhere.],
-  ),
-  caption: "User 2 - session summary sheet",
-)
-=== User 3
-TODO
-#figure(
-  table(
-    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
-    align: center,
-    table.header(
-      [*Step*],
-      table.cell(align: left)[*Task*],
-      [*Time*],
-      [*Completed*],
-      table.cell(align: left)[*Doubts / Issues / Comments*],
+    caption: "User 2 - per-step recording sheet",
+  )
+  #figure(
+    table(
+      columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+      align: center,
+      table.header(
+        table.cell(align: left)[*Aspect observed*],
+        [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+      ),
+      table.cell(align: left)[Does the user know where they are within the application?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Is navigation through the application intuitive?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Does the user know how to authenticate and log out?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Does each action produce the expected result?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], table.cell("",fill:black.lighten(20%)), [],
+      table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], table.cell("",fill:black.lighten(20%)),
+      table.cell(align: left)[Is the requirement creation form easy to complete?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], table.cell("",fill:black.lighten(20%)), [], [], [],
     ),
-    [1], table.cell(align: left)[Sign in], [10s], [], [],
-    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [12s], [], [],
-    [3], table.cell(align: left)[Add a new stakeholder], [10s], [], [],
-    [4], table.cell(align: left)[Add a new functionality], [25s], [], [Did not inmediately see functionalities],
-    [5],
-    table.cell(align: left)[Create a functional requirement (all fields)],
-    [61s],
-    [],
-    [Did not knew where to create the fr whithin the functionality, and did not recognise FR as Functional Requirement],
-    [6], table.cell(align: left)[Link requirement to stakeholder], [13s], [], [],
-    [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [1s], [], [],
-    [8],
-    table.cell(align: left)[Create a non-functional requirement],
-    [32s],
-    [],
-    [dislikes acronyms instead of full text],
-    [9], table.cell(align: left)[Upload document and link to requirement], [31s], [], [],
-    [10], table.cell(align: left)[Approve all pending requirements], [17s], [], [Used the approve all button],
-    [11], table.cell(align: left)[Search for entity by slug], [117s], [], [Missed it completely],
-    [12], table.cell(align: left)[Deactivate requirement and verify state], [13s], [], [],
-    [13], table.cell(align: left)[Log out], [17s], [], [Clicked the user image and went into an invalid route.],
-  ),
-  caption: "User 3 - per-step recording sheet",
-)
-#figure(
-  table(
-    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
-    align: center,
-    table.header(
-      table.cell(align: left)[*Aspect observed*],
-      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    caption: "User 2 - general observation sheet",
+  )
+  #figure(
+    table(
+      columns: (2fr, 5fr),
+      align: left,
+      table.header([*Aspect*], [*Notes*]),
+      [Total session duration], [20 minutes, the necessary setup time for the LAN VPN. Quicker due to prior experience of the observer with the setup.],
+      [Number of steps completed without assistance], [All],
+      [Steps that required the most time], [Mainly the slug searching, the requirement deactivation and the entity linking steps.],
+      [Any additional free-form observations], [entity slug is not explained what is anywhere.],
     ),
-    table.cell(align: left)[Does the user know where they are within the application?], [X], [], [], [],
-    table.cell(align: left)[Is navigation through the application intuitive?], [], [X], [], [],
-    table.cell(align: left)[Does the user know how to authenticate and log out?], [], [X], [], [],
-    table.cell(align: left)[Does each action produce the expected result?], [X], [], [], [],
-    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], [X],
-    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [X], [],
-    table.cell(align: left)[Is the requirement creation form easy to complete?], [X], [], [], [],
-    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], [X], [],
-  ),
-  caption: "User 3 - general observation sheet",
-)
-#figure(
-  table(
-    columns: (2fr, 5fr),
-    align: left,
-    table.header([*Aspect*], [*Notes*]),
-    [Time to begin first task without prompting], [],
-    [Total session duration], [],
-    [Number of steps completed without assistance], [],
-    [Steps that required the most time], [],
-    [Recurring points of hesitation or confusion], [],
-    [Errors committed and recovery behavior], [],
-    [Overall impression of participant confidence], [],
-    [Any additional free-form observations],
-    [Finds unintuitive the collapsible nav bar, suggested that the badges should be besides the slug or right below the name],
-  ),
-  caption: "User 3 - session summary sheet",
-)
-=== User 4
-TODO
-#figure(
-  table(
-    columns: (0.4fr, 2.5fr, 1fr, 1fr, 4fr),
-    align: center,
-    table.header(
-      [*Step*],
-      table.cell(align: left)[*Task*],
-      [*Time*],
-      [*Completed*],
-      table.cell(align: left)[*Doubts / Issues / Comments*],
+    caption: "User 2 - session summary sheet",
+  )
+  === User 3
+  #figure(
+    table(
+      columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
+      align: center,
+      table.header(
+        [*Step*],table.cell(align: left)[*Task*],[*Time*],table.cell(align: left)[*Doubts / Issues / Comments*],
+      ),
+      [1], table.cell(align: left)[Sign in], [10s], [-],
+      [2], table.cell(align: left)[Create and read dashboard metrics], [12s], [-],
+      [3], table.cell(align: left)[Add a new stakeholder], [10s], [-],
+      [4], table.cell(align: left)[Add a new functionality], [25s], [Expected a functionality link with the other top three.],
+      [5],table.cell(align: left)[Create a functional requirement (all fields)],[61s],[Did not knew where to create the fr whithin the functionality, and did not recognise FR as Functional Requirement],
+      [6], table.cell(align: left)[Link requirement to stakeholder], [13s], [-],
+      [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [1s], [-],
+      [8],table.cell(align: left)[Create a non-functional requirement],[32s],[Disliked the use of acronyms instead of full text on buttons.],
+      [9], table.cell(align: left)[Upload document and link to requirement], [31s], [-],
+      [10], table.cell(align: left)[Approve all pending requirements], [17s], [Used the approve all helper button],
+      [11], table.cell(align: left)[Search for entity by slug], [117s], [Missed the slug completely on every detail view. Attempted partial search, and due to the big screen, could not see the navigation bar.],
+      [12], table.cell(align: left)[Deactivate requirement and verify state], [13s], [-],
+      [13], table.cell(align: left)[Log out], [17s], [Clicked the user image and went into an invalid route.],
     ),
-    [1], table.cell(align: left)[Sign in], [], [], [],
-    [2], table.cell(align: left)[Navigate to project and read dashboard metrics], [], [], [],
-    [3], table.cell(align: left)[Add a new stakeholder], [], [], [],
-    [4], table.cell(align: left)[Add a new functionality], [], [], [],
-    [5], table.cell(align: left)[Create a functional requirement (all fields)], [], [], [],
-    [6], table.cell(align: left)[Link requirement to stakeholder], [], [], [],
-    [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [], [], [],
-    [8], table.cell(align: left)[Create a non-functional requirement], [], [], [],
-    [9], table.cell(align: left)[Upload document and link to requirement], [], [], [],
-    [10], table.cell(align: left)[Approve all pending requirements], [], [], [],
-    [11], table.cell(align: left)[Search for entity by slug], [], [], [],
-    [12], table.cell(align: left)[Deactivate requirement and verify state], [], [], [],
-    [13], table.cell(align: left)[Log out], [], [], [],
-  ),
-  caption: "User 4 - per-step recording sheet",
-)
-#figure(
-  table(
-    columns: (3fr, 1fr, 1fr, 1fr, 1fr),
-    align: center,
-    table.header(
-      table.cell(align: left)[*Aspect observed*],
-      [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+    caption: "User 3 - per-step recording sheet",
+  )
+  #figure(
+    table(
+      columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+      align: center,
+      table.header(
+        table.cell(align: left)[*Aspect observed*],
+        [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+      ),
+      table.cell(align: left)[Does the user know where they are within the application?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Is navigation through the application intuitive?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Does the user know how to authenticate and log out?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Does each action produce the expected result?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], table.cell("",fill:black.lighten(20%)),
+      table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], table.cell("",fill:black.lighten(20%)), [],
+      table.cell(align: left)[Is the requirement creation form easy to complete?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], table.cell("",fill:black.lighten(20%)), [],
     ),
-    table.cell(align: left)[Does the user know where they are within the application?], [], [], [], [],
-    table.cell(align: left)[Is navigation through the application intuitive?], [], [], [], [],
-    table.cell(align: left)[Does the user know how to authenticate and log out?], [], [], [], [],
-    table.cell(align: left)[Does each action produce the expected result?], [], [], [], [],
-    table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], [],
-    table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], [],
-    table.cell(align: left)[Is the requirement creation form easy to complete?], [], [], [], [],
-    table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], [], [],
-  ),
-  caption: "User 4 - general observation sheet",
-)
-#figure(
-  table(
-    columns: (2fr, 5fr),
-    align: left,
-    table.header([*Aspect*], [*Notes*]),
-    [Time to begin first task without prompting], [],
-    [Total session duration], [],
-    [Number of steps completed without assistance], [],
-    [Steps that required the most time], [],
-    [Recurring points of hesitation or confusion], [],
-    [Errors committed and recovery behavior], [],
-    [Overall impression of participant confidence], [],
-    [Any additional free-form observations], [],
-  ),
-  caption: "User 4 - session summary sheet",
-)
-== Accessibility Testing
-TODO
+    caption: "User 3 - general observation sheet",
+  )
+  #figure(
+    table(
+      columns: (2fr, 5fr),
+      align: left,
+      table.header([*Aspect*], [*Notes*]),
+      [Total session duration], [15 minutes.],
+      [Number of steps completed without assistance], [Every one except the slug search, as several reminders of the task were needed; reminding him to search on the nav bar with an entity's identity slug to nudge away from the project search and to search for an identifier that was not the dynamic identifier but rather something common to all project elements.],
+      [Steps that required the most time], [The slug search and functional requirement creation step.],
+      [Any additional free-form observations], [Finds unintuitive the collapsible nav bar, suggested that the badges should be besides the slug or right below the name],
+    ),
+    caption: "User 3 - session summary sheet",
+  )
+  === User 4
+  TODO
+  #figure(
+    table(
+      columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
+      align: center,
+      table.header(
+        [*Step*],table.cell(align: left)[*Task*],[*Time*],table.cell(align: left)[*Doubts / Issues / Comments*],
+      ),
+      [1], table.cell(align: left)[Sign in], [], [],
+      [2], table.cell(align: left)[Create and read dashboard metrics], [], [],
+      [3], table.cell(align: left)[Add a new stakeholder], [], [],
+      [4], table.cell(align: left)[Add a new functionality], [], [],
+      [5], table.cell(align: left)[Create a functional requirement (all fields)], [], [],
+      [6], table.cell(align: left)[Link requirement to stakeholder], [], [],
+      [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [], [],
+      [8], table.cell(align: left)[Create a non-functional requirement], [], [],
+      [9], table.cell(align: left)[Upload document and link to requirement], [], [],
+      [10], table.cell(align: left)[Approve all pending requirements], [], [],
+      [11], table.cell(align: left)[Search for entity by slug], [], [],
+      [12], table.cell(align: left)[Deactivate requirement and verify state], [], [],
+      [13], table.cell(align: left)[Log out], [], [],
+    ),
+    caption: "User 4 - per-step recording sheet",
+  )
+  #figure(
+    table(
+      columns: (3fr, 1fr, 1fr, 1fr, 1fr),
+      align: center,
+      table.header(
+        table.cell(align: left)[*Aspect observed*],
+        [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
+      ),
+      table.cell(align: left)[Does the user know where they are within the application?], [], [], [], [],
+      table.cell(align: left)[Is navigation through the application intuitive?], [], [], [], [],
+      table.cell(align: left)[Does the user know how to authenticate and log out?], [], [], [], [],
+      table.cell(align: left)[Does each action produce the expected result?], [], [], [], [],
+      table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], [],
+      table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], [],
+      table.cell(align: left)[Is the requirement creation form easy to complete?], [], [], [], [],
+      table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], [], [],
+    ),
+    caption: "User 4 - general observation sheet",
+  )
+  #figure(
+    table(
+      columns: (2fr, 5fr),
+      align: left,
+      table.header([*Aspect*], [*Notes*]),
+      [Total session duration], [],
+      [Number of steps completed without assistance], [],
+      [Steps that required the most time], [],
+      [Any additional free-form observations], [],
+    ),
+    caption: "User 4 - session summary sheet",
+  )
+  === Conclusions
+  Several issues arise from the usability and accessibility testing, from which we can obtain the following actions to mitigate their impact:
+  #figure(table(
+    columns:(1fr,2fr),
+    table.header([*Issue found*],[*Corrective measure*]),
+    [Low contrast on entity slug and project's functionality section labels],[Increase contrast on each text, as well as correctly label the slug as "identity slug"],
+    [Unexpected placement of badges on detail view makes it easier for the user to miss them],[Place the badges on the same row as the entity slug, to be right below the name and with the slug to its right, to be naturally discovered by following the elements.],
+    [Lack of understanding for nfr numerical values and entity slug's purpose],[Add a ? symbol that upon hover shows a tooltip explaining what each is.],
+    [Image placeholder on the nav bar's user tab redirects to invalid/not implemented route],[As a user modification view for non-admin users is not within scope (changing image and user details by yourself), the redirection logic is to be commented out.],
+    [Entity slug search does not work using the enter key],[Add keybindings and keyboard navigation to future work.],
+  ),caption:"Usability testing's issues and corrective measures")
+]
 == Load Testing
 TODO
 = System manuals //9
@@ -3188,7 +3192,7 @@ As with the initial planning, this final schedule should not be read as a litera
 
       [9.7], [Test search and filtering], [3 hrs], [3 hrs], [Junior software engineer], [Fri 06/02/26], [Fri 06/02/26],
       [9.8],
-      [Usability and accesibility testing],
+      [Usability and accessibility testing],
       [3 hrs],
       [3 hrs],
       [Junior software engineer],
@@ -4019,7 +4023,7 @@ As with the initial budget, the client-facing final budget includes only directl
     [], [005], [Test document management], [200,17 €], [],
     [], [006], [Test modifying concurrency system], [250,21 €], [],
     [], [007], [Test search and filtering], [150,13 €], [],
-    [], [008], [Usability and accesibility testing], [150,13 €], [],
+    [], [008], [Usability and accessibility testing], [150,13 €], [],
     [], [009], [Load testing], [110,67 €], [],
     [07], [], [Documentation], [], [1.607,64 €],
     [], [001], [Document declaration of originality, abstract and keywords], [61,27 €], [],
@@ -4052,6 +4056,13 @@ As with the initial budget, the client-facing final budget includes only directl
 == Project Closure Analysis
 TODO
 = Conclusions and Future Work <conclusions_future_work> //11
+== Keyboard navigation and sound feedback
+During the #link(<usability_testing_execution>)[usability and accessibility testing], it was observed that the system would benefit from keyboard-based navigation and shortcut support, both to improve general workflow efficiency and to reduce reliance on a pointing device for users who prefer or require keyboard-driven interaction.
+
+Additionally, the addition of subtle sound feedback tied to key operations such as saving, approving, or locking an entity could reinforce the sense of action completion and improve the overall user experience. *SoundCN* is proposed as a candidate library for this addition.
+
+Both improvements are outside the scope of this project and are proposed as future extensions.
+
 == Extended E2E scenario coverage
 The E2E test suite implemented within the scope of this project covers the core requirements engineering lifecycle and the authentication flow, as documented in the test plan specification. Several scenarios identified during planning were not implemented due to time constraints and are proposed here as future work. It should be noted that all of the areas described below have been manually validated during development and are confirmed to work correctly in the deployed system; the absence of automated coverage represents a gap in regression safety rather than unverified functionality.
 
@@ -4120,6 +4131,8 @@ As future work, this export capability should be implemented, most likely by com
 - [1] “Welcome to Ory! | Ory,” Ory.com, Oct. 15, 2025. https://www.ory.com/docs/ (accessed Mar. 07, 2026).
 - [2] “Configuring Vite,” vitejs, 2025. https://vite.dev/config/
 - [3] “Typst Documentation,” Typst, 2024. https://typst.app/docs/
+- [4] “hexagonal-architecture.” https://alistair.cockburn.us/hexagonal-architecture <reference_4>
+- [5] R. C. Martin, Clean architecture: A Craftsman’s Guide to Software Structure and Design. Pearson Professional, 2018. <reference_5>
 = Appendices <appendices>
 #page(flipped: true)[
   == Budget
@@ -4906,7 +4919,7 @@ As future work, this export capability should be implemented, most likely by com
       [], [005], [Test document management], [150,40 €], [],
       [], [006], [Test modifying concurrency system], [100,26 €], [],
       [], [007], [Test search and filtering], [150,40 €], [],
-      [], [008], [Usability and accesibility testing], [100,26 €], [],
+      [], [008], [Usability and accessibility testing], [100,26 €], [],
       [], [009], [Load testing], [110,85 €], [],
       [07], [], [Documentation], [], [1.729,94 €],
       [], [001], [Document declaration of originality, abstract and keywords], [61,36 €], [],
@@ -5014,4 +5027,3 @@ The exception is the logging and dashboarding portion of the observability stack
 The same network-copyleft reasoning applies to MinIO, used for document object storage: it is deployed unmodified and not redistributed, so no source-disclosure obligation is triggered. Independently of licensing, MinIO's open-source edition has been in maintenance mode since December 2025, following the earlier removal of administrative features from its Community Edition console. This is noted here as a dependency-maturity concern rather than a licensing issue; its implications for the project are discussed as a future extension in #link(<conclusions_future_work>)[Conclusions and Future Work].
 
 No component used by the project carries licensing terms that would prevent its use in an academic deliverable, and none requires the payment of licensing fees for self-hosted deployment.
-== Supplementary Material

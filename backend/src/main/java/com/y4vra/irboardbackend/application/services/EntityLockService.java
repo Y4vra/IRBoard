@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class EntityLockService {
 
-    private static final int EXPIRATION_HOURS = 12;
+    private static final int EXPIRATION_HOURS = 1;
 
     private final EntityLockRepository lockRepository;
     private final PermissionService permissionService;
