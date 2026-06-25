@@ -1805,7 +1805,7 @@ A user is either an admin or not. Due to zero-trust, unless he is added as proje
 )
 These permissions overlap, in case a user is linked to a project in several ways. In that situation, due to this overlap, the most high level permission prevails.
 
-For example, if a user is listed as requirement engineer and stakeholder in the same functionality, the user will be able to view (both permissions), and add, modify, disable and all other requirement engineer actions as well.
+For example, if a user is listed as requirement engineer and stakeholder in the same functionality, the user will be able to view (both permissions), and add, modify, disable and all other requirement engineer actions as well. 
 
 == Requirements Analysis
 Here are presented some diagrams that helped during the requirement edduction process.
@@ -1830,6 +1830,9 @@ It's a complex state to ease development, as the pending review can be seen as a
 #strong[Deactivated] - A requirement entity has been deactivated for some reason, be cancelled or an error, and does not count towards the metrics of the project.
 
 #strong[Removed] - A requirement entity that has been deemed innecessary to the project. It is hidden from view, archived.
+
+== signup flows
+TODO
 
 == System Analysis
 === Class Analysis
@@ -2452,6 +2455,9 @@ TODO
 
 #strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value isActive is also delegated to the ReBAC system, as it represents a user-to-system relationship.
 
+#strong[EntityLock] - This class models the concurrent mutex operations of the system. Whenever someone attempts to modify an entity, the entity lock service checks whether one entity lock object already exists and whether it is expired if it is present. The objects are linked to the user and have information of the entity locked to ensure it can correctly be retrieved and cancelled if the user requests another lock on a different entity.
+
+#strong[Project] - The base container object, 
 TODO add all remaining classes
 
 == Database Design
@@ -2729,6 +2735,14 @@ Results will be analyzed across participants to identify recurring friction poin
 TODO
 == Programming languages used
 TODO
+=== Yaml
+TODO
+=== TypeScript
+TODO
+=== Java
+TODO
+=== Kratos and Keto 
+TODO
 == Tools and Software used
 TODO
 === Visual Studio Code
@@ -2740,6 +2754,12 @@ TODO
 === Git & Github
 TODO
 === PlantUML
+TODO
+=== Gatling
+TODO
+=== Typst
+TODO
+=== MS Excel and MS Project
 TODO
 == Issues encountered
 TODO
@@ -2920,7 +2940,6 @@ TODO
     caption: "User 3 - session summary sheet",
   )
   === User 4
-  TODO
   #figure(
     table(
       columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
@@ -2928,19 +2947,19 @@ TODO
       table.header(
         [*Step*],table.cell(align: left)[*Task*],[*Time*],table.cell(align: left)[*Doubts / Issues / Comments*],
       ),
-      [1], table.cell(align: left)[Sign in], [], [],
-      [2], table.cell(align: left)[Create and read dashboard metrics], [], [],
-      [3], table.cell(align: left)[Add a new stakeholder], [], [],
-      [4], table.cell(align: left)[Add a new functionality], [], [],
-      [5], table.cell(align: left)[Create a functional requirement (all fields)], [], [],
-      [6], table.cell(align: left)[Link requirement to stakeholder], [], [],
-      [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [], [],
-      [8], table.cell(align: left)[Create a non-functional requirement], [], [],
-      [9], table.cell(align: left)[Upload document and link to requirement], [], [],
-      [10], table.cell(align: left)[Approve all pending requirements], [], [],
-      [11], table.cell(align: left)[Search for entity by slug], [], [],
-      [12], table.cell(align: left)[Deactivate requirement and verify state], [], [],
-      [13], table.cell(align: left)[Log out], [], [],
+      [1], table.cell(align: left)[Sign in], [3s], [-],
+      [2], table.cell(align: left)[Create and read dashboard metrics], [17s], [Attempted to enter the project by clicking the card.],
+      [3], table.cell(align: left)[Add a new stakeholder], [6s], [-],
+      [4], table.cell(align: left)[Add a new functionality], [16s], [-],
+      [5], table.cell(align: left)[Create a functional requirement (all fields)], [13s], [],
+      [6], table.cell(align: left)[Link requirement to stakeholder], [6s], [-],
+      [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [4s], [Correctly used the shortcut.],
+      [8], table.cell(align: left)[Create a non-functional requirement], [6s], [-],
+      [9], table.cell(align: left)[Upload document and link to requirement], [28s], [Looked for the linking within the document detail view.],
+      [10], table.cell(align: left)[Approve all pending requirements], [4s], [Approved every single requirement as he created them.],
+      [11], table.cell(align: left)[Search for entity by slug], [84s], [Does not know what a slug is. Saw it multiple times but did not know what it was],
+      [12], table.cell(align: left)[Deactivate requirement and verify state], [179s], [Disables it, but does not see the requirement state badge. Is confused due to the requirement dissapearing from the requirements view. Does not see the filter on nfr view.],
+      [13], table.cell(align: left)[Log out], [12s], [Pressed the user icon and navigated to an invalid route.],
     ),
     caption: "User 4 - per-step recording sheet",
   )
@@ -2952,14 +2971,14 @@ TODO
         table.cell(align: left)[*Aspect observed*],
         [*Always*], [*Frequently*], [*Occasionally*], [*Never*],
       ),
-      table.cell(align: left)[Does the user know where they are within the application?], [], [], [], [],
-      table.cell(align: left)[Is navigation through the application intuitive?], [], [], [], [],
-      table.cell(align: left)[Does the user know how to authenticate and log out?], [], [], [], [],
-      table.cell(align: left)[Does each action produce the expected result?], [], [], [], [],
-      table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], [],
-      table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], [], [],
-      table.cell(align: left)[Is the requirement creation form easy to complete?], [], [], [], [],
-      table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], [], [], [],
+      table.cell(align: left)[Does the user know where they are within the application?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Is navigation through the application intuitive?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Does the user know how to authenticate and log out?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Does each action produce the expected result?], [], table.cell("",fill:black.lighten(20%)), [], [],
+      table.cell(align: left)[Does the user find the NavBar helpful for orientation?], [], [], [], table.cell("",fill:black.lighten(20%)),
+      table.cell(align: left)[Does the user feel lost at any point during the session?], [], [], table.cell("",fill:black.lighten(20%)), [],
+      table.cell(align: left)[Is the requirement creation form easy to complete?], table.cell("",fill:black.lighten(20%)), [], [], [],
+      table.cell(align: left)[Are state labels and lifecycle transitions clearly communicated?], [], table.cell("",fill:black.lighten(20%)), [], [],
     ),
     caption: "User 4 - general observation sheet",
   )
@@ -2968,10 +2987,10 @@ TODO
       columns: (2fr, 5fr),
       align: left,
       table.header([*Aspect*], [*Notes*]),
-      [Total session duration], [],
-      [Number of steps completed without assistance], [],
-      [Steps that required the most time], [],
-      [Any additional free-form observations], [],
+      [Total session duration], [20 minutes between LAN VPN setup and actual testing.],
+      [Number of steps completed without assistance], [11, all but the slug and deactivation.],
+      [Steps that required the most time], [Entity slug searching and requirement deactivation due to low contrast.],
+      [Any additional free-form observations], [-],
     ),
     caption: "User 4 - session summary sheet",
   )
@@ -2981,6 +3000,7 @@ TODO
     columns:(1fr,2fr),
     table.header([*Issue found*],[*Corrective measure*]),
     [Low contrast on entity slug and project's functionality section labels],[Increase contrast on each text, as well as correctly label the slug as "identity slug"],
+    [Unexpected placement of disabled filter on nfr view],[Move the filter to a similar position as it is already done on functionality view],
     [Unexpected placement of badges on detail view makes it easier for the user to miss them],[Place the badges on the same row as the entity slug, to be right below the name and with the slug to its right, to be naturally discovered by following the elements.],
     [Lack of understanding for nfr numerical values and entity slug's purpose],[Add a ? symbol that upon hover shows a tooltip explaining what each is.],
     [Image placeholder on the nav bar's user tab redirects to invalid/not implemented route],[As a user modification view for non-admin users is not within scope (changing image and user details by yourself), the redirection logic is to be commented out.],
@@ -3395,14 +3415,16 @@ In addition, an unplanned factor emerged from the adoption of Typst as the docum
 
 Overall, no risk required additional budget, scope reduction, or contingency activation, and all identified risks and opportunities remained within manageable limits.
 
-== Final Budget
+== Budget execution analysis
+TODO compare executed tests with the initial budget, where I deviated on each part of the budget, the total deviation percentage, etc. Add causes of the deviations.
+
 As noted in the initial budget, the provider's financial reality (the annual employment cost and hourly rates for each professional profile) depends on the structural cost of the organization rather than on the specific execution of this project, and therefore remains unchanged. For this reason it is not repeated here.
 
 What follows is the recalculation of the cost breakdown based on the actual hours invested during execution, together with the resulting update to the client-facing budget.
 
 #page(paper: "a4", flipped: true)[
-  === Final provider cost breakdown
-  This section lays out the final cost structure, recalculated with the actual hours recorded for each task, and the corresponding proportional amount to be diluted.
+  === Final project cost
+  This section lays out the final cost structure, recalculated with the actual hours recorded for each task, and the corresponding proportional amount to be diluted. 
 
   #figure(
     table(
@@ -3958,6 +3980,7 @@ What follows is the recalculation of the cost breakdown based on the actual hour
     caption: "Provider's final budget category 2",
   )
   Which is the same as:
+  TODO add column with % deviation, total deviation and impact on benefit.
   #figure(
     table(
       columns: 3,
@@ -3966,94 +3989,23 @@ What follows is the recalculation of the cost breakdown based on the actual hour
       table.header([*Cat. Num*], [*Category*], [*Total*]),
       [01], [IrBoard development costs breakdown], [13.383,61 €],
       [02], [Other], [172,50 €],
-      [03], [Profit (25%)], [3.389,03 €],
-      table.cell(colspan: 2)[total], [16.945,14 €],
+      table.cell(colspan: 2)[total], [13.556,11 €],
     ),
     caption: "Provider's final budget summary",
   )
   And allows us to compute the following metrics for the client's final budget:
+  - Profit (25%): 3.389,03 €
   - Amount to be increased on the first category: 3.561,53 €
   - Total billable hours: 310,00 hours
   - Dilution increase per billable hour: 11,49 €
 ]
-=== Client's final budget
-As with the initial budget, the client-facing final budget includes only directly billable cost items. No hardware acquisition was required during execution, so, as before, no budget lines needed to be excluded from the dilution.
 
-#figure(
-  table(
-    columns: (0.5fr, 0.5fr, 3fr, 1fr, 1fr),
-    align: left,
-    table.cell(colspan: 5)[*Detailed client final budget*],
-    table.header([*I1*], [*I2*], [*Description*], [*Cost*], [*Total*]),
-    [01], [], [Project management], [], [1.470,53 €],
-    [], [001], [Design project schedule], [122,54 €], [],
-    [], [002], [Generate budget], [122,54 €], [],
-    [], [003], [Periodic project management], [1.225,44 €], [],
-    [02], [], [Analysis/Software Requirements], [], [3.088,62 €],
-    [], [001], [Determine project scope], [53,65 €], [],
-    [], [002], [Review Regulatory Standards], [226,84 €], [],
-    [], [003], [Identify required Documentation], [53,65 €], [],
-    [], [004], [Determine hand-ins for the project], [53,65 €], [],
-    [], [005], [Adapt project template to typst], [107,30 €], [],
-    [], [006], [Analyze existing systems], [340,26 €], [],
-    [], [007], [Draft preliminary software requirements], [1.180,28 €], [],
-    [], [008], [Model auxiliary diagrams], [429,19 €], [],
-    [], [009], [Review software requirements], [214,60 €], [],
-    [], [010], [Modify requirements with feedback], [429,19 €], [],
-    [03], [], [Design], [], [2.970,03 €],
-    [], [001], [Design architecture], [606,44 €], [],
-    [], [002], [Design brand identity], [150,13 €], [],
-    [], [003], [Design project management], [442,69 €], [],
-    [], [004], [Design stakeholder management], [221,35 €], [],
-    [], [005], [Design requirement management], [332,02 €], [],
-    [], [006], [Design user management], [664,04 €], [],
-    [], [007], [Design document management], [553,37 €], [],
-    [04], [], [Set up SonarQube for Quality Assurance], [332,02 €], [332,02 €],
-    [05], [], [Development], [], [5.714,61 €],
-    [], [001], [Set up architecture], [363,86 €], [],
-    [], [002], [Set up development enviroment], [60,64 €], [],
-    [], [003], [Develop code], [5.290,10 €], [],
-    [06], [], [Testing], [], [1.762,05 €],
-    [], [001], [Test project management module], [300,25 €], [],
-    [], [002], [Test stakeholder management module], [200,17 €], [],
-    [], [003], [Test requirement management module], [250,21 €], [],
-    [], [004], [Test user management module], [150,13 €], [],
-    [], [005], [Test document management], [200,17 €], [],
-    [], [006], [Test modifying concurrency system], [250,21 €], [],
-    [], [007], [Test search and filtering], [150,13 €], [],
-    [], [008], [Usability and accessibility testing], [150,13 €], [],
-    [], [009], [Load testing], [110,67 €], [],
-    [07], [], [Documentation], [], [1.607,64 €],
-    [], [001], [Document declaration of originality, abstract and keywords], [61,27 €], [],
-    [], [002], [Document introduction], [61,27 €], [],
-    [], [003], [Document theoretical background], [56,71 €], [],
-    [], [004], [Document feasibility study and alternative analysis], [113,42 €], [],
-    [], [005], [Document Initial project planning and management], [183,82 €], [],
-    [], [006], [Document system analysis], [107,30 €], [],
-    [], [007], [Document system design], [181,93 €], [],
-    [], [008], [Document system implementation], [332,02 €], [],
-    [], [009], [Document test plan execution], [110,67 €], [],
-    [], [010], [Document system manuals], [276,68 €], [],
-    [], [011], [Document final project closure], [61,27 €], [],
-    [], [012], [Document conclusions and future work], [61,27 €], [],
-    table.cell(colspan: 4)[*Total*], [16.945,51 €],
-  ),
-  caption: "Detailed client final budget",
-)
-#figure(
-  table(
-    columns: 3,
-    align: left,
-    table.cell(colspan: 3)[*Simplified client final budget*],
-    table.header([*Cat. Num*], [*Category*], [*Total*]),
-    [01], [IrBoard development costs breakdown], [16.945,51 €],
-    table.cell(colspan: 2)[*total*], [16.945,51 €],
-  ),
-  caption: "Simplified client final budget",
-)
 == Project Closure Analysis
-TODO
+TODO relationships between the deviations and risks above. A global analysis of the closure, final budget, schedule and risks. 
 = Conclusions and Future Work <conclusions_future_work> //11
+== Conclusions
+TODO
+
 == Keyboard navigation and sound feedback
 During the #link(<usability_testing_execution>)[usability and accessibility testing], it was observed that the system would benefit from keyboard-based navigation and shortcut support, both to improve general workflow efficiency and to reduce reliance on a pointing device for users who prefer or require keyboard-driven interaction.
 
@@ -4860,14 +4812,14 @@ As future work, this export capability should be implemented, most likely by com
       table.header([*Cat. Num*], [*Category*], [*Total*]),
       [01], [IrBoard development costs breakdown], [13.026,52 €],
       [02], [Other], [172,50 €],
-      [03], [Profit (25%)], [3.299,75 €],
-      table.cell(colspan: 2)[total], [16.498,77 €],
+      table.cell(colspan: 2)[total], [13.199,02 €],
     ),
     caption: "Initial Budget: Provider's budget summary",
   )
   #figure(
     table(
       columns: 2,
+      [Profit (25%)], [3.299,75 €],
       [Amount to be increased on the first category:], [3.472,25 €],
       [Total billable hours:], [300,00 hours],
       [Dilution increase per billable hour:], [11,58 €],
