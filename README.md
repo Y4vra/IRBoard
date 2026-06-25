@@ -27,7 +27,7 @@ The system utilizes a **microservices** architecture designed for scalability, s
 
 * **Frontend:** React with **Material UI (MUI)** for a professional and adaptive interface.
 * **Backend:** Java with **Spring Boot**, chosen for its robustness and native security.
-* **Database:** **PostgreSQL** with **JSONB** column support, allowing for the rigidity of relational data combined with the flexibility of custom attributes.
+* **Database:** **PostgreSQL** and s3 minio container document storage.
 * **Security:** **Ory** ecosystem (Kratos for identities and sessions; Oathkeeper as the enforcement proxy).
 * **Gateway:** Traefik for network routing.
 * **Observability:** Centralized logging stack with **Loki**, **Promtail**, and visualization in **Grafana**, as well as basic metrics with **Prometheus**.
