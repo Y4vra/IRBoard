@@ -1792,7 +1792,7 @@ As stated previously, the client-facing budget includes only directly billable c
 )
 
 = System Analysis //5
-== Users and Characteristics
+== Users and Characteristics <users_and_characteristics>
 In this project, instead of conventional system-wide roles, the approach I found fit best the nature of requirement management systems was a relation-based role system. Therefore, two sets of user permissions can be defined: system-level permissions and project-level permissions.
 #figure(
   table(columns: 2)[#strong[User]][#strong[Description]][Admin][Has access to project creation, deactivation, purge of removed projects... Still needs a project role to add to or modify a project, even if created by himself. Can link users as project manager to a project.][Basic][A basic user, the default. Has access to his profile management.],
@@ -2734,42 +2734,51 @@ Results will be analyzed across participants to identify recurring friction poin
 == Standards and regulations followed
 TODO
 == Programming languages used
-TODO
+To implement the system, the following programming languages were used:
 === Yaml
-TODO
+YAML (YAML Ain't Markup Language) is a human-readable data serialization format used for configuration files. In the project, YAML was used to define the Docker Compose environment and the configuration files of the Ory services, including Kratos, Keto, and Oathkeeper. These files describe service parameters, dependencies, networks, storage, authentication flows, and authorization-related settings.
+=== Dockerfile
+Dockerfile is a scripting format used to define the steps required to build Docker images. It specifies the base image, installed dependencies, copied files, exposed ports, and execution commands required to package an application into a container.
+=== Shell Script (sh)
+Shell Script is a scripting language used to automate tasks and execute commands through a command-line environment. In the project, shell scripts were used to define and automate deployment operations like inserting the initial admin.
 === TypeScript
-TODO
+TypeScript is a statically typed programming language built on top of JavaScript. It was used for the application frontend, providing type checking, improved maintainability, and safer implementation of the system logic.
 === Java
-TODO
-=== Kratos and Keto 
-TODO
+Java is an object-oriented programming language used for backend development. It was used to implement the server-side application logic and provide the main structure of the application.
+=== JPQL
+JPQL (Java Persistence Query Language) is an object-oriented query language used to retrieve and manipulate data through Java persistence entities instead of directly querying database tables. In the project, JPQL was used to define database queries through the application's entity model, allowing interaction with the persistence layer while maintaining independence from the underlying database structure.
+=== Kratos and Keto, JSON schema and OPL
+JSON Schema is a format used to define and validate the structure of JSON documents. In the project, it was used for defining the expected structure for kratos's identity schema.
+
+Ory Keto uses the Ory Permission Language (OPL)#link(<reference_6>)[[6]] to define authorization rules and relationship-based access control models. The project used OPL to describe the relations between users and resources according to the ReBAC authorization model described on #link(<users_and_characteristics>)[users and roles].
 == Tools and Software used
-TODO
 === Visual Studio Code
-TODO
+Visual Studio Code is a source code editor used for developing and editing the project files. It was mainly used for frontend application development, configuration files, architecture definition and deployment, end-to-end testing, and documentation-related work.
 === Docker Desktop
-TODO
+Docker Desktop is a tool that provides an environment for creating and running Docker containers. It was used to manage the project containers, including the application services and Ory infrastructure components.
 === Intellij IDEA Ultimate
-TODO
+IntelliJ IDEA Ultimate is an integrated development environment for Java development. It was used to implement, debug, test, and manage the backend application code.
 === Git & Github
-TODO
+Git is a version control system used to track changes in the project source code. GitHub is a platform for hosting Git repositories and was used as the main remote repository, version management, and project backup.
 === PlantUML
-TODO
+PlantUML is a tool for generating diagrams from textual descriptions. It was used to create software architecture diagrams, UML diagrams, and other visual documentation elements.
 === Gatling
-TODO
+Gatling is a performance testing tool used to simulate user activity and measure application behaviour under load. It was used to evaluate system performance and response times.
 === Typst
-TODO
+Typst is a modern document preparation system used to create technical documentation. It was used for writing and formatting the project report.
 === MS Excel and MS Project
-TODO
-== Issues encountered
+Microsoft Excel is a spreadsheet application used for data organisation, calculations, and budget-related analysis. Microsoft Project is a project management tool used for scheduling, task planning, and Gantt chart generation.
+== Issues encountered <implementation_issues>
 TODO
 = Test Plan Execution //8
 == Unit Testing
 TODO
 == Integration and Acceptance testing <usability_testing_execution>
 TODO
+== Accessibility testing
+TODO
 #page(flipped: true)[
-  == Usability & Accessibility Testing
+  == Usability Testing
   The results documented from the four rounds of usability testing are recorded below. As all users completed successfully the scenarios, the "completed" column was removed from the table.
   
   Similarly, the errors are documented upon each step, and every user was quite confident on their actions and feedback until the identity slug step. Therefore, their appropiate rows have been removed from the session summary.
@@ -3006,6 +3015,8 @@ TODO
     [Image placeholder on the nav bar's user tab redirects to invalid/not implemented route],[As a user modification view for non-admin users is not within scope (changing image and user details by yourself), the redirection logic is to be commented out.],
     [Entity slug search does not work using the enter key],[Add keybindings and keyboard navigation to future work.],
   ),caption:"Usability testing's issues and corrective measures")
+  === Corrections
+  TODO
 ]
 == Load Testing
 TODO
@@ -3017,6 +3028,8 @@ TODO
 == Developer Guide
 TODO
 = Project Closure //10
+The final project closure analysis combines the schedule execution, budget execution, and risk outcomes as different representations of the same project reality. The deviations observed in the final schedule and budget reflect the actual distribution of effort during execution, while the risk analysis explains the factors that influenced the issues documented on the #link(<implementation_issues>)[implementation issues section], which in turn caused those deviations.
+
 == Final Schedule
 Once the project was carried out, the schedule was updated with the actual effort and duration recorded for each task, replacing the estimates used during initial planning. Unlike the initial planning, this final schedule distinguishes between *Work* (the actual effort invested in each task) and *Duration* (the elapsed time the task occupied on the calendar), since these values no longer coincide for higher-level summary tasks once real start/end dates and partial dedications are taken into account.
 
@@ -3299,6 +3312,25 @@ As with the initial planning, this final schedule should not be read as a litera
     caption: "Development and testing Gantt chart (final)",
   )
   #figure(image("/docs/assets/screenshots/gantt_diagram_final_4.png"), caption: "Documentation Gantt chart (final)")
+  The final schedule was updated with the actual effort and duration recorded for each task, replacing the estimates used during the initial planning. Unlike the initial schedule, the final version distinguishes between Work (the actual effort invested) and Duration (the elapsed calendar time), as these values no longer necessarily coincide once real execution conditions and task distribution are considered.
+
+  The final schedule recorded 310 hours of total work compared with the initial estimate of 300 hours, representing an overall deviation of +3%. However, this global value hides several redistributions between project phases.
+
+  Project management decreased from 30 to 24 hours (-20%). The reduction was mainly concentrated in periodic management activities, where several planned sessions required less effort than originally estimated. The final execution required fewer coordination activities, resulting in a lower overall management workload.
+
+  The analysis phase increased from 54 to 57 hours (+6%). The main deviations occurred in modelling and requirement review activities. The auxiliary diagram modelling task increased from 6 to 8 hours, while software requirements review increased from 2 to 4 hours. These changes reflect a greater effort required to refine and structure the analysis documentation.
+
+  Design increased from 51 to 53 hours (+4%). Most activities remained close to their original estimates, with the largest variation occurring in user management design, which increased from 10 to 12 hours due to the additional complexity involved in defining the required structures and interactions.
+
+  The setup of quality assurance tooling increased from 3 to 6 hours (+100%), representing the largest relative deviation. This additional effort was associated with configuring and integrating the required quality assurance environment.
+
+  Development increased slightly from 105 to 107 hours (+2%). Although the overall phase remained stable, several internal adjustments occurred. Stakeholder management implementation decreased from 10 to 6 hours, and search functionality decreased from 10 to 6 hours. In contrast, user management increased from 6 to 12 hours, and document management increased from 15 to 20 hours. These variations balanced each other, resulting in a development phase close to the original estimate.
+
+  Testing increased from 27 to 35 hours (+29%), making it the largest phase deviation. Most testing activities required additional validation effort compared with the initial estimates. The most notable increase occurred in the concurrency system testing, which grew from 2 to 5 hours. The additional testing effort ensured that the implemented functionality met the expected quality standards.
+
+  Documentation decreased from 30 to 28 hours (-7%). The reduction was mainly concentrated in system design documentation and final closure activities, while the remaining documentation tasks remained aligned with their initial estimates.
+
+  Overall, the final schedule demonstrates that the project maintained strong alignment with the original planning. The deviations were mainly caused by differences in task-level complexity and effort distribution. Increased effort in technical and validation activities was compensated by reductions in management and documentation activities, resulting in a final execution close to the original estimate.
 ]
 
 == Final Risk Report
@@ -3420,7 +3452,7 @@ TODO compare executed tests with the initial budget, where I deviated on each pa
 
 As noted in the initial budget, the provider's financial reality (the annual employment cost and hourly rates for each professional profile) depends on the structural cost of the organization rather than on the specific execution of this project, and therefore remains unchanged. For this reason it is not repeated here.
 
-What follows is the recalculation of the cost breakdown based on the actual hours invested during execution, together with the resulting update to the client-facing budget.
+What follows is the recalculation of the cost breakdown based on the actual hours invested during execution, together with a deviation analysis of each budget line.
 
 #page(paper: "a4", flipped: true)[
   === Final project cost
@@ -3428,9 +3460,9 @@ What follows is the recalculation of the cost breakdown based on the actual hour
 
   #figure(
     table(
-      columns: (0.75fr, 1fr, 0.75fr, 5fr, 2fr, 1.25fr, 1.25fr, 1.75fr, 2fr, 2fr, 2fr),
+      columns: (0.75fr, 1fr, 0.75fr, 5fr, 2fr, 1.25fr, 1.25fr, 1.75fr, 2fr, 2fr, 2fr,1fr),
 
-      table.cell(colspan: 11)[*Category 1: IrBoard development costs breakdown*],
+      table.cell(colspan: 12)[*Category 1: IrBoard development costs breakdown*],
       table.header(
         [*I1*],
         [*I2*],
@@ -3443,567 +3475,147 @@ What follows is the recalculation of the cost breakdown based on the actual hour
         [*Subtotal*],
         [*Subtotal (2)*],
         [*Total*],
+        [*Deviation*]
       ),
 
       // 01 Project Management
-      [01], [], [], [Project management], [], [], [], [], [], [], [1.194,77 €],
+      [01], [], [], [Project management], [], [], [], [], [], [], [1.194,77 €],[-20%],
+      [], [001], [], [Design project schedule], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [99,56 €], [],[0%],
+      [], [002], [], [Generate budget], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [99,56 €], [],[0%],
+      [], [003], [], [Periodic project management], [], [], [], [], [], [995,64 €], [],[-23%],
 
-      [], [001], [], [Design project schedule], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [99,56 €], [],
-      [], [002], [], [Generate budget], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [99,56 €], [],
-
-      [], [003], [], [Periodic project management], [], [], [], [], [], [995,64 €], [],
-
-      [], [], [01], [Periodic project management 1], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],
-      [], [], [02], [Periodic project management 2], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],
-      [], [], [03], [Periodic project management 3], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],
-      [], [], [04], [Periodic project management 4], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],
-      [], [], [05], [Periodic project management 5], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],
-      [], [], [06], [Periodic project management 6], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],
-      [], [], [07], [Periodic project management 7], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],
-      [], [], [08], [Periodic project management 8], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],
-      [], [], [09], [Periodic project management 9], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],
-      [], [], [10], [Periodic project management 10], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],
-      [], [], [11], [Periodic project management 11], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],
-      [], [], [12], [Periodic project management 12], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],
-      [], [], [13], [Periodic project management 13], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],
+      [], [], [01], [Periodic project management 1], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],[-50%],
+      [], [], [02], [Periodic project management 2], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],[0%],
+      [], [], [03], [Periodic project management 3], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],[-50%],
+      [], [], [04], [Periodic project management 4], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],[0%],
+      [], [], [05], [Periodic project management 5], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],[-50%],
+      [], [], [06], [Periodic project management 6], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],[-50%],
+      [], [], [07], [Periodic project management 7], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],[0%],
+      [], [], [08], [Periodic project management 8], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],[0%],
+      [], [], [09], [Periodic project management 9], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],[0%],
+      [], [], [10], [Periodic project management 10], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],[0%],
+      [], [], [11], [Periodic project management 11], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],[-50%],
+      [], [], [12], [Periodic project management 12], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [], [],[-50%],
+      [], [], [13], [Periodic project management 13], [Project manager], [2], [Hours], [49,78 €], [99,56 €], [], [],[0%],
 
       // 02 Analysis
-      [02], [], [], [Analysis / Software Requirements], [], [], [], [], [], [], [2.433,69 €],
-
-      [], [001], [], [Determine project scope], [System Analyst], [1], [Hours], [42,16 €], [42,16 €], [42,16 €], [],
-      [],
-      [002],
-      [],
-      [Review Regulatory Standards],
-      [Technology consultant],
-      [4],
-      [Hours],
-      [45,22 €],
-      [180,88 €],
-      [180,88 €],
-      [],
-      [],
-      [003],
-      [],
-      [Identify required Documentation],
-      [System Analyst],
-      [1],
-      [Hours],
-      [42,16 €],
-      [42,16 €],
-      [42,16 €],
-      [],
-      [],
-      [004],
-      [],
-      [Determine hand-ins for the project],
-      [System Analyst],
-      [1],
-      [Hours],
-      [42,16 €],
-      [42,16 €],
-      [42,16 €],
-      [],
-      [],
-      [005],
-      [],
-      [Adapt project template to Typst],
-      [System Analyst],
-      [2],
-      [Hours],
-      [42,16 €],
-      [84,32 €],
-      [84,32 €],
-      [],
-      [],
-      [006],
-      [],
-      [Analyze existing systems],
-      [Technology consultant],
-      [6],
-      [Hours],
-      [45,22 €],
-      [271,32 €],
-      [271,32 €],
-      [],
-      [],
-      [007],
-      [],
-      [Draft preliminary software requirements],
-      [System Analyst],
-      [22],
-      [Hours],
-      [42,16 €],
-      [927,50 €],
-      [927,50 €],
-      [],
-      [], [008], [], [Model auxiliary diagrams], [System Analyst], [8], [Hours], [42,16 €], [337,27 €], [337,27 €], [],
-      [],
-      [009],
-      [],
-      [Review software requirements],
-      [System Analyst],
-      [4],
-      [Hours],
-      [42,16 €],
-      [168,64 €],
-      [168,64 €],
-      [],
-      [],
-      [010],
-      [],
-      [Modify requirements with feedback],
-      [System Analyst],
-      [8],
-      [Hours],
-      [42,16 €],
-      [337,27 €],
-      [337,27 €],
-      [],
+      [02], [], [], [Analysis / Software Requirements], [], [], [], [], [], [], [2.433,69 €],[5%],
+      [], [001], [], [Determine project scope], [System Analyst], [1], [Hours], [42,16 €], [42,16 €], [42,16 €], [],[0%],
+      [],[002],[],[Review Regulatory Standards],[Technology consultant],[4],[Hours],[45,22 €],[180,88 €],[180,88 €],[],[0%],
+      [],[003],[],[Identify required Documentation],[System Analyst],[1],[Hours],[42,16 €],[42,16 €],[42,16 €],[],[-50%],
+      [],[004],[],[Determine hand-ins for the project],[System Analyst],[1],[Hours],[42,16 €],[42,16 €],[42,16 €],[],[0%],
+      [],[005],[],[Adapt project template to Typst],[System Analyst],[2],[Hours],[42,16 €],[84,32 €],[84,32 €],[],[0%],
+      [],[006],[],[Analyze existing systems],[Technology consultant],[6],[Hours],[45,22 €],[271,32 €],[271,32 €],[],[0%],
+      [],[007],[],[Draft preliminary software requirements],[System Analyst],[22],[Hours],[42,16 €],[927,50 €],[927,50 €],[],[0%],
+      [], [008], [], [Model auxiliary diagrams], [System Analyst], [8], [Hours], [42,16 €], [337,27 €], [337,27 €], [],[33%],
+      [],[009],[],[Review software requirements],[System Analyst],[4],[Hours],[42,16 €],[168,64 €],[168,64 €],[],[100%],
+      [],[010],[],[Modify requirements with feedback],[System Analyst],[8],[Hours],[42,16 €],[337,27 €],[337,27 €],[],[0%],
 
       // 03 Design
-      [03], [], [], [Design], [], [], [], [], [], [], [2.361,06 €],
+      [03], [], [], [Design], [], [], [], [], [], [], [2.361,06 €],[4%],
 
-      [], [001], [], [Design architecture], [Software architect], [10], [Hours], [49,15 €], [491,54 €], [491,54 €], [],
-      [],
-      [002],
-      [],
-      [Design brand identity],
-      [Junior software engineer],
-      [3],
-      [Hours],
-      [38,55 €],
-      [115,66 €],
-      [115,66 €],
-      [],
-      [],
-      [003],
-      [],
-      [Design project management],
-      [Senior software engineer],
-      [8],
-      [Hours],
-      [43,85 €],
-      [350,77 €],
-      [350,77 €],
-      [],
-      [],
-      [004],
-      [],
-      [Design stakeholder management],
-      [Senior software engineer],
-      [4],
-      [Hours],
-      [43,85 €],
-      [175,39 €],
-      [175,39 €],
-      [],
-      [],
-      [005],
-      [],
-      [Design requirement management],
-      [Senior software engineer],
-      [6],
-      [Hours],
-      [43,85 €],
-      [263,08 €],
-      [263,08 €],
-      [],
-      [],
-      [006],
-      [],
-      [Design user management],
-      [Senior software engineer],
-      [12],
-      [Hours],
-      [43,85 €],
-      [526,16 €],
-      [526,16 €],
-      [],
-      [],
-      [007],
-      [],
-      [Design document management],
-      [Senior software engineer],
-      [10],
-      [Hours],
-      [43,85 €],
-      [438,47 €],
-      [438,47 €],
-      [],
+      [], [001], [], [Design architecture], [Software architect], [10], [Hours], [49,15 €], [491,54 €], [491,54 €], [],[0%],
+      [],[002],[],[Design brand identity],[Junior software engineer],[3],[Hours],[38,55 €],[115,66 €],[115,66 €],[],[0%],
+      [],[003],[],[Design project management],[Senior software engineer],[8],[Hours],[43,85 €],[350,77 €],[350,77 €],[],[0%],
+      [],[004],[],[Design stakeholder management],[Senior software engineer],[4],[Hours],[43,85 €],[175,39 €],[175,39 €],[],[0%],
+      [],[005],[],[Design requirement management],[Senior software engineer],[6],[Hours],[43,85 €],[263,08 €],[263,08 €],[],[0%],
+      [],[006],[],[Design user management],[Senior software engineer],[12],[Hours],[43,85 €],[526,16 €],[526,16 €],[],[20%],
+      [],[007],[],[Design document management],[Senior software engineer],[10],[Hours],[43,85 €],[438,47 €],[438,47 €],[],[0%],
 
       // 04 SonarQube
-      [04],
-      [],
-      [],
-      [Set up SonarQube for Quality Assurance],
-      [Senior software engineer],
-      [6],
-      [Hours],
-      [43,85 €],
-      [263,08 €],
-      [263,08 €],
-      [263,08 €],
+      [04],[],[],[Set up SonarQube for Quality Assurance],[Senior software engineer],[6],[Hours],[43,85 €],[263,08 €],[263,08 €],[263,08 €],[100%],
 
       // 05 Development
-      [05], [], [], [Development], [], [], [], [], [], [], [4.485,18 €],
+      [05], [], [], [Development], [], [], [], [], [], [], [4.485,18 €],[2%],
 
-      [], [001], [], [Set up architecture], [Software architect], [6], [Hours], [49,15 €], [294,92 €], [294,92 €], [],
-      [],
-      [002],
-      [],
-      [Set up development environment],
-      [Software architect],
-      [1],
-      [Hours],
-      [49,15 €],
-      [49,15 €],
-      [49,15 €],
-      [],
+      [], [001], [], [Set up architecture], [Software architect], [6], [Hours], [49,15 €], [294,92 €], [294,92 €], [],[50%],
+      [],[002],[],[Set up development environment],[Software architect],[1],[Hours],[49,15 €],[49,15 €],[49,15 €],[],[-67%],
 
-      [], [003], [], [Develop code], [], [], [], [], [], [4.141,10 €], [],
+      [], [003], [], [Develop code], [], [], [], [], [], [4.141,10 €], [],[2%],
 
-      [],
-      [],
-      [01],
-      [Develop project management module],
-      [Junior software engineer],
-      [22],
-      [Hours],
-      [38,55 €],
-      [848,14 €],
-      [],
-      [],
-      [], [], [02], [Develop stakeholder management module],
-      [Junior software engineer],
-      [6],
-      [Hours],
-      [38,55 €],
-      [231,31 €],
-      [],
-      [],
-      [],
-      [],
-      [03],
-      [Develop requirement management module],
-      [Senior software engineer],
-      [24],
-      [Hours],
-      [43,85 €],
-      [1.052,32 €],
-      [],
-      [],
-      [],
-      [],
-      [04],
-      [Develop user management module],
-      [Junior software engineer],
-      [12],
-      [Hours],
-      [38,55 €],
-      [462,62 €],
-      [],
-      [],
-      [],
-      [],
-      [05],
-      [Develop document management module],
-      [Senior software engineer],
-      [20],
-      [Hours],
-      [43,85 €],
-      [876,93 €],
-      [],
-      [],
-      [],
-      [],
-      [06],
-      [Develop modifying concurrency system],
-      [Senior software engineer],
-      [10],
-      [Hours],
-      [43,85 €],
-      [438,47 €],
-      [],
-      [],
-      [],
-      [],
-      [07],
-      [Develop search and filtering],
-      [Junior software engineer],
-      [6],
-      [Hours],
-      [38,55 €],
-      [231,31 €],
-      [],
-      [],
+      [],[],[01],[Develop project management module],[Junior software engineer],[22],[Hours],[38,55 €],[848,14 €],[],[],[0%],
+      [],[],[02],[Develop stakeholder management module],[Junior software engineer],[6],[Hours],[38,55 €],[231,31 €],[],[],[-40%],
+      [],[],[03],[Develop requirement management module],[Senior software engineer],[24],[Hours],[43,85 €],[1.052,32 €],[],[],[-4%],
+      [],[],[04],[Develop user management module],[Junior software engineer],[12],[Hours],[38,55 €],[462,62 €],[],[],[100%],
+      [],[],[05],[Develop document management module],[Senior software engineer],[20],[Hours],[43,85 €],[876,93 €],[],[],[33%],
+      [],[],[06],[Develop modifying concurrency system],[Senior software engineer],[10],[Hours],[43,85 €],[438,47 €],[],[],[0%],
+      [],[],[07],[Develop search and filtering],[Junior software engineer],[6],[Hours],[38,55 €],[231,31 €],[],[],[-40%],
 
       // 06 Testing
-      [06], [], [], [Testing], [], [], [], [], [], [], [1.359,90 €],
+      [06], [], [], [Testing], [], [], [], [], [], [], [1.359,90 €],[29%],
 
-      [],
-      [001],
-      [],
-      [Test project management module],
-      [Junior software engineer],
-      [6],
-      [Hours],
-      [38,55 €],
-      [231,31 €],
-      [231,31 €],
-      [],
-      [],
-      [002],
-      [],
-      [Test stakeholder management module],
-      [Junior software engineer],
-      [4],
-      [Hours],
-      [38,55 €],
-      [154,21 €],
-      [154,21 €],
-      [],
-      [],
-      [003],
-      [],
-      [Test requirement management module],
-      [Junior software engineer],
-      [5],
-      [Hours],
-      [38,55 €],
-      [192,76 €],
-      [192,76 €],
-      [],
-      [],
-      [004],
-      [],
-      [Test user management module],
-      [Junior software engineer],
-      [3],
-      [Hours],
-      [38,55 €],
-      [115,66 €],
-      [115,66 €],
-      [],
-      [],
-      [005],
-      [],
-      [Test document management module],
-      [Junior software engineer],
-      [4],
-      [Hours],
-      [38,55 €],
-      [154,21 €],
-      [154,21 €],
-      [],
-      [],
-      [006],
-      [],
-      [Test modifying concurrency system],
-      [Junior software engineer],
-      [5],
-      [Hours],
-      [38,55 €],
-      [192,76 €],
-      [192,76 €],
-      [],
-      [],
-      [007],
-      [],
-      [Test search and filtering],
-      [Junior software engineer],
-      [3],
-      [Hours],
-      [38,55 €],
-      [115,66 €],
-      [115,66 €],
-      [],
-      [],
-      [008],
-      [],
-      [Usability and accessibility testing],
-      [Junior software engineer],
-      [3],
-      [Hours],
-      [38,55 €],
-      [115,66 €],
-      [115,66 €],
-      [],
-      [], [009], [], [Load testing], [Senior software engineer], [2], [Hours], [43,85 €], [87,69 €], [87,69 €], [],
+      [],[001],[],[Test project management module],[Junior software engineer],[6],[Hours],[38,55 €],[231,31 €],[231,31 €],[],[50%],
+      [],[002],[],[Test stakeholder management module],[Junior software engineer],[4],[Hours],[38,55 €],[154,21 €],[154,21 €],[],[33%],
+      [],[003],[],[Test requirement management module],[Junior software engineer],[5],[Hours],[38,55 €],[192,76 €],[192,76 €],[],[0%],
+      [],[004],[],[Test user management module],[Junior software engineer],[3],[Hours],[38,55 €],[115,66 €],[115,66 €],[],[0%],
+      [],[005],[],[Test document management module],[Junior software engineer],[4],[Hours],[38,55 €],[154,21 €],[154,21 €],[],[33%],
+      [],[006],[],[Test modifying concurrency system],[Junior software engineer],[5],[Hours],[38,55 €],[192,76 €],[192,76 €],[],[150%],
+      [],[007],[],[Test search and filtering],[Junior software engineer],[3],[Hours],[38,55 €],[115,66 €],[115,66 €],[],[0%],
+      [],[008],[],[Usability and accessibility testing],[Junior software engineer],[3],[Hours],[38,55 €],[115,66 €],[115,66 €],[],[50%],
+      [], [009], [], [Load testing], [Senior software engineer], [2], [Hours], [43,85 €], [87,69 €], [87,69 €], [],[0%],
 
       // 07 Documentation
-      [07], [], [], [Documentation], [], [], [], [], [], [], [1.285,92 €],
+      [07], [], [], [Documentation], [], [], [], [], [], [], [1.285,92 €],[-7%],
 
-      [],
-      [001],
-      [],
-      [Document declaration of originality, abstract and keywords],
-      [Project manager],
-      [1],
-      [Hours],
-      [49,78 €],
-      [49,78 €],
-      [49,78 €],
-      [],
-      [], [002], [], [Document introduction], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [49,78 €], [],
-      [],
-      [003],
-      [],
-      [Document theoretical background],
-      [Technology consultant],
-      [1],
-      [Hours],
-      [45,22 €],
-      [45,22 €],
-      [45,22 €],
-      [],
-      [],
-      [004],
-      [],
-      [Document feasibility study and alternative analysis],
-      [Technology consultant],
-      [2],
-      [Hours],
-      [45,22 €],
-      [90,44 €],
-      [90,44 €],
-      [],
-      [],
-      [005],
-      [],
-      [Document initial project planning and management],
-      [Project manager],
-      [3],
-      [Hours],
-      [49,78 €],
-      [149,35 €],
-      [149,35 €],
-      [],
-      [], [006], [], [Document system analysis], [System Analyst], [2], [Hours], [42,16 €], [84,32 €], [84,32 €], [],
-      [],
-      [007],
-      [],
-      [Document system design],
-      [Software architect],
-      [3],
-      [Hours],
-      [49,15 €],
-      [147,46 €],
-      [147,46 €],
-      [],
-      [],
-      [008],
-      [],
-      [Document system implementation],
-      [Senior software engineer],
-      [6],
-      [Hours],
-      [43,85 €],
-      [263,08 €],
-      [263,08 €],
-      [],
-      [],
-      [009],
-      [],
-      [Document test plan execution],
-      [Senior software engineer],
-      [2],
-      [Hours],
-      [43,85 €],
-      [87,69 €],
-      [87,69 €],
-      [],
-      [],
-      [010],
-      [],
-      [Document system manuals],
-      [Senior software engineer],
-      [5],
-      [Hours],
-      [43,85 €],
-      [219,23 €],
-      [219,23 €],
-      [],
-      [],
-      [011],
-      [],
-      [Document final project closure],
-      [Project manager],
-      [1],
-      [Hours],
-      [49,78 €],
-      [49,78 €],
-      [49,78 €],
-      [],
-      [],
-      [012],
-      [],
-      [Document conclusions and future work],
-      [Project manager],
-      [1],
-      [Hours],
-      [49,78 €],
-      [49,78 €],
-      [49,78 €],
-      [],
+      [],[001],[],[Document declaration of originality, abstract and keywords],[Project manager],[1],[Hours],[49,78 €],[49,78 €],[49,78 €],[],[0%],
+      [], [002], [], [Document introduction], [Project manager], [1], [Hours], [49,78 €], [49,78 €], [49,78 €], [],[0%],
+      [],[003],[],[Document theoretical background],[Technology consultant],[1],[Hours],[45,22 €],[45,22 €],[45,22 €],[],[0%],
+      [],[004],[],[Document feasibility study and alternative analysis],[Technology consultant],[2],[Hours],[45,22 €],[90,44 €],[90,44 €],[],[0%],
+      [],[005],[],[Document initial project planning and management],[Project manager],[3],[Hours],[49,78 €],[149,35 €],[149,35 €],[],[50%],
+      [], [006], [], [Document system analysis], [System Analyst], [2], [Hours], [42,16 €], [84,32 €], [84,32 €], [],[-33%],
+      [],[007],[],[Document system design],[Software architect],[3],[Hours],[49,15 €],[147,46 €],[147,46 €],[],[-40%],
+      [],[008],[],[Document system implementation],[Senior software engineer],[6],[Hours],[43,85 €],[263,08 €],[263,08 €],[],[20%],
+      [],[009],[],[Document test plan execution],[Senior software engineer],[2],[Hours],[43,85 €],[87,69 €],[87,69 €],[],[0%],
+      [],[010],[],[Document system manuals],[Senior software engineer],[5],[Hours],[43,85 €],[219,23 €],[219,23 €],[],[0%],
+      [],[011],[],[Document final project closure],[Project manager],[1],[Hours],[49,78 €],[49,78 €],[49,78 €],[],[-50%],
+      [],[012],[],[Document conclusions and future work],[Project manager],[1],[Hours],[49,78 €],[49,78 €],[49,78 €],[],[0%],
 
       table.hline(),
 
       table.cell(colspan: 10)[*Total*],
       [13.383,61 €],
+      [3%],
     ),
-    caption: "Provider's final budget category 1",
+    caption: "Budget execution with deviations",
   )
+  Given that the second category was not linked to actual execution but rather theoretical assumptions, we can refrain from repeating the budget line as no deviations are recorded.
+  
+  Therefore we obtain the following:
   #figure(
     table(
-      columns: (0.75fr, 1fr, 0.75fr, 5fr, 2fr, 1.25fr, 1.25fr, 1.75fr, 2fr, 2fr, 2fr),
-
-      table.cell(colspan: 11)[*Category 2: Other*],
-      table.header(
-        [*I1*],
-        [*I2*],
-        [*I3*],
-        [*Description*],
-        [*Resource*],
-        [*Quantity*],
-        [*Units*],
-        [*Price*],
-        [*Subtotal*],
-        [*Subtotal (2)*],
-        [*Total*],
-      ),
-
-      [01], [], [], [Travel and transportation expenses], [], [], [], [], [], [172,50 €], [172,50 €],
-      [], [001], [], [Travel to client facilities (deployment/support)], [], [150], [km], [0,35 €], [52,50 €], [], [],
-      [], [002], [], [Meals/daily allowance], [], [6], [meals], [20,00 €], [120,00 €], [], [],
-    ),
-    caption: "Provider's final budget category 2",
-  )
-  Which is the same as:
-  TODO add column with % deviation, total deviation and impact on benefit.
-  #figure(
-    table(
-      columns: 3,
-
-      table.cell(colspan: 3)[*IrBoard costs*],
-      table.header([*Cat. Num*], [*Category*], [*Total*]),
-      [01], [IrBoard development costs breakdown], [13.383,61 €],
-      [02], [Other], [172,50 €],
-      table.cell(colspan: 2)[total], [13.556,11 €],
+      columns: 4,
+      table.cell(colspan: 4)[*IrBoard costs*],
+      table.header([*Cat. Num*], [*Category*], [*Total*],[*Deviation*]),
+      [01], [IrBoard development costs breakdown], [13.383,61 €],[3%],
+      [02], [Other], [172,50 €],[0%],
+      table.cell(colspan: 2)[total], [13.556,11 €],[3%]
     ),
     caption: "Provider's final budget summary",
   )
-  And allows us to compute the following metrics for the client's final budget:
-  - Profit (25%): 3.389,03 €
-  - Amount to be increased on the first category: 3.561,53 €
-  - Total billable hours: 310,00 hours
-  - Dilution increase per billable hour: 11,49 €
+  Which gives us an *actual profit* of 2.944,40€, a deviation of -11%, in other words, instead of a profit of 25% of the total costs, a profit of ~22%. 
 ]
 
 == Project Closure Analysis
-TODO relationships between the deviations and risks above. A global analysis of the closure, final budget, schedule and risks. 
+The final distribution of effort shows that the deviations were not caused by a general increase in project scope, but by changes in the relative complexity of individual activities. Some areas required additional work, while others required less effort than initially estimated, producing a redistribution of resources between phases.
+
+The analysis phase increased from 54 to 57 hours, mainly due to additional effort in requirement modelling and review activities. This was reflected in the final cost of the analysis category, which increased by approximately +5%.
+
+The design phase increased from 51 to 53 hours (+4%), with the main variation concentrated in user management design. The additional effort required for this activity was reflected both in the final schedule and in the corresponding budget line.
+
+The quality assurance setup presented the highest relative deviation. SonarQube configuration increased from 3 to 6 hours (+100%), producing the same deviation in its budget line. Although this represented a large percentage change at task level, its contribution to the overall project deviation was limited due to the small size of the activity.
+
+Development remained close to the original estimation, increasing from 105 to 107 hours (+2%). However, the final execution showed significant redistribution between modules. User management and document management required more effort than planned, while stakeholder management and search functionality required less effort. These changes were reflected in the final cost distribution of the development activities.
+
+Testing showed the largest phase-level deviation, increasing from 27 to 35 hours (+29%). The additional validation effort was reflected in the increased testing cost and represents one of the main contributors to the final deviation.
+
+Documentation decreased from 30 to 28 hours (-7%), producing a corresponding reduction in its final budget. This offset part of the additional effort required in technical phases.
+
+The risk outcomes provide the explanation behind these deviations. The risks that materialized were mainly related to areas where additional effort was eventually required, such as technology integration, infrastructure configuration, and validation activities. These effects appeared simultaneously in the schedule and budget because they were different measurements of the same execution changes. Likewise, risks that did not materialize corresponded to areas where the initial assumptions remained valid and therefore did not generate relevant deviations.
+
 = Conclusions and Future Work <conclusions_future_work> //11
 == Conclusions
+Overall, the project closure confirms that the initial planning was sufficiently accurate at a global level. The final deviations resulted from variations in task complexity and execution conditions rather than changes in objectives or scope. The project maintained its planned functionality and quality goals while keeping schedule and budget deviations within acceptable limits.
+
 TODO
 
 == Keyboard navigation and sound feedback
@@ -4083,6 +3695,7 @@ As future work, this export capability should be implemented, most likely by com
 - [3] “Typst Documentation,” Typst, 2024. https://typst.app/docs/
 - [4] “hexagonal-architecture.” https://alistair.cockburn.us/hexagonal-architecture <reference_4>
 - [5] R. C. Martin, Clean architecture: A Craftsman’s Guide to Software Structure and Design. Pearson Professional, 2018. <reference_5>
+- [6] “Ory Permission Language specification | Ory,” Jun. 17, 2024. https://www.ory.com/docs/keto/reference/ory-permission-language <reference_6>
 = Appendices <appendices>
 #page(flipped: true)[
   == Budget
