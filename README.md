@@ -70,7 +70,7 @@ With docker installed, run the following command on the root of the repository f
 ```bash
 docker compose up -d --build
 ```
-Or if you prefer a production enviroment, run the following command on the root of the repository:
+Or if you prefer a faster to deploy production enviroment, run the following command on the root of the repository:
 ```bash
 docker compose -f docker-compose.yaml up -d --build
 ```
