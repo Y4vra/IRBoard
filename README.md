@@ -27,7 +27,7 @@ The system utilizes a **microservices** architecture designed for scalability, s
 
 * **Frontend:** React with **Material UI (MUI)** for a professional and adaptive interface.
 * **Backend:** Java with **Spring Boot**, chosen for its robustness and native security.
-* **Database:** **PostgreSQL** with **JSONB** column support, allowing for the rigidity of relational data combined with the flexibility of custom attributes.
+* **Database:** **PostgreSQL** and s3 minio container document storage.
 * **Security:** **Ory** ecosystem (Kratos for identities and sessions; Oathkeeper as the enforcement proxy).
 * **Gateway:** Traefik for network routing.
 * **Observability:** Centralized logging stack with **Loki**, **Promtail**, and visualization in **Grafana**, as well as basic metrics with **Prometheus**.
@@ -70,7 +70,7 @@ With docker installed, run the following command on the root of the repository f
 ```bash
 docker compose up -d --build
 ```
-Or if you prefer a production enviroment, run the following command on the root of the repository:
+Or if you prefer a faster to deploy production enviroment, run the following command on the root of the repository:
 ```bash
 docker compose -f docker-compose.yaml up -d --build
 ```
