@@ -2432,7 +2432,7 @@ Aditionally, the following containers are present on the deployment:
 These are not added to the diagram, given their additional nature and non-essential uses, as to ensure clear readability.
 
 === Backend system design
-The backend follows an architecture that blends *hexagonal architecture* (ports and adapters, as described by Alistair Cockburn #link(<reference_4>)[[4]]) with the explicit layering conventions of *Clean Architecture* #link(<reference_5>)[[5]] (Robert C. Martin). In pure hexagonal architecture the only structural distinction is between the inside of the hexagon (domain and application logic) and the outside (adapters to external systems). Clean Architecture refines this by naming three explicit concentric layers — domain, application, and infrastructure — and formalizing the dependency rule: outer layers depend on inner layers, and the domain at the center has no knowledge of any external technology or framework. The result is a structure that is hexagonal in its port-and-adapter organization and clean-architecture in its explicit package decomposition.
+The backend follows an architecture that blends *hexagonal architecture* (ports and adapters, as described by Alistair Cockburn #link(<reference_4>)[[4]]) with the explicit layering conventions of *Clean Architecture* #link(<reference_5>)[[5]] (Robert C. Martin). In pure hexagonal architecture the only structural distinction is between the inside of the hexagon (domain and application logic) and the outside (adapters to external systems). Clean Architecture refines this by naming three explicit concentric layers (domain, application, and infrastructure) and formalizing the dependency rule: outer layers depend on inner layers, and the domain at the center has no knowledge of any external technology or framework. The result is a structure that is hexagonal in its port-and-adapter organization and clean-architecture in its explicit package decomposition.
 
 #figure(image("assets/diagrams/backendPackageDiagram.svg"), caption: "Backend package diagram")
 
@@ -2444,10 +2444,15 @@ The *infrastructure layer* is the outermost layer and contains all technology-sp
 
 #figure(image("./assets/diagrams/backendHexagonalDiagram.svg"), caption: "Backend hexagonal architecture diagram")
 
-This separation provides several practical benefits for IR-Board. The domain and application layers can be tested in complete isolation from infrastructure concerns, with the Ory ecosystem components replaced by test mocks injected through the port interfaces. The port abstraction also means that any of the three external services can be replaced — for example substituting Kratos with a different identity provider, or MinIO with an alternative S3-compatible store — without touching any business logic. Finally, the clear boundary between the REST layer and the application services ensures that HTTP-level concerns such as request mapping, response serialization, and error translation do not leak into the domain model.
+This separation provides several practical benefits for IR-Board. The domain and application layers can be tested in complete isolation from infrastructure concerns, with the Ory ecosystem components replaced by test mocks injected through the port interfaces. The port abstraction also means that any of the three external services can be replaced (for example substituting Kratos with a different identity provider, or MinIO with an alternative S3-compatible store) without touching any business logic. Finally, the clear boundary between the REST layer and the application services ensures that HTTP-level concerns such as request mapping, response serialization, and error translation do not leak into the domain model.
 
 === Frontend system design
-TODO
+TODO add package diagram
+The frontend is structured as a Single Page Application (SPA) built with React and TypeScript, served as static content and communicating with the backend exclusively through the API gateway. Under this model, the browser loads the application once and subsequent navigation is handled entirely client-side by React Router, which maps URL paths to page components without triggering full page reloads. This approach is well suited to the requirements management domain, where users frequently navigate between deeply nested entities (from project dashboard to functionality to individual requirement and back) and where preserving in-memory state across those transitions reduces unnecessary network requests and improves perceived responsiveness.
+
+The src directory is organized into a set of purpose-delimited packages that reflect the layered responsibilities of the application. The `pages` folder contains one top-level component per route, each responsible for orchestrating the data-fetching, permission checks, and layout for its view. Shared visual building blocks live under `components`, which is further subdivided by concern: `badges` contains the state and role indicator chips used across entity detail views; `dialogs` groups the modal forms for entity creation, update, observation linking, and user permission assignment; `graphics` holds the pie chart components used by the project and functionality dashboards to visualize requirement state distribution; `ui` contains the unstyled primitives sourced from the shadcn/ui component library; and `wrappers` provides the route guard and context provider components (such as `ProtectedRoute`, `ProjectLockWrapper`, and `FunctionalitiesProviderWrapper`) that enforce authentication and project-scoped state before their child routes are rendered.
+
+Cross-cutting application state is managed through the `contexts` package, which exposes React contexts for the authenticated session and the currently active project and its functionalities, making this information available throughout the component tree without prop drilling. Stateful data-fetching logic is encapsulated in the `hooks` package, where custom hooks abstract the fetch lifecycle, loading and error states, and cache invalidation patterns away from the page components that consume them. The `lib` package groups non-React utilities: global configuration constants, graph utility functions used by the dashboard charts, the Kratos SDK client instance, and general-purpose helper functions shared across the application. Domain types are maintained in a dedicated `types` folder, which contains TypeScript interfaces that mirror the DTOs received from the backend, providing end-to-end type safety from the API response through to the component props without duplicating the backend's domain model. Finally, the `tests` folder mirrors the `src` directory structure exactly, placing each test file adjacent in hierarchy to the module it covers, and adds an `e2e` subfolder at the root of the test tree for the Playwright end-to-end scenarios that exercise the fully deployed stack.
 == Real Use Case Design
 TODO
 == Class Design <class_design>
@@ -2732,7 +2737,9 @@ Results will be analyzed across participants to identify recurring friction poin
 
 = System Implementation //7
 == Standards and regulations followed
-TODO
+This project follows requirements engineering principles defined by IEEE 830 and ISO/IEC/IEEE 29148, which establish recommendations for writing, managing, validating, and maintaining software requirements.
+
+Security aspects follow principles such as Zero Trust and least privilege, ensuring that access is controlled and only granted according to user permissions and relationships. The system also applies general software quality principles related to reliability, maintainability, and security.
 == Programming languages used
 To implement the system, the following programming languages were used:
 === Yaml
@@ -2768,17 +2775,108 @@ Gatling is a performance testing tool used to simulate user activity and measure
 Typst is a modern document preparation system used to create technical documentation. It was used for writing and formatting the project report.
 === MS Excel and MS Project
 Microsoft Excel is a spreadsheet application used for data organisation, calculations, and budget-related analysis. Microsoft Project is a project management tool used for scheduling, task planning, and Gantt chart generation.
+=== Azure
+Microsoft Azure is a cloud computing platform that provides services for application hosting, database management, identity management, and system monitoring. In this project, Azure was the deployment environment due to its student plan.
 == Issues encountered <implementation_issues>
 TODO
+
+Here's the revised section with the SonarQube issue added:
+
+Infrastructure and security architecture complexity
+The most significant implementation challenge was the integration of the Ory ecosystem within the Zero-Trust architecture. While the conceptual authorization model was compatible with Ory Keto and Oathkeeper, correctly configuring the surrounding infrastructure proved more complex than anticipated. Determining which services should sit behind the Oathkeeper gateway and which should remain on the internal network required substantial experimentation, as did correctly defining the trust boundaries between components. This was compounded by limited prior experience with multi-layered security architectures.
+A concrete manifestation of this was the integration of additional infrastructure components (particularly the observability stack (Grafana, Loki, Promtail) and the object storage service (MinIO)) where securely separating user-facing traffic from internal service communication required a deeper understanding of network segmentation than initially anticipated.
+SonarQube setup and CI integration
+The setup of SonarQube for quality assurance took considerably longer than estimated, which is reflected in the doubling of its planned hours from 3 to 6. Several issues were encountered during configuration: initial difficulties getting the SonarQube instance running correctly within the development environment, and a particularly time-consuming problem where the CI pipeline action was executing a standard test run rather than a coverage-instrumented one, meaning that no coverage data was being reported to SonarQube despite tests passing. Diagnosing and correcting this required iterating on the pipeline configuration until the correct test execution mode was in place and coverage metrics were being collected and forwarded as expected.
+Document management: architectural decision on file transfer
+During the implementation of document upload and download functionality, the file content was routed through the Spring Boot backend rather than using presigned URLs for direct client-to-storage transfers. This decision was made due to limited prior familiarity with S3-compatible object storage integration patterns at the time of implementation. While functional, this approach is not the standard pattern for systems built on an S3-compatible backend, and results in unnecessary load on the backend service. This is identified and documented as a future improvement.
+Cross-service consistency on partial failures
+Several operations involving coordinated changes across the relational database and the object storage backend (most visibly bulk document deletion) were found to lack a distributed transaction or compensating-action mechanism. A failure partway through a multi-step operation can leave the system in an inconsistent state: for example, a document record deleted from the database but whose corresponding object was not successfully removed from MinIO, or vice versa. Manual intervention would be required to recover from such cases. This was recognized during development but left unresolved within the project scope.
+MinIO dependency maturity
+During the development period, MinIO's open-source Community Edition underwent significant changes: administrative functionality was removed from its web console in 2025, and the upstream project was subsequently placed into maintenance mode in December 2025. This meant that a dependency originally selected as a mature, actively maintained S3-compatible storage solution became effectively frozen during the course of the project. The current deployment uses unpinned latest tags for both minio/minio and minio/mc, which poses a risk in terms of reproducibility and future security patch availability. Migration to an actively maintained alternative is proposed as future work.
+Typst compatibility with nested requirement lists
+During the preparation of the requirements specification, a compatibility issue was encountered with Typst's support for nested lists. Since the requirements documentation relies heavily on hierarchical structures (such as identifiers following formats like UM.1.1) the absence of adequate native multilevel list support at the time created difficulties in maintaining the intended document structure. Resolving this required additional investigation and the adoption of an external Typst extension (efilrst) to restore the required nested list behavior. This added unforeseen effort to the documentation phase.
+Usability issues discovered during testing
+Several interface issues were identified during usability testing that required corrective action:
+
+The entity identity slug was consistently missed or misunderstood by all four test users due to low contrast and a lack of explanatory labeling. The corrective measure was to increase contrast and add an explanatory tooltip.
+The filter for disabled requirements on the non-functional requirements view was placed unexpectedly relative to its counterpart on the functionality view, causing confusion. This was corrected by aligning the filter placement.
+State badges on entity detail views were positioned in a way that made them easy to overlook. They were moved to a more prominent position beside the identity slug.
+Clicking the user avatar in the navigation bar navigated to an unimplemented route, causing an error page. The redirect logic was commented out as the user profile editing view is outside the project scope.
+The slug search field did not respond to the Enter key, which users consistently expected. Keyboard navigation was documented as future work.
+
+draw.io integration not fully completed
+The self-hosted draw.io instance and its supporting infrastructure (including Traefik routing, CORS configuration, and frontend embedding points) were fully provisioned as part of the architecture. However, the end-to-end integration was not brought to a fully operational state within the project timeline, as development effort was redirected toward ensuring testing coverage, usability testing, and the observability stack were complete. No architectural changes are required; this is a completion task deferred to future work.
+Requirements export to PDF not implemented
+PDF export of requirements was a planned extension of the project scope but could not be implemented within the available development time. Project managers currently have no built-in mechanism to generate a portable snapshot of a project's requirements for external stakeholders. This is documented as future work.
+Incomplete test coverage
+
+Several testing areas could not be completed within the project timeline. Multi-user and access-control E2E scenarios were not automated, meaning the permission boundaries between project managers, requirement engineers, and stakeholder users have not been validated end-to-end against the live Ory Keto layer. The concurrency control mechanism and the slug-based search flow also lack automated E2E coverage, though both were manually verified during development. Load testing was executed using Gatling against the deployed stack; its results and observations are documented in the corresponding test plan execution section.
+
 = Test Plan Execution //8
 == Unit Testing
-TODO
-== Integration and Acceptance testing <usability_testing_execution>
-TODO
+=== Frontend
+Frontend unit tests were implemented using Vitest in combination with React Testing Library, targeting individual pages and components in isolation from the rest of the application. Since the frontend is composed of React components that encapsulate both rendering logic and user interaction, the boundary between unit and integration testing was deliberately blurry at this layer: a test that renders a single page component inevitably exercises its child components, hooks, and routing context simultaneously. For this reason, the distinction between unit and integration tests on the frontend is treated as a matter of scope rather than a strict structural boundary, and is discussed further in the integration testing section below.
+
+Each test file renders the component under test within a controlled environment. Routing is simulated using React Router's MemoryRouter, allowing components that depend on navigation state or URL parameters to be exercised without a live browser. API calls and browser globals are replaced with Vitest's mocking primitives (vi.fn, vi.stubGlobal, vi.mock), ensuring that each test scenario exercises only the component's own logic and rendering behavior without introducing external dependencies.
+
+A representative example is the ErrorPage component test suite, which validates that the page renders the correct heading and explanatory message when given a specific error state, and that the return home button triggers the expected navigation call:
+```ts
+it("calls window.location.replace when Return Home is clicked", () => {
+  const replaceMock = vi.fn()
+  vi.stubGlobal("window", {
+    ...window,
+    location: { ...window.location, replace: replaceMock },
+  })
+  renderError()
+  const button = screen.getByRole("button", { name: /return home/i })
+  button.click()
+  expect(replaceMock).toHaveBeenCalledWith("/home")
+})
+```
+This pattern is consistent across the test suite: the component is rendered with a controlled initial state, user interactions are triggered programmatically, and assertions are made against the resulting DOM or against mock call records. The use of `beforeEach(() => vi.restoreAllMocks())` ensures that mock state does not leak between test cases.
+=== Backend
+Backend unit tests were implemented using JUnit 5 as the test runner and Mockito as the mocking framework, applied across the distinct layers of the backend: the domain model, the service layer and the client implementations on the infrastructure layer.
+
+All unit tests are executed in complete isolation, without loading the Spring application context or interacting with repositories, databases, or other external infrastructure. The unit under test is instantiated directly, while collaborators are replaced with Mockito mocks only when necessary to isolate the behavior being verified. Domain model classes are generally tested without mocks, as they represent self-contained business objects whose behavior can be exercised directly through their public API.
+
+The unit test suite verifies a broad range of behaviors throughout the application. For domain entities, tests focus on validating business rules, state transition constraints, object identity semantics, observer notifications, validation logic, and the correct handling of edge cases such as null values or invalid state changes. For components with external dependencies, the use of mocks allows tests to verify that business logic is applied correctly, authorization and validation rules are enforced, lifecycle transitions occur as expected, exceptions are propagated or translated appropriately, and dependencies are invoked with the correct parameters and interaction sequence. This approach ensures that each unit is validated independently while remaining unaffected by the behavior of surrounding components.
+=== SonarQube
+Code coverage is measured and enforced by SonarQube as part of the continuous integration pipeline. A minimum coverage threshold of 80% is required for the quality gate to pass, while the analysis also detects code smells, reliability issues, duplicated code, and common security vulnerabilities at each significant development checkpoint.
+
+Several code maintainability issues were encountered on the backend, and code duplication was found over the maximum threshold on the frontend upon initial testing. To prepare for the final delivery, all of these were mitigated to pass the quality gate enforced by the system.
+
+== Integration and Acceptance testing 
+=== Frontend
+As noted in the unit testing section, the boundary between unit and integration testing on the frontend was intentionally blurred. Since React components are compositional by nature, a test that renders a page component exercises not only that page's own logic but also any child components, context providers, and hooks that it depends on. Tests that cross these boundaries (for example, rendering a page that coordinates multiple child components, shared context state, and a sequence of asynchronous fetch calls) are treated as integration tests, even though they use the same Vitest and React Testing Library tooling as the unit tests.
+
+The main distinction applied in practice is one of scope and intent: unit tests target a single component's rendering and interaction behavior with all external dependencies mocked at the module boundary, while integration tests render a larger slice of the component tree and validate the coordination between components. This includes shared state managed through React Context, conditional rendering driven by sequences of API responses, and navigation transitions triggered by user actions that span multiple components.
+
+API calls are intercepted by stubbing the global fetch function via vi.stubGlobal, allowing each scenario to return a controlled sequence of responses for specific call patterns without requiring a running backend. This approach validates that the frontend correctly handles the full range of response scenarios it may encounter in practice, including successful responses, validation errors, unauthorized responses, and network failures, and that the correct interface state is presented in each case.
+
+Access-control-driven interface differences are also covered at this layer: tests assert that administrative actions such as user invitation controls or project deactivation buttons are conditionally rendered based on the role information returned in the mocked session response, confirming that permission boundaries are enforced at the component level independently of the backend.
+=== Backend
+Backend integration tests verify that independently developed components interact correctly when the full Spring Boot application context is active, targeting the boundaries between the HTTP layer, the service layer, the repository layer, and the database rather than the internal behavior of individual units.
+
+Tests are organized around a shared abstract base class, `IrBoardBaseTest`, annotated with `@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)` and `@ActiveProfiles("test")`. This base class provisions all shared infrastructure: it starts a PostgreSQL instance through Testcontainers, whose connection properties are injected at runtime via `@DynamicPropertySource`, ensuring complete isolation between test runs. The Ory ecosystem components are replaced entirely by Mockito beans: `KetoClient`, `MinioClient`, and `MinioObjectStorageClient` are declared as `@MockitoBean` instances, allowing the test security configuration to inject pre-authenticated request contexts directly through the `X-User` header rather than requiring live Kratos session validation on every request.
+
+The base class also provides a structured set of helpers that make individual test classes concise and focused. Authentication and permission state is controlled through a family of `allowX` methods that stub specific Keto permission checks for a given user and resource identifier, such as `allowEdit`, `allowEditProject`, and `allowViewRequirementsOfFunctionality`. A `RestClient` instance pre-configured with the random server port is exposed through typed `get`, `post`, `patch`, `delete`, and multipart request helpers that inject the `X-User` header automatically. Entity builder helpers (`buildProject`, `buildFunctionality`, `buildStakeholder`, `buildFr`, `buildNfr`, `buildDocument`) produce fully configured, persistable domain objects with sensible defaults, and `reload` helpers re-fetch each entity type from its repository by identifier to assert against the state actually persisted in the database after each operation.
+
+Each test suite's `@BeforeEach` method delegates to `testSetup` in the base class, which clears all repository data in dependency order to guarantee a clean slate between tests, seeds the fixed set of user identities referenced across suites by their `oryId` constants, and creates a baseline active project. Each concrete test class then implements the `setUp` hook to seed only the additional fixtures it needs, in a clear example of a template method pattern.
+
+This structure allows each integration test to exercise a complete vertical slice of the system: an HTTP request is issued to a real controller endpoint, passes through the Spring Security filter chain with the injected identity, reaches the service and repository layers against the live Testcontainers database, and the response status, body, and resulting database state are all asserted. The following categories of behavior are covered across the test suites:
+
+- #strong[API contract validation:] each endpoint is verified to return the expected response structure and HTTP status code for both successful and error scenarios, including 400 for malformed input, 403 for insufficient permissions, 404 for missing entities, and 409 for constraint violations such as duplicate functionality labels.
+- #strong[Requirement lifecycle transitions:] the full state machine is exercised end-to-end, verifying that the correct successor states are persisted after approval, deactivation, reactivation, removal, and permanent deletion operations, and that transitions from invalid predecessor states are rejected.
+- #strong[Traceability relationship management:] linking and unlinking requirements to stakeholders, documents, and peer requirements is verified to correctly update the corresponding join tables in the database and to propagate pending-review flags to all observing entities.
+- #strong[Concurrency control:] entity lock acquisition is verified to succeed for the first requesting user and to be rejected for a second user targeting the same entity, and lock release on save or timeout is verified to restore the entity to an editable state.
+- #strong[Document management:] upload, association with requirements, state transitions, and permanent deletion are verified end-to-end through the controller, service, storage adapter, and database layers.
+- #strong[Access control boundaries:] each operation is verified to return 403 when the requesting user lacks the required Keto permission, confirming that authorization is enforced at the service layer before any domain logic is executed.
+
+Acceptance testing is treated as a direct extension of integration testing: each integration test scenario is traceable to one or more functional requirements defined in the requirements specification, providing a structured verification record at the component boundary level.
 == Accessibility testing
 TODO
 #page(flipped: true)[
-  == Usability Testing
+  == Usability Testing <usability_testing_execution>
   The results documented from the four rounds of usability testing are recorded below. As all users completed successfully the scenarios, the "completed" column was removed from the table.
   
   Similarly, the errors are documented upon each step, and every user was quite confident on their actions and feedback until the identity slug step. Therefore, their appropiate rows have been removed from the session summary.
@@ -3448,8 +3546,6 @@ In addition, an unplanned factor emerged from the adoption of Typst as the docum
 Overall, no risk required additional budget, scope reduction, or contingency activation, and all identified risks and opportunities remained within manageable limits.
 
 == Budget execution analysis
-TODO compare executed tests with the initial budget, where I deviated on each part of the budget, the total deviation percentage, etc. Add causes of the deviations.
-
 As noted in the initial budget, the provider's financial reality (the annual employment cost and hourly rates for each professional profile) depends on the structural cost of the organization rather than on the specific execution of this project, and therefore remains unchanged. For this reason it is not repeated here.
 
 What follows is the recalculation of the cost breakdown based on the actual hours invested during execution, together with a deviation analysis of each budget line.
