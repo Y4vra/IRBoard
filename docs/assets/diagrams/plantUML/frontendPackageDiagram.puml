@@ -1,0 +1,35 @@
+@startuml frontendPackageDiagram
+title IR-Board Backend – package Diagram
+
+top to bottom direction
+
+frame "src" as src {
+    frame "components"{
+        ["badges"] as badges
+        frame dialogs as dialogs{
+            ["creatingDialog"]
+            ["observation"]
+            ["updatingDialogs"]
+            ["userLinking"]
+        }
+        ["graphics"] 
+        ["ui"] 
+        ["wrappers"] 
+    }
+    frame "context"
+    frame "hooks" 
+    frame "lib" 
+    frame "pages"{
+        frame "project"{
+            ["document"]
+            ["fr"]
+            ["nfr"]
+            ["stakeholder"]
+        }
+    }
+    frame "tests"
+    frame "types"
+}
+
+
+@enduml

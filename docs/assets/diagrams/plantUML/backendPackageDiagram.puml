@@ -1,5 +1,5 @@
-@startuml backendframeDiagram
-title IR-Board Backend – frame Diagram
+@startuml backendPackageDiagram
+title IR-Board Backend – Package Diagram
 
 top to bottom direction
 
