@@ -2781,37 +2781,36 @@ Microsoft Azure is a cloud computing platform that provides services for applica
 == Issues encountered <implementation_issues>
 TODO
 
-Here's the revised section with the SonarQube issue added:
-
-Infrastructure and security architecture complexity
+=== Infrastructure and security architecture complexity
 The most significant implementation challenge was the integration of the Ory ecosystem within the Zero-Trust architecture. While the conceptual authorization model was compatible with Ory Keto and Oathkeeper, correctly configuring the surrounding infrastructure proved more complex than anticipated. Determining which services should sit behind the Oathkeeper gateway and which should remain on the internal network required substantial experimentation, as did correctly defining the trust boundaries between components. This was compounded by limited prior experience with multi-layered security architectures.
+
 A concrete manifestation of this was the integration of additional infrastructure components (particularly the observability stack (Grafana, Loki, Promtail) and the object storage service (MinIO)) where securely separating user-facing traffic from internal service communication required a deeper understanding of network segmentation than initially anticipated.
-SonarQube setup and CI integration
+
+=== SonarQube setup and CI integration
 The setup of SonarQube for quality assurance took considerably longer than estimated, which is reflected in the doubling of its planned hours from 3 to 6. Several issues were encountered during configuration: initial difficulties getting the SonarQube instance running correctly within the development environment, and a particularly time-consuming problem where the CI pipeline action was executing a standard test run rather than a coverage-instrumented one, meaning that no coverage data was being reported to SonarQube despite tests passing. Diagnosing and correcting this required iterating on the pipeline configuration until the correct test execution mode was in place and coverage metrics were being collected and forwarded as expected.
-Document management: architectural decision on file transfer
+
+=== Document management: architectural decision on file transfer
 During the implementation of document upload and download functionality, the file content was routed through the Spring Boot backend rather than using presigned URLs for direct client-to-storage transfers. This decision was made due to limited prior familiarity with S3-compatible object storage integration patterns at the time of implementation. While functional, this approach is not the standard pattern for systems built on an S3-compatible backend, and results in unnecessary load on the backend service. This is identified and documented as a future improvement.
-Cross-service consistency on partial failures
+
+=== Cross-service consistency on partial failures
 Several operations involving coordinated changes across the relational database and the object storage backend (most visibly bulk document deletion) were found to lack a distributed transaction or compensating-action mechanism. A failure partway through a multi-step operation can leave the system in an inconsistent state: for example, a document record deleted from the database but whose corresponding object was not successfully removed from MinIO, or vice versa. Manual intervention would be required to recover from such cases. This was recognized during development but left unresolved within the project scope.
-MinIO dependency maturity
+
+=== MinIO dependency maturity
 During the development period, MinIO's open-source Community Edition underwent significant changes: administrative functionality was removed from its web console in 2025, and the upstream project was subsequently placed into maintenance mode in December 2025. This meant that a dependency originally selected as a mature, actively maintained S3-compatible storage solution became effectively frozen during the course of the project. The current deployment uses unpinned latest tags for both minio/minio and minio/mc, which poses a risk in terms of reproducibility and future security patch availability. Migration to an actively maintained alternative is proposed as future work.
-Typst compatibility with nested requirement lists
+
+=== Typst compatibility with nested requirement lists
 During the preparation of the requirements specification, a compatibility issue was encountered with Typst's support for nested lists. Since the requirements documentation relies heavily on hierarchical structures (such as identifiers following formats like UM.1.1) the absence of adequate native multilevel list support at the time created difficulties in maintaining the intended document structure. Resolving this required additional investigation and the adoption of an external Typst extension (efilrst) to restore the required nested list behavior. This added unforeseen effort to the documentation phase.
-Usability issues discovered during testing
-Several interface issues were identified during usability testing that required corrective action:
 
-The entity identity slug was consistently missed or misunderstood by all four test users due to low contrast and a lack of explanatory labeling. The corrective measure was to increase contrast and add an explanatory tooltip.
-The filter for disabled requirements on the non-functional requirements view was placed unexpectedly relative to its counterpart on the functionality view, causing confusion. This was corrected by aligning the filter placement.
-State badges on entity detail views were positioned in a way that made them easy to overlook. They were moved to a more prominent position beside the identity slug.
-Clicking the user avatar in the navigation bar navigated to an unimplemented route, causing an error page. The redirect logic was commented out as the user profile editing view is outside the project scope.
-The slug search field did not respond to the Enter key, which users consistently expected. Keyboard navigation was documented as future work.
+=== Usability issues discovered during testing
+Several interface issues were identified during usability testing that required corrective action. These, as well as their corrections, are all documented appropiately over on the #link(<usability_testing_execution>)[usability testing execution].
 
-draw.io integration not fully completed
-The self-hosted draw.io instance and its supporting infrastructure (including Traefik routing, CORS configuration, and frontend embedding points) were fully provisioned as part of the architecture. However, the end-to-end integration was not brought to a fully operational state within the project timeline, as development effort was redirected toward ensuring testing coverage, usability testing, and the observability stack were complete. No architectural changes are required; this is a completion task deferred to future work.
-Requirements export to PDF not implemented
-PDF export of requirements was a planned extension of the project scope but could not be implemented within the available development time. Project managers currently have no built-in mechanism to generate a portable snapshot of a project's requirements for external stakeholders. This is documented as future work.
-Incomplete test coverage
+=== Time constraints and consecuences 
+Due to the irregular schedule, several additions had to be cut or left in a partial state to be able to cover the whole scope of the system. Although non essential, these were quality of life additions that had been considered in the event of having enough time for them, and are documented over on #link(<conclusions_future_work>)[future work]. 
 
-Several testing areas could not be completed within the project timeline. Multi-user and access-control E2E scenarios were not automated, meaning the permission boundaries between project managers, requirement engineers, and stakeholder users have not been validated end-to-end against the live Ory Keto layer. The concurrency control mechanism and the slug-based search flow also lack automated E2E coverage, though both were manually verified during development. Load testing was executed using Gatling against the deployed stack; its results and observations are documented in the corresponding test plan execution section.
+Examples of this were the draw.io integration, as after several iterations attempting to embed the official service using the official documentation #link(<reference_7>)[[7]], self-hosting became the final option. However, it was not brought to a fully operational state within the project timeline, as development effort was redirected toward ensuring testing coverage, usability testing, and the observability stack were complete.
+
+Similarly, the PDF export of requirements was a planned extension of the project scope but could not be implemented within the available development time. Project managers currently have no built-in mechanism to generate a portable snapshot of a project's requirements for external stakeholders. This is documented as future work.
+
 
 = Test Plan Execution //8
 == Unit Testing
@@ -3119,9 +3118,38 @@ TODO
 ]
 == Load Testing
 TODO
+To perform load testing, first the system was deployed on its production profile on a `Standard_B2ms` Azure vm, and linked to a purchased domain `irboard.online`. The deployment followed the steps that can be found on the #link(<installation_guide>)[installation guide].
+
+The specifics of the deployment deployment are:
+- The virtual machine is deployed in *France Central*, for its cost-effectiveness and good latency from spain
+- It runs *Ubuntu Server 24.04 LTS* due to its stability and strong support for Docker-based deployments. 
+- The selected size is Standard *B2as_v2* (2 vCPU, 8 GB RAM), which provides a low-cost but sufficient environment for hosting the full application stack and performing load testing. 
+- Storage is configured with a *64 GiB Standard SSD*, balancing performance and cost for container workloads. The OS *disk is set to be deleted automatically* with the VM to avoid orphaned resources and reduce costs. 
+
+And in the domain registry and `.env` file, I setup the corresponding domain and subdomains: 
+```env
+DOMAIN_NAME=irboard.online
+AUTH_DOMAIN=auth.irboard.online
+API_DOMAIN=api.irboard.online
+OBJS_DOMAIN=objects.irboard.online
+DRAWIO_DOMAIN=diagrams.irboard.online
+```
+
 = System manuals //9
-== Installation Guide
+== Installation Guide <installation_guide>
 TODO
+=== When connected
+```shell-unix-generic
+sudo apt update
+curl -fsSL https://get.docker.com | sudo sh
+sudo apt install -y git
+sudo usermod -aG docker $USER
+```
+And log out and back in to enable docker usage. Finally, configure the .env file and do: 
+```shell-unix-generic
+docker compose -f docker-compose.yaml up -d --build
+```
+add inbound port rules for ports 80 and 8025
 == User Manual
 TODO
 == Developer Guide
@@ -3793,6 +3821,7 @@ As future work, this export capability should be implemented, most likely by com
 - [4] “hexagonal-architecture.” https://alistair.cockburn.us/hexagonal-architecture <reference_4>
 - [5] R. C. Martin, Clean architecture: A Craftsman’s Guide to Software Structure and Design. Pearson Professional, 2018. <reference_5>
 - [6] “Ory Permission Language specification | Ory,” Jun. 17, 2024. https://www.ory.com/docs/keto/reference/ory-permission-language <reference_6>
+- [7] draw.io, “Embed mode | draw.io,” draw.io. https://www.drawio.com/docs/reference/embed-mode/ <reference_7>
 = Appendices <appendices>
 #page(flipped: true)[
   == Budget
