@@ -7,14 +7,18 @@ networks:
 services:
   # --- GATEWAY ---
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.7.5
     container_name: traefik
+    user: root
+    environment:
+      - DOCKER_API_VERSION=1.41
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=irboard_public"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.minio.address=:9000"
       - "--entrypoints.minio-api.address=:9001"
@@ -359,6 +363,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   drawio:
