@@ -19,16 +19,18 @@ DB_CON_STR="postgresql://$DB_USER:$DB_PASS@backend-db:5432/$DB_NAME"
 
 echo "Waiting for Kratos..."
 until curl -sf "http://kratos:4434/admin/identities" > /dev/null 2>&1; do sleep 2; done
+echo "Kratos is up."
 
 echo "Waiting for Keto namespaces..."
 until curl -sf "http://keto:4466/namespaces" | grep -q '"System"'; do sleep 2; done
+echo "Keto is up."
 
 echo "Waiting for backend DB table..."
 until psql "$DB_CON_STR" -c "SELECT 1 FROM app_user LIMIT 1;" > /dev/null 2>&1; do sleep 2; done
+echo "Backend DB is up."
 
 SUCCESS=0
 FAILED=0
-SKIPPED=0
 
 # Skip header row with tail -n +2
 tail -n +2 "$CSV_FILE" | while IFS=',' read -r EMAIL NAME SURNAME IS_ADMIN PASSWORD; do

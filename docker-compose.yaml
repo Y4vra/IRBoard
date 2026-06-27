@@ -254,6 +254,23 @@ services:
       - ADMIN_NAME=${INITIAL_ADMIN_NAME}
       - ADMIN_SURNAME=${INITIAL_ADMIN_SURNAME}
     
+  # bulk-user-insert:
+  #   build: ./config/bulk-user-insert
+  #   depends_on:
+  #     initial-setup-admin:
+  #       condition: exit
+  #   networks:
+  #     - internal
+  #   environment:
+  #     - KRATOS_URL=http://kratos:4434/admin/identities
+  #     - KETO_URL=http://keto:4467/admin/relation-tuples
+  #     - DB_USER=${RMS_DB_USER}
+  #     - DB_PASS=${RMS_DB_PASSWORD}
+  #     - DB_NAME=${RMS_DB_NAME}
+  #     - ADMIN_EMAIL=${INITIAL_ADMIN_EMAIL}
+  #     - ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+  #     - ADMIN_NAME=${INITIAL_ADMIN_NAME}
+  #     - ADMIN_SURNAME=${INITIAL_ADMIN_SURNAME}
 
   # --- BUSINESS LOGIC ---
   backend-db:
