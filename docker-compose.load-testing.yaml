@@ -222,7 +222,7 @@ services:
       
       - "traefik.http.routers.kratos-login.rule=Host(`${AUTH_DOMAIN}`) && PathPrefix(`/self-service/login`)"
       - "traefik.http.routers.kratos-login.entrypoints=web"
-      - "traefik.http.routers.kratos-login.middlewares=kratos-ratelimit"
+      # - "traefik.http.routers.kratos-login.middlewares=kratos-ratelimit"
       - "traefik.http.routers.kratos-login.service=oathkeeper"
 
       - "traefik.http.routers.oathkeeper.entrypoints=web"
@@ -253,6 +253,20 @@ services:
       - ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
       - ADMIN_NAME=${INITIAL_ADMIN_NAME}
       - ADMIN_SURNAME=${INITIAL_ADMIN_SURNAME}
+    
+  bulk-user-insert:
+    build: ./config/bulk-user-insert
+    depends_on:
+      initial-setup-admin:
+        condition: service_completed_successfully
+    networks:
+      - internal
+    environment:
+      - KRATOS_URL=http://kratos:4434/admin/identities
+      - KETO_URL=http://keto:4467/admin/relation-tuples
+      - DB_USER=${RMS_DB_USER}
+      - DB_PASS=${RMS_DB_PASSWORD}
+      - DB_NAME=${RMS_DB_NAME}
 
   # --- BUSINESS LOGIC ---
   backend-db:

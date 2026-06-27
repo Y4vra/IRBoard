@@ -2,13 +2,11 @@
 set -e
 
 CSV_FILE="$1"
-
 if [ -z "$CSV_FILE" ]; then
   echo "Usage: $0 <csv_file>"
   echo "CSV format: email,name,surname,is_admin,password"
   exit 1
 fi
-
 if [ ! -f "$CSV_FILE" ]; then
   echo "Error: file '$CSV_FILE' not found."
   exit 1
@@ -31,11 +29,10 @@ echo "Backend DB is up."
 
 SUCCESS=0
 FAILED=0
+TMPCSV="/tmp/import_users_data.csv"
+tail -n +2 "$CSV_FILE" > "$TMPCSV"
 
-# Skip header row with tail -n +2
-tail -n +2 "$CSV_FILE" | while IFS=',' read -r EMAIL NAME SURNAME IS_ADMIN PASSWORD; do
-
-  # Skip blank lines
+while IFS=',' read -r EMAIL NAME SURNAME IS_ADMIN PASSWORD; do
   if [ -z "$EMAIL" ]; then
     continue
   fi
@@ -43,8 +40,8 @@ tail -n +2 "$CSV_FILE" | while IFS=',' read -r EMAIL NAME SURNAME IS_ADMIN PASSW
   echo "---"
   echo "Processing user: $EMAIL"
 
-  # Build Kratos payload
-  cat > /tmp/user.json <<EOF
+  
+  cat > /tmp/current_user.json <<EOF
 {
   "schema_id": "default",
   "traits": {
@@ -63,45 +60,58 @@ tail -n +2 "$CSV_FILE" | while IFS=',' read -r EMAIL NAME SURNAME IS_ADMIN PASSW
 }
 EOF
 
-  # Create identity in Kratos
   RESPONSE=$(curl -sf -X POST "$KRATOS_URL" \
     -H "Content-Type: application/json" \
-    -d @/tmp/user.json 2>&1) || true
+    -d @/tmp/current_user.json 2>&1) || true
 
   USER_ID=$(echo "$RESPONSE" | jq -r '.id' 2>/dev/null)
 
-  if [ "$USER_ID" = "null" ] || [ -z "$USER_ID" ]; then
+  if [ -z "$USER_ID" ] || [ "$USER_ID" = "null" ]; then
     echo "  Warning: could not create '$EMAIL' in Kratos — skipping."
+    echo "  Response: $RESPONSE"
     FAILED=$((FAILED + 1))
     continue
   fi
 
   echo "  Kratos identity created: $USER_ID"
 
-  # Add to Keto only if is_admin is true
   if [ "$IS_ADMIN" = "true" ]; then
-    curl -sf -X PUT "$KETO_URL" \
+    # Build Keto payload same way as working script but with jq for safety
+    KETO_PAYLOAD=$(jq -n \
+      --arg subject_id "$USER_ID" \
+      '{namespace: "System", object: "main", relation: "admins", subject_id: $subject_id}')
+
+    echo "$KETO_PAYLOAD" | curl -sf -X PUT "$KETO_URL" \
       -H "Content-Type: application/json" \
-      -d "{
-        \"namespace\": \"System\",
-        \"object\": \"main\",
-        \"relation\": \"admins\",
-        \"subject_id\": \"$USER_ID\"
-      }" || echo "  Warning: failed to add '$EMAIL' to Keto admins."
+      -d @- || echo "  Warning: failed to add '$EMAIL' to Keto admins."
+
     echo "  Added to Keto as admin."
   fi
 
-  # Insert into backend DB
-  psql "$DB_CON_STR" -c "
-    INSERT INTO app_user (ory_id, email, name, surname, is_admin, active)
-    VALUES ('$USER_ID', '$EMAIL', '$NAME', '$SURNAME', $IS_ADMIN, true)
-    ON CONFLICT (ory_id) DO NOTHING;
-  " && echo "  Inserted into backend DB." \
-    || echo "  Warning: failed to insert '$EMAIL' into backend DB."
+  # Use psql with \$-style quoting via a temp SQL file to avoid injection
+  # from names/emails with apostrophes
+  cat > /tmp/insert_user.sql <<SQLEOF
+INSERT INTO app_user (ory_id, email, name, surname, is_admin, active)
+VALUES ('$USER_ID', '$EMAIL', '$NAME', '$SURNAME', $IS_ADMIN, true)
+ON CONFLICT (ory_id) DO NOTHING;
+SQLEOF
 
-  SUCCESS=$((SUCCESS + 1))
+  DB_RESULT=$(psql "$DB_CON_STR" -f /tmp/insert_user.sql 2>&1)
 
-done
+  if echo "$DB_RESULT" | grep -qi "error"; then
+    echo "  Warning: failed to insert '$EMAIL' into backend DB."
+    echo "  DB error: $DB_RESULT"
+    FAILED=$((FAILED + 1))
+  else
+    echo "  Inserted into backend DB."
+    SUCCESS=$((SUCCESS + 1))
+  fi
+
+  sleep 0.03
+
+done < "$TMPCSV"
+
+rm -f "$TMPCSV" /tmp/current_user.json /tmp/insert_user.sql
 
 echo "==="
 echo "Import complete."
