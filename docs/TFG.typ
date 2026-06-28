@@ -6,6 +6,24 @@
 #show link: set text(fill: blue)
 #show link: underline
 #show figure: set block(breakable: true)
+#let code-bg = rgb("#f6f8fa")
+#let code-border = rgb("#d0d7de")
+
+#show raw.where(block: false): it => box(
+  fill: code-bg,
+  stroke: code-border,
+  radius: 3pt,
+  inset: (x: 4pt, y: 2pt),
+  it,
+)
+
+#show raw.where(block: true): it => block(
+  fill: code-bg,
+  stroke: code-border,
+  radius: 4pt,
+  inset: 10pt,
+  it,
+)
 
 #set page(
   margin: (top: 2.5cm, bottom: 2.5cm, left: 3cm, right: 3cm),
@@ -115,7 +133,18 @@ This document follows a template provided by Jorge Álvarez Fidalgo.
 It has been adapted and modified to fit the specific needs of the project during its development.
 
 = Special thanks to
-TODO add special thanks
+I would like to dedicate this work to those who have supported me throughout my life and helped shape the person I am today.
+
+To my lifelong friends and family, for being a constant source of warmth and laughter.
+
+To my colleagues from university, whom I have been lucky to share these years with, learning and complaining in equal measure, and whom I hope to keep bothering at every opportunity.
+
+To my tutors and university teachers, for their guidance and for helping me find my footing in an industry as deep and demanding as this one.
+
+To my girlfriend Devi, for her patience, for listening, and giving me a safe space where I could sort my thoughts out.
+
+Finally, to my brother, who has always been a role model of self-improvement, introspection, and talent built from sheer perseverance and determination.
+
 
 #pagebreak()
 // Índice
@@ -3221,17 +3250,60 @@ Despite that gap, the system clearly performs well above the #link(<performance_
 
 = System manuals //9
 == Installation Guide <installation_guide>
-TODO
-example:
-To perform load testing, first the system was deployed on its production profile on a `Standard_B2ms` Azure vm, and linked to a purchased domain `irboard.online`. The deployment followed the steps that can be found on the #link(<installation_guide>)[installation guide].
+=== Prerequisites
+The following tools are required before proceeding with any deployment profile:
+- A console: the deployment process is performed through a command-line interface. A `bash` shell is preferred; on Windows, `Git Bash` is a suitable alternative. Basic shell familiarity is assumed, though the commands used are straightforward. 
+- Docker: required for all profiles. Install via the official script or your system's package manager. Docker Compose is included with modern Docker installations.
+- Git: required to clone the repository. Not needed if the project is downloaded directly as an archive.
+- A configured `.env` file: all profiles depend on this file for domain names, database credentials, and service configuration. A `.env.example` is provided at the root of the repository as a starting point.
+- A domain name or local DNS control: the Ory ecosystem requires a proper domain to be available at all times. For local development this is satisfied by editing the system hosts file. For production and load testing deployments, a free or purchased domain with DNS records pointing to the server's public IP is required.
 
-The specifics of the deployment deployment are:
-- The virtual machine is deployed in *France Central*, for its cost-effectiveness and good latency from spain
-- It runs *Ubuntu Server 24.04 LTS* due to its stability and strong support for Docker-based deployments. 
-- The selected size is Standard *B2as_v2* (2 vCPU, 8 GB RAM), which provides a low-cost but sufficient environment for hosting the full application stack and performing load testing. 
-- Storage is configured with a *64 GiB Standard SSD*, balancing performance and cost for container workloads. The OS *disk is set to be deleted automatically* with the VM to avoid orphaned resources and reduce costs. 
+=== Local development deployment
+The default `docker-compose.yaml` defines the production stack. The `docker-compose.override.yaml` file is automatically picked up by Docker Compose when no explicit file is specified, and extends the base stack with development-specific configuration such as the final dockerfile stages for the backend and frontend, and additional exposed ports and enviroment variables. 
 
-And in the domain registry and `.env` file, I setup the corresponding domain and subdomains: 
+Running docker compose up without arguments therefore produces the development environment.
+
+1. Clone the repository or alternatively, download and extract it to your desired location:
+```shell-unix-generic
+git clone https://github.com/Y4vra/IRBoard.git
+```
+2. Create and configure the `.env`, or leave the defaults from the proviced `.env.example` file.
+3. Add the `.env` domains to your local hosts file. On Linux and macOS, the file to be modified is `/etc/hosts`; on Windows it is `C:\Windows\System32\drivers\etc\hosts`. Add the following line if the defaults are used:
+```
+127.0.0.1 irboard.local api.irboard.local auth.irboard.local objects.irboard.local diagrams.irboard.local grafana.irboard.local
+```
+Or if you used your own domains, a loopback rule substituting the domains above for yours.
+4. Now, start docker desktop or the docker engine, as well as the irboard stack using:
+```shell-unix-generic
+docker compose up -d --build
+```
+Once all containers are healthy, the frontend is accessible at `http://irboard.local` (or the domain set on the `.env`) and Mailpit (for inspecting invitation emails) at `http://localhost:8025`. The initial-setup-admin container will seed the first administrator account using the credentials defined in the .env file.
+
+It is recommended that every development session uses a clean stack. To turn down the system and clear it, use:
+```shell-unix-generic
+docker compose down -v
+```
+=== Production deployment
+This deployment uses docker-compose.yaml explicitly, bypassing the override file, and is tailored for a slimmer profile and a non-development use, as it lacks the Spring Boot devtools and Vite hot-reload present in the development profile.
+
+As an example, here are the steps that were followed for the deployment over on azure:
+1. Have a domain, and configure its dns records to the different subdomains needed. On this example, the domain is `irboard.online` as a nod to the development's `irboard.local`.
+2. Select a deployment instance. In my case, the instance had the following specifications:
+- Region: France Central, for cost-effectiveness and low latency from Spain.
+- OS: Ubuntu Server 24.04 LTS, for its stability and Docker support.
+- Size: Standard B2as_v2 (2 vCPU, 8 GB RAM).
+- Storage: 64 GiB Standard SSD, with the OS disk set to delete automatically with the VM.
+
+3. Once the server is provisioned and DNS records are configured the prerequisite software needs to be installed, and the repository cloned to the desired installation directory. In my case, I connected to the machine and ran the following commands:
+```shell-unix-generic
+sudo apt update
+curl -fsSL https://get.docker.com | sudo sh
+sudo apt install -y git
+sudo usermod -aG docker $USER
+git clone https://github.com/Y4vra/IRBoard.git
+```
+And logged out and back in to apply the Docker group membership.
+4. Similarly, configure the .env file with the real domain names, users and passwords:
 ```env
 DOMAIN_NAME=irboard.online
 AUTH_DOMAIN=auth.irboard.online
@@ -3239,18 +3311,20 @@ API_DOMAIN=api.irboard.online
 OBJS_DOMAIN=objects.irboard.online
 DRAWIO_DOMAIN=diagrams.irboard.online
 ```
-=== When connected
-```shell-unix-generic
-sudo apt update
-curl -fsSL https://get.docker.com | sudo sh
-sudo apt install -y git
-sudo usermod -aG docker $USER
-```
-And log out and back in to enable docker usage. Finally, configure the .env file and do: 
+5. Start the stack:
 ```shell-unix-generic
 docker compose -f docker-compose.yaml up -d --build
 ```
-add inbound port rules for ports 80 and 8025
+6. Finally, open an inbound port rule for port 80 (HTTP). Mailpit's web UI runs on port 8025 and is intentionally not exposed publicly, as it would allow anyone to intercept invitation codes. Accessing it in production is left to the operator's discretion and infrastructure setup.
+
+=== Load testing deployment
+This profile uses `docker-compose.load-testing.yaml` and is a variant of the production profile specifically prepared for load testing. It disables load balancing and pre-inserts 499 user accounts into the system to allow a 500 concurrent user simulation without user creation overhead interfering with the test.
+Configuration and startup follow the same steps as the production deployment, including DNS setup and `.env` configuration. Once ready, start the stack with:
+```shell-unix-generic
+docker compose -f docker-compose.load-testing.yaml up -d --build
+```
+Open the same inbound ports as the production profile. Once the stack is healthy and all users are seeded, the system is ready to receive load from the Gatling simulation described in the #link(<test_plan_analysis>)[Test Plan Analysis].
+
 == User Manual
 TODO
 == Developer Guide
