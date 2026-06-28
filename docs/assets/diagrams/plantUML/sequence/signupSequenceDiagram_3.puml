@@ -1,0 +1,43 @@
+@startuml signupSequenceDiagram_3
+
+actor Admin
+actor "New User" as NewUser
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Spring Boot Backend" as BE
+participant "Ory Kratos\n(Admin API)" as KratosAdmin
+participant "Ory Kratos\n(Public API)" as KratosPublic
+participant "Ory Keto" as Keto
+participant "Kratos Courier" as Courier
+participant "SMTP / Mailpit" as SMTP
+
+alt Valid code
+    == Post-Activation Auto-Login ==
+
+    FE -> Oathkeeper : GET auth.irboard.local/self-service/login/browser\n+ Accept: application/json\n[rule: kratos-self-service-pass\nauthenticator: noop → allow]
+    Oathkeeper -> KratosPublic : GET /self-service/login/browser
+    KratosPublic --> Oathkeeper : 200 OK\n{ id: flowId,\n  ui: { nodes: [{ csrf_token }] } }
+    Oathkeeper --> FE : 200 OK { id: flowId, ui: { ... } }
+
+    FE -> Oathkeeper : POST auth.irboard.local/self-service/login?flow={flowId}\n{ method: password, identifier: email,\n  password: password, csrf_token }\n[rule: kratos-self-service-pass\nauthenticator: noop → allow]
+    Oathkeeper -> KratosPublic : POST /self-service/login?flow={flowId}\n{ method: password, ... }
+    KratosPublic --> Oathkeeper : 200 OK\n{ session: { active: true, identity: { id: oryId } } }\n+ Set-Cookie: ory_kratos_session=...
+    Oathkeeper --> FE : 200 OK { session: { ... } }\n+ Set-Cookie: ory_kratos_session=...
+
+    FE -> Oathkeeper : GET api.irboard.local/v1/whoami\n+ Cookie: ory_kratos_session\n[rule: api-backend-protected]
+    Oathkeeper -> KratosPublic : GET /sessions/whoami\n+ Cookie: ory_kratos_session
+    KratosPublic --> Oathkeeper : 200 OK { active: true, identity: { id: oryId } }
+    Oathkeeper -> BE : GET /v1/whoami\n+ X-User: {oryId}
+    BE --> Oathkeeper : 200 OK { oryId, ... }
+    Oathkeeper --> FE : 200 OK { oryId, ... }
+
+    note over FE : isAuthenticated = true\nnavigate("/")
+
+else Invalid or expired code
+    KratosPublic --> BE : 400 Bad Request\n{ ui: { messages:\n  [{ id: 4060006,\n     text: "The recovery code is invalid\n     or has already been used" }] } }
+    BE --> Oathkeeper : 400 Bad Request\n{ message: "INVALID_OR_EXPIRED_CODE" }
+    Oathkeeper --> FE : 400 Bad Request
+    note over FE : Show error alert:\n"Please verify your credentials\nand security code."
+end
+
+@enduml

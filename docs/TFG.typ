@@ -1832,8 +1832,24 @@ It's a complex state to ease development, as the pending review can be seen as a
 
 #strong[Removed] - A requirement entity that has been deemed innecessary to the project. It is hidden from view, archived.
 
-== signup flows
-TODO
+== Login and signup flows
+=== Login flow
+#figure(stack(
+  image("assets/diagrams/sequence/loginSequenceDiagram_1.svg"),
+  image("assets/diagrams/sequence/loginSequenceDiagram_2.svg"),
+  image("assets/diagrams/sequence/loginSequenceDiagram_3.svg"),
+  image("assets/diagrams/sequence/loginSequenceDiagram_4.svg"),
+  image("assets/diagrams/sequence/loginSequenceDiagram_5.svg"),
+),caption:"Login sequence diagram")
+The login flow begins with the frontend checking for an existing session by calling the backend's `/v1/whoami` endpoint through Oathkeeper. Since no session cookie is present, Oathkeeper's cookie_session authenticator calls Kratos's `/sessions/whoami` internally, receives a `401`, and rejects the request. The frontend then initialises a Kratos browser login flow through the kratos-self-service-pass rule, which passes the request to Kratos without authentication. Kratos returns a flow object containing the flow ID and a CSRF token. The user fills in their credentials and submits them directly to Kratos through the same passthrough rule. On success, Kratos returns the session object and sets the session cookie. The frontend then re-calls `/v1/whoami` through Oathkeeper, which now validates the cookie successfully, injects the resolved identity as X-User, and forwards the request to the backend. From this point on, all subsequent authenticated requests follow the same path through Oathkeeper.
+#figure(stack(
+  image("assets/diagrams/sequence/signupSequenceDiagram_1.svg"),
+  image("assets/diagrams/sequence/signupSequenceDiagram_2.svg"),
+  image("assets/diagrams/sequence/signupSequenceDiagram_3.svg"),
+), caption:"Signup sequence diagram")
+The signup flow begins with an already-authenticated administrator filling out the invite user dialog. The frontend sends the invitation request to the backend through Oathkeeper, which validates the admin's session cookie before forwarding it. The backend creates a new identity in Kratos via the Admin API, optionally grants system-level admin permissions in Keto, and then initiates a Kratos recovery flow to generate a one-time code. Kratos persists the delivery job to its database, where the Kratos Courier container (a separate process that polls that database) picks it up and dispatches it to the configured SMTP relay. In production this relay would send the email to the user's inbox; in development, Mailpit intercepts it and holds it in a local web UI instead of forwarding it externally. The backend stores the recovery flow ID against the user record as a pending activation token.
+
+When the new user receives the code from their email, they navigate to the registration page and submit their email, code, and chosen password. This request goes to the backend through Oathkeeper's public activation rule, which applies no authentication. The backend retrieves the stored flow ID, submits the code to Kratos to validate it, and on success uses the Kratos Admin API to set the user's password directly on the identity. The user record is then marked as active. Finally, the frontend automatically performs a standard login on the user's behalf using the credentials they just set, resulting in a valid session cookie and navigation to the home page.
 
 == System Analysis
 === Class Analysis

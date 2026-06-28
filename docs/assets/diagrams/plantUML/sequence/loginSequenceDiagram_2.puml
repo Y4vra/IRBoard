@@ -1,0 +1,19 @@
+@startuml loginSequenceDiagram_2
+actor User
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Ory Kratos" as Kratos
+participant "Spring Boot Backend" as BE
+
+== Login Flow Initialization ==
+
+FE -> Oathkeeper : GET auth.irboard.local/self-service/login/browser\n+ Accept: application/json\n[rule: kratos-self-service-pass\nauthenticator: noop → allow]
+Oathkeeper -> Kratos : GET /self-service/login/browser\n(passed through, noop auth)
+Kratos --> Oathkeeper : 200 OK\n{ id: flowId,\n  ui: { nodes: [{ attributes:\n    { name: csrf_token, value: ... } }] } }
+Oathkeeper --> FE : 200 OK\n{ id: flowId, ui: { nodes: [...] } }
+
+note over FE : Store flowId and\nextract csrf_token from ui.nodes
+
+==  ==
+
+@enduml

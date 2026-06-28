@@ -1,0 +1,23 @@
+@startuml loginSequenceDiagram_3
+
+actor User
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Ory Kratos" as Kratos
+participant "Spring Boot Backend" as BE
+
+== Credential Submission ==
+
+User -> FE : Enter email + password\nand submit form
+
+FE -> Oathkeeper : POST auth.irboard.local/self-service/login?flow={flowId}\n+ Accept: application/json\n+ Origin: http://irboard.local\n{ method: password, identifier,\n  password, csrf_token }\n[rule: kratos-self-service-pass\nauthenticator: noop → allow]
+Oathkeeper -> Kratos : POST /self-service/login?flow={flowId}\n(passed through, noop auth)
+
+alt Valid credentials
+    Kratos --> Oathkeeper : 200 OK\n{ session: { active: true,\n  identity: { id: oryId, traits: {...} } } }\n+ Set-Cookie: ory_kratos_session=...
+    Oathkeeper --> FE : 200 OK\n{ session: { active: true, ... } }\n+ Set-Cookie: ory_kratos_session=...
+
+    ==  ==
+end
+
+@enduml

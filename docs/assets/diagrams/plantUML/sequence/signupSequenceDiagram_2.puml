@@ -1,0 +1,42 @@
+@startuml signupSequenceDiagram_2
+
+actor Admin
+actor "New User" as NewUser
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Spring Boot Backend" as BE
+participant "Ory Kratos\n(Admin API)" as KratosAdmin
+participant "Ory Kratos\n(Public API)" as KratosPublic
+participant "Ory Keto" as Keto
+participant "Kratos Courier" as Courier
+participant "SMTP / Mailpit" as SMTP
+
+== New User: Account Activation ==
+
+NewUser -> SMTP : Open email client\n(or Mailpit UI)
+SMTP --> NewUser : Recovery code email\n{ code: recoveryCode }
+
+NewUser -> FE : Navigate to /registration\nand fill activation form\n(email, code, password, confirmPassword)
+
+note over FE : Frontend validates\npassword === confirmPassword\nbefore submitting
+
+FE -> Oathkeeper : POST api.irboard.local/v1/auth/activate\n+ { email, code, password }\n[rule: api-backend-activate-public\nauthenticator: noop → allow]
+Oathkeeper -> BE : POST /v1/auth/activate\n+ { email, code, password }\n(no X-User — public endpoint)
+
+BE -> BE : userRepository.findByEmail(email)\n→ retrieve pendingActivationToken (flowId)
+
+BE -> KratosPublic : POST /self-service/recovery?flow={flowId}\n{ method: code, code: recoveryCode }
+
+alt Valid code
+    KratosPublic --> BE : 422 Unprocessable Entity\n(expected — flow advanced to\nsettings phase, code accepted)
+
+    BE -> KratosAdmin : PUT /admin/identities/{oryId}\n+ Bearer {apiKey}\n{ schema_id: default, state: active,\n  traits: { ... },\n  credentials: { password: { config:\n    { password: password } } } }
+    KratosAdmin --> BE : 200 OK\n(password set on identity)
+
+    BE -> BE : user.setActive(true)\nuser.setPendingActivationToken(null)\nuserRepository.save(user)
+    BE --> Oathkeeper : 200 OK { userId, email, ... }
+    Oathkeeper --> FE : 200 OK { userId, email, ... }
+
+    ==  ==
+end
+@enduml

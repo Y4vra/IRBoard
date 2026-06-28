@@ -1,0 +1,24 @@
+@startuml loginSequenceDiagram_4
+
+actor User
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Ory Kratos" as Kratos
+participant "Spring Boot Backend" as BE
+
+alt Valid credentials
+    == Post-Login Session Verification ==
+
+    FE -> Oathkeeper : GET api.irboard.local/v1/whoami\n+ Cookie: ory_kratos_session\n[rule: api-backend-protected\nauthenticator: cookie_session]
+    Oathkeeper -> Kratos : GET /sessions/whoami\n+ Cookie: ory_kratos_session
+    Kratos --> Oathkeeper : 200 OK\n{ id, active: true,\n  identity: { id: oryId, traits: {...} } }
+    Oathkeeper -> BE : GET /v1/whoami\n+ X-User: {oryId}\n(header mutator injects subject)
+    BE --> Oathkeeper : 200 OK { oryId, ... }
+    Oathkeeper --> FE : 200 OK { oryId, ... }
+
+    note over FE : isAuthenticated = true\nnavigate("/")
+
+    ==  ==
+end
+
+@enduml

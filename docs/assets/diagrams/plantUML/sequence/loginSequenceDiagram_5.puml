@@ -1,0 +1,30 @@
+@startuml loginSequenceDiagram_5
+
+actor User
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Ory Kratos" as Kratos
+participant "Spring Boot Backend" as BE
+
+alt Valid credentials
+    == Subsequent Authenticated Requests ==
+
+    FE -> Oathkeeper : GET api.irboard.local/v1/{resource}\n+ Cookie: ory_kratos_session\n[rule: api-backend-protected\nauthenticator: cookie_session]
+    Oathkeeper -> Kratos : GET /sessions/whoami\n+ Cookie: ory_kratos_session
+    Kratos --> Oathkeeper : 200 OK\n{ active: true, identity: { id: oryId } }
+    Oathkeeper -> BE : GET /v1/{resource}\n+ X-User: {oryId}
+    BE --> Oathkeeper : 200 OK { ... }
+    Oathkeeper --> FE : 200 OK { ... }
+
+else Invalid credentials
+    Kratos --> Oathkeeper : 400 Bad Request\n{ ui: { messages:\n  [{ id: 4000006,\n     text: "credentials are invalid..." }] } }
+    Oathkeeper --> FE : 400 Bad Request\n{ ui: { messages: [...] } }
+    note over FE : alert("Invalid credentials")
+
+else Account temporarily locked
+    Kratos --> Oathkeeper : 400 Bad Request\n{ ui: { messages:\n  [{ id: 4000010,\n     text: "Account locked..." }] } }
+    Oathkeeper --> FE : 400 Bad Request\n{ ui: { messages: [...] } }
+    note over FE : alert("Invalid credentials")
+end
+
+@enduml

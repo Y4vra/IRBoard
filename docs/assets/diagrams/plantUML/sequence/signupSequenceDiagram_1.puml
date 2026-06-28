@@ -1,0 +1,62 @@
+@startuml signupSequenceDiagram_1
+title Signup / Activation Flow
+
+actor Admin
+actor "New User" as NewUser
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Spring Boot Backend" as BE
+participant "Ory Kratos\n(Admin API)" as KratosAdmin
+participant "Ory Kratos\n(Public API)" as KratosPublic
+participant "Ory Keto" as Keto
+participant "Kratos Courier" as Courier
+participant "SMTP / Mailpit" as SMTP
+
+== Admin: Invite User ==
+
+note over Admin : Already authenticated\n(ory_kratos_session cookie present)
+
+Admin -> FE : Fill InviteUserDialog\n(name, surname, email, isAdmin)\nand click "Generate Invitation"
+
+FE -> Oathkeeper : POST api.irboard.local/v1/users/invite\n+ Cookie: ory_kratos_session\n+ { email, name, surname, isAdmin }\n[rule: api-backend-protected\nauthenticator: cookie_session]
+Oathkeeper -> KratosPublic : GET /sessions/whoami\n+ Cookie: ory_kratos_session
+KratosPublic --> Oathkeeper : 200 OK\n{ active: true, identity: { id: adminOryId } }
+Oathkeeper -> BE : POST /v1/users/invite\n+ X-User: {adminOryId}\n+ { email, name, surname, isAdmin }
+
+BE -> KratosAdmin : POST /admin/identities\n+ Bearer {apiKey}\n{ schema_id: default, state: active,\n  traits: { email, name, surname, is_admin },\n  recovery_addresses: [{ value: email, via: email }] }
+
+alt Identity does not exist
+    KratosAdmin --> BE : 201 Created\n{ id: oryId, ... }
+else Identity already exists (409)
+    KratosAdmin --> BE : 409 Conflict
+    BE -> KratosAdmin : GET /admin/identities\n?credentials_identifier={email}
+    KratosAdmin --> BE : 200 OK [ { id: oryId } ]
+end
+
+alt isAdmin = true
+    BE -> Keto : PUT /admin/relation-tuples\n{ namespace: System, object: main,\n  relation: admins, subject_id: oryId }
+    Keto --> BE : 201 Created
+end
+
+BE -> KratosPublic : GET /self-service/recovery/api\n(initiate recovery flow via API)
+KratosPublic --> BE : 200 OK\n{ id: flowId, ... }
+
+BE -> KratosPublic : POST /self-service/recovery?flow={flowId}\n{ method: code, email: email }
+KratosPublic --> BE : 200 OK\n(recovery flow submitted,\ncode generation triggered)
+
+note over KratosPublic : Kratos generates\na one-time recovery code\nand queues delivery via Courier
+
+KratosPublic -> Courier : Queue recovery code email\n{ to: email, code: recoveryCode }
+Courier -> SMTP : SMTP delivery request\n{ to: email, subject: "Your recovery code",\n  body: "Your code is: {recoveryCode}" }
+
+alt Production SMTP
+    SMTP --> Courier : 250 OK (delivered to inbox)
+else Mailpit (development)
+    SMTP --> Courier : 250 OK (stored in Mailpit UI\nat irboard.local:8025)
+end
+
+BE --> Oathkeeper : 200 OK { oryId, ... }
+Oathkeeper --> FE : 200 OK { oryId, ... }
+
+==  ==
+@enduml

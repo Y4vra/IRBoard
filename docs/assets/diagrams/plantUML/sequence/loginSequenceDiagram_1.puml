@@ -1,0 +1,21 @@
+@startuml loginSequenceDiagram_1
+title Login Flow
+
+actor User
+participant "React Frontend" as FE
+participant "Ory Oathkeeper" as Oathkeeper
+participant "Ory Kratos" as Kratos
+participant "Spring Boot Backend" as BE
+
+== Session Check on Mount ==
+
+FE -> Oathkeeper : GET api.irboard.local/v1/whoami\n+ Cookie: (none)\n[rule: api-backend-protected\nauthenticator: cookie_session]
+Oathkeeper -> Kratos : GET /sessions/whoami\n(cookie_session authenticator\nforwards cookie to Kratos)
+Kratos --> Oathkeeper : 401 Unauthorized\n{ error: { code: 401,\n"No active session was found" } }
+Oathkeeper --> FE : 401 Unauthorized\n(authenticator rejected,\naccess denied)
+
+note over FE : isAuthenticated = false\nProceed to login flow
+
+==  ==
+
+@enduml
