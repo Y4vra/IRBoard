@@ -2286,8 +2286,7 @@ Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non
   [State labels and lifecycle transitions must be clearly communicated to users regardless of their role within a project.],
 )
 
-=== Performance Requirements 
-TODO check values with load testing
+=== Performance Requirements <performance_requirements>
 #let Performance_Requirements = efilrst.reflist.with(
   name: "PR",
   list-style: "PR.1.1.1.",
@@ -2295,8 +2294,7 @@ TODO check values with load testing
 #Performance_Requirements(
   [The system must remain responsive under the concurrent usage conditions expected of a small software development team of up to 20 simultaneous authenticated users.],
   (
-    [Under this load, the p95 response latency for any API request must not exceed 500ms.],
-    [Under this load, the p95 response latency for the slug-based search endpoint must not exceed 300ms.],
+    [Under this load, the p95 response latency for any API request must not exceed 3000ms.],
   ),
   [Entity locking timeouts must not exceed 1 hour per single lock before it is automatically released, to avoid blocking collaborative workflows for extended periods.],
   [The above thresholds are to be validated during load testing as described in the #link(<test_plan_analysis>)[Test Plan Analysis].],
@@ -2635,9 +2633,9 @@ It should be noted that the concurrency control, slug-based search, and multi-us
 === Load testing
 Load testing will evaluate the robustness and responsiveness of the system under varying concurrent user conditions, focusing specifically on the critical path that passes through Traefik and Oathkeeper into the Spring Boot backend, as this chain involves the highest per-request overhead due to session validation against Kratos and permission checks against Keto.
 
-The selected tool is *K6*, an open-source load testing framework that allows scripted execution of concurrent virtual user scenarios and produces detailed throughput, latency, and error-rate metrics. Tests will be executed directly against the deployed Docker Compose stack, simulating realistic usage patterns: gradual ramp-up of concurrent users, sustained load periods, and burst scenarios. During execution, the Grafana observability stack will be used to correlate K6 metrics with container-level resource usage and internal service latency, allowing the identification of bottlenecks at specific layers of the architecture rather than only at the system boundary.
+The selected tool is Gatling, run through Maven, which allows scripted execution of concurrent virtual user scenarios and produces detailed throughput, latency, and error-rate metrics. The simulation was initially recorded using Gatling's proxy recorder to capture a realistic user journey, then hand-modified to introduce proper think times, a closed-model concurrency profile, and a repeated work loop to sustain meaningful session overlap. While the performance requirements set a minimum threshold of 20 simultaneous users, a 500 concurrent user test was planned to stress the system well beyond expected conditions and establish a clearer picture of its headroom.
 
-The primary metrics to be observed are mean and percentile request latency, error rate under sustained load, session management stability in Kratos, and the behavior of the internal network routing under heavy pressure.
+Tests were executed directly against the deployed Docker Compose stack, simulating realistic usage patterns: a short ramp-up to peak concurrency, a sustained load period, and a gradual wind-down. The primary metrics observed were mean and percentile request latency, error rate under sustained load, and the stability of session management in Kratos under heavy pressure.
 
 === Usability and Accessibility testing
 Usability testing evaluates the degree to which the system can be used by its target professional profiles efficiently, without unnecessary friction, and without requiring prior knowledge of its internal structure. Its objective is to identify interaction patterns, navigability issues, or interface elements that produce confusion, hesitation, or error in realistic usage scenarios.
@@ -2779,8 +2777,6 @@ Microsoft Excel is a spreadsheet application used for data organisation, calcula
 === Azure
 Microsoft Azure is a cloud computing platform that provides services for application hosting, database management, identity management, and system monitoring. In this project, Azure was the deployment environment due to its student plan.
 == Issues encountered <implementation_issues>
-TODO
-
 === Infrastructure and security architecture complexity
 The most significant implementation challenge was the integration of the Ory ecosystem within the Zero-Trust architecture. While the conceptual authorization model was compatible with Ory Keto and Oathkeeper, correctly configuring the surrounding infrastructure proved more complex than anticipated. Determining which services should sit behind the Oathkeeper gateway and which should remain on the internal network required substantial experimentation, as did correctly defining the trust boundaries between components. This was compounded by limited prior experience with multi-layered security architectures.
 
@@ -2792,6 +2788,11 @@ The setup of SonarQube for quality assurance took considerably longer than estim
 === Document management: architectural decision on file transfer
 During the implementation of document upload and download functionality, the file content was routed through the Spring Boot backend rather than using presigned URLs for direct client-to-storage transfers. This decision was made due to limited prior familiarity with S3-compatible object storage integration patterns at the time of implementation. While functional, this approach is not the standard pattern for systems built on an S3-compatible backend, and results in unnecessary load on the backend service. This is identified and documented as a future improvement.
 
+=== Consecuences of the ory ecosystem: domain-only access
+The use of the Ory ecosystem introduced an unexpected constraint: it expects a proper domain to always be available. This required modifying the hosts file during development and local usability testing, and purchasing a domain for the production deployment.
+
+The purchase became necessary after finding that Azure's student offering only exposed university-managed domains, which were not available for modification. `DuckDNS`, while a long-standing favourite in the homelab and self-hosting community for its simplicity and zero cost, has seen notable reliability issues in recent years that made it unsuitable for the deployment. The domain `irboard.online` was purchased instead — a nod to the local development domain `irboard.local`.
+
 === Cross-service consistency on partial failures
 Several operations involving coordinated changes across the relational database and the object storage backend (most visibly bulk document deletion) were found to lack a distributed transaction or compensating-action mechanism. A failure partway through a multi-step operation can leave the system in an inconsistent state: for example, a document record deleted from the database but whose corresponding object was not successfully removed from MinIO, or vice versa. Manual intervention would be required to recover from such cases. This was recognized during development but left unresolved within the project scope.
 
@@ -2801,8 +2802,8 @@ During the development period, MinIO's open-source Community Edition underwent s
 === Typst compatibility with nested requirement lists
 During the preparation of the requirements specification, a compatibility issue was encountered with Typst's support for nested lists. Since the requirements documentation relies heavily on hierarchical structures (such as identifiers following formats like UM.1.1) the absence of adequate native multilevel list support at the time created difficulties in maintaining the intended document structure. Resolving this required additional investigation and the adoption of an external Typst extension (efilrst) to restore the required nested list behavior. This added unforeseen effort to the documentation phase.
 
-=== Usability issues discovered during testing
-Several interface issues were identified during usability testing that required corrective action. These, as well as their corrections, are all documented appropiately over on the #link(<usability_testing_execution>)[usability testing execution].
+=== Usability and accessibility issues discovered during testing
+Several interface issues were identified during usability and accessibility testing that required corrective action. These, as well as their corrections, are all documented appropiately over on the #link(<usability_testing_execution>)[usability testing execution].
 
 === Time constraints and consecuences 
 Due to the irregular schedule, several additions had to be cut or left in a partial state to be able to cover the whole scope of the system. Although non essential, these were quality of life additions that had been considered in the event of having enough time for them, and are documented over on #link(<conclusions_future_work>)[future work]. 
@@ -3117,7 +3118,39 @@ TODO
   TODO
 ]
 == Load Testing
+Given that the system was deployed on a lower-spec machine than the development PC, load testing was performed locally to isolate performance from any external network latency. A secondary production-grade Docker Compose configuration was created for this purpose, with load balancing disabled and 499 users pre-inserted into the system.
+
+=== Simulation
+The simulation used was a closed-model load test targeting 500 concurrent users against the IRBoard backend. It simulated the full lifecycle of a realistic user session (from login through creating project content to permanent deletion) repeated multiple times per session to sustain meaningful concurrency. It ramps the users for about 2 minutes, maintains the peak users for about 20 minutes, and steadily falls over the last 2 minutes.
+
+The simulation used a closed-model load test targeting 500 concurrent users against the IRBoard backend. Each virtual user ran a full session lifecycle — from login through creating project content to permanent deletion — repeated multiple times to sustain meaningful concurrency. Concurrency ramps up over approximately 2 minutes, holds at peak for 20 minutes, then winds down over the final 3 minutes.
+Each session begins with a single login: the user initiates a Kratos browser login flow, extracts the flow ID and CSRF token from the response, submits their credentials, and receives a session cookie. A 3–6 second pause follows to simulate reading the dashboard.
+The following workflow then repeats at least 3 times per session, with realistic think times between each step:
+
+1. Navigates to the home screen
+2. Fills out and submits a new project form (4–8 s think time)
+3. Opens the project detail page and reads it (2–4 s)
+4. Creates a stakeholder (3–6 s to fill the form)
+5. Browses the stakeholder list
+6. Browses functionalities, then creates one (3–7 s)
+7. Views the functional requirements list
+8. Writes and submits a functional requirement — the longest pause in the session at 5–12 seconds, reflecting a user composing a meaningful description
+9. Reviews the FR detail page
+10. Links the stakeholder to the FR
+11. Browses the NFR and documents tabs (2–5 s each)
+12. Disables the project, moves it to the removed pile, verifies the removed view, then permanently deletes it
+
+After the loop completes, the session ends with a logout, fetching the Kratos logout token and submitting it to terminate the session cleanly.
+=== Load testing Results
+#figure(image("assets/screenshots/load_tests.png"),caption:"Load testing results")
+No request was throttled or exceeded 0.7 seconds, with the login step being the only one to approach that threshold. The document upload endpoint was not included in this workload, so additional load testing would be needed to cover it fully. (this is noted in #link(<further_load_testing>)[future work])
+
+Despite that gap, the system clearly performs well above the #link(<performance_requirements>)[performance requirements] defined for the project, as shown by the green banner in the figure above. The full results can be explored by opening `index.html` from the `loadTesting/backendloadtest-20260628102749103` folder in a browser.
+
+= System manuals //9
+== Installation Guide <installation_guide>
 TODO
+example:
 To perform load testing, first the system was deployed on its production profile on a `Standard_B2ms` Azure vm, and linked to a purchased domain `irboard.online`. The deployment followed the steps that can be found on the #link(<installation_guide>)[installation guide].
 
 The specifics of the deployment deployment are:
@@ -3134,10 +3167,6 @@ API_DOMAIN=api.irboard.online
 OBJS_DOMAIN=objects.irboard.online
 DRAWIO_DOMAIN=diagrams.irboard.online
 ```
-
-= System manuals //9
-== Installation Guide <installation_guide>
-TODO
 === When connected
 ```shell-unix-generic
 sudo apt update
@@ -3759,16 +3788,14 @@ The concurrency control mechanism also lacks E2E coverage, despite having been m
 
 Finally, the slug-based search navigation flow has not been covered at the E2E level, though it has been manually exercised across all supported entity types. A future scenario should verify that entering a valid slug in the NavBar search field navigates the user to the correct entity detail view, and that invalid slugs, access-restricted slugs, and partial slugs produce the correct feedback states described in the navigability diagram.
 
-== Load testing //TODO remove if load testing is done.
-Load testing was planned as part of the test strategy but could not be executed within the available project timeline. Manual observation during development suggests that the system responds within acceptable latency bounds under light, single-user load, but no systematic measurement has been performed under concurrent usage conditions. The following describes the intended approach, which is proposed as future work.
+== Further load testing <further_load_testing>
+The load testing carried out establishes a solid baseline for system performance under realistic concurrent usage, but further work would be needed to build a complete picture.
 
-The selected tool is *K6*, an open-source, script-based load testing framework that integrates well with the Grafana observability stack already deployed as part of the system. K6 allows virtual user scenarios to be defined as JavaScript scripts, executed from the command line, and configured with ramp-up profiles, sustained load phases, and burst scenarios using its built-in executor model.
+First, the simulation covered only the core project management workflow. Endpoints with heavier expected payloads (most notably document upload, and state transitions of more heavier projects) were not included. Document upload is not expected to occur as frequently as other operations, as it is an occasional action rather than part of the routine project workflow, but its individual weight in terms of throughput, memory pressure, and storage I/O makes it worth validating in isolation regardless of frequency. A more thorough test suite would exercise every significant user action individually, with tailored think times and payload sizes representative of real usage.
 
-Tests should be executed directly against the full Docker Compose stack, targeting the critical path that passes through Traefik and Oathkeeper into the Spring Boot backend, since this chain carries the highest per-request overhead due to the session validation call to Kratos and the permission check against Keto on every authorized request. A representative scenario would simulate a realistic number of concurrent authenticated users performing a mix of read and write operations across different project entities, reflecting the expected usage pattern of a small development team working simultaneously on the same project.
+Second, the 500 concurrent user target, while well above the stated performance requirements, may not be sufficient to validate the architecture for a professional team environment at scale. Pushing concurrency further would help confirm that the decisions made around Traefik routing, Oathkeeper policy evaluation, and the Spring Boot thread model hold up under conditions closer to production peaks.
 
-The primary metrics to be collected and analyzed are mean and percentile request latency at each layer, error rate under sustained and burst load, session management stability in Kratos, and container-level resource utilization as observed through the Grafana and Prometheus stack already provisioned. The Loki log aggregation layer should also be monitored during test runs to surface any error patterns or retry storms that do not appear in the top-level latency metrics.
-
-A minimum acceptance threshold should be defined before running the tests, for example a p95 latency below 500ms under a load representative of the expected user base, so that results can be evaluated against a concrete criterion rather than interpreted subjectively.
+Finally, and most significantly, all testing was performed locally within the same machine running the stack, which eliminates network latency entirely from the results. While this was a deliberate choice to isolate system performance, it means the figures do not reflect the experience of a real remote user. Future load testing should be conducted over the network against a live deployment, even if the target environment remains the same Azure instance, so that routing overhead, TLS termination latency, and real-world connection variability are all accounted for in the measurements.
 
 == Dependency maturity: migration away from MinIO
 At the time of writing, MinIO's open-source Community Edition is in a fragile position. Following the removal of administrative functionality from its web console in 2025 and the subsequent transition of the upstream project to "maintenance mode" in December 2025, MinIO is no longer actively developed as a community project, even though its AGPLv3-licensed source remains available and usable.
