@@ -115,6 +115,7 @@ This document follows a template provided by Jorge Álvarez Fidalgo.
 It has been adapted and modified to fit the specific needs of the project during its development.
 
 = Special thanks to
+TODO add special thanks
 
 #pagebreak()
 // Índice
@@ -2462,12 +2463,23 @@ TODO
 == Class Design <class_design>
 #figure(image("./assets/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
 
-#strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value isActive is also delegated to the ReBAC system, as it represents a user-to-system relationship.
+#strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value `isActive` is also delegated to the ReBAC system, as it represents a user-to-system relationship.
 
 #strong[EntityLock] - This class models the concurrent mutex operations of the system. Whenever someone attempts to modify an entity, the entity lock service checks whether one entity lock object already exists and whether it is expired if it is present. The objects are linked to the user and have information of the entity locked to ensure it can correctly be retrieved and cancelled if the user requests another lock on a different entity.
 
-#strong[Project] - The base container object, 
-TODO add all remaining classes
+#strong[Project] - The central aggregate and ownership boundary of the domain model. Every other primary entity (Functionality, Requirement, Stakeholder, Document) is contained within a Project and carries a reference to it. The Project holds its own lifecycle state through ProjectState (ACTIVE, FINISHED, DEACTIVATED, REMOVED) and defines the PriorityStyle applied to all functional requirements created within it, either TERNARY (High, Medium, Low) or MOSCOW (Must, Should, Could, Won't).
+
+#strong[Functionality] - Represents a system capability or feature grouping within a project. Functionalities act as the organizational container for functional requirements, and permission assignments for requirement engineers are scoped to individual functionalities rather than to the project as a whole. A Functionality carries its own FunctionalityState (ACTIVE, DEACTIVATED, REMOVED) and a short label used as the prefix in the dynamic identifiers of the requirements it contains.
+
+#strong[Requirement] - An abstract base class representing any requirement in the system, capturing the attributes shared between functional and non-functional requirements: a stable internal slug, a floating-point orderValue used for efficient reordering without renumbering, a name, a description, a RequirementState (PENDING_APPROVAL, APPROVED, FINISHED, DEACTIVATED, REMOVED), and a isPendingReview flag that is raised automatically when a linked entity is modified. Requirements support self-referential parent–child nesting for hierarchical decomposition, and peer cross-linking for horizontal traceability between requirements across functionalities.
+
+#strong[FunctionalRequirement] - Extends Requirement to describe behavioral system capabilities. It adds a priority field (whose valid values are determined by the containing project's PriorityStyle) and an optional stability field indicating how settled the requirement is expected to be. Functional requirements are always associated with a specific Functionality.
+
+#strong[NonFunctionalRequirement] - Extends Requirement to describe measurable quality constraints. It adds a measurementUnit, a ComparisonOperator (EQUAL_TO, LESS_THAN, GREATER_THAN), and three numeric fields: thresholdValue (the minimum acceptable value), targetValue (the desired optimal value), and actualValue (the current measured value). Non-functional requirements are associated directly with the Project rather than with a specific Functionality.
+
+#strong[Stakeholder] - Represents an actor with an interest in the project. Stakeholders are managed at the project level and can be linked to any number of requirements across the project to maintain traceability between requirements and the parties whose needs they address. A Stakeholder carries an EntityState (PENDING_APPROVAL, APPROVED, DEACTIVATED, REMOVED) and an entityIdentifier slug generated at creation time. Modifying or removing a stakeholder propagates a pending-review flag to all requirements observing it.
+
+#strong[Document] - Represents a documentation artifact associated with a project. Documents can be linked to one or more requirements to support traceability between requirements and their supporting material. A Document carries an EntityState, a fileName, a mimeType, and the file content itself. As with stakeholders, modifying or removing a document propagates a pending-review flag to all requirements that reference it.
 
 == Database Design
 #figure(image("/docs/assets/diagrams/backendDatabaseDiagram.svg"), caption: "Relational database schema")
