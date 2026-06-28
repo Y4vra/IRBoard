@@ -171,7 +171,7 @@ describe("DocumentDetailView", () => {
 
   it("renders the entity identifier", () => {
     renderView()
-    expect(screen.getByText("DOC-001")).toBeInTheDocument()
+    expect(screen.getByText(/DOC-001/)).toBeInTheDocument()
   })
 
   it("renders the mime type", () => {

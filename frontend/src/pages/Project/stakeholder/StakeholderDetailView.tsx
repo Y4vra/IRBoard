@@ -17,6 +17,7 @@ import { useBackendResource } from "@/hooks/useBackendResource";
 import { useApproveStakeholders, useDeleteStakeholders, useRemoveStakeholders, useEnableStakeholders, useDisableStakeholders } from "@/hooks/useStakeholderActions";
 import { useAuth } from "@/context/AuthContext";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
+import { EntitySlugDisplay } from "@/components/EntitySlugDisplay";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -145,15 +146,15 @@ function StakeholderDetailView() {
       <header className="flex items-start justify-between gap-6">
         <div className="space-y-3 flex-1">
           <div className="flex-1 min-w-0 space-y-1">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Stakeholder</p>
-            <div>
-              <h1 data-testid="stakeholder_detail_header" className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
-              <p className="text-xs font-mono text-slate-400 pt-2">{stakeholder.entityIdentifier}</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-700">Stakeholder</p>
+            <h1 data-testid="stakeholder_detail_header" className="text-4xl font-black tracking-tight">{stakeholder.name}</h1>
+            <div className="flex flex-wrap items-center gap-3 flex-wrap">
+              <EntitySlugDisplay slug={stakeholder.entityIdentifier}/>
+              <EntityStateBadge state={stakeholder.state} />
             </div>
             {stakeholder.description && (
               <p className="text-xl text-muted-foreground leading-relaxed">{stakeholder.description}</p>
             )}
-            <EntityStateBadge state={stakeholder.state} />
           </div>
         </div>
 

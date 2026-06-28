@@ -38,6 +38,7 @@ import { EntityType } from "@/lib/lockUtils";
 import { useApproveNFRequirements,useDisableNFRequirements,useEnableNFRequirements,useRemoveNFRequirements,useDeleteNFRequirements,useFinishNFRequirements } from "@/hooks/useNFRequirementActions";
 import { useAuth } from "@/context/AuthContext";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
+import { EntitySlugDisplay } from "@/components/EntitySlugDisplay";
 
 // ─── Operator helpers ─────────────────────────────────────────────────────────
 
@@ -308,7 +309,7 @@ function ChildNFRCard({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-xs font-mono text-slate-400">{req.entityIdentifier}</p>
+            <p className="text-xs font-mono text-slate-700">{req.entityIdentifier}</p>
             <p className="font-semibold text-slate-800 truncate">{req.name}</p>
           </div>
           {req.description && (
@@ -458,17 +459,14 @@ function NonFunctionalRequirementDetailView() {
       <header className="flex items-start justify-between gap-6">
         <div className="space-y-3 flex-1">
           <div className="flex-1 min-w-0 space-y-1">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-700">
               Non-Functional Requirement
             </p>
             <div>
               <h1 data-testid="nfr_detail_header" className="text-4xl font-black tracking-tight leading-tight">{requirement.name}</h1>
-              <p className="text-xs font-mono text-slate-400">{requirement.entityIdentifier}</p>
-            </div>
-            {requirement.description && 
-              <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{requirement.description}</p>
-            }
-            <div className="flex items-center gap-3 flex-wrap">
+              </div>
+            <div className="flex flex-wrap items-center gap-3 flex-wrap">
+              <EntitySlugDisplay slug={requirement.entityIdentifier}/>
               <RequirementStateBadge state={requirement.state} />
               {requirement.measurementUnit && (
                 <Badge variant="outline" data-testid="measurement-unit-badge" className="text-xs font-mono text-slate-400">
@@ -476,6 +474,9 @@ function NonFunctionalRequirementDetailView() {
                 </Badge>
               )}
             </div>
+            {requirement.description && 
+              <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{requirement.description}</p>
+            }
           </div>
         </div>
         <div className="flex flex-col gap-3">

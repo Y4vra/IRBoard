@@ -18,6 +18,7 @@ import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
 import { useApproveDocuments,useDisableDocuments, useEnableDocuments, useRemoveDocuments, useDeleteDocuments} from "@/hooks/useDocumentActions";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
+import { EntitySlugDisplay } from "@/components/EntitySlugDisplay";
 
 function isFR(r: RequirementSummaryDTO): r is FunctionalRequirementSummaryDTO {
   return r.requirementType === "FR";
@@ -116,7 +117,7 @@ function DocumentDetailView() {
       <header className="flex items-start justify-between gap-6">
         <div className="space-y-3 flex-1">
           <div className="flex-1 min-w-0 space-y-1">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-700">
               Document
             </p>
             <div className="flex items-center gap-3">
@@ -125,7 +126,7 @@ function DocumentDetailView() {
               </div>
               <div>
                 <h1 data-testid="document_detail_header" className="text-4xl font-black tracking-tight">{document.fileName}</h1>
-                <p className="text-xs font-mono text-slate-400 pt-2">{document.entityIdentifier}</p>
+                <EntitySlugDisplay slug={document.entityIdentifier}/>
                 <p className="text-sm text-muted-foreground mt-1 font-mono">{document.mimeType}</p>
               </div>
             </div>

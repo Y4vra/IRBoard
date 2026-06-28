@@ -214,7 +214,7 @@ describe("FunctionalRequirementDetailView", () => {
 
   it("renders the entity identifier", () => {
     renderView()
-    expect(screen.getByText("FR-001")).toBeInTheDocument()
+    expect(screen.getByText(/FR-001/)).toBeInTheDocument()
   })
 
   it("renders the state badge", () => {

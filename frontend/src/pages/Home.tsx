@@ -255,6 +255,7 @@ function Home() {
               )}
             </div>
             <select
+              aria-label="Sort projects"
               value={sortBy}
               onChange={e => setSortBy(e.target.value as SortOption)}
               className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus:outline-none focus:ring-1 focus:ring-ring text-slate-700 cursor-pointer"

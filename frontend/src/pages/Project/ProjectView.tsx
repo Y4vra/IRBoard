@@ -290,15 +290,15 @@ function ProjectView() {
               {project.priorityStyle}
             </Badge>
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
-            {project.description || "No project description available."}
-          </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <ProjectStateBadge state={project?.state} />
-            <div className="font-mono opacity-50">
+            <div className="font-mono text-slate-700">
               REF: {project.id}
             </div>
           </div>
+          <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
+            {project.description || "No project description available."}
+          </p>
         </div>
 
         <div className="flex flex-col items-end gap-4 shrink-0 pt-1">
@@ -439,7 +439,7 @@ function ProjectView() {
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-700">
               Functionalities
             </h2>
             {functionalities && (
@@ -496,7 +496,7 @@ function ProjectView() {
                         className="cursor-pointer hover:bg-slate-50"
                         onClick={() => navigate(`/project/${project.id}/functionalities/${f.id}`)}
                       >
-                        <TableCell className="font-mono text-xs text-slate-400">{f.entityIdentifier ?? f.id}</TableCell>
+                        <TableCell className="font-mono text-xs text-slate-700">{f.entityIdentifier ?? f.id}</TableCell>
                         <TableCell className="font-medium">{f.name}</TableCell>
                         <TableCell className="max-w-xs truncate text-slate-500">{f.description}</TableCell>
                         <TableCell>

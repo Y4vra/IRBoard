@@ -260,7 +260,7 @@ function NFRCard({
           <span className="w-4 shrink-0" />
         )}
 
-        <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
+        <span className="font-mono text-xs text-slate-700 w-24 shrink-0">{label}</span>
 
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-slate-800 truncate">{r.name}</p>
@@ -472,7 +472,7 @@ function NonFunctionalRequirementsView() {
           <p className="text-slate-500 mt-1">Manage quality attributes and system constraints.</p>
           {editPermission && viewMode === "active" && (
             <p className="text-xs text-slate-300 mt-0.5">
-              <span className="text-slate-400">
+              <span className="text-slate-700">
                 Drag to reorder · drag to the middle of a card to nest inside it.
               </span>
             </p>
@@ -585,7 +585,7 @@ function NonFunctionalRequirementsView() {
                         className="cursor-pointer hover:bg-slate-50"
                         onClick={() => navigate(`/project/${projectId}/nfr/${r.id}`)}
                       >
-                        <TableCell className="font-mono text-xs text-slate-400">{r.entityIdentifier ?? r.id}</TableCell>
+                        <TableCell className="font-mono text-xs text-slate-700">{r.entityIdentifier ?? r.id}</TableCell>
                         <TableCell className="font-medium">{r.name}</TableCell>
                         <TableCell className="max-w-xs truncate text-slate-500">{r.description}</TableCell>
                         <TableCell>

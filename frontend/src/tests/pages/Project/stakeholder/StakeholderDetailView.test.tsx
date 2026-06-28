@@ -157,7 +157,7 @@ describe("StakeholderDetailView", () => {
 
   it("renders the entity identifier", () => {
     renderView()
-    expect(screen.getByText("STK-001")).toBeInTheDocument()
+    expect(screen.getByText(/STK-001/)).toBeInTheDocument()
   })
 
   it("renders the state badge", () => {

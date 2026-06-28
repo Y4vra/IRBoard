@@ -79,6 +79,7 @@ import {
 import { FunctionalityStateBadge } from "@/components/badges/FunctionalityStateBadge"
 import type { ViewMode } from "@/types/ViewMode"
 import { ViewToggle } from "@/components/ViewToggle"
+import { EntitySlugDisplay } from "@/components/EntitySlugDisplay"
 
 // ---------------------------------------------------------------------------
 // Filter/sort types
@@ -360,7 +361,7 @@ function FunctionalRequirementCard({
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
         ) : <span className="w-4 shrink-0" />}
-        <span className="font-mono text-xs text-slate-400 w-24 shrink-0">{label}</span>
+        <span className="font-mono text-xs text-slate-700 w-24 shrink-0">{label}</span>
         <div className="flex-1 min-w-0">
           {r.name && <p className="text-sm font-semibold truncate">{r.name}</p>}
           {r.description && <p className="text-sm text-slate-500 truncate mt-0.5">{r.description}</p>}
@@ -603,16 +604,16 @@ function FunctionalityView() {
 
       <header className="flex items-center justify-between gap-6">
         <div className="space-y-3 flex-1">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Functionality</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-700">Functionality</p>
           <h1 data-testid="functionality_view_header" className="text-4xl font-black tracking-tight">{functionality.name}</h1>
-          <p className="text-xs font-mono text-slate-400 pt-2">{functionality.entityIdentifier}</p>
-          {functionality.description && (
-            <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{functionality.description}</p>
-          )}
-          <div className="flex items-center gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <EntitySlugDisplay slug={functionality.entityIdentifier}/>
             <FunctionalityStateBadge state={funcState!} />
             <Badge variant="outline" className="text-xs font-mono text-slate-400">{priorityStyle}</Badge>
           </div>
+          {functionality.description && (
+            <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">{functionality.description}</p>
+          )}
         </div>
 
         <div className="flex items-stretch gap-3">
@@ -734,13 +735,13 @@ function FunctionalityView() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-400">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-700">
               Functional Requirements
             </h2>
-            <p className="text-xs text-slate-300 mt-0.5">
+            <p className="text-xs text-slate-700 mt-0.5">
               Manage hierarchical functional requirements.{" "}
               {canEdit && viewMode === "active" && (
-                <span className="text-slate-400">Drag to reorder · drag to the middle of a card to nest inside it.</span>
+                <span className="text-slate-700">Drag to reorder · drag to the middle of a card to nest inside it.</span>
               )}
             </p>
           </div>

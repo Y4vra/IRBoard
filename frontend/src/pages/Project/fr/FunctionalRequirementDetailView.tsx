@@ -42,6 +42,7 @@ import { useLocks } from "@/hooks/useLocks";
 import { EntityType } from "@/lib/lockUtils";
 import { useAuth } from "@/context/AuthContext";
 import { ConfirmActionDialog } from "@/components/dialogs/ConfirmActionDialog";
+import { EntitySlugDisplay } from "@/components/EntitySlugDisplay";
 
 
 // ─── Priority badge ───────────────────────────────────────────────────────────
@@ -346,19 +347,12 @@ function FunctionalRequirementDetailView() {
       {/* Header */}
       <header className="flex items-start justify-between gap-6">
         <div className="space-y-3 flex-1">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-700">
             Functional Requirement
           </p>
-          <div>
             <h1 data-testid="functional_requirement_detail_header" className="text-4xl font-black tracking-tight">{requirement.name}</h1>
-            <p className="text-xs font-mono text-slate-400 pt-2">{requirement.entityIdentifier}</p>
-          </div>
-          {requirement.description && (
-            <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
-              {requirement.description}
-            </p>
-          )}
-          <div className="flex items-center gap-3 pt-1 flex-wrap">
+          <div className="flex flex-wrap items-center gap-3 flex-wrap">
+            <EntitySlugDisplay slug={requirement.entityIdentifier}/>
             <RequirementStateBadge state={requirement.state} />
             <PriorityBadge priority={requirement.priority} />
             {requirement.stability && (
@@ -367,6 +361,11 @@ function FunctionalRequirementDetailView() {
               </Badge>
             )}
           </div>
+          {requirement.description && (
+            <p className="text-lg text-slate-500 max-w-3xl leading-relaxed">
+              {requirement.description}
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-3">
           {canEdit && 

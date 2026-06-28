@@ -260,7 +260,7 @@ describe("FunctionalityView", () => {
   it("renders the entity identifier", () => {
     setBackendResponses()
     renderFunctionalityView()
-    expect(screen.getByText("AUTH-001")).toBeInTheDocument()
+    expect(screen.getByText(/AUTH-001/)).toBeInTheDocument()
   })
 
   it("renders the state badge", () => {

@@ -107,7 +107,7 @@ function DonutChart({
         y={cy + size * 0.1}
         textAnchor="middle"
         dominantBaseline="middle"
-        className="fill-slate-400"
+        className="fill-slate-700"
         style={{ fontSize: size * 0.08 }}
       >
         total
@@ -140,11 +140,11 @@ function StatsChart({
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-4">
         {title && (
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-700">
             {title}
           </p>
         )}
-        <p className="text-sm text-slate-400 italic">No data</p>
+        <p className="text-sm text-slate-700 italic">No data</p>
       </div>
     )
   }
@@ -152,7 +152,7 @@ function StatsChart({
   return (
     <div className="flex flex-col items-center gap-4">
       {title && (
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 self-start">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-700 self-start">
           {title}
         </p>
       )}

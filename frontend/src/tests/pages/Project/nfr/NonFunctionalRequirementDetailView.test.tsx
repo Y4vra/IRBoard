@@ -203,7 +203,7 @@ describe("NonFunctionalRequirementDetailView", () => {
 
   it("renders the entity identifier", () => {
     renderView()
-    expect(screen.getByText("NFR-001")).toBeInTheDocument()
+    expect(screen.getByText(/NFR-001/)).toBeInTheDocument()
   })
 
   it("renders the state badge", () => {
