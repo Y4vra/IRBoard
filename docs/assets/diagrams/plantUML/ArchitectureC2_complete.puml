@@ -1,0 +1,84 @@
+@startuml ArchitectureC2_complete
+title IR-Board - Complete Container Diagram
+top to bottom direction
+
+actor User
+
+package "Public Network" as publicNetwork #line.dotted {
+    [Traefik] as gateway
+    [Frontend] as front
+    [MinIO] as minio
+    [Grafana] as grafana
+    [Draw.io] as drawio
+}
+
+package "Internal Network" #AliceBlue {
+    package "One-shot" #line.dashed {
+        [kratos-migrate] as kratosm
+        [keto-migrate] as ketom
+        [minio-client] as minioclient
+        [initial-setup-admin] as setup
+    }
+    package "Ory" as oryPackage {
+        [Oathkeeper] as proxy
+        [Kratos] as kratos
+        [Kratos\nCourier] as courier
+        [Keto] as keto
+    }
+    [Backend] as backend
+    [Mailpit] as mail
+    package "Observability" {
+        [Prometheus] as prometheus
+        [Loki] as loki
+        [Promtail] as promtail
+    }
+    database "PostgreSQL (RMS)" as db_rms
+    database "PostgreSQL (Kratos)" as db_auth
+    database "PostgreSQL (Keto)" as db_perm
+}
+
+' === Vertical stacking ===
+User -down-> gateway
+gateway -down[hidden]-> proxy
+publicNetwork -down[hidden]-> oryPackage
+
+' === Entry ===
+gateway --> front
+gateway -> proxy
+gateway --> minio
+gateway --> grafana
+gateway --> drawio
+
+' === One-shot ===
+kratosm --> db_auth
+ketom --> db_perm
+minioclient ..> minio
+setup ..> kratos
+setup ..> keto
+setup ..> db_rms
+
+' === Core request flow ===
+proxy --> kratos
+proxy --> keto
+proxy --> backend
+
+' === Backend ===
+backend --> db_rms
+backend ..> kratos
+backend ..> keto
+backend ..> minio
+
+' === Kratos ===
+kratos --> db_auth
+courier --> db_auth
+courier --> mail
+
+' === Keto ===
+keto --> db_perm
+
+' === Observability ===
+promtail ..> loki
+prometheus --> grafana
+loki --> grafana
+
+@enduml

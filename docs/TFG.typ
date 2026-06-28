@@ -2449,7 +2449,10 @@ Aditionally, the following containers are present on the deployment:
 
 #strong[Prometheus] - A metrics collection server that scrapes operational metrics from instrumented services, making them available to Grafana for time-series visualisation and alerting.
 
-These are not added to the diagram, given their additional nature and non-essential uses, as to ensure clear readability.
+These are not added to the diagram, given their additional nature and non-essential uses, as to ensure clear readability. 
+
+The full architecture (logically grouped to improve readability) can be seen below:
+#figure(image("assets/diagrams/ArchitectureC2_complete.svg"),caption: "Complete architecture diagram")
 
 === Backend system design
 The backend follows an architecture that blends *hexagonal architecture* (ports and adapters, as described by Alistair Cockburn #link(<reference_4>)[[4]]) with the explicit layering conventions of *Clean Architecture* #link(<reference_5>)[[5]] (Robert C. Martin). In pure hexagonal architecture the only structural distinction is between the inside of the hexagon (domain and application logic) and the outside (adapters to external systems). Clean Architecture refines this by naming three explicit concentric layers (domain, application, and infrastructure) and formalizing the dependency rule: outer layers depend on inner layers, and the domain at the center has no knowledge of any external technology or framework. The result is a structure that is hexagonal in its port-and-adapter organization and clean-architecture in its explicit package decomposition.
