@@ -205,17 +205,6 @@ describe("Home", () => {
     )
   })
 
-  it("renders reference id truncated to 8 chars", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => [makeProject({ id: "abcdef1234567890" })],
-    })
-    renderHome()
-    await waitFor(() =>
-      expect(screen.getByText(/reference id: abcdef12/i)).toBeInTheDocument()
-    )
-  })
-
   it("shows fallback description when description is empty", async () => {
     mockFetch.mockResolvedValue({
       ok: true,

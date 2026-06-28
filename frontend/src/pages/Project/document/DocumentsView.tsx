@@ -154,7 +154,7 @@ function DocumentsView() {
   const { editPermission, documentStats, isManager } = useProject();
 
   const [viewMode, setViewMode] = useState<ViewMode>("active");
-  const [showDeactivated, setShowDeactivated] = useState(false)
+  const [showDeactivated, setShowDeactivated] = useState(true)
 
   // Active documents fetch
   const fetchDocuments = useCallback(() =>

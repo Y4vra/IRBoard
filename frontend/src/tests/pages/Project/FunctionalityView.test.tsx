@@ -415,19 +415,19 @@ describe("FunctionalityView", () => {
     expect(screen.getByText(/filters/i)).toBeInTheDocument()
   })
 
-  it("shows 'Hiding deactivated' toggle by default", () => {
+  it("shows 'showing deactivated' toggle by default", () => {
     setBackendResponses()
     renderFunctionalityView()
-    expect(screen.getByText(/hiding deactivated/i)).toBeInTheDocument()
+    expect(screen.getByText(/showing deactivated/i)).toBeInTheDocument()
   })
 
-  it("toggles to 'Showing deactivated' when clicked", async () => {
+  it("toggles to 'hiding deactivated' when clicked", async () => {
     const user = userEvent.setup()
     setBackendResponses()
     renderFunctionalityView()
 
-    await user.click(screen.getByText(/hiding deactivated/i))
-    expect(screen.getByText(/showing deactivated/i)).toBeInTheDocument()
+    await user.click(screen.getByText(/showing deactivated/i))
+    expect(screen.getByText(/hiding deactivated/i)).toBeInTheDocument()
   })
 
   it("shows sort by Priority button", () => {
@@ -638,7 +638,8 @@ describe("FunctionalityView", () => {
     renderFunctionalityView()
     expect(screen.getByRole("button", { name: /approve all \(1\)/i })).not.toBeDisabled()
   })
-  it("shows 'No requirements match filters' when filtering hides all items", () => {
+  it("shows 'No requirements match filters' when filtering hides all items", async () => {
+    const user = userEvent.setup()
     const req = {
       id: 1,
       name: "Hidden",
@@ -653,6 +654,7 @@ describe("FunctionalityView", () => {
 
     renderFunctionalityView()
 
+    await user.click(screen.getByText(/showing deactivated/i))
     expect(
       screen.getByText(/no requirements match the current filters/i)
     ).toBeInTheDocument()

@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo, useCallback } from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { API_BASE_URL } from "../lib/globalVars";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Folder, Plus, Search, X, ChevronLeft, ChevronRight, Filter, Archive } from "lucide-react";
 import { ProjectStateBadge } from "@/components/badges/ProjectStateBadge";
 import { type Project } from "../types/Project";
@@ -42,6 +42,7 @@ function Home() {
 
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { getLock } = useLocks();
+  const navigate = useNavigate();
 
   const isAdmin = user?.isAdmin ?? false;
 
@@ -385,6 +386,7 @@ function Home() {
                   "max-w-sm mx-auto w-full",
                   index === 0 ? "delay-0" : "delay-75"
                 )}
+                onClick={()=>navigate(`/project/${project.id}`)}
               >
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
@@ -410,12 +412,6 @@ function Home() {
                     {project.description || "No description provided."}
                   </CardDescription>
                 </CardHeader>
-
-                <CardContent className="mt-auto">
-                  <div className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
-                    Reference ID: {project.id.toString().slice(0, 8)}...
-                  </div>
-                </CardContent>
 
                 <CardFooter className="border-t bg-slate-50/50 p-4">
                   <Button

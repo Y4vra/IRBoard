@@ -338,7 +338,7 @@ function NonFunctionalRequirementsView() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const dragStateRef = useRef<number | null>(null)
   const [dropPreview, setDropPreview] = useState<DropPreview>(null)
-  const [showDeactivated, setShowDeactivated] = useState(false)
+  const [showDeactivated, setShowDeactivated] = useState(true)
   const [viewMode, setViewMode] = useState<ViewMode>("active")
 
   // Active requirements

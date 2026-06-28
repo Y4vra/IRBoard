@@ -433,7 +433,7 @@ function FunctionalityView() {
   const [viewMode, setViewMode] = useState<ViewMode>("active")
 
   // ── Filter/sort state ────────────────────────────────────────────────────
-  const [showDeactivated, setShowDeactivated] = useState(false)
+  const [showDeactivated, setShowDeactivated] = useState(true)
   const [sort, setSort] = useState<SortConfig>({ field: null, dir: "asc" })
 
   const handleToggleSort = useCallback((field: SortField | "_clear") => {

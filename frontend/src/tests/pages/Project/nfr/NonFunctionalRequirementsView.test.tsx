@@ -195,7 +195,7 @@ describe("NonFunctionalRequirementsView", () => {
   it("shows error UI when active fetch fails", () => {
     setResponses({ active: { data: null, loading: false, error: "Failed to fetch requirements" } })
     renderView()
-    expect(screen.getByText(/failed to fetch requirements/i)).toBeInTheDocument()
+    expect(screen.queryByText(/failed to fetch requirements/i)).toBeInTheDocument()
   })
 
   it("shows Try Again button on error", () => {
@@ -230,19 +230,19 @@ describe("NonFunctionalRequirementsView", () => {
 
   // ── Deactivated toggle ────────────────────────────────────────────────────────
 
-  it("shows 'Hiding deactivated' toggle by default in active mode", () => {
+  it("shows 'Showing deactivated' toggle by default in active mode", () => {
     renderView()
-    expect(screen.getByText(/hiding deactivated/i)).toBeInTheDocument()
-  })
-
-  it("toggles to 'Showing deactivated' when clicked", async () => {
-    const user = userEvent.setup()
-    renderView()
-    await user.click(screen.getByText(/hiding deactivated/i))
     expect(screen.getByText(/showing deactivated/i)).toBeInTheDocument()
   })
 
-  it("hides DEACTIVATED requirements by default", () => {
+  it("toggles to 'hiding deactivated' when clicked", async () => {
+    const user = userEvent.setup()
+    renderView()
+    await user.click(screen.getByText(/showing deactivated/i))
+    expect(screen.getByText(/hiding deactivated/i)).toBeInTheDocument()
+  })
+
+  it("shows DEACTIVATED requirements by default", () => {
     setResponses({
       active: {
         data: [
@@ -255,10 +255,10 @@ describe("NonFunctionalRequirementsView", () => {
     })
     renderView()
     expect(screen.getByText("Active NFR")).toBeInTheDocument()
-    expect(screen.queryByText("Deactivated NFR")).not.toBeInTheDocument()
+    expect(screen.queryByText("Deactivated NFR")).toBeInTheDocument()
   })
 
-  it("shows DEACTIVATED requirements after toggling", async () => {
+  it("hides DEACTIVATED requirements after toggling", async () => {
     const user = userEvent.setup()
     setResponses({
       active: {
@@ -271,8 +271,8 @@ describe("NonFunctionalRequirementsView", () => {
       },
     })
     renderView()
-    await user.click(screen.getByText(/hiding deactivated/i))
-    expect(screen.getByText("Deactivated NFR")).toBeInTheDocument()
+    await user.click(screen.getByText(/showing deactivated/i))
+    expect(screen.queryByText("Deactivated NFR")).not.toBeInTheDocument()
   })
 
   it("hides deactivated toggle in removed view mode", async () => {
@@ -576,7 +576,7 @@ describe("NonFunctionalRequirementsView", () => {
 
     expect(refreshMock).toHaveBeenCalled()
   })
-  it("toggle reveals deactivated requirements", async () => {
+  it("toggle hides deactivated requirements", async () => {
     const user = userEvent.setup()
 
     setResponses({
@@ -592,9 +592,9 @@ describe("NonFunctionalRequirementsView", () => {
 
     renderView()
 
-    await user.click(screen.getByText(/hiding deactivated/i))
+    await user.click(screen.getByText(/showing deactivated/i))
 
-    expect(screen.getByText("Deactivated")).toBeInTheDocument()
+    expect(screen.queryByTestId("nfr_Deactivated")).not.toBeInTheDocument()
   })
   it("enables Approve All when pending requirements exist", () => {
     mockProjectState.isManager = true

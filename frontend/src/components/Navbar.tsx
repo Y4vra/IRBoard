@@ -206,8 +206,7 @@ export function NavBar() {
             ? "w-full p-1 justify-between rounded-xl border border-slate-200 bg-white"
             : "w-full justify-center border-none bg-transparent"
         )}>
-          <Link
-            to={finishedOpening ? "/profile" : "#"}
+          <div
             className={cn(
               "flex items-center gap-2 min-w-0 transition-all duration-300 flex-1 rounded-lg p-1.5",
               !open && "w-full justify-center",
@@ -223,7 +222,7 @@ export function NavBar() {
                 <p className="truncate text-xs text-slate-400 mt-0.5">{user.email}</p>
               </div>
             )}
-          </Link>
+          </div>
 
           <button
             onClick={(e) => { e.preventDefault(); logout(); }}

@@ -38,7 +38,7 @@ function StakeholdersView() {
   const { stakeholderStats, editPermission, isManager } = useProject();
 
   const [viewMode, setViewMode] = useState<ViewMode>("active");
-  const [showDeactivated, setShowDeactivated] = useState(false)
+  const [showDeactivated, setShowDeactivated] = useState(true)
 
   // Active stakeholders fetch
   const fetchStakeholders = useCallback(() =>

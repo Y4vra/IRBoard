@@ -260,7 +260,7 @@ describe("DocumentsView", () => {
       .toHaveBeenCalledWith([5])
   })
 
-  it("filters deactivated documents by default", () => {
+  it("does not filter deactivated documents by default", () => {
     activeResource.data = [
       {
         entityIdentifier: "activeResource1",
@@ -288,8 +288,8 @@ describe("DocumentsView", () => {
       .toBeInTheDocument()
 
     expect(
-      screen.queryByText("deactivated.pdf")
-    ).not.toBeInTheDocument()
+      screen.getByText("deactivated.pdf")
+    ).toBeInTheDocument()
   })
 
   it("shows toggle button in active view", () => {
@@ -297,7 +297,7 @@ describe("DocumentsView", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /hiding deactivated/i,
+        name: /showing deactivated/i,
       })
     ).toBeInTheDocument()
   })

@@ -2383,6 +2383,11 @@ Each scenario is run against a dedicated deployment of the full Docker Compose s
 === Load testing
 For the load testing phase, the primary focus will be on stressing the critical entry points of the system, specifically the traffic flow passing through Traefik and Oathkeeper toward the Spring Boot backend. The goal is to simulate bursts of concurrent users to identify the exact point where identity validation latency begins to degrade the user experience or if Kratos' session management can handle the expected volume. This process goes beyond checking for server crashes; it involves using the Grafana stack to monitor how container resources scale and ensuring the internal network routing maintains stability under heavy pressure.
 
+=== Accessibility testing
+Accessibility testing validates that the system can be used by people with varying abilities, ensuring that interface elements, navigation structures, and interactive components meet recognised standards. The primary reference is the Web Content Accessibility Guidelines (WCAG), which cover properties such as keyboard navigability, screen reader compatibility, and colour contrast ratios.
+
+Evaluation combines automated tooling (to surface common violations such as missing ARIA labels, insufficient contrast, or improper heading hierarchy) with manual inspection of key interaction flows, since automated tools alone are known to miss a significant proportion of real accessibility barriers. Findings are prioritised by their WCAG conformance level and cross-referenced against the functional requirements specification to determine whether a deficiency represents an implementation gap or a design decision to be revisited in future work.
+
 === Usability testing
 Usability testing validates that the system can be used efficiently and without unnecessary friction by the professional profiles who constitute its target audience. Their objective is to identify interaction patterns, navigation structures, or interface elements that cause confusion, hesitation, or error in real users performing realistic tasks.
 
@@ -2640,7 +2645,7 @@ Tests were executed directly against the deployed Docker Compose stack, simulati
 === Usability and Accessibility testing
 Usability testing evaluates the degree to which the system can be used by its target professional profiles efficiently, without unnecessary friction, and without requiring prior knowledge of its internal structure. Its objective is to identify interaction patterns, navigability issues, or interface elements that produce confusion, hesitation, or error in realistic usage scenarios.
 
-Accessibility testing is the process of evaluating a website or application to ensure it is usable by people with disabilities. Given the MVP nature of this project, accessibility testing has remained minimal, as the color pallette from the frontend has remained primarily black and white. Despite this, test user behaviour will be analyzed to check whether they have been able to spot low contrast elements without being asked to.
+Accessibility testing is performed primarily through Google Lighthouse audits on each main page of the application, with a target value of 80 on each measurement. Given the MVP nature of the project and the predominantly monochromatic colour palette, only the Performance and Accessibility categories are taken into account, as the remaining Lighthouse categories (Best Practices and SEO) are either less relevant at this stage or produce skewed results due to the deployment lacking HTTPS, which Lighthouse flags as a recommended practice violation. Secondarily, participant behaviour during usability sessions is observed for accessibility concerns, noting whether users encounter difficulty with low-contrast elements or other interface properties without being explicitly prompted to look for them.
 
 Test participants will be selected from software-related professional profiles, including individuals with experience in software development, requirements engineering, or project management, as these represent the system's primary user groups. Participants with no prior familiarity with IR-Board will be preferred, and no time to explore or familiarize themselves with the system will be provided before the session begins, to avoid familiarity bias influencing the results.
 
@@ -2874,15 +2879,31 @@ This structure allows each integration test to exercise a complete vertical slic
 - #strong[Access control boundaries:] each operation is verified to return 403 when the requesting user lacks the required Keto permission, confirming that authorization is enforced at the service layer before any domain logic is executed.
 
 Acceptance testing is treated as a direct extension of integration testing: each integration test scenario is traceable to one or more functional requirements defined in the requirements specification, providing a structured verification record at the component boundary level.
-== Accessibility testing
-TODO
 #page(flipped: true)[
-  == Usability Testing <usability_testing_execution>
+  == Usability and Accessibility testing
+  === Accessibility testing
+  The recorded results where:
+  #figure(table(
+    columns:(1fr,1fr,1.25fr,3fr),
+    table.header(
+      [*Page*],[*Performance*],[*Accessibility*],[*Main issues*]
+    ),
+    [Login],[97],[97],[-],
+    [Home],[96],[77],[`Select` elements lack `label` elements, and several elements do not have sufficient contrast with the background, such as number of projects, and reference ids.],
+    [Project view],[95],[90],[Lack of contrast on reference, graph labels, etc.],
+    [Stakeholder view],[96],[90],[Lack of contrast of the deactivated filter button.],
+    [Functionality view],[95],[87],[Elements `button`, `link` y `menuitem` lack accessible naming, and lack of contrast on page name, identivier, and titles.],
+    [Functionality detail view],[96],[90],[Lack of contrast on page name, identivier, and titles.],
+    [Documents view],[96],[90],[Lack of contrast on deactivated filter and graph.],
+    [User management],[95],[95],[-],
+  ),caption:"Accessibility testing results")
+  
+  === Usability Testing <usability_testing_execution>
   The results documented from the four rounds of usability testing are recorded below. As all users completed successfully the scenarios, the "completed" column was removed from the table.
   
   Similarly, the errors are documented upon each step, and every user was quite confident on their actions and feedback until the identity slug step. Therefore, their appropiate rows have been removed from the session summary.
   
-  === User 1
+  ==== User 1
   #figure(
     table(
       columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
@@ -2937,7 +2958,7 @@ TODO
     ),
     caption: "User 1 - session summary sheet",
   )
-  === User 2
+  ==== User 2
   #figure(
     table(
       columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
@@ -2992,7 +3013,7 @@ TODO
     ),
     caption: "User 2 - session summary sheet",
   )
-  === User 3
+  ==== User 3
   #figure(
     table(
       columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
@@ -3047,7 +3068,7 @@ TODO
     ),
     caption: "User 3 - session summary sheet",
   )
-  === User 4
+  ==== User 4
   #figure(
     table(
       columns: (0.4fr, 2.5fr, 0.5fr, 4fr),
@@ -3102,20 +3123,29 @@ TODO
     ),
     caption: "User 4 - session summary sheet",
   )
-  === Conclusions
-  Several issues arise from the usability and accessibility testing, from which we can obtain the following actions to mitigate their impact:
+  === Usability and accessibility testing conclusions
+  Several issues arise from the usability testing, from which we can obtain the following actions to mitigate their impact:
   #figure(table(
     columns:(1fr,2fr),
     table.header([*Issue found*],[*Corrective measure*]),
     [Low contrast on entity slug and project's functionality section labels],[Increase contrast on each text, as well as correctly label the slug as "identity slug"],
-    [Unexpected placement of disabled filter on nfr view],[Move the filter to a similar position as it is already done on functionality view],
+    [Low contrast on reference IDs, graph labels, page names, identifiers, and titles across multiple views, as flagged by both usability participants and Lighthouse],[Review and increase contrast on all affected text elements across the Home, Project, Stakeholder, Functionality, Functionality Detail, and Documents views],
+    [Unexpected placement of disabled filter on element views],[By default, have the deactivated requirements shown, so it feels like an additional option rather than a filter.],
     [Unexpected placement of badges on detail view makes it easier for the user to miss them],[Place the badges on the same row as the entity slug, to be right below the name and with the slug to its right, to be naturally discovered by following the elements.],
     [Lack of understanding for nfr numerical values and entity slug's purpose],[Add a ? symbol that upon hover shows a tooltip explaining what each is.],
+    [Several button, link, and menuitem elements lack accessible naming, and select elements lack associated label elements — flagged by Lighthouse across multiple views],[Add explicit ARIA labels or visible labels to all affected interactive elements],
     [Image placeholder on the nav bar's user tab redirects to invalid/not implemented route],[As a user modification view for non-admin users is not within scope (changing image and user details by yourself), the redirection logic is to be commented out.],
     [Entity slug search does not work using the enter key],[Add keybindings and keyboard navigation to future work.],
   ),caption:"Usability testing's issues and corrective measures")
   === Corrections
   TODO
+
+  The following corrections were implemented:
+  1. Addition of navigation logic to project card.
+  2. Removed navigation logic of nav bar's user tab that redirected to /profile.
+  3. Changed the default state of the variable `showDeactivated` to true to show deactivated elements by default.
+  4. 
+
 ]
 == Load Testing
 Given that the system was deployed on a lower-spec machine than the development PC, load testing was performed locally to isolate performance from any external network latency. A secondary production-grade Docker Compose configuration was created for this purpose, with load balancing disabled and 499 users pre-inserted into the system.
@@ -3123,7 +3153,7 @@ Given that the system was deployed on a lower-spec machine than the development 
 === Simulation
 The simulation used was a closed-model load test targeting 500 concurrent users against the IRBoard backend. It simulated the full lifecycle of a realistic user session (from login through creating project content to permanent deletion) repeated multiple times per session to sustain meaningful concurrency. It ramps the users for about 2 minutes, maintains the peak users for about 20 minutes, and steadily falls over the last 2 minutes.
 
-The simulation used a closed-model load test targeting 500 concurrent users against the IRBoard backend. Each virtual user ran a full session lifecycle — from login through creating project content to permanent deletion — repeated multiple times to sustain meaningful concurrency. Concurrency ramps up over approximately 2 minutes, holds at peak for 20 minutes, then winds down over the final 3 minutes.
+The simulation used a closed-model load test targeting 500 concurrent users against the IRBoard backend. Each virtual user ran a full session lifecycle (from login through creating project content to permanent deletion) repeated multiple times to sustain meaningful concurrency. Concurrency ramps up over approximately 2 minutes, holds at peak for 20 minutes, then winds down over the final 3 minutes.
 Each session begins with a single login: the user initiates a Kratos browser login flow, extracts the flow ID and CSRF token from the response, submits their credentials, and receives a session cookie. A 3–6 second pause follows to simulate reading the dashboard.
 The following workflow then repeats at least 3 times per session, with realistic think times between each step:
 
@@ -3134,7 +3164,7 @@ The following workflow then repeats at least 3 times per session, with realistic
 5. Browses the stakeholder list
 6. Browses functionalities, then creates one (3–7 s)
 7. Views the functional requirements list
-8. Writes and submits a functional requirement — the longest pause in the session at 5–12 seconds, reflecting a user composing a meaningful description
+8. Writes and submits a functional requirement; the longest pause in the session at 5–12 seconds, reflecting a user composing a meaningful description
 9. Reviews the FR detail page
 10. Links the stakeholder to the FR
 11. Browses the NFR and documents tabs (2–5 s each)

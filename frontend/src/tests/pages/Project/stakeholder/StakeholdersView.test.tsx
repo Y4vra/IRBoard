@@ -201,17 +201,17 @@ describe("StakeholdersView", () => {
 
   it("shows 'Hiding deactivated' toggle by default", () => {
     renderView()
-    expect(screen.getByText(/hiding deactivated/i)).toBeInTheDocument()
+    expect(screen.getByText(/showing deactivated/i)).toBeInTheDocument()
   })
 
   it("toggles to 'Showing deactivated' when clicked", async () => {
     const user = userEvent.setup()
     renderView()
-    await user.click(screen.getByText(/hiding deactivated/i))
-    expect(screen.getByText(/showing deactivated/i)).toBeInTheDocument()
+    await user.click(screen.getByText(/showing deactivated/i))
+    expect(screen.getByText(/hiding deactivated/i)).toBeInTheDocument()
   })
 
-  it("hides DEACTIVATED stakeholders by default", () => {
+  it("does not hide DEACTIVATED stakeholders by default", () => {
     setResponses({
       active: {
         data: [
@@ -224,10 +224,10 @@ describe("StakeholdersView", () => {
     })
     renderView()
     expect(screen.getByText("Active One")).toBeInTheDocument()
-    expect(screen.queryByText("Disabled One")).not.toBeInTheDocument()
+    expect(screen.getByText("Disabled One")).toBeInTheDocument()
   })
 
-  it("shows DEACTIVATED stakeholders after toggling", async () => {
+  it("hides DEACTIVATED stakeholders after toggling", async () => {
     const user = userEvent.setup()
     setResponses({
       active: {
@@ -240,8 +240,8 @@ describe("StakeholdersView", () => {
       },
     })
     renderView()
-    await user.click(screen.getByText(/hiding deactivated/i))
-    expect(screen.getByText("Disabled One")).toBeInTheDocument()
+    await user.click(screen.getByText(/showing deactivated/i))
+    expect(screen.queryByText("Disabled One")).not.toBeInTheDocument()
   })
 
   // ── Create stakeholder ────────────────────────────────────────────────────────
