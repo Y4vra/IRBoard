@@ -2507,7 +2507,347 @@ The src directory is organized into a set of purpose-delimited packages that ref
 
 Cross-cutting application state is managed through the `contexts` package, which exposes React contexts for the authenticated session and the currently active project and its functionalities, making this information available throughout the component tree without prop drilling. Stateful data-fetching logic is encapsulated in the `hooks` package, where custom hooks abstract the fetch lifecycle, loading and error states, and cache invalidation patterns away from the page components that consume them. The `lib` package groups non-React utilities: global configuration constants, graph utility functions used by the dashboard charts, the Kratos SDK client instance, and general-purpose helper functions shared across the application. Domain types are maintained in a dedicated `types` folder, which contains TypeScript interfaces that mirror the DTOs received from the backend, providing end-to-end type safety from the API response through to the component props without duplicating the backend's domain model. Finally, the `tests` folder mirrors the `src` directory structure exactly, placing each test file adjacent in hierarchy to the module it covers, and adds an `e2e` subfolder at the root of the test tree for the Playwright end-to-end scenarios that exercise the fully deployed stack.
 == Real Use Case Design
-TODO
+Here are presented the general use cases expected for each actor in the system. An actor represents an external user, system or organization that interacts with the system.
+#figure(image("assets/diagrams/useCaseDiagram_admin.svg"),caption:"Use case diagram 1")
+#figure(image("assets/diagrams/useCaseDiagram.svg"),caption:"Use case diagram 2")
+=== Tabular use cases
+To expand the main use cases, here are the most relevant use cases for the system, formatted as a table:
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-01: Create project*],
+  [Name],[Create project],
+  [Description],[An admin creates a new project in the system, defining its basic attributes and priority configuration.],
+  [Actors involved],[System Admin],
+  [Initial condition],[The admin selects the option to create a new project from the home page.],
+  [Preconditions],[The admin has an authenticated session with admin-level system privileges.],
+  [Postconditions],[A new project exists in Active state and is visible on the home page.],
+  [Normal flow],[
+    (1) The admin navigates to the project creation form.\
+    (2) The admin enters a project name and description.\
+    (3) The admin selects a priority style (Ternary or MOSCOW).\
+    (4) The admin submits the form.\
+    (5) The system validates the required fields.\
+    (6) The system creates the project in Active state.\
+    (7) The system displays the new project on the home page.
+  ],
+  [Alternative flows],[
+    *(3')* The admin does not select a priority style. The system assigns Ternary as the default. Flow continues from step 4.
+  ],
+  [Exceptions],[
+    *(5.a)* The name or description field is empty. The system displays a validation error and the project is not created. The admin remains on the form.\
+    *(5.b)* The admin's session has expired. The system rejects the request and redirects the admin to the login page.\
+    *(5.c)* The admin's privileges were revoked during the session. The system rejects the request with an authorization error. The project is not created.
+  ],
+),caption: "Tabular use case: Create project")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-02: Deactivate project*],
+  [Name],[Deactivate project],
+  [Description],[An admin deactivates an active project, placing it and all its contents into read-only mode.],
+  [Actors involved],[System Admin],
+  [Initial condition],[The admin selects the deactivation option on an active project.],
+  [Preconditions],[The admin has an authenticated session with admin-level privileges. The target project is in Active state.],
+  [Postconditions],[The project is in Deactivated state. All its functionalities and requirements become read-only.],
+  [Normal flow],[
+    (1) The admin selects the option to deactivate a project.\
+    (2) The system requests confirmation.\
+    (3) The admin confirms the action.\
+    (4) The system sets the project to Deactivated state.\
+    (5) The system places the project and all its contents in read-only mode.
+  ],
+  [Alternative flows],[
+    *(3')* The admin cancels the confirmation dialog. The project remains Active and no changes are made.
+  ],
+  [Exceptions],[
+    *(4.a)* The project has already been deactivated by another admin during the session. The system informs the admin and reflects the current state.\
+    *(4.b)* The admin's session has expired. The system rejects the request and redirects to the login page.
+  ],
+),caption: "Tabular use case: Deactivate project")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-03: Invite user*],
+  [Name],[Invite user],
+  [Description],[An admin invites a new user to the system by providing their personal details. The system generates a signup code and sends an invitation email.],
+  [Actors involved],[System Admin],
+  [Initial condition],[The admin selects the option to invite a new user from the user management view.],
+  [Preconditions],[The admin has an authenticated session with admin-level privileges.],
+  [Postconditions],[A new inactive user account exists in the system. An invitation email containing a signup code has been sent to the provided address.],
+  [Normal flow],[
+    (1) The admin opens the invite user dialog.\
+    (2) The admin enters the new user's name, surname, and email address.\
+    (3) The admin submits the form.\
+    (4) The system validates the provided data.\
+    (5) The system creates the identity in the identity provider.\
+    (6) The system generates a one-time signup code.\
+    (7) The system sends an invitation email containing the signup code to the provided address.\
+    (8) The new user account is registered as pending activation.
+  ],
+  [Alternative flows],[
+    *(5')* The admin also grants the new user admin-level system privileges. The system assigns the admin role to the created identity before sending the invitation.
+  ],
+  [Exceptions],[
+    *(4.a)* Any required field (name, surname, or email) is empty. The system displays a validation error and the invitation is not sent.\
+    *(4.b)* The provided email address is already associated with an existing account. The system informs the admin and the invitation is not sent.\
+    *(7.a)* The email system is unavailable. The user account is created but the invitation email is not delivered. The admin is informed and can regenerate the signup code later.
+  ],
+),caption: "Tabular use case: Invite user")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-04: Sign in*],
+  [Name],[Sign in],
+  [Description],[A user authenticates into the system using their credentials to obtain a valid session.],
+  [Actors involved],[Any user with credentials (System Admin, Project Manager, Requirement Engineer, or Stakeholder user)],
+  [Initial condition],[The user navigates to the login page.],
+  [Preconditions],[The user has an existing active account in the system.],
+  [Postconditions],[The user has an authenticated session and is redirected to the home page.],
+  [Normal flow],[
+    (1) The user enters their email address and password.\
+    (2) The user submits the login form.\
+    (3) The system validates the credentials against the identity provider.\
+    (4) The system creates a session and sets the session cookie.\
+    (5) The system redirects the user to the home page.
+  ],
+  [Alternative flows],[
+    *(1')* The user has a signup code instead of a permanent password. After submitting the code, the system prompts the user to set a permanent password of between 15 and 64 characters. Once set, the session is created and the user is redirected to the home page.
+  ],
+  [Exceptions],[
+    *(3.a)* The credentials are incorrect. The system displays an authentication error. The user remains on the login page.\
+    *(3.b)* The user has failed authentication 3 consecutive times. The system temporarily blocks the account and informs the user.\
+    *(3.c)* The account does not exist or has been removed. The system displays a generic authentication error without revealing the reason.
+  ],
+),caption: "Tabular use case: Sign in")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-05: Link user to project*],
+  [Name],[Link user to project],
+  [Description],[An admin or project manager assigns an existing user to a project or one of its functionalities with a specific role, granting them the corresponding access.],
+  [Actors involved],[System Admin, Project Manager],
+  [Initial condition],[The actor selects the option to link a user within a project's management view.],
+  [Preconditions],[The actor has an authenticated session. The target project is in Active state. The user to be linked has an active account and is not already linked to the project.],
+  [Postconditions],[The selected user is linked to the project or functionality with the assigned role and can exercise the corresponding permissions.],
+  [Normal flow],[
+    (1) The actor opens the user linking dialog within a project.\
+    (2) The actor selects the target user from the list of system users.\
+    (3) The actor selects the role to assign (Project Manager, Requirement Engineer, or Stakeholder user) and, where applicable, the target functionality.\
+    (4) The actor confirms the assignment.\
+    (5) The system creates the corresponding relationship in the access control layer.\
+    (6) The system confirms the assignment and updates the project's user list.
+  ],
+  [Alternative flows],[
+    *(3')* The actor assigns the user as Project Manager at the project level. The system automatically links the user to all existing functionalities within the project. Flow continues from step 4.\
+    *(3'')* The actor assigns the user as Requirement Engineer or Stakeholder user to multiple functionalities simultaneously. The system creates one relationship per selected functionality. Flow continues from step 4.
+  ],
+  [Exceptions],[
+    *(3.a)* The actor attempts to assign a role they are not authorized to grant (e.g. a project manager attempting to assign another project manager). The system rejects the action with an authorization error.\
+    *(5.a)* The user is already linked to the project or functionality with the same role. The system informs the actor and no duplicate relationship is created.\
+    *(5.b)* The target functionality has been deactivated during the session. The system rejects the assignment and informs the actor.
+  ],
+),caption: "Tabular use case: Link user to project")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-06: Add functionality*],
+  [Name],[Add functionality],
+  [Description],[A project manager adds a new functionality to an active project, defining its name and label identifier.],
+  [Actors involved],[Project Manager],
+  [Initial condition],[The project manager selects the option to add a new functionality within an active project.],
+  [Preconditions],[The actor has an authenticated session and is linked to the project as Project Manager. The project is in Active state.],
+  [Postconditions],[A new functionality exists within the project in Active state. The project manager is automatically linked to it.],
+  [Normal flow],[
+    (1) The project manager opens the add functionality dialog.\
+    (2) The project manager enters a functionality name.\
+    (3) The system automatically generates a label from the initial letters of each word in the name.\
+    (4) The project manager submits the form.\
+    (5) The system validates that the generated label is unique within the project.\
+    (6) The system creates the functionality in Active state.\
+    (7) The system automatically links the project manager to the new functionality.\
+    (8) The system displays the new functionality in the project view.
+  ],
+  [Alternative flows],[
+    *(3')* The project manager overrides the automatically generated label with a custom one. Flow continues from step 4 using the custom label.
+  ],
+  [Exceptions],[
+    *(5.a)* The generated or custom label already exists in the project. The system displays a validation error and the functionality is not created. The actor remains on the form.\
+    *(5.b)* The name field is empty. The system displays a validation error and the functionality is not created.\
+    *(5.c)* The project has been deactivated during the session. The system rejects the request and informs the actor.
+  ],
+),caption: "Tabular use case: Add functionality")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-07: Create functional requirement*],
+  [Name],[Create functional requirement],
+  [Description],[A project manager or requirement engineer creates a new functional requirement within a functionality they are linked to.],
+  [Actors involved],[Project Manager, Requirement Engineer],
+  [Initial condition],[The actor selects the option to add a new functional requirement within a functionality.],
+  [Preconditions],[The actor has an authenticated session and is linked to the target functionality. Both the project and the functionality are in Active state.],
+  [Postconditions],[A new functional requirement exists in Pending Approval state within the functionality, with a system-generated dynamic identifier and unique slug.],
+  [Normal flow],[
+    (1) The actor navigates to a functionality they are linked to.\
+    (2) The actor selects the option to create a new functional requirement.\
+    (3) The system displays the creation form.\
+    (4) The actor enters a name, description, and selects a priority value following the project's configured priority style.\
+    (5) The actor submits the form.\
+    (6) The system validates all required fields.\
+    (7) The system generates a dynamic identifier based on the functionality label and the requirement's position in the list.\
+    (8) The system generates a unique internal slug for the requirement.\
+    (9) The system creates the requirement in Pending Approval state.\
+    (10) The system displays the new requirement in the functionality's requirement list.
+  ],
+  [Alternative flows],[
+    *(4')* The actor optionally sets a stability value. Flow continues from step 5 with the stability included.\
+    *(4'')* The actor selects an existing requirement as the parent, creating a nested child requirement. The system generates the dynamic identifier reflecting the nesting position (e.g. FR-UM-001.1). Flow continues from step 5.
+  ],
+  [Exceptions],[
+    *(6.a)* The name or description field is empty. The system displays a validation error. The requirement is not created and the actor remains on the form with previously entered data preserved.\
+    *(6.b)* No priority value is selected. The system displays a validation error. The requirement is not created.\
+    *(6.c)* The actor is no longer linked to the functionality at the moment of submission. The system rejects the request with an authorization error and the requirement is not created.\
+    *(6.d)* The functionality or project has been deactivated during the session. The system rejects the request and informs the actor.\
+    *(6.e)* The selected parent requirement has been removed or deactivated during the session. The system rejects the request, indicating the parent is no longer valid. The actor remains on the form.
+  ],
+),caption: "Tabular use case: Create functional requirement")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-08: Approve requirement*],
+  [Name],[Approve requirement],
+  [Description],[A project manager marks one or more requirements as Approved, confirming they have been validated by the appropriate stakeholders.],
+  [Actors involved],[Project Manager],
+  [Initial condition],[The project manager selects the approval action on one or more requirements, or uses the bulk approval option on a functionality or project.],
+  [Preconditions],[The actor has an authenticated session and is linked to the project as Project Manager. The target requirements are in Pending Approval state and are not flagged as Pending Review.],
+  [Postconditions],[The selected requirements are in Approved state.],
+  [Normal flow],[
+    (1) The project manager navigates to a functionality or requirement detail view.\
+    (2) The project manager selects the option to approve one or more requirements.\
+    (3) The system validates that each selected requirement is in Pending Approval state and not flagged as Pending Review.\
+    (4) The system sets each validated requirement to Approved state.\
+    (5) The system updates the displayed state of the affected requirements.
+  ],
+  [Alternative flows],[
+    *(2')* The project manager uses the bulk approval option at the functionality level. The system applies the approval to all eligible requirements within the functionality in a single operation. Flow continues from step 3.\
+    *(2'')* The project manager uses the bulk approval option at the project level. The system applies the approval to all eligible requirements across all functionalities in the project. Flow continues from step 3.
+  ],
+  [Exceptions],[
+    *(3.a)* One or more selected requirements are flagged as Pending Review. The system skips those requirements and informs the project manager that they require attention before approval.\
+    *(3.b)* One or more selected requirements are in Deactivated or Removed state. The system skips those requirements silently and processes only the eligible ones.\
+    *(3.c)* The project manager's session has expired. The system rejects the request and redirects to the login page.
+  ],
+),caption: "Tabular use case: Approve requirement")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-09: Add stakeholder entity*],
+  [Name],[Add stakeholder entity],
+  [Description],[A project manager or requirement engineer adds a new stakeholder entity to a project to represent an interested party and support requirements traceability.],
+  [Actors involved],[Project Manager, Requirement Engineer],
+  [Initial condition],[The actor selects the option to add a new stakeholder from the project's stakeholder view.],
+  [Preconditions],[The actor has an authenticated session and is linked to the project. The project is in Active state.],
+  [Postconditions],[A new stakeholder entity exists within the project with a system-generated identifier, visible to all users linked to the project.],
+  [Normal flow],[
+    (1) The actor opens the add stakeholder dialog.\
+    (2) The actor enters a name and description for the stakeholder.\
+    (3) The actor submits the form.\
+    (4) The system validates the required fields.\
+    (5) The system generates a unique identifier for the stakeholder.\
+    (6) The system creates the stakeholder entity and associates it with the project.\
+    (7) The system displays the new stakeholder in the project's stakeholder list.
+  ],
+  [Alternative flows],[
+    There are no alternative flows for this use case.
+  ],
+  [Exceptions],[
+    *(4.a)* The name or description field is empty. The system displays a validation error and the stakeholder is not created. The actor remains on the form.\
+    *(4.b)* The project has been deactivated during the session. The system rejects the request and informs the actor.\
+    *(4.c)* The actor's session has expired. The system rejects the request and redirects to the login page.
+  ],
+),caption: "Tabular use case: Add stakeholder entity")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-10: Link stakeholder entity to requirement*],
+  [Name],[Link stakeholder entity to requirement],
+  [Description],[A project manager or requirement engineer links an existing stakeholder entity to one or more requirements to establish traceability between the interested party and the system behavior it originates or concerns.],
+  [Actors involved],[Project Manager, Requirement Engineer],
+  [Initial condition],[The actor selects the option to link a stakeholder from within a requirement's detail view.],
+  [Preconditions],[The actor has an authenticated session and is linked to the functionality containing the target requirement. The project is in Active state. At least one stakeholder entity exists in the project.],
+  [Postconditions],[The selected stakeholder entity is linked to the requirement. All users with access to the requirement can see the association. The requirement is flagged as Pending Review if previously Approved.],
+  [Normal flow],[
+    (1) The actor navigates to the detail view of a requirement.\
+    (2) The actor selects the option to link a stakeholder entity.\
+    (3) The system displays the list of stakeholder entities available in the project.\
+    (4) The actor selects one or more stakeholder entities.\
+    (5) The actor confirms the selection.\
+    (6) The system creates the association between the selected stakeholders and the requirement.\
+    (7) The system updates the requirement detail view to reflect the linked stakeholders.
+  ],
+  [Alternative flows],[
+    There are no alternative flows for this use case.
+  ],
+  [Exceptions],[
+    *(3.a)* No stakeholder entities exist in the project. The system informs the actor that no stakeholders are available to link.\
+    *(6.a)* The actor is not linked to the functionality of the target requirement at the moment of submission. The system rejects the action with an authorization error.\
+    *(6.b)* The requirement has been deactivated or removed during the session. The system rejects the action and informs the actor.
+  ],
+),caption: "Tabular use case: Link stakeholder entity to requirement")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-11: Upload document*],
+  [Name],[Upload document],
+  [Description],[A project manager or requirement engineer uploads a document to the project, making it available for association with requirements as a traceability artifact.],
+  [Actors involved],[Project Manager, Requirement Engineer],
+  [Initial condition],[The actor selects the option to upload a new document from the project's document view.],
+  [Preconditions],[The actor has an authenticated session and is linked to the project. The project is in Active state.],
+  [Postconditions],[The document is stored and associated with the project. It is visible to all users linked to the project and available for linking to requirements.],
+  [Normal flow],[
+    (1) The actor opens the document upload dialog.\
+    (2) The actor selects a file from their local system.\
+    (3) The actor submits the upload form.\
+    (4) The system validates the file.\
+    (5) The system stores the file in the object storage backend.\
+    (6) The system creates a document record associated with the project, storing the file name and MIME type.\
+    (7) The system displays the new document in the project's document list.
+  ],
+  [Alternative flows],[
+    There are no alternative flows for this use case.
+  ],
+  [Exceptions],[
+    *(4.a)* No file is selected. The system displays a validation error and the upload does not proceed.\
+    *(5.a)* The object storage backend is unavailable. The system informs the actor that the upload failed and the document is not created.\
+    *(5.b)* The project has been deactivated during the session. The system rejects the request and informs the actor.\
+    *(5.c)* The actor's session has expired. The system rejects the request and redirects to the login page.
+  ],
+),caption: "Tabular use case: Upload document")
+
+#figure(table(
+  columns:2,
+  table.cell(colspan: 2)[*UC-12: Search entity by slug*],
+  [Name],[Search entity by slug],
+  [Description],[An authenticated user searches for a specific project entity by entering its unique identity slug in the navigation bar search field, and navigates directly to its detail view.],
+  [Actors involved],[Admin, Project Manager, Requirement Engineer, Stakeholder user],
+  [Initial condition],[The user enters a slug in the search field of the navigation bar.],
+  [Preconditions],[The user has an authenticated session.],
+  [Postconditions],[The user is redirected to the detail view of the entity identified by the slug, provided they have access to it.],
+  [Normal flow],[
+    (1) The user opens the navigation bar and locates the slug search field.\
+    (2) The user enters the full identity slug of the target entity.\
+    (3) The system performs a lexical search for an exact match.\
+    (4) The system verifies that the requesting user has access to the matched entity.\
+    (5) The system redirects the user to the detail view of the matched entity.
+  ],
+  [Alternative flows],[
+    There are no alternative flows for this use case.
+  ],
+  [Exceptions],[
+    *(3.a)* No entity matches the entered slug exactly. The system informs the user that no results were found and no navigation occurs.\
+    *(4.a)* An entity matching the slug exists but the user does not have access to it. The system behaves as if no match was found, without revealing the existence of the entity.\
+    *(3.b)* The user enters a partial or malformed slug. The system finds no exact match and informs the user accordingly.
+  ],
+),caption: "Tabular use case: Search entity by slug")
 == Class Design <class_design>
 #figure(image("./assets/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
 
