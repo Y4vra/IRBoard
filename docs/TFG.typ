@@ -1861,7 +1861,7 @@ Here are presented some diagrams that helped during the requirement edduction pr
 
 #strong[Removed] - A project entity that has been archived for removal, placed in the trash bin in case it is needed as last resort.
 
-#figure(image("./assets/diagrams/RequirementStates.svg"), caption: "Requirement entity's state diagram")
+#figure(image("./assets/diagrams/RequirementStates.svg"), caption: "Requirement entity's state diagram") <requirement_lifecycle>
 #strong[PendingApproval] - A requirement entity that has not been validated by a stakeholder as it currently is.
 It's a complex state to ease development, as the pending review can be seen as an extension of itself, and therefore can be a simple boolean flag.
 
@@ -3680,7 +3680,64 @@ Open the same inbound ports as the production profile. Once the stack is healthy
 == User Manual
 TODO
 == Developer Guide
-TODO
+This section provides practical guidance for developers continuing work on IR-Board, covering the project layout, key architectural conventions, and known quirks of the current implementation that are not necessarily obvious from the domain model alone.
+
+=== SonarQube and quality control
+Any future extension to the system must be submitted as a pull request and reviewed by a trusted developer of the project before being merged. Extensions must be accompanied by appropriate testing and adhere to established good practices: no existing test may be left broken, the extension must be properly scoped and self-contained (partial or half-implemented features are not acceptable), and the change must pass SonarQube's quality gate without exception.
+
+=== Repository structure
+The repository is split into two top-level applications, `backend` and `frontend`, each following the package organization described in the #link(<system_architecture>)[System Architecture] section. Infrastructure definitions (Docker Compose files, Ory configuration, Traefik dynamic configuration) live at the repository root, alongside the `.env.example` file used as the basis for local configuration. Refer to the #link(<installation_guide>)[Installation Guide] to bring up a local stack before making changes.
+
+=== Backend conventions
+The backend follows the hexagonal/clean architecture split described earlier: `domain`, `application`, and `infrastructure`. When adding a new capability, the general rule of thumb is:
+
+- Domain rules (state transitions, validation invariants) belong in the domain entities themselves, not in services.
+- Orchestration of multiple entities, repositories, or external ports belongs in the application layer's service classes.
+- Anything that talks to Kratos, Keto, MinIO, or the database directly belongs in infrastructure, behind the existing port interfaces (`IdentityService`, `PermissionService`, `ObjectStorageService`).
+
+New endpoints that require permission checks should call into `PermissionService` (the Keto adapter) rather than re-implementing relationship checks locally, to keep authorization logic centralized and consistent with the ReBAC model described in #link(<users_and_characteristics>)[Users and Characteristics].
+
+=== Frontend conventions
+The frontend organizes shared logic as described in the #link(<system_architecture>)[Frontend system design] section (`pages`, `components`, `contexts`, `hooks`, `lib`, `types`). New pages should be added under `pages` and wired into the navigability structure described in the #link(<user_interface_design>)[User Interface Design] section, including updating route guards (`ProtectedRoute`, `ProjectLockWrapper`, `FunctionalitiesProviderWrapper`) where relevant rather than re-implementing access checks ad hoc.
+
+==== Frontend permission model
+Authorization decisions on the backend are resolved through Ory Keto, but the frontend does not query Keto directly. Instead, permission information relevant to the UI is surfaced through specific DTO fields returned by the backend, which the frontend should treat as the source of truth for conditional rendering:
+
+- *System-level admin status* is exposed as the boolean `isAdmin` field on the user DTO. This drives visibility of system-wide administrative views and actions, such as user invitation and project creation.
+- *Project-level management permission* is exposed as the boolean `editPermission` field on the project DTO, set when the requesting user is linked as project manager for that specific project. This should gate project-level mutating actions (editing project metadata, deactivating the project, linking users, approving in bulk).
+- *Functionality-level permission* is exposed through the `FunctionalitiesResponse` type returned when fetching a project's functionalities:
+
+```ts
+export type Permission = "edit" | "view" | "none";
+export type FunctionalitiesResponse = Record<Permission, Functionality[]>;
+```
+
+  Rather than a single permission value attached to each functionality, the backend buckets the full list of functionalities by the permission level the current user holds over each one. A functionality with `edit` permission corresponds to the user being a requirement engineer (or higher) on it; `view` corresponds to stakeholder-level access; `none` indicates the functionality exists in the project but the user has no relationship to it (and would typically not be rendered, or rendered in a disabled state, depending on the view). Components consuming this type should not assume a flat array of functionalities and must read from the correct bucket.
+
+As a general rule, do not infer permissions client-side from role names or other heuristics; always defer to these fields, since they reflect the live ReBAC evaluation performed by the backend at request time.
+
+==== Partial DTOs
+Several DTOs returned by the backend are intentionally partial depending on the calling context, mirroring the specific data the originating service call needs rather than always returning the full entity graph. The most notable example is the requirement DTO: list-oriented endpoints (e.g. fetching a functionality's requirement list) may omit the `children` collection entirely or return it empty, while detail-oriented endpoints (e.g. fetching a single requirement) populate it. Frontend code must not assume a given field is always present just because it appears in the TypeScript type; check the specific endpoint's documented/expected shape before relying on a field being populated, and avoid writing generic rendering logic that silently breaks when an omitted field is `undefined` versus legitimately empty.
+
+When adding new endpoints, prefer being explicit in naming or documentation about which fields are populated, to keep this pattern from becoming a source of confusion as the DTOs evolve.
+
+=== Requirement state cascades
+Requirement state transitions only cascade to child requirements for deactivation and removal, and the two cascades behave differently. Other transitions, such as approval, marking as finished, or reactivation, are not propagated to children and must be applied individually per requirement, or in bulk via the appropriate bulk actions.
+
+When a requirement is deactivated, the cascade walks all of its descendants but only deactivates those currently in PENDING_APPROVAL, APPROVED, or REMOVED state; descendants that are FINISHED are skipped and retain their state, as stated on #link(<requirement_lifecycle>)[requirement's lifecycle graph]. When a requirement is removed, by contrast, the cascade applies unconditionally to every descendant regardless of its current state, unlinking their observers and children in the process. This unconditional behavior on removal is deliberate: removing a requirement is expected to take its entire subtree down with it, since a removed parent has no meaningful use for children left dangling in an active state.
+
+One interaction worth keeping in mind is that reactivation does not cascade. A project manager may reactivate a child requirement belonging to a parent that is still deactivated; since reactivation only applies to the targeted requirement, this leaves the parent deactivated while the child returns to PENDING_APPROVAL, with no propagation back up to the parent to reflect that one of its children is active again. If that parent is subsequently removed, the (intentionally unconditional) removal cascade will force-remove the child as well, even though the child had just been independently reactivated. From the perspective of the user who reactivated the child, this can read as unexpected data loss, even though the removal itself is behaving exactly as designed.
+
+The system does not currently warn the user in this scenario. Developers working on the requirement lifecycle should keep this interaction in mind when extending state-transition logic, and may want to consider surfacing a confirmation warning in the frontend (e.g. "this parent has children that are not deactivated; they will also be removed") before applying a removal to a parent whose children are not all already deactivated. This would preserve the deliberate cascade-on-removal behavior while making its consequences visible to the user before the action is taken, and is a good candidate to pick up as future work for hardening.
+=== Entity locking lifecycle and its current limitation
+The EntityLock mechanism described in #link(<class_design>)[Class Design] enforces single-writer concurrency per entity. A lock is acquired by the first user to begin editing an entity and is expected to be released when that user saves, navigates away, or begins editing a different entity, as described in the #link(<requirements_specification>)[Concurrency] requirements. Since a user may only hold a single lock at a time, acquiring a new lock automatically releases any other lock previously held by that same user.
+
+Locks have a timeout of approximately one hour (see #link(<performance_requirements>)[Performance Requirements], PR.2), after which they are treated as expired. Expiry is enforced at the point of acquisition: when a user requests the lock for an entity that is already held, the existing lock row is checked, and if it is expired (or already owned by the requesting user), it is deleted and replaced with a new lock for the requesting user. If it is not expired and held by someone else, the request is rejected. The same expiry check is applied by isLocked and isLockedByUser, which are used to gate write operations, so an expired lock never blocks an edit even before anyone has explicitly re-acquired it.
+
+However, this expiry check is not applied uniformly across the service. The methods used to list locks for display purposes, findLocksForProject and findSystemLocks, return all EntityLock rows regardless of whether they are expired. This means that once a lock times out, nothing proactively deletes it: the stale row remains in the database until either the original holder explicitly unlocks the entity, or another user attempts to acquire the lock on that same entity, which triggers its deletion as part of the acquisition flow. There is currently no scheduled job that sweeps expired locks on its own.
+
+The practical consequence is that, between the moment a lock expires and the moment someone next interacts with that specific entity's lock, the frontend may still display the entity as held by its original locking user, even though write operations against it are already correctly unblocked on the backend. Developers extending the locking UI or building new consumers of findLocksForProject / findSystemLocks should be aware that these endpoints reflect raw lock state rather than effective lock state, and should consider filtering by expiry on the client side, or adding the same expiry check to these query methods, if a more accurate "currently locked" indicator is needed. Adding a periodic cleanup job for expired locks is a reasonable candidate for future work, though care should be taken to avoid racing with the lazy deletion that already occurs during acquisition.
+
 = Project Closure //10
 The final project closure analysis combines the schedule execution, budget execution, and risk outcomes as different representations of the same project reality. The deviations observed in the final schedule and budget reflect the actual distribution of effort during execution, while the risk analysis explains the factors that influenced the issues documented on the #link(<implementation_issues>)[implementation issues section], which in turn caused those deviations.
 
@@ -4295,6 +4352,10 @@ Second, the 500 concurrent user target, while well above the stated performance 
 
 Finally, and most significantly, all testing was performed locally within the same machine running the stack, which eliminates network latency entirely from the results. While this was a deliberate choice to isolate system performance, it means the figures do not reflect the experience of a real remote user. Future load testing should be conducted over the network against a live deployment, even if the target environment remains the same Azure instance, so that routing overhead, TLS termination latency, and real-world connection variability are all accounted for in the measurements.
 
+== Warn before cascading removal on requirements with active children
+Since reactivation does not cascade back up to a parent, a child can be returned to PENDING_APPROVAL while its parent remains deactivated. If that parent is later removed, the deliberate cascade-on-removal behavior will force-remove the child along with it, which can surprise a user who had just reactivated it independently. As future work, the frontend (or a backend-side check) should detect this situation and surface a confirmation warning, such as "this parent has children that are not deactivated; they will also be removed", before the removal action is confirmed. This preserves the existing cascade semantics while making their consequences visible to the user ahead of time.
+== Cleanup of expired entity locks
+Expired locks are currently only removed lazily, when another user attempts to acquire the lock on the same entity; the listing endpoints (findLocksForProject, findSystemLocks) do not filter out expired rows, so a stale lock can continue to display in the frontend as held by its original user even though write access is already unblocked on the backend. As future work, a periodic cleanup job should be added to sweep expired lock rows, and/or the listing queries should be updated to apply the same expiry filter used for write-access checks, so that lock indicators in the UI consistently reflect effective lock state rather than raw lock state. Care should be taken to avoid racing with the existing lazy deletion performed during lock acquisition.
 == Dependency maturity: migration away from MinIO
 At the time of writing, MinIO's open-source Community Edition is in a fragile position. Following the removal of administrative functionality from its web console in 2025 and the subsequent transition of the upstream project to "maintenance mode" in December 2025, MinIO is no longer actively developed as a community project, even though its AGPLv3-licensed source remains available and usable.
 
