@@ -3678,7 +3678,132 @@ docker compose -f docker-compose.load-testing.yaml up -d --build
 Open the same inbound ports as the production profile. Once the stack is healthy and all users are seeded, the system is ready to receive load from the Gatling simulation described in the #link(<test_plan_analysis>)[Test Plan Analysis].
 
 == User Manual
-TODO
+This section provides a practical, task-oriented guide for using IR-Board once it has been deployed and an account is available. It complements the #link(<installation_guide>)[Installation Guide] and the #link(<user_interface_design>)[User Interface Design] section, focusing on how to perform common actions from the perspective of an end user rather than on the underlying architecture.
+
+=== Signing in <user_manual_signing_in>
+To access the system, open the platform's URL in a browser. If no session is active, the *Login* page is shown.
+
+#figure(image("assets/screenshots/user_manual/login_page.png"), caption: "Login page")
+
+Enter your email and password and press *Login*.
+
+If this is your first time accessing the system, you will not yet have a password. Instead, an administrator will have invited you, and you will have received an email containing a one-time signup code.
+
+#figure(image("assets/screenshots/user_manual/code_mail.png"), caption: "Invitation email containing the signup code")
+
+Enter this code on the *Registration* page, along with a permanent password of between 15 and 64 characters. The registration page can be accessed via the *Click here* link on the bottom of the login page. 
+
+#figure(image("assets/screenshots/user_manual/signup_page.png"), caption: "Signup page")
+
+Once your password is set, you will be signed in automatically and redirected to the home page.
+
+=== Navigating the application
+Once authenticated, the collapsible navigation bar is available on the top-left corner of the screen at all times. Hover over it to expand it.
+
+#figure(image("assets/screenshots/user_manual/complete_navigation_bar.png"), caption: "Navigation bar, expanded, showing the project-scoped section") <user_manual_navigation_bar>
+
+From here you can log out, search for an entity by its identity slug, and reach the main top-level areas of the application: *Home*, *New Project*, *Diagrams*, and, if you are a system administrator, *User Management*. The indented section under projects, highlighted in the image above, only appears while you are inside a project, and gives direct access to that project's *Dashboard*, *Stakeholders*, *Non-Functional Requirements*, and *Documents* views.
+
+=== The home page
+The home page lists every project you are linked to. Before any project has been created, it is shown empty.
+
+#figure(image("assets/screenshots/user_manual/empty_home.png"), caption: "Empty home page")
+
+To create a project, press the *New Project* button, as seen in the image below. Give it a name and description and, optionally, choose a priority style (*Ternary* or *MOSCOW*) for its future functional requirements before confirming.
+
+#figure(image("assets/screenshots/user_manual/home_page.png"), caption: "Home page with an existing project")
+
+=== The project dashboard
+Selecting a project from the home page opens its dashboard. Newly created projects start empty.
+
+#figure(image("assets/screenshots/user_manual/empty_project_page.png"), caption: "Empty project page")
+
+As functionalities, requirements, stakeholders, and documents are added, the dashboard's statistics section fills in, summarizing the distribution of requirement states across the project. This section sits toward the bottom of the page, so on smaller windows you may need to scroll down to see it.
+
+#figure(image("assets/screenshots/user_manual/project_statistics.png"), caption: "Project statistics, at the bottom of the dashboard")
+
+Deactivated or removed entities are not accounted for the project's statistics.
+
+=== Linking users to a project or functionality
+Only an administrator can link a user to a project as project manager. To do so, open the user linking dialog from the project view and select the user to assign them as a *Project Manager* for this project.
+
+The creator of a project is automatically added as its project manager to streamline the process.
+
+#figure(image("assets/screenshots/user_manual/user_linking_project.png"), caption: "Linking a user to a project as project manager")
+
+A project manager, in turn, can link users to individual functionalities as *Requirement Engineer* or *Stakeholder user*, giving them access scoped to that functionality rather than the whole project. They will be able to observe the shared elements of the project, and only the functionalities they are linked to.
+
+#figure(image("assets/screenshots/user_manual/user_linking_functionality.png"), caption: "Linking a user to a functionality")
+
+=== Working with requirements
+Functional and non-functional requirements are created and managed the same way, so the example below uses a non-functional requirement, though the same form applies to functional requirements within a functionality.
+
+Press *Add requirement* from the relevant view to open the creation form.
+
+#figure(image("assets/screenshots/user_manual/create_nfr.png"), caption: "Non Functional Requirement creation form")
+
+For a non-functional requirement, the measurement unit, comparison operator, threshold, target, and actual values are all optional. If you provide them, the requirement's detail view will automatically indicate whether it is currently *passing*, by comparing the actual value against the threshold using the selected operator.
+
+#figure(image("assets/screenshots/user_manual/nfr_detail_view.png"), caption: "Requirement detail view, showing pass status")
+
+To change a requirement's state (approve it, mark it as finished, deactivate it, reactivate it, or remove it), use the corresponding button on its detail view. This is a common trope within all detail views, and an example of a stakeholder element can be seen below.
+
+#figure(image("assets/screenshots/user_manual/element_actions.png"), caption: "State-changing action buttons on a stakeholder entity")
+
+Requirements can also be nested and reordered. To do so, press and hold the three-dot handle on the left of a requirement and drag it onto or above/below another requirement.
+
+#figure(image("assets/screenshots/user_manual/nfr_nesting.png"), caption: "Dragging a requirement by its handle to nest it")
+
+The requirement is then displayed as a child of its new parent, and can be collapsed or expanded from the list view.
+
+#figure(image("assets/screenshots/user_manual/nfr_nested.png"), caption: "Requirement nested under its new parent")
+
+=== Linking requirements, stakeholders, and documents
+From a requirement's detail view, open the linking dialog to associate it with a stakeholder, a document, or another requirement.
+
+#figure(image("assets/screenshots/user_manual/requirement_linking.png"), caption: "Requirement linking dialog")
+
+Once linked, each associated element is shown as a clickable entry. Pressing on it takes you directly to that element's own detail view, letting you move quickly between related requirements, stakeholders, and documents.
+
+#figure(image("assets/screenshots/user_manual/quick_linked_access.png"), caption: "Linked elements on a requirement's detail view")
+
+#figure(image("assets/screenshots/user_manual/quick_linked_access_2.png"), caption: "Navigating to a linked requirement from the document's side")
+
+To remove a link, press the delete icon next to the linked element, shown on the requirement's side of the relationship.
+
+#figure(image("assets/screenshots/user_manual/remove_linked.png"), caption: "Removing a link from a requirement's detail view")
+
+Note that this delete icon only appears on the requirement's side of a link. A stakeholder or document does not offer its own delete option for the relationship; the link can only be removed from the requirement that references it.
+
+=== Managing stakeholders and documents
+Stakeholders and documents are managed from their respective project-scoped views, reachable from the navigation bar or dashboard link. Deactivated elements can be hidden via the top right action.
+
+#figure(image("assets/screenshots/user_manual/documents_page.png"), caption: "Documents view")
+
+To upload a document, press *Upload document* and select a file from your device in the dialog that appears.
+
+#figure(image("assets/screenshots/user_manual/upload_document.png"), caption: "Document upload dialog")
+
+Removed elements are hidden from the default view but remain accessible to project managers and, for administrative purposes, to system administrators. The image below shows the removed elements view for stakeholders, though the same pattern applies to documents and requirements.
+
+#figure(image("assets/screenshots/user_manual/removed_elements.png"), caption: "Removed stakeholders, visible to project managers and administrators")
+
+=== Administering users #strong[(administrators only)]
+Administrators manage system users from the *User Management* view, reachable from the top-level navigation bar.
+
+#figure(image("assets/screenshots/user_manual/user_management.png"), caption: "User management view")
+
+To invite a new user, press *Invite new user*, as seen in the image above, and fill in their name, surname, and email address in the dialog that opens.
+
+#figure(image("assets/screenshots/user_manual/user_management_add_new.png"), caption: "Invite user dialog")
+
+Confirm the invitation to send a signup code to the provided email address, as described in #link(<user_manual_signing_in>)[Signing in].
+
+=== Concurrent editing
+While you are editing an entity, IR-Board locks it to prevent other users from modifying it at the same time. If another user loads the same entity, they will see an indicator showing that it is currently locked and by whom. The lock is released automatically once you save your changes, edit another entity, or after approximately one hour of inactivity.
+
+=== Logging out
+To end your session, expand the navigation bar and press *Log out*, as shown earlier in #link(<user_manual_navigation_bar>)[the navigation bar figure].
 == Developer Guide
 This section provides practical guidance for developers continuing work on IR-Board, covering the project layout, key architectural conventions, and known quirks of the current implementation that are not necessarily obvious from the domain model alone.
 
