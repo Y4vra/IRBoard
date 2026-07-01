@@ -1869,6 +1869,8 @@ It's a complex state to ease development, as the pending review can be seen as a
 
 #strong[Approved] - A requirement entity that has been validated by the appropriate  stakeholders with the project manager outside the system.
 
+#strong[Finished] - A requirement entity that has been deemed as "finished", that is, its functionality has been acomplished for now until modification or deactivation occurrs.
+
 #strong[Deactivated] - A requirement entity has been deactivated for some reason, be cancelled or an error, and does not count towards the metrics of the project.
 
 #strong[Removed] - A requirement entity that has been deemed unnecessary to the project. It is hidden from view, archived.
@@ -2478,9 +2480,9 @@ The figure below shows the main flow of the application represented by solid arr
 
 #strong[Mailpit] - A simple email server that receives all messages sent by Ory Kratos. Acts as a placeholder for development instead of a real email server, to ensure the signup works.
 
-Aditionally, the following containers are present on the deployment:
+Additionally, the following containers are present on the deployment:
 
-#strong[Draw.io] - A self-hosted instance of the draw.io diagramming tool, embedded in the frontend to allow users to create and edit diagrams (flowcharts, use case diagrams, and similar) directly within the platform. It is served on its own subdomain and configured to allow cross-origin embedding from the main application domain.
+#strong[Draw.io] - A self-hosted instance of the draw.io diagramming tool, embedded in the frontend to allow users to create and edit diagrams (flowcharts, use case diagrams, and similar) directly within the platform once its integration is completed.
 
 #strong[Grafana] - The observability dashboard, accessible on a dedicated subdomain through Traefik. It aggregates logs from Loki and metrics from Prometheus to provide visibility into infrastructure health and application behavior.
 
