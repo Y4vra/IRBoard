@@ -113,7 +113,7 @@
 #set page(numbering: "I")
 = Declaration of originality
 I, Javier Carrasco Arango, with DNI 71905728T and UO294532, hereby declare that this work is completely original and all sources used during the development of it have been correctly cited.
-In Avilés, Asturias, on the xx of xx of 2026,
+In Avilés, Asturias, on the 01 of 07 of 2026,
 
 Signed: <Sign>
 #pagebreak()
@@ -200,7 +200,7 @@ The primary object of this project is the design and implementation of *IR-Board
 Key objectives of the system include:
 
 - *Methodological Compliance:* Implementing a framework that follows international standards for requirements specification, specifically the *IEEE 830* guidelines and the *ISO/IEC/IEEE 29148* standard.
-- *Hybrid Documentation Support:* Providing tools for both traditional modeling (use cases, flowcharts, and decision tables) and Agile practices (user story mapping and management).
+- *Hybrid Documentation Support:* Providing tools for both traditional modelling (use cases, flowcharts, and decision tables) and Agile practices (user story mapping and management).
 - *Relation-Based Access Control (ReBAC):* Developing a sophisticated security model where permissions are not merely role-based but determined by the dynamic relationship between users and specific entities (Projects and Functionalities), implemented through a *Zero-Trust* architecture.
 - *Lifecycle and State Management:* Automating the management of requirement states (Pending Approval, Approved, Deactivated, etc.) and project lifecycles to ensure data integrity and traceability.
 - *Collaborative Engineering:* Facilitating stakeholder management and real-time concurrency control to prevent data conflicts during collaborative editing sessions.
@@ -315,7 +315,7 @@ The deployment environment assumes containerized execution. Components are expec
 = Theoretical Background <theoretical_background>//2
 To better understand the system developed, here is a brief summary of the concepts related and used on it.
 == Software requirements engineering
-Requirements engineering is the structured and systematic approach to formalizing the needs and expectations of stakeholders for a system. It encompasses different processes for identifying, eliciting, analyzing, specificating, validating and their management.
+Requirements engineering is the structured and systematic approach to formalizing the needs and expectations of stakeholders for a system. It encompasses different processes for identifying, eliciting, analyzing, specifying, validating and their management.
 
 === Concepts
 
@@ -640,7 +640,7 @@ The final decision was PostgreSQL because it provides the required balance betwe
 
 = Initial Project Planning and Management //4
 == Theoretical client petition
-To be able to appropiately create a project's budget aligned with the needs of the client, and ensure a complete enough context, the planning was done with the following fictional scenario in mind:
+To be able to appropriately  create a project's budget aligned with the needs of the client, and ensure a complete enough context, the planning was done with the following fictional scenario in mind:
 
 The theoretical client, NorthTech Solutions, is a company located in a nearby city to where the development team operates. The company requests the creation of a customized software platform to improve its internal processes and digital management.
 
@@ -763,7 +763,7 @@ It should also be noted that, since this project is developed by a single studen
 
       [*ID*], [*Task*], [*Work*], [*Profile*], [*Start*], [*End*],
 
-      [0], [*IRBoard development*], [300 hrs], [], [Thu 01/01/26], [Fri 13/02/26],
+      [0], [*IR-Board development*], [300 hrs], [], [Thu 01/01/26], [Fri 13/02/26],
       [1], [Project management], [30 hrs], [], [Thu 01/01/26], [Fri 13/02/26],
       [1.1], [Design project schedule], [2 hrs], [Project manager], [Thu 01/01/26], [Thu 01/01/26],
       [1.2], [Generate budget], [2 hrs], [Project manager], [Thu 01/01/26], [Thu 01/01/26],
@@ -817,7 +817,7 @@ It should also be noted that, since this project is developed by a single studen
 
       [7], [Development], [105 hrs], [], [Mon 19/01/26], [Thu 05/02/26],
       [7.1], [Set up architecture], [4 hrs], [Software architect], [Mon 19/01/26], [Mon 19/01/26],
-      [7.2], [Set up development enviroment], [3 hrs], [Software architect], [Mon 19/01/26], [Tue 20/01/26],
+      [7.2], [Set up development environment], [3 hrs], [Software architect], [Mon 19/01/26], [Tue 20/01/26],
       [7.3], [Develop code], [98 hrs], [], [Tue 20/01/26], [Thu 05/02/26],
       [7.3.1],
       [Develop project management module],
@@ -1155,7 +1155,7 @@ Additionally, the opportunity derived from the use of open-source security compo
 == Initial Budget
 The budget is divided into three stages. The first stage describes the provider's financial reality, establishing the internal cost model. The second stage calculates the specific cost of executing the project for the theoretical provider. Finally, the third stage converts this cost into the final client offer, diluting the non-billable costs into each main task. In a situation where hardware is to be purchased, or where a price is standard or set by the market, these budget lines would be avoided for the dilution, as it is expected to match the market.
 
-=== Provider finantial reality
+=== Provider financial reality
 The provider’s financial reality reflects the internal cost structure of the organization responsible for delivering the project. It encompasses the personnel required to operate the company, their annual employment costs (including gross salary and employer contributions), and the corresponding hourly cost rates. The hourly rate excluding profit represents the minimum rate required to recover costs, while the hourly rate including profit incorporates the target commercial margin applied when invoicing clients.
 
 To ensure that the salary assumptions are aligned with current market conditions, the gross annual salaries for each professional profile were obtained from #link("https://www.indeed.com/career/salaries")[Indeed], while the total employer cost was estimated using the #link("https://factorial.es/calculadora-coste-trabajador")[Factorial employee cost calculator].
@@ -1189,7 +1189,7 @@ The complete spreadsheet is available #link(<provider_finantial_reality_budget>)
     table(
       columns: (0.75fr, 1fr, 0.75fr, 5fr, 2fr, 1.25fr, 1.25fr, 1.75fr, 2fr, 2fr, 2fr),
 
-      table.cell(colspan: 11)[*Category 1: IrBoard development costs breakdown*],
+      table.cell(colspan: 11)[*Category 1: IR-Board development costs breakdown*],
       table.header(
         [*I1*],
         [*I2*],
@@ -1743,9 +1743,9 @@ The complete spreadsheet is available #link(<provider_finantial_reality_budget>)
     table(
       columns: 3,
 
-      table.cell(colspan: 3)[*IrBoard costs*],
+      table.cell(colspan: 3)[*IR-Board costs*],
       table.header([*Cat. Num*], [*Category*], [*Total*]),
-      [01], [IrBoard development costs breakdown], [13.026,52 €],
+      [01], [IR-Board development costs breakdown], [13.026,52 €],
       [02], [Other], [172,50 €],
       [03], [Profit (25%)], [3.299,75 €],
       table.cell(colspan: 2)[total], [16.498,77 €],
@@ -1792,7 +1792,7 @@ As stated previously, the client-facing budget includes only directly billable c
     [04], [], [Set up SonarQube for Quality Assurance], [166,28 €], [166,28 €],
     [05], [], [Development], [], [5.602,80 €],
     [], [001], [Set up architecture], [242,94 €], [],
-    [], [002], [Set up development enviroment], [182,20 €], [],
+    [], [002], [Set up development environment], [182,20 €], [],
     [], [003], [Develop code], [5.177,66 €], [],
     [06], [], [Testing], [], [1.364,15 €],
     [], [001], [Test project management module], [200,53 €], [],
@@ -1827,7 +1827,7 @@ As stated previously, the client-facing budget includes only directly billable c
     align: left,
     table.cell(colspan: 3)[*Simplified client budget*],
     table.header([*Cat. Num*], [*Category*], [*Total*]),
-    [01], [IrBoard development costs breakdown], [16.500,52 €],
+    [01], [IR-Board development costs breakdown], [16.500,52 €],
     table.cell(colspan: 2)[*total*], [16.500,52 €],
   ),
   caption: "Simplified client budget",
@@ -1850,7 +1850,7 @@ These permissions overlap, in case a user is linked to a project in several ways
 For example, if a user is listed as requirement engineer and stakeholder in the same functionality, the user will be able to view (both permissions), and add, modify, disable and all other requirement engineer actions as well. 
 
 == Requirements Analysis
-Here are presented some diagrams that helped during the requirement edduction process.
+Here are presented some diagrams that helped during the requirement elicitation process.
 
 #figure(image("./assets/diagrams/ProjectStates.svg"), caption: "Lifecicle of a project entity")
 #strong[Active] - A project entity that is currently in progress.
@@ -1867,11 +1867,11 @@ It's a complex state to ease development, as the pending review can be seen as a
 
 #strong[PendingReview] - A requirement entity that needs attention and possible modification, due to a change on a linked entity. Expected to be purely a flag.
 
-#strong[Approved] - A requirement entity that has been validated by the appropiate stakeholders with the project manager outside the system.
+#strong[Approved] - A requirement entity that has been validated by the appropriate  stakeholders with the project manager outside the system.
 
 #strong[Deactivated] - A requirement entity has been deactivated for some reason, be cancelled or an error, and does not count towards the metrics of the project.
 
-#strong[Removed] - A requirement entity that has been deemed innecessary to the project. It is hidden from view, archived.
+#strong[Removed] - A requirement entity that has been deemed unnecessary to the project. It is hidden from view, archived.
 
 == Login and signup flows
 === Login flow
@@ -1921,7 +1921,7 @@ The backend domain model defines the main entities involved in requirements mana
 
 #strong[ComparisonOperator] - Defines the comparison logic used by non-functional requirements, such as equality or numerical comparisons.
 
-=== Data Modeling
+=== Data Modelling
 The domain model will be implemented using *JPA (Java Persistence API)*, where each domain entity will be mapped to a relational database table. The relationships defined in the class diagram are translated into JPA associations such as one-to-many, many-to-one, and many-to-many mappings.
 
 ==== Entity identifiers
@@ -1941,7 +1941,7 @@ Lifecycle states such as `ProjectState` and `RequirementState`, as well as the `
 
 The `EntityLock` entity is not part of the business domain but acts as an infrastructure record. It identifies the entity being locked by a (`entity_id`, `entity_type`) pair rather than a typed foreign key, allowing a single table to cover locks on any entity type without schema changes. A lock is always associated with the user who holds it and the project it belongs to.
 
-=== Process Modeling <process_modeling>
+=== Process Modelling <process_modeling>
 A crucial process for the system is the updates triggered by modifications between observed and observer entities. To illustrate the flows depicted on the system, the following diagram is provided:
 #figure(image("./assets/diagrams/ObservationFlows.svg"), caption: "Possible observation processes between entities")
 
@@ -1987,7 +1987,7 @@ Selecting or creating a project transitions the user into the *Project Context*,
 
 A dedicated *Slug Search* feature, also part of the persistent NavBar, is modelled as a shortcut transition that bypasses the regular hierarchical navigation entirely: given a valid entity slug, it allows the user to jump directly into the corresponding functional requirement, non-functional requirement, stakeholder, functionality, or document detail view from anywhere within the Authenticated Area, reflecting the identifier-based traceability mechanism discussed in the #link(<theoretical_background>)[Theoretical Background].
 
-Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non-Functional Requirement Detail*, *Stakeholder Detail*, and *Document Detail* views represent the horizontal traceability relationships described in the #link(<traceability>)[Traceability] section: from a requirement's detail view, a user may navigate directly to a linked stakeholder, a linked document, or a related peer requirement, including other functional requirements observed by the same requirement, modelled here as a self-transition. Unlike the structural transitions described above, these links do not follow the entity hierarchy; they instead reflect the observer relationships maintained at the data layer, as illustrated earlier in the #link(<process_modeling>)[Process Modeling] section's observation flow diagram.
+Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non-Functional Requirement Detail*, *Stakeholder Detail*, and *Document Detail* views represent the horizontal traceability relationships described in the #link(<traceability>)[Traceability] section: from a requirement's detail view, a user may navigate directly to a linked stakeholder, a linked document, or a related peer requirement, including other functional requirements observed by the same requirement, modelled here as a self-transition. Unlike the structural transitions described above, these links do not follow the entity hierarchy; they instead reflect the observer relationships maintained at the data layer, as illustrated earlier in the #link(<process_modeling>)[Process Modelling] section's observation flow diagram.
 
 == Requirements Specification <requirements_specification>
 === Functional Requirements
@@ -2156,7 +2156,7 @@ Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non
     (
       [The identifier must represent the project that will hold the requirement.],
       [The identifier must represent whether the requirement is functional or non functional.],
-      [The identifier must have a random element to ensure a low colision rate.],
+      [The identifier must have a random element to ensure a low collision rate.],
     ),
     [The system must ask for the following data for a functional requirement:],
     (
@@ -2210,7 +2210,7 @@ Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non
   ),
   [The system must allow a requirement engineer or a project manager to modify a requirement on a project.],
   (
-    [The system must only allow a project manager or requirement engineer to modify functional requiremets of a functionality the user is linked to.],
+    [The system must only allow a project manager or requirement engineer to modify functional requirements of a functionality the user is linked to.],
     [The system must flag linked requirements as pending review upon saving with changes.],
   ),
   [The system must allow a project manager to mark as approved one or more requirements.],
@@ -2233,13 +2233,13 @@ Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non
 #UM_List(
   [The system must allow an admin to invite new users to the system.],
   (
-    [The system must provide different levels of authorisation, based on the relationship between its elements.],
+    [The system must provide different levels of authorization, based on the relationship between its elements.],
     (
       [The system must have the levels: Admin, project manager, requirement engineer and stakeholder user.],
     ),
     [The system must ask the admin to set the name, surname, and email of the invited user.],
     (
-      [The system must generate an signup code as a temporal password.],
+      [The system must generate a signup code as a temporary password.],
       [The system must automatically send an invitation with the signup code to the email of the invited user.],
     ),
   ),
@@ -2253,9 +2253,9 @@ Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non
     (
       [The system must ensure the password is between 15 and 64 characters long.],
       [The system must make use of a random salt specific of each user.],
-      [The system must remove any password or signup code of the user upon seting a permanent password.],
+      [The system must remove any password or signup code of the user upon setting a permanent password.],
     ),
-    [The system must temporally block the user after 3 consecutive failed attempts.],
+    [The system must temporarily block the user after 3 consecutive failed attempts.],
   ),
   [The system must allow an admin to remove a user from the system.],
   (
@@ -2369,7 +2369,7 @@ Finally, the sky-blue links connecting the *Functional Requirement Detail*, *Non
   [Lifecycle states must be stored as controlled enumeration values, enforced at the application layer before persistence.],
   [Traceability relationships between requirements, stakeholders, and documents must be represented as explicit join tables rather than embedded references, to support bidirectional traversal and impact analysis.],
   [No entity may be permanently deleted without passing through the defined deactivation and removal states first.],
-  ([In case of parent removal, the appropiate states must have been traversed at least on the parent.],)
+  ([In case of parent removal, the appropriate  states must have been traversed at least on the parent.],)
 )
 
 === Design Constraints
@@ -2442,9 +2442,9 @@ Each scenario is run against a dedicated deployment of the full Docker Compose s
 For the load testing phase, the primary focus will be on stressing the critical entry points of the system, specifically the traffic flow passing through Traefik and Oathkeeper toward the Spring Boot backend. The goal is to simulate bursts of concurrent users to identify the exact point where identity validation latency begins to degrade the user experience or if Kratos' session management can handle the expected volume. This process goes beyond checking for server crashes; it involves using the Grafana stack to monitor how container resources scale and ensuring the internal network routing maintains stability under heavy pressure.
 
 === Accessibility testing
-Accessibility testing validates that the system can be used by people with varying abilities, ensuring that interface elements, navigation structures, and interactive components meet recognised standards. The primary reference is the Web Content Accessibility Guidelines (WCAG), which cover properties such as keyboard navigability, screen reader compatibility, and colour contrast ratios.
+Accessibility testing validates that the system can be used by people with varying abilities, ensuring that interface elements, navigation structures, and interactive components meet recognised standards. The primary reference is the Web Content Accessibility Guidelines (WCAG), which cover properties such as keyboard navigability, screen reader compatibility, and color contrast ratios.
 
-Evaluation combines automated tooling (to surface common violations such as missing ARIA labels, insufficient contrast, or improper heading hierarchy) with manual inspection of key interaction flows, since automated tools alone are known to miss a significant proportion of real accessibility barriers. Findings are prioritised by their WCAG conformance level and cross-referenced against the functional requirements specification to determine whether a deficiency represents an implementation gap or a design decision to be revisited in future work.
+Evaluation combines automated tooling (to surface common violations such as missing ARIA labels, insufficient contrast, or improper heading hierarchy) with manual inspection of key interaction flows, since automated tools alone are known to miss a significant proportion of real accessibility barriers. Findings are prioritized by their WCAG conformance level and cross-referenced against the functional requirements specification to determine whether a deficiency represents an implementation gap or a design decision to be revisited in future work.
 
 === Usability testing
 Usability testing validates that the system can be used efficiently and without unnecessary friction by the professional profiles who constitute its target audience. Their objective is to identify interaction patterns, navigation structures, or interface elements that cause confusion, hesitation, or error in real users performing realistic tasks.
@@ -2482,7 +2482,7 @@ Aditionally, the following containers are present on the deployment:
 
 #strong[Draw.io] - A self-hosted instance of the draw.io diagramming tool, embedded in the frontend to allow users to create and edit diagrams (flowcharts, use case diagrams, and similar) directly within the platform. It is served on its own subdomain and configured to allow cross-origin embedding from the main application domain.
 
-#strong[Grafana] - The observability dashboard, accessible on a dedicated subdomain through Traefik. It aggregates logs from Loki and metrics from Prometheus to provide visibility into infrastructure health and application behaviour.
+#strong[Grafana] - The observability dashboard, accessible on a dedicated subdomain through Traefik. It aggregates logs from Loki and metrics from Prometheus to provide visibility into infrastructure health and application behavior.
 
 #strong[Loki] - A log aggregation system operating on the internal network. It receives container logs forwarded by Promtail and exposes them to Grafana for querying.
 
@@ -2863,7 +2863,7 @@ To expand the main use cases, here are the most relevant use cases for the syste
 == Class Design <class_design>
 #figure(image("./assets/diagrams/backendClassDiagram.svg"), caption: "Domain class diagram")
 
-#strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delgated to ory Keto or whatever security ReBAC system used. The boolean value `isActive` is also delegated to the ReBAC system, as it represents a user-to-system relationship.
+#strong[User] - The relationships between User and Project and Functionality, as they are purely access control related, are delegated to ory Keto or whatever security ReBAC system used. The boolean value `isActive` is also delegated to the ReBAC system, as it represents a user-to-system relationship.
 
 #strong[EntityLock] - This class models the concurrent mutex operations of the system. Whenever someone attempts to modify an entity, the entity lock service checks whether one entity lock object already exists and whether it is expired if it is present. The objects are linked to the user and have information of the entity locked to ensure it can correctly be retrieved and cancelled if the user requests another lock on a different entity.
 
@@ -2975,7 +2975,7 @@ And below would be the linked documents and other functional requirements, but a
 The purpose of this section is to present the specification of the test plan that will be carried out to verify the correct functioning of the system's different components. The tests executed over the system aim to find and resolve errors in internal functionalities, infrastructure integration, and user interface design. The different types of tests, whose execution is reflected in the #link(<test_plan_analysis>)[initial analysis] presented earlier in this document, are described below.
 
 === Code quality and unit testing
-Unit tests evaluate the isolated behavior of individual components within the codebase. In the particular case of this project, they are applied over the backend's domain model, drivers and service layers to verify that the adapters for the ory enviroment correctly translate the system calls to the appropiate set of calls, that state transition rules are correctly enforced, and that domain logic behaves as expected in isolation from external dependencies.
+Unit tests evaluate the isolated behavior of individual components within the codebase. In the particular case of this project, they are applied over the backend's domain model, drivers and service layers to verify that the adapters for the ory environment correctly translate the system calls to the appropriate  set of calls, that state transition rules are correctly enforced, and that domain logic behaves as expected in isolation from external dependencies.
 
 The selected tool for this layer is *SonarQube*, integrated into the development workflow as a Static Application Security Testing (SAST) tool. SonarQube will be configured to analyze the backend codebase on each significant development checkpoint, measuring code coverage, detecting code smells, identifying reliability issues through automated pattern matching, and scanning for common security vulnerabilities according to industry standards such as the OWASP Top 10. A minimum coverage threshold will be enforced to ensure that critical business logic is systematically exercised by automated tests before the system is considered ready for integration.
 
@@ -3057,7 +3057,7 @@ Tests were executed directly against the deployed Docker Compose stack, simulati
 === Usability and Accessibility testing
 Usability testing evaluates the degree to which the system can be used by its target professional profiles efficiently, without unnecessary friction, and without requiring prior knowledge of its internal structure. Its objective is to identify interaction patterns, navigability issues, or interface elements that produce confusion, hesitation, or error in realistic usage scenarios.
 
-Accessibility testing is performed primarily through Google Lighthouse audits on the production enviroment locally, on each main page of the application. The target value aimed for is an 80 on each measurement. Given the MVP nature of the project and the predominantly monochromatic colour palette, only the Performance and Accessibility categories are taken into account, as the remaining Lighthouse categories (Best Practices and SEO) are either less relevant at this stage or produce skewed results due to the deployment lacking HTTPS, which Lighthouse flags as a recommended practice violation. Secondarily, participant behaviour during usability sessions is observed for accessibility concerns, noting whether users encounter difficulty with low-contrast elements or other interface properties without being explicitly prompted to look for them.
+Accessibility testing is performed primarily through Google Lighthouse audits on the production environment locally, on each main page of the application. The target value aimed for is an 80 on each measurement. Given the MVP nature of the project and the predominantly monochromatic color palette, only the Performance and Accessibility categories are taken into account, as the remaining Lighthouse categories (Best Practices and SEO) are either less relevant at this stage or produce skewed results due to the deployment lacking HTTPS, which Lighthouse flags as a recommended practice violation. Secondarily, participant behavior during usability sessions is observed for accessibility concerns, noting whether users encounter difficulty with low-contrast elements or other interface properties without being explicitly prompted to look for them.
 
 Test participants will be selected from software-related professional profiles, including individuals with experience in software development, requirements engineering, or project management, as these represent the system's primary user groups. Participants with no prior familiarity with IR-Board will be preferred, and no time to explore or familiarize themselves with the system will be provided before the session begins, to avoid familiarity bias influencing the results.
 
@@ -3186,7 +3186,7 @@ Git is a version control system used to track changes in the project source code
 === PlantUML
 PlantUML is a tool for generating diagrams from textual descriptions. It was used to create software architecture diagrams, UML diagrams, and other visual documentation elements.
 === Gatling
-Gatling is a performance testing tool used to simulate user activity and measure application behaviour under load. It was used to evaluate system performance and response times.
+Gatling is a performance testing tool used to simulate user activity and measure application behavior under load. It was used to evaluate system performance and response times.
 === Typst
 Typst is a modern document preparation system used to create technical documentation. It was used for writing and formatting the project report.
 === MS Excel and MS Project
@@ -3205,7 +3205,7 @@ The setup of SonarQube for quality assurance took considerably longer than estim
 === Document management: architectural decision on file transfer
 During the implementation of document upload and download functionality, the file content was routed through the Spring Boot backend rather than using presigned URLs for direct client-to-storage transfers. This decision was made due to limited prior familiarity with S3-compatible object storage integration patterns at the time of implementation. While functional, this approach is not the standard pattern for systems built on an S3-compatible backend, and results in unnecessary load on the backend service. This is identified and documented as a future improvement.
 
-=== Consecuences of the ory ecosystem: domain-only access
+=== Consequences of the ory ecosystem: domain-only access
 The use of the Ory ecosystem introduced an unexpected constraint: it expects a proper domain to always be available. This required modifying the hosts file during development and local usability testing, and purchasing a domain for the production deployment.
 
 The purchase became necessary after finding that Azure's student offering only exposed university-managed domains, which were not available for modification. `DuckDNS`, while a long-standing favourite in the homelab and self-hosting community for its simplicity and zero cost, has seen notable reliability issues in recent years that made it unsuitable for the deployment. The domain `irboard.online` was purchased instead — a nod to the local development domain `irboard.local`.
@@ -3220,9 +3220,9 @@ During the development period, MinIO's open-source Community Edition underwent s
 During the preparation of the requirements specification, a compatibility issue was encountered with Typst's support for nested lists. Since the requirements documentation relies heavily on hierarchical structures (such as identifiers following formats like UM.1.1) the absence of adequate native multilevel list support at the time created difficulties in maintaining the intended document structure. Resolving this required additional investigation and the adoption of an external Typst extension (efilrst) to restore the required nested list behavior. This added unforeseen effort to the documentation phase.
 
 === Usability and accessibility issues discovered during testing
-Several interface issues were identified during usability and accessibility testing that required corrective action. These, as well as their corrections, are all documented appropiately over on the #link(<usability_testing_execution>)[usability testing execution].
+Several interface issues were identified during usability and accessibility testing that required corrective action. These, as well as their corrections, are all documented appropriately  over on the #link(<usability_testing_execution>)[usability testing execution].
 
-=== Time constraints and consecuences 
+=== Time constraints and consequences 
 Due to the irregular schedule, several additions had to be cut or left in a partial state to be able to cover the whole scope of the system. Although non essential, these were quality of life additions that had been considered in the event of having enough time for them, and are documented over on #link(<conclusions_future_work>)[future work]. 
 
 Examples of this were the draw.io integration, as after several iterations attempting to embed the official service using the official documentation #link(<reference_7>)[[7]], self-hosting became the final option. However, it was not brought to a fully operational state within the project timeline, as development effort was redirected toward ensuring testing coverage, usability testing, and the observability stack were complete.
@@ -3304,7 +3304,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
     [Home],[96],[77],[`Select` elements lack `label` elements, and several elements do not have sufficient contrast with the background, such as number of projects, and reference ids.],
     [Project view],[95],[90],[Lack of contrast on reference, graph labels, etc.],
     [Stakeholder view],[96],[90],[Lack of contrast of the deactivated filter button.],
-    [Functionality view],[95],[87],[Elements `button`, `link` y `menuitem` lack accessible naming, and lack of contrast on page name, identivier, and titles.],
+    [Functionality view],[95],[87],[Elements `button`, `link` y `menuitem` lack accessible naming, and lack of contrast on page name, identifier, and titles.],
     [Functionality detail view],[96],[90],[Lack of contrast on page name, identifier, and titles.],
     [Documents view],[96],[90],[Lack of contrast on deactivated filter and graph.],
     [User management],[95],[95],[-],
@@ -3313,7 +3313,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
   === Usability Testing <usability_testing_execution>
   The results documented from the four rounds of usability testing are recorded below. As all users completed successfully the scenarios, the "completed" column was removed from the table.
   
-  Similarly, the errors are documented upon each step, and every user was quite confident on their actions and feedback until the identity slug step. Therefore, their appropiate rows have been removed from the session summary.
+  Similarly, the errors are documented upon each step, and every user was quite confident on their actions and feedback until the identity slug step. Therefore, their appropriate  rows have been removed from the session summary.
   
   ==== User 1
   #figure(
@@ -3327,7 +3327,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
       [2],table.cell(align: left)[Create project and read dashboard metrics],[2s],[Expected the project card to be clickable, not just the "more..." button on the bottom.],
       [3], table.cell(align: left)[Add a new stakeholder], [14s], [Did not understand the states elements could be in.],
       [4], table.cell(align: left)[Add a new functionality], [31s], [Struggled to see the functionalities a bit. expecting functionalities to be with the three links above (stakeholders, nfrs and documents).],
-      [5],table.cell(align: left)[Create a functional requirement (all fields)],[35s],[almost didnt put description but was forced to by the system],
+      [5],table.cell(align: left)[Create a functional requirement (all fields)],[35s],[almost didn't put description but was forced to by the system],
       [6], table.cell(align: left)[Link requirement to stakeholder], [10s], [-],
       [7],table.cell(align: left)[Navigate to stakeholder from requirement detail],[3s],[Correctly used the shortcut from the detail view],
       [8],table.cell(align: left)[Create a non-functional requirement],[26s],[Did not understand nfr numerical values until detail view.],
@@ -3382,7 +3382,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
       [2], table.cell(align: left)[Create project and read dashboard metrics], [35s], [-],
       [3], table.cell(align: left)[Add a new stakeholder], [17s], [-],
       [4], table.cell(align: left)[Add a new functionality],[29s],[Expected a functionality link with the other top three.],
-      [5], table.cell(align: left)[Create a functional requirement (all fields)],[44s],[Complemented the requirement nesting and reordering.],
+      [5], table.cell(align: left)[Create a functional requirement (all fields)],[44s],[Complimented the requirement nesting and reordering.],
       [6], table.cell(align: left)[Link requirement to stakeholder], [12s], [-],
       [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [2s], [-],
       [8],table.cell(align: left)[Create a non-functional requirement],[31s],[Thought he had to change the numerical values on the form.],
@@ -3421,7 +3421,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
       [Total session duration], [20 minutes, the necessary setup time for the LAN VPN. Quicker due to prior experience of the observer with the setup.],
       [Number of steps completed without assistance], [All],
       [Steps that required the most time], [Mainly the slug searching, the requirement deactivation and the entity linking steps.],
-      [Any additional free-form observations], [entity slug is not explained what is anywhere.],
+      [Any additional free-form observations], [It's not explained anywhere what an entity slug is.],
     ),
     caption: "User 2 - session summary sheet",
   )
@@ -3437,7 +3437,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
       [2], table.cell(align: left)[Create and read dashboard metrics], [12s], [-],
       [3], table.cell(align: left)[Add a new stakeholder], [10s], [-],
       [4], table.cell(align: left)[Add a new functionality], [25s], [Expected a functionality link with the other top three.],
-      [5],table.cell(align: left)[Create a functional requirement (all fields)],[61s],[Did not knew where to create the fr whithin the functionality, and did not recognise FR as Functional Requirement],
+      [5],table.cell(align: left)[Create a functional requirement (all fields)],[61s],[Did not know where to create the fr within the functionality, and did not recognise FR as Functional Requirement],
       [6], table.cell(align: left)[Link requirement to stakeholder], [13s], [-],
       [7], table.cell(align: left)[Navigate to stakeholder from requirement detail], [1s], [-],
       [8],table.cell(align: left)[Create a non-functional requirement],[32s],[Disliked the use of acronyms instead of full text on buttons.],
@@ -3476,7 +3476,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
       [Total session duration], [15 minutes.],
       [Number of steps completed without assistance], [Every one except the slug search, as several reminders of the task were needed; reminding him to search on the nav bar with an entity's identity slug to nudge away from the project search and to search for an identifier that was not the dynamic identifier but rather something common to all project elements.],
       [Steps that required the most time], [The slug search and functional requirement creation step.],
-      [Any additional free-form observations], [Finds unintuitive the collapsible nav bar, suggested that the badges should be besides the slug or right below the name],
+      [Any additional free-form observations], [Finds the collapsible nav bar unintuitive, suggested that the badges should be beside the slug or right below the name],
     ),
     caption: "User 3 - session summary sheet",
   )
@@ -3574,9 +3574,9 @@ Acceptance testing is treated as a direct extension of integration testing: each
 Given that the system was deployed on a lower-spec machine than the development PC, load testing was performed locally to isolate performance from any external network latency. A secondary production-grade Docker Compose configuration was created for this purpose, with load balancing disabled and 499 users pre-inserted into the system.
 
 === Simulation
-The simulation used was a closed-model load test targeting 500 concurrent users against the IRBoard backend. It simulated the full lifecycle of a realistic user session (from login through creating project content to permanent deletion) repeated multiple times per session to sustain meaningful concurrency. It ramps the users for about 2 minutes, maintains the peak users for about 20 minutes, and steadily falls over the last 2 minutes.
 
-The simulation used a closed-model load test targeting 500 concurrent users against the IRBoard backend. Each virtual user ran a full session lifecycle (from login through creating project content to permanent deletion) repeated multiple times to sustain meaningful concurrency. Concurrency ramps up over approximately 2 minutes, holds at peak for 20 minutes, then winds down over the final 3 minutes.
+The simulation used a closed-model load test targeting 500 concurrent users against the IR-Board backend. Each virtual user ran a full session lifecycle (from login through creating project content to permanent deletion) repeated multiple times to sustain meaningful concurrency. Concurrency ramps up over approximately 2 minutes, holds at peak for 20 minutes, then winds down over the final 2 minutes.
+
 Each session begins with a single login: the user initiates a Kratos browser login flow, extracts the flow ID and CSRF token from the response, submits their credentials, and receives a session cookie. A 3–6 second pause follows to simulate reading the dashboard.
 The following workflow then repeats at least 3 times per session, with realistic think times between each step:
 
@@ -3611,7 +3611,7 @@ The following tools are required before proceeding with any deployment profile:
 - A domain name or local DNS control: the Ory ecosystem requires a proper domain to be available at all times. For local development this is satisfied by editing the system hosts file. For production and load testing deployments, a free or purchased domain with DNS records pointing to the server's public IP is required.
 
 === Local development deployment
-The default `docker-compose.yaml` defines the production stack. The `docker-compose.override.yaml` file is automatically picked up by Docker Compose when no explicit file is specified, and extends the base stack with development-specific configuration such as the final dockerfile stages for the backend and frontend, and additional exposed ports and enviroment variables. 
+The default `docker-compose.yaml` defines the production stack. The `docker-compose.override.yaml` file is automatically picked up by Docker Compose when no explicit file is specified, and extends the base stack with development-specific configuration such as the final dockerfile stages for the backend and frontend, and additional exposed ports and environment variables. 
 
 Running docker compose up without arguments therefore produces the development environment.
 
@@ -3956,7 +3956,7 @@ As with the initial planning, this final schedule should not be read as a litera
 
       [7], [Development], [107 hrs], [107 hrs], [], [Tue 20/01/26], [Fri 06/02/26],
       [7.1], [Set up architecture], [6 hrs], [6 hrs], [Software architect], [Tue 20/01/26], [Tue 20/01/26],
-      [7.2], [Set up development enviroment], [1 hr], [1 hr], [Software architect], [Wed 21/01/26], [Wed 21/01/26],
+      [7.2], [Set up development environment], [1 hr], [1 hr], [Software architect], [Wed 21/01/26], [Wed 21/01/26],
       [7.3], [Develop code], [100 hrs], [100 hrs], [], [Wed 21/01/26], [Fri 06/02/26],
       [7.3.1],
       [Develop project management module],
@@ -4201,7 +4201,7 @@ This risk materialized only to a limited extent during the initial integration p
 
 Although the developer had no previous experience with the Ory ecosystem, the availability of official documentation, reference examples, and assisted problem-solving tools significantly reduced the expected learning curve. As a result, understanding the main concepts behind Ory Kratos, Ory Oathkeeper, and Ory Keto, as well as the fundamentals of Relation-Based Access Control, did not become a major source of delay.
 
-The main challenges were not related to understanding the technologies themselves, but rather to correctly configuring and integrating them within the project's specific infrastructure. In particular, ensuring that the different components communicated correctly and that the authorization model matched the intended application behaviour required some additional experimentation.
+The main challenges were not related to understanding the technologies themselves, but rather to correctly configuring and integrating them within the project's specific infrastructure. In particular, ensuring that the different components communicated correctly and that the authorization model matched the intended application behavior required some additional experimentation.
 
 The planned mitigation strategy based on early prototyping, documentation review, and incremental validation proved effective. The additional effort was contained within the security and infrastructure-related tasks and did not significantly affect the project schedule, scope, or quality objectives.
 
@@ -4209,7 +4209,7 @@ The planned mitigation strategy based on early prototyping, documentation review
 
 This risk partially materialized during implementation.
 
-The conceptual authorization model designed for IR-Board was generally compatible with the capabilities provided by Ory Keto and Ory Oathkeeper. The intended Relation-Based Access Control model could be expressed using the selected components, and no fundamental limitation prevented the implementation of the planned permission system. However, several practical integration difficulties appeared when combining the application workflows with the operational requirements of the Ory ecosystem. The main challenge was not the authorization model itself, but rather the complexity of correctly configuring the surrounding infrastructure: service communication, network segmentation, reverse proxy behaviour, authentication flows, and the boundaries between protected and internal services.
+The conceptual authorization model designed for IR-Board was generally compatible with the capabilities provided by Ory Keto and Ory Oathkeeper. The intended Relation-Based Access Control model could be expressed using the selected components, and no fundamental limitation prevented the implementation of the planned permission system. However, several practical integration difficulties appeared when combining the application workflows with the operational requirements of the Ory ecosystem. The main challenge was not the authorization model itself, but rather the complexity of correctly configuring the surrounding infrastructure: service communication, network segmentation, reverse proxy behavior, authentication flows, and the boundaries between protected and internal services.
 
 The use of Ory Oathkeeper required additional architectural decisions regarding which components should be placed behind the authorization gateway and which should remain outside of it. Determining the appropriate request flow and service placement required additional experimentation, mainly due to the developer's limited previous experience with multi-layered security-oriented architectures.
 Examples of that particular situation occurred when introducing additional infrastructure components, particularly the observability stack and object storage. These services required careful consideration of trust boundaries, network exposure, and communication patterns. Their integration was more complex than initially expected, as securely separating user-facing traffic from internal service interactions required a stronger understanding of network segmentation and service isolation principles.
@@ -4234,7 +4234,7 @@ The decision to use Typst was initially motivated by the potential improvement o
 
 However, the adoption of a relatively new documentation ecosystem also introduced an unforeseen risk. During the preparation of the requirements documentation, a compatibility issue was encountered due to recent changes in Typst's support for nested lists. Since the requirements specification relied on hierarchical structures, such as identifiers following formats like UM.1.1, the absence of native multilevel list support created difficulties in maintaining the intended document structure.
 
-Resolving this issue required additional investigation and adaptation of the documentation workflow. The extensibility of Typst proved essential in this situation, as external extensions and custom solutions allowed the required nested list behaviour to be restored without changing the documentation structure or reducing its quality.
+Resolving this issue required additional investigation and adaptation of the documentation workflow. The extensibility of Typst proved essential in this situation, as external extensions and custom solutions allowed the required nested list behavior to be restored without changing the documentation structure or reducing its quality.
 
 Therefore, although the risk materialized during the project, its impact was limited and successfully mitigated. The final result confirmed both aspects of the decision: Typst introduced an unexpected compatibility challenge, but it also provided a substantial productivity improvement that outweighed the additional effort required to address the issue.
 === Risk and Opportunity Closure Summary
@@ -4296,7 +4296,7 @@ What follows is the recalculation of the cost breakdown based on the actual hour
     table(
       columns: (0.75fr, 1fr, 0.75fr, 5fr, 2fr, 1.25fr, 1.25fr, 1.75fr, 2fr, 2fr, 2fr,1fr),
 
-      table.cell(colspan: 12)[*Category 1: IrBoard development costs breakdown*],
+      table.cell(colspan: 12)[*Category 1: IR-Board development costs breakdown*],
       table.header(
         [*I1*],
         [*I2*],
@@ -4418,9 +4418,9 @@ What follows is the recalculation of the cost breakdown based on the actual hour
   #figure(
     table(
       columns: 4,
-      table.cell(colspan: 4)[*IrBoard costs*],
+      table.cell(colspan: 4)[*IR-Board costs*],
       table.header([*Cat. Num*], [*Category*], [*Total*],[*Deviation*]),
-      [01], [IrBoard development costs breakdown], [13.383,61 €],[3%],
+      [01], [IR-Board development costs breakdown], [13.383,61 €],[3%],
       [02], [Other], [172,50 €],[0%],
       table.cell(colspan: 2)[total], [13.556,11 €],[3%]
     ),
@@ -4488,11 +4488,11 @@ Since IR-Board's `object-storage` service is used purely as an S3-compatible bac
 
 As future work, two paths are proposed:
 
-- *Pin and isolate the current dependency.* In the short term, replace the unpinned `minio/minio:latest` and `minio/mc:latest` images used in the current deployment with explicit, audited version tags, to avoid unpredictable behaviour from future upstream changes to an effectively frozen codebase.
+- *Pin and isolate the current dependency.* In the short term, replace the unpinned `minio/minio:latest` and `minio/mc:latest` images used in the current deployment with explicit, audited version tags, to avoid unpredictable behavior from future upstream changes to an effectively frozen codebase.
 - *Evaluate actively maintained alternatives.* In the medium term, migrate the object storage layer to an actively maintained, S3-compatible alternative, such as Garage, SeaweedFS, or Ceph's RGW component. Given that the backend already interacts with object storage exclusively through the standard S3 API using a driver, this migration is expected to require minimal changes to the application layer, mainly limited to deployment configuration and credentials management.
 
 == Standardization of frontend data-fetching
-The current frontend implementation relies on a `useBackendResource`-style hook pattern for interacting with the backend API, but error handling is not yet centralized. As a result, different parts of the application may handle failed requests inconsistently, with no guarantee that all unrecoverable errors lead to the same user-facing behaviour.
+The current frontend implementation relies on a `useBackendResource`-style hook pattern for interacting with the backend API, but error handling is not yet centralized. As a result, different parts of the application may handle failed requests inconsistently, with no guarantee that all unrecoverable errors lead to the same user-facing behavior.
 
 As future work, a custom fetch wrapper is proposed, shared across all data-fetching hooks, that intercepts failed requests and uniformly redirects the user to the `/error` page (or an equivalent contextual error state) according to the type of failure encountered. This would centralize error handling logic, reduce duplicated boilerplate across components, and ensure a consistent user experience regardless of which part of the system triggered the failure.
 
@@ -4536,7 +4536,7 @@ As future work, this export capability should be implemented, most likely by com
 = Appendices <appendices>
 #page(flipped: true)[
   == Budget
-  === Provider finantial reality <provider_finantial_reality_budget>
+  === Provider financial reality <provider_finantial_reality_budget>
   #figure(
     table(
       columns: 5,
@@ -4712,7 +4712,7 @@ As future work, this export capability should be implemented, most likely by com
     table(
       columns: (0.75fr, 1fr, 0.75fr, 5fr, 2fr, 1.25fr, 1.25fr, 1.75fr, 2fr, 2fr, 2fr),
 
-      table.cell(colspan: 11)[*Category 1: IrBoard development costs breakdown*],
+      table.cell(colspan: 11)[*Category 1: IR-Board development costs breakdown*],
       table.header(
         [*I1*],
         [*I2*],
@@ -5258,9 +5258,9 @@ As future work, this export capability should be implemented, most likely by com
     table(
       columns: 3,
 
-      table.cell(colspan: 3)[*IrBoard costs*],
+      table.cell(colspan: 3)[*IR-Board costs*],
       table.header([*Cat. Num*], [*Category*], [*Total*]),
-      [01], [IrBoard development costs breakdown], [13.026,52 €],
+      [01], [IR-Board development costs breakdown], [13.026,52 €],
       [02], [Other], [172,50 €],
       table.cell(colspan: 2)[total], [13.199,02 €],
     ),
@@ -5309,7 +5309,7 @@ As future work, this export capability should be implemented, most likely by com
       [04], [], [Set up SonarQube for Quality Assurance], [166,28 €], [166,28 €],
       [05], [], [Development], [], [5.602,80 €],
       [], [001], [Set up architecture], [242,94 €], [],
-      [], [002], [Set up development enviroment], [182,20 €], [],
+      [], [002], [Set up development environment], [182,20 €], [],
       [], [003], [Develop code], [5.177,66 €], [],
       [06], [], [Testing], [], [1.364,15 €],
       [], [001], [Test project management module], [200,53 €], [],
@@ -5344,7 +5344,7 @@ As future work, this export capability should be implemented, most likely by com
       align: left,
       table.cell(colspan: 3)[*Simplified client budget*],
       table.header([*Cat. Num*], [*Category*], [*Total*]),
-      [01], [IrBoard development costs breakdown], [16.500,52 €],
+      [01], [IR-Board development costs breakdown], [16.500,52 €],
       table.cell(colspan: 2)[*total*], [16.500,52 €],
     ),
     caption: "Initial Budget: Simplified client budget",
