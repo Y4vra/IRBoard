@@ -745,7 +745,7 @@ The following matrix defines the responsibility distribution for the main projec
   [Documentation], [A], [I], [I], [I], [C], [R], [R],
 )
 
-== Initial Planning
+== Initial Planning <initial_schedule>
 The initial project planning was developed based on the Product Breakdown Structure (PBS) of the system, which can be found #link(<pbs>)[here]. The PBS was defined through an iterative process of refinement with the client (outside the theoretical context, this process was carried out with the project tutors) until a suitable system scope and set of functional requirements were established.
 
 From the identified requirements, the main system modules were derived and used as the basis for creating the project breakdown structure and the initial planning. It should be noted that this planning does not consider strict execution deadlines or real resource constraints, as its main objective is to estimate the required resources and project budget. Therefore, no distinction has been made between individual team members within the same professional profile; for example, tasks assigned to junior developers are considered equivalent regardless of whether they are performed by Junior Developer 1 or Junior Developer 2.
@@ -3258,7 +3258,7 @@ Backend unit tests were implemented using JUnit 5 as the test runner and Mockito
 All unit tests are executed in complete isolation, without loading the Spring application context or interacting with repositories, databases, or other external infrastructure. The unit under test is instantiated directly, while collaborators are replaced with Mockito mocks only when necessary to isolate the behavior being verified. Domain model classes are generally tested without mocks, as they represent self-contained business objects whose behavior can be exercised directly through their public API.
 
 The unit test suite verifies a broad range of behaviors throughout the application. For domain entities, tests focus on validating business rules, state transition constraints, object identity semantics, observer notifications, validation logic, and the correct handling of edge cases such as null values or invalid state changes. For components with external dependencies, the use of mocks allows tests to verify that business logic is applied correctly, authorization and validation rules are enforced, lifecycle transitions occur as expected, exceptions are propagated or translated appropriately, and dependencies are invoked with the correct parameters and interaction sequence. This approach ensures that each unit is validated independently while remaining unaffected by the behavior of surrounding components.
-=== SonarQube
+=== SonarQube <test_plan_execution_sonarqube>
 Code coverage is measured and enforced by SonarQube as part of the continuous integration pipeline. A minimum coverage threshold of 80% is required for the quality gate to pass, while the analysis also detects code smells, reliability issues, duplicated code, and common security vulnerabilities at each significant development checkpoint.
 
 Several code maintainability issues were encountered on the backend, and code duplication was found over the maximum threshold on the frontend upon initial testing. To prepare for the final delivery, all of these were mitigated to pass the quality gate enforced by the system.
@@ -3549,7 +3549,7 @@ Acceptance testing is treated as a direct extension of integration testing: each
     [Image placeholder on the nav bar's user tab redirects to invalid/not implemented route],[As a user modification view for non-admin users is not within scope (changing image and user details by yourself), the redirection logic is to be commented out.],
     [Entity slug search does not work using the enter key],[Add keybindings and keyboard navigation to future work.],
   ),caption:"Usability testing's issues and corrective measures")
-  === Corrections
+  === Corrections <usability_testing_corrections>
 
   The following corrections were implemented:
   1. Addition of navigation logic to project card.
@@ -3807,7 +3807,7 @@ To end your session, expand the navigation bar and press *Log out*, as shown ear
 == Developer Guide
 This section provides practical guidance for developers continuing work on IR-Board, covering the project layout, key architectural conventions, and known quirks of the current implementation that are not necessarily obvious from the domain model alone.
 
-=== SonarQube and quality control
+=== SonarQube and quality control <developer_guide_sonarqube>
 Any future extension to the system must be submitted as a pull request and reviewed by a trusted developer of the project before being merged. Extensions must be accompanied by appropriate testing and adhere to established good practices: no existing test may be left broken, the extension must be properly scoped and self-contained (partial or half-implemented features are not acceptable), and the change must pass SonarQube's quality gate without exception.
 
 === Repository structure
@@ -4450,16 +4450,36 @@ The risk outcomes provide the explanation behind these deviations. The risks tha
 == Conclusions
 Overall, the project closure confirms that the initial planning was sufficiently accurate at a global level. The final deviations resulted from variations in task complexity and execution conditions rather than changes in objectives or scope. The project maintained its planned functionality and quality goals while keeping schedule and budget deviations within acceptable limits.
 
-TODO
+=== What was achieved
+By the end of development, IR-Board delivers a functional, end-to-end requirements management platform covering the full lifecycle described in the #link(<requirements_specification>)[Requirements Specification]: project, functionality, requirement, stakeholder, and document management, each with its own controlled state machine and cascading review flags; a Relation-Based Access Control model built on Ory Keto, enforced through a genuine Zero-Trust perimeter via Ory Oathkeeper and Ory Kratos rather than simulated at the application layer; identifier-based traceability through dynamic identifiers, internal slugs, and horizontal cross-linking between requirements, stakeholders, and documents; and collaborative safeguards in the form of entity locking to prevent concurrent-edit conflicts. The system was validated not only through automated testing but through real usability and accessibility sessions with representative users, and was deployed and load-tested as a complete containerized stack rather than as a set of isolated components.
 
-== Keyboard navigation and sound feedback
+Beyond the core functional scope, several efforts were made to raise the project closer to a production-representative standard than a bachelor's thesis strictly requires:
+
+- #strong[Load testing at scale.] Rather than settling for a synthetic smoke test, a full Gatling simulation was built to exercise the entire authenticated user journey, including project, functionality, requirement, stakeholder, and document creation, cross-linking, and complete removal lifecycles, under a closed-model load of 500 concurrent users, well beyond the #link(<performance_requirements>)[performance requirements] the system was actually held to. This gave meaningful confidence in the behaviour of the Traefik/Oathkeeper/Kratos chain under sustained pressure rather than a single hopeful assumption about it.
+- #strong[A genuine observability stack.] Grafana, Loki, Promtail, and Prometheus were correctly integrated into the infrastructure, giving the deployed system actual log aggregation and metrics visibility rather than console output disappearing into a container's stdout.
+- #strong[Usability and accessibility testing's corrections.] The usability sessions were run with realistic professional profiles, and Lighthouse accessibility audits were performed across every major view. Critically, the findings from both were not simply documented and shelved: concrete corrections (contrast fixes, ARIA labelling, default filter behaviour, badge placement, tooltip affordances for previously unexplained concepts like the identity slug) were implemented and are recorded with before/after evidence in the #link(<usability_testing_corrections>)[Usability and Accessibility Testing Corrections] section.
+- #strong[Enforced code quality via SonarQube.] Rather than treating static analysis as an afterthought, a minimum 80% coverage threshold and a passing quality gate were established as a hard requirement for the project to be considered complete, as stated in the #link(<developer_guide_sonarqube>)[Developer Guide]'s contribution rules. Reaching that gate surfaced real maintainability issues, including code smells on the backend and duplicated logic on the frontend documented on #link(<test_plan_execution_sonarqube>)[test plan analysis execution], that were subsequently refactored out rather than merely flagged, meaning the delivered codebase reflects a deliberately maintained baseline rather than an unaudited one.
+
+=== Personal and technical lessons learned
+Beyond the delivered system, this project was also a significant learning exercise, and several lessons are worth recording independently of the artefact itself.
+
+The most direct technical lesson came from adopting an unfamiliar, production-grade security ecosystem rather than building authentication and authorization from scratch. Ory Kratos, Oathkeeper, and Keto were new to me at the outset, and while their individual concepts (identity flows, policy-enforcement gateways, relationship tuples) were reasonably approachable in isolation, correctly composing them into a coherent Zero-Trust perimeter (deciding what should sit behind the gateway and what should not) proved to be a genuinely nuanced decision. That experience translated directly into a stronger intuition for trust boundaries and network segmentation than I had going in, as documented in the #link(<implementation_issues>)[Issues Encountered] section.
+
+Notably, my understanding of frontend architecture and design also improved as I researched the most maintainable and reusable patterns, such as hooks, contexts, and related approaches. I also had the opportunity to revisit clean architecture, this time without any prior skeleton to build on, as I had used in previous work. Designing the system from scratch, from individual components to their interactions, and watching it come together while working through the issues encountered during development was genuinely fulfilling.
+
+On the process side, carrying out this project single-handedly while modelling it as though it were being executed by a full professional team, as reflected in the #link(<initial_schedule>)[initial planning] and #link(<initial_risk_analysis>)[Risk Analysis], demanded a level of self-discipline in task breakdown, estimation, and risk tracking that would otherwise have been easy to neglect as a solo developer. Explicitly tracking risks such as changes to my weekly working schedule, rather than treating schedule slippage as an unavoidable surprise, made it possible to absorb a genuinely irregular availability pattern (driven by concurrent coursework and a professional internship) without it translating into scope cuts or an unrecoverable timeline. I particularly enjoyed this hands-on management of the timeline, including making decisions such as where to stop developing an extension feature (for example, drawio integration) in order to focus on essential parts.
+
+Overall, the project reinforced that the engineering discipline taught during my studies pays off disproportionately in a project of this scope and duration, and that its returns extend well beyond simply "the thesis being finished on time."
+
+== Future work
+=== Keyboard navigation and sound feedback
 During the #link(<usability_testing_execution>)[usability and accessibility testing], it was observed that the system would benefit from keyboard-based navigation and shortcut support, both to improve general workflow efficiency and to reduce reliance on a pointing device for users who prefer or require keyboard-driven interaction.
 
 Additionally, the addition of subtle sound feedback tied to key operations such as saving, approving, or locking an entity could reinforce the sense of action completion and improve the overall user experience. *SoundCN* is proposed as a candidate library for this addition.
 
 Both improvements are outside the scope of this project and are proposed as future extensions.
 
-== Extended E2E scenario coverage
+=== Extended E2E scenario coverage
 The E2E test suite implemented within the scope of this project covers the core requirements engineering lifecycle and the authentication flow, as documented in the test plan specification. Several scenarios identified during planning were not implemented due to time constraints and are proposed here as future work. It should be noted that all of the areas described below have been manually validated during development and are confirmed to work correctly in the deployed system; the absence of automated coverage represents a gap in regression safety rather than unverified functionality.
 
 The most significant gap is the absence of multi-user and access control scenarios. The current suite exercises only the administrator role, meaning that the permission boundaries between project managers, requirement engineers, and stakeholder users have not been validated end-to-end against the live Ory Keto authorization layer. Future E2E tests should cover user invitation and the signup flow triggered by a received signup code, linking a user to a project functionality in each available role, verifying that each role can access only the operations permitted by the ReBAC model, and confirming that cross-functionality access restrictions are correctly enforced at the infrastructure level rather than only at the frontend.
@@ -4468,7 +4488,7 @@ The concurrency control mechanism also lacks E2E coverage, despite having been m
 
 Finally, the slug-based search navigation flow has not been covered at the E2E level, though it has been manually exercised across all supported entity types. A future scenario should verify that entering a valid slug in the NavBar search field navigates the user to the correct entity detail view, and that invalid slugs, access-restricted slugs, and partial slugs produce the correct feedback states described in the navigability diagram.
 
-== Further load testing <further_load_testing>
+=== Further load testing <further_load_testing>
 The load testing carried out establishes a solid baseline for system performance under realistic concurrent usage, but further work would be needed to build a complete picture.
 
 First, the simulation covered only the core project management workflow. Endpoints with heavier expected payloads (most notably document upload, and state transitions of more heavier projects) were not included. Document upload is not expected to occur as frequently as other operations, as it is an occasional action rather than part of the routine project workflow, but its individual weight in terms of throughput, memory pressure, and storage I/O makes it worth validating in isolation regardless of frequency. A more thorough test suite would exercise every significant user action individually, with tailored think times and payload sizes representative of real usage.
@@ -4477,11 +4497,11 @@ Second, the 500 concurrent user target, while well above the stated performance 
 
 Finally, and most significantly, all testing was performed locally within the same machine running the stack, which eliminates network latency entirely from the results. While this was a deliberate choice to isolate system performance, it means the figures do not reflect the experience of a real remote user. Future load testing should be conducted over the network against a live deployment, even if the target environment remains the same Azure instance, so that routing overhead, TLS termination latency, and real-world connection variability are all accounted for in the measurements.
 
-== Warn before cascading removal on requirements with active children
+=== Warn before cascading removal on requirements with active children
 Since reactivation does not cascade back up to a parent, a child can be returned to PENDING_APPROVAL while its parent remains deactivated. If that parent is later removed, the deliberate cascade-on-removal behavior will force-remove the child along with it, which can surprise a user who had just reactivated it independently. As future work, the frontend (or a backend-side check) should detect this situation and surface a confirmation warning, such as "this parent has children that are not deactivated; they will also be removed", before the removal action is confirmed. This preserves the existing cascade semantics while making their consequences visible to the user ahead of time.
-== Cleanup of expired entity locks
+=== Cleanup of expired entity locks
 Expired locks are currently only removed lazily, when another user attempts to acquire the lock on the same entity; the listing endpoints (findLocksForProject, findSystemLocks) do not filter out expired rows, so a stale lock can continue to display in the frontend as held by its original user even though write access is already unblocked on the backend. As future work, a periodic cleanup job should be added to sweep expired lock rows, and/or the listing queries should be updated to apply the same expiry filter used for write-access checks, so that lock indicators in the UI consistently reflect effective lock state rather than raw lock state. Care should be taken to avoid racing with the existing lazy deletion performed during lock acquisition.
-== Dependency maturity: migration away from MinIO
+=== Dependency maturity: migration away from MinIO
 At the time of writing, MinIO's open-source Community Edition is in a fragile position. Following the removal of administrative functionality from its web console in 2025 and the subsequent transition of the upstream project to "maintenance mode" in December 2025, MinIO is no longer actively developed as a community project, even though its AGPLv3-licensed source remains available and usable.
 
 Since IR-Board's `object-storage` service is used purely as an S3-compatible backend for document persistence, accessed entirely through the standard S3 API and the `mc` CLI rather than through the now-deprecated web console, the immediate functional impact on the project is limited. However, relying on an unmaintained dependency for production deployment is not a sustainable long-term decision, particularly regarding unpatched security vulnerabilities.
@@ -4491,36 +4511,36 @@ As future work, two paths are proposed:
 - *Pin and isolate the current dependency.* In the short term, replace the unpinned `minio/minio:latest` and `minio/mc:latest` images used in the current deployment with explicit, audited version tags, to avoid unpredictable behavior from future upstream changes to an effectively frozen codebase.
 - *Evaluate actively maintained alternatives.* In the medium term, migrate the object storage layer to an actively maintained, S3-compatible alternative, such as Garage, SeaweedFS, or Ceph's RGW component. Given that the backend already interacts with object storage exclusively through the standard S3 API using a driver, this migration is expected to require minimal changes to the application layer, mainly limited to deployment configuration and credentials management.
 
-== Standardization of frontend data-fetching
+=== Standardization of frontend data-fetching
 The current frontend implementation relies on a `useBackendResource`-style hook pattern for interacting with the backend API, but error handling is not yet centralized. As a result, different parts of the application may handle failed requests inconsistently, with no guarantee that all unrecoverable errors lead to the same user-facing behavior.
 
 As future work, a custom fetch wrapper is proposed, shared across all data-fetching hooks, that intercepts failed requests and uniformly redirects the user to the `/error` page (or an equivalent contextual error state) according to the type of failure encountered. This would centralize error handling logic, reduce duplicated boilerplate across components, and ensure a consistent user experience regardless of which part of the system triggered the failure.
 
-== Hardening of cross-service consistency on partial API failures
+=== Hardening of cross-service consistency on partial API failures
 Several operations exposed by the backend involve coordinated changes across more than one external service, most notably the combination of the relational database and the object storage backend used for document management. These operations are not currently wrapped in a distributed transaction or compensating-action mechanism, meaning that a failure partway through a multi-step operation can leave the system in an inconsistent, though recoverable, state.
 
 A representative example is the bulk deletion of documents linked to a project: if the deletion of a given document succeeds in the database but the corresponding object fails to be removed from MinIO (or vice versa), documents already processed before the failure remain deleted, while the failing document and any subsequent ones in the batch remain present in one system without their counterpart in the other. The system does not currently detect or repair this kind of divergence automatically; recovering from it requires manual intervention.
 
 As future work, this should be addressed either through an explicit compensating-transaction (saga) pattern around multi-step operations, or through a periodic reconciliation process that detects and reports orphaned records between the database and object storage. At minimum, this limitation should be made explicit to administrators through observability tooling, so that inconsistencies can be identified and resolved before they affect traceability guarantees.
 
-== Adoption of presigned URLs for document transfer
+=== Adoption of presigned URLs for document transfer
 The current implementation of document upload and download routes the full file content through the backend API, meaning that documents are passed through the Spring Boot service before reaching, or after leaving, the object storage backend. While functional, this is not the standard approach for systems built around an S3-compatible object storage layer, and was a result of limited prior experience with object storage integration patterns at the time the document management module was designed.
 
 The industry-standard approach is to use presigned URLs, generated by the backend (which holds the necessary credentials) but used by the client to upload or download a document directly against the object storage service, without the file ever passing through the backend itself. This reduces backend load, avoids unnecessary memory and bandwidth usage on an intermediate service, and is the pattern generally expected when integrating with S3-compatible storage.
 
 As future work, document upload and download flows should be refactored to use presigned URLs for both storing and retrieving objects, with the backend's role limited to authorization, presigned URL generation, and persistence of document metadata.
 
-== Adoption of a safer deployment strategy
+=== Adoption of a safer deployment strategy
 The current deployment model, based on a single Docker Compose stack brought up and down as a whole, follows what is effectively a big-bang deployment strategy: all services are replaced simultaneously, with no intermediate state between the previous and new versions of the system. While acceptable for the development and demonstration context of this project, this approach is not appropriate for a production environment, as it offers no rollback path, no traffic shifting, and a non-trivial downtime window during redeployment.
 
 As future work, a more resilient deployment strategy should be adopted, such as a blue-green or rolling deployment model, where a new version of the system is brought up alongside the previous one and traffic is gradually or atomically switched over only once the new version is confirmed healthy. This would also be a natural point to reconsider container orchestration beyond Docker Compose, as discussed as outside the scope of this project in the #link(<scope>)[Scope] section, since orchestrators such as Kubernetes or Docker Swarm provide native primitives for these deployment strategies.
 
-== Completion of the draw.io integration
+=== Completion of the draw.io integration
 The self-hosted draw.io (diagrams.net) container and its supporting infrastructure, including routing through Traefik, CORS configuration, and the corresponding frontend embedding points, are already fully provisioned as part of the system's architecture. However, the integration was not brought to a fully operational state by the end of this project, as development time was prioritized toward ensuring testing coverage, usability testing and the observability stack were present and complete instead.
 
 As future work, the remaining effort consists of completing and validating the end-to-end integration of the self-hosted draw.io instance with the rest of the platform, confirming that diagrams can be created, embedded, and persisted correctly from within the frontend, and that the existing infrastructure configuration (CORS, routing, and iframe embedding) behaves as intended in practice. No architectural changes are expected to be required; this is treated as a completion task rather than an open design problem.
 
-== Completion of requirements export to PDF
+=== Completion of requirements export to PDF
 Due to time constraints during development, this functionality was not implemented within the scope of this project, even though it was a planned extension of the scope. Currently, a project manager has no built-in way to generate a portable, shareable snapshot of a project's requirements outside the platform itself.
 
 As future work, this export capability should be implemented, most likely by composing a structured PDF document from the existing requirement, functionality, and stakeholder data already exposed by the backend, following a presentation format suitable for external stakeholders who do not have direct access to the platform. This would also be a natural point to consider exposing additional export formats (such as a traceability matrix or a Word document), aligned with the documentation standards discussed in the #link(<theoretical_background>)[Theoretical Background] section.
