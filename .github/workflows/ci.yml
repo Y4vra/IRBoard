@@ -7,9 +7,8 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  # --- ANÁLISIS DEL BACKEND (JAVA) ---
   backend-analysis:
-    name: Backend Quality (Spring Boot)
+    name: Backend Quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,9 +34,8 @@ jobs:
             -Dsonar.organization=y4vra \
             -Dsonar.host.url=https://sonarcloud.io
 
-  # --- ANÁLISIS DEL FRONTEND (REACT + TS) ---
   frontend-analysis:
-    name: Frontend Quality (React)
+    name: Frontend Quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +52,16 @@ jobs:
       - name: Install dependencies
         run: |
           cd frontend
-          npm install
+          npm ci
+        
+        # step skipped for now
+      # - name: Lint 
+      #   working-directory: frontend
+      #   run: npm run lint
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npx tsc --noEmit
 
       - name: Run tests with coverage
         run: |
