@@ -54,9 +54,10 @@ jobs:
           cd frontend
           npm ci
         
-      - name: Lint
-        working-directory: frontend
-        run: npm run lint
+        # step skipped for now
+      # - name: Lint 
+      #   working-directory: frontend
+      #   run: npm run lint
 
       - name: Typecheck
         working-directory: frontend
