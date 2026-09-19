@@ -1,0 +1,12 @@
+
+site_name: IRBoard Documentation
+site_description: IRBoard project documentation
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
