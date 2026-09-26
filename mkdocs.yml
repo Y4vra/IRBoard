@@ -7,6 +7,82 @@ site_dir: site
 
 theme:
   name: material
+  language: en
+
+plugins:
+  - search:
+      lang:
+        - en
+        - es
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+
+        - locale: es
+          name: Español
 
 nav:
   - Home: index.md
+
+  - About:
+      - about/index.md
+      - Objectives and Scope: about/objectives-and-scope.md
+      - Project Context: about/project-context.md
+
+  - User Guide:
+      - user-guide/index.md
+      - Getting Started: user-guide/getting-started.md
+      - Projects:
+          - user-guide/projects/index.md
+          # Project-specific pages go here
+      - Requirements:
+          - user-guide/requirements/index.md
+          # Requirement-specific pages go here
+      - Stakeholders: user-guide/stakeholders.md
+      - Documents: user-guide/documents.md
+      - Access Control: user-guide/access-control.md
+
+  - Architecture:
+      - architecture/index.md
+      - System Overview: architecture/system-overview.md
+      - Technology Stack: architecture/technology-stack.md
+      - Backend: architecture/backend.md
+      - Frontend: architecture/frontend.md
+      - Database: architecture/database.md
+      - Security:
+          - architecture/security/index.md
+          # Security-specific pages go here
+      - Lifecycle and Workflows: architecture/lifecycle-and-workflows.md
+      - Concurrency: architecture/concurrency.md
+      - Observability: architecture/observability.md
+
+  - Development:
+      - development/index.md
+      - Prerequisites: development/prerequisites.md
+      - Local Setup: development/local-setup.md
+      - Repository Structure: development/repository-structure.md
+      - Backend Development: development/backend-development.md
+      - Frontend Development: development/frontend-development.md
+      - Database Development: development/database-development.md
+      - API Development: development/api-development.md
+      - Contributing: development/contributing.md
+
+  - Deployment:
+      - deployment/index.md
+      - Docker Compose: deployment/docker-compose.md
+      - Configuration: deployment/configuration.md
+      - Services: deployment/services.md
+      - Database Setup: deployment/database-setup.md
+      - Backups and Maintenance: deployment/backups-and-maintenance.md
+      - Troubleshooting: deployment/troubleshooting.md
+
+  - Testing:
+      - testing/index.md
+      - Test Strategy: testing/test-strategy.md
+      - Functional Testing: testing/functional-testing.md
+      - Security Testing: testing/security-testing.md
+      - Usability and Accessibility: testing/usability-and-accessibility.md
+      - Load Testing: testing/load-testing.md

@@ -1,6 +1,6 @@
 services:
   docs:
-    image: squidfunk/mkdocs-material:9
+    build: ./docs/.
     container_name: irboard-docs
     ports:
       - "8000:8000"
