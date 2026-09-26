@@ -16,6 +16,9 @@ docker-compose.override.yml
 .scannerwork/
 **/coverage/
 
+# --- Generated Docs ---
+/site/
+
 # --- IDEs and OS ---
 .idea/
 .vscode/
