@@ -4,18 +4,28 @@
 
 Open the platform's URL in a browser. If you don't have an active session, you'll land on the **Login** page.
 
+![Login page](../assets/screenshots/user_manual/login_page.png)
+
 Enter your email and password and select **Login**.
 
 If this is your first time accessing the system, you won't have a password yet — an administrator will have invited you, and you'll have received an email containing a one-time signup code.
 
-Enter that code on the **Registration** page (reachable via the *Click here* link at the bottom of the login page), along with a permanent password between 15 and 64 characters long. Once your password is set, you'll be signed in automatically and taken to the home page.
+![Invitation email containing the signup code](../assets/screenshots/user_manual/code_mail.png)
 
-!!!note
+Enter that code on the **Registration** page (reachable via the *Click here* link at the bottom of the login page), along with a permanent password between 15 and 64 characters long.
+
+![Signup page](../assets/screenshots/user_manual/signup_page.png)
+
+Once your password is set, you'll be signed in automatically and taken to the home page.
+
+!!! note
     Invitation emails are sent through whatever mail relay the deployment is configured with. In development or self-hosted setups without a production mail server, check with your administrator about where invitation emails are being captured (see [Deployment › Services](../deployment/services.md)).
 
 ## Navigating the application
 
 Once signed in, a collapsible navigation bar sits fixed to the top-left corner of the screen. Hover over it to expand it.
+
+![Navigation bar, expanded, showing the project-scoped section](../assets/screenshots/user_manual/complete_navigation_bar.png)
 
 From the expanded navigation bar you can:
 
@@ -28,6 +38,8 @@ While you're inside a project, an additional, indented section appears beneath t
 ## The home page
 
 The home page lists every project you're linked to. If you haven't been linked to any project yet, it's shown empty.
+
+![Empty home page](../assets/screenshots/user_manual/empty_home.png)
 
 If you have permission to create projects (see [Access Control](access-control.md)), a **New Project** button is available. See [Projects › Creating a Project](projects/creating-a-project.md) for the full walkthrough.
 

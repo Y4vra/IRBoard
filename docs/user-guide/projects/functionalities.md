@@ -18,6 +18,8 @@ The label must be unique within the project — if it collides with an existing 
 
 Once created, a functionality can be modified (its name or label updated) by a project manager at any time while active.
 
+![Functionality view](../../assets/screenshots/ui/final_design_screenshots/ui_functionality_view.png)
+
 From the functionality's view, you can:
 
 - See the list of functional requirements it contains, with options to collapse/expand nested requirements.

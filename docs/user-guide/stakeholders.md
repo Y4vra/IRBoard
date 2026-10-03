@@ -12,6 +12,8 @@ Anyone linked to a project can view its stakeholders from the project's **Stakeh
 
 Selecting a stakeholder opens its detail view, showing every attribute and every requirement it's linked to.
 
+![Stakeholders view](../assets/screenshots/ui/final_design_screenshots/ui_stakeholder_view.png)
+
 By default, deactivated stakeholders are hidden from the main list. Use the filter toggle at the top of the view to show them. Removed stakeholders are only visible to project managers.
 
 ## Adding a stakeholder
@@ -46,3 +48,5 @@ Only a project manager can:
 - **Permanently delete** a removed stakeholder.
 
 Removal and deletion are separate, deliberate steps — a removed stakeholder is archived, not gone, until it's explicitly deleted.
+
+![Removed stakeholders, visible to project managers and administrators](../assets/screenshots/user_manual/removed_elements.png)

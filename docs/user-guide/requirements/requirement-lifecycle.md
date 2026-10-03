@@ -23,6 +23,10 @@ A project manager can mark an approved requirement as **Finished**. If the requi
 
 ## Deactivating and removing
 
+To change a requirement's state, use the corresponding button on its detail view — the same pattern used across every entity's detail view:
+
+![State-changing action buttons on a stakeholder entity](../../assets/screenshots/user_manual/element_actions.png)
+
 A requirement engineer or project manager linked to the functionality can:
 
 - **Deactivate** a requirement that's pending approval, putting it in read-only mode and flagging any linked requirements as pending review.

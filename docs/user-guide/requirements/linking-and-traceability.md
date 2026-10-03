@@ -10,11 +10,19 @@ From a requirement's detail view, open the linking dialog to connect it to:
 - One or more **documents** in the same project (see [Documents](../documents.md)).
 - One or more **other requirements**, including requirements in different functionalities — this is how horizontal, cross-cutting relationships between requirements are expressed, independent of the parent/child nesting described in [Functional Requirements](functional-requirements.md).
 
+![Requirement linking dialog](../../assets/screenshots/user_manual/requirement_linking.png)
+
 Once linked, each associated element appears as a clickable entry on the requirement's detail view. Selecting it navigates directly to that element's own detail page, making it quick to move between related requirements, stakeholders, and documents without returning to a list view each time.
+
+![Linked elements on a requirement's detail view](../../assets/screenshots/user_manual/quick_linked_access.png)
+
+![Navigating to a linked requirement from the document's side](../../assets/screenshots/user_manual/quick_linked_access_2.png)
 
 ## Removing a link
 
 The delete/unlink action only appears on the **requirement's** side of a relationship. A stakeholder or document doesn't offer its own option to remove the link — it can only be removed from the requirement that references it.
+
+![Removing a link from a requirement's detail view](../../assets/screenshots/user_manual/remove_linked.png)
 
 ## Finding something by its identity slug
 

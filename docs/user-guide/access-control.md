@@ -31,9 +31,13 @@ If a user holds more than one relationship to the same functionality (for exampl
 
 Only administrators can invite new users. From **User Management**:
 
+![User management view](../assets/screenshots/user_manual/user_management.png)
+
 1. Select **Invite new user**.
 2. Enter the new user's name, surname, and email address.
 3. Confirm the invitation.
+
+![Invite user dialog](../assets/screenshots/user_manual/user_management_add_new.png)
 
 IR-Board generates a one-time signup code and emails it to the address provided. The new user follows the steps in [Getting Started](getting-started.md#signing-in) to activate their account and set a permanent password.
 
@@ -47,7 +51,12 @@ Administrators can also:
 ## Linking users to a project
 
 - An **admin** links a user to a project as **project manager**.
+
+![Linking a user to a project as project manager](../assets/screenshots/user_manual/user_linking_project.png)
+
 - A **project manager** links users to individual **functionalities** as requirement engineer or stakeholder — scoping their access to just that functionality rather than the whole project.
+
+![Linking a user to a functionality](../assets/screenshots/user_manual/user_linking_functionality.png)
 
 The person who creates a project is automatically linked to it as project manager, so you're never locked out of something you just created.
 

@@ -6,6 +6,8 @@ A non-functional requirement describes a measurable quality constraint — perfo
 
 Project managers and requirement engineers linked to the project can create one from the project's **Non-Functional Requirements** view:
 
+![NFR view](../../assets/screenshots/ui/final_design_screenshots/ui_nfr_view.png)
+
 1. Select **Add requirement**.
 2. Enter a **name** and **description** — both required.
 3. Optionally, set:
@@ -16,7 +18,11 @@ Project managers and requirement engineers linked to the project can create one 
     - An **actual value** — the current measured state.
 4. Confirm.
 
+![Non Functional Requirement creation form](../../assets/screenshots/user_manual/create_nfr.png)
+
 All of the numeric fields are optional at creation time, but filling them in unlocks automatic pass/fail evaluation: if a threshold, operator, and actual value are all present, the requirement's detail view shows whether it is currently **passing**, by comparing the actual value against the threshold using the selected operator.
+
+![Requirement detail view, showing pass status](../../assets/screenshots/user_manual/nfr_detail_view.png)
 
 ## Updating measurements over time
 

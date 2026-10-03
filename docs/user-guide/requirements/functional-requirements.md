@@ -13,6 +13,8 @@ Project managers and requirement engineers linked to the relevant functionality 
 5. Optionally, set a **stakeholder** as the requirement's origin.
 6. Confirm.
 
+![Functional requirement detail view](../../assets/screenshots/ui/final_design_screenshots/ui_fr_detail_1.png)
+
 The new requirement is created in the **Pending Approval** state (see [Requirement Lifecycle](requirement-lifecycle.md)), with two identifiers generated automatically:
 
 - A **dynamic identifier**, built from the functionality's label and the requirement's position (e.g. `FR-UM-001`), kept up to date automatically as requirements are reordered or nested.
@@ -22,7 +24,13 @@ The new requirement is created in the **Pending Approval** state (see [Requireme
 
 A functional requirement can be created as a **child** of an existing one, for hierarchical decomposition. Nested requirements get a dynamic identifier that reflects their position (e.g. `FR-UM-001.1` under `FR-UM-001`).
 
-To nest an existing requirement, press and hold the handle on the left of a requirement in the list view and drag it onto or around another requirement. The requirement then displays as a child of its new parent and can be collapsed or expanded from the list.
+To nest an existing requirement, press and hold the handle on the left of a requirement in the list view and drag it onto or around another requirement.
+
+![Dragging a requirement by its handle to nest it](../../assets/screenshots/user_manual/nfr_nesting.png)
+
+The requirement then displays as a child of its new parent and can be collapsed or expanded from the list.
+
+![Requirement nested under its new parent](../../assets/screenshots/user_manual/nfr_nested.png)
 
 ## Reordering requirements
 

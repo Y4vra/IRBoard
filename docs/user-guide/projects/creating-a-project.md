@@ -13,12 +13,20 @@ Project creation is an admin-level action — see [Access Control](../access-con
 
 The project is created in the **Active** state and appears on the home page. You're automatically linked to it as project manager, so you don't need a separate step to gain access to what you just created.
 
+![Home page with an existing project](../../assets/screenshots/user_manual/home_page.png)
+
 !!! note
     The priority style is set once at project creation and applies to every functional requirement created afterward — see [Requirements › Functional Requirements](../requirements/functional-requirements.md) for how it's used.
 
 ## The project dashboard
 
-Selecting a project from the home page opens its dashboard. A newly created project starts empty; as functionalities, requirements, stakeholders, and documents are added, the dashboard's statistics section — toward the bottom of the page — fills in with a breakdown of requirement states across the project.
+Selecting a project from the home page opens its dashboard. A newly created project starts empty:
+
+![Empty project page](../../assets/screenshots/user_manual/empty_project_page.png)
+
+As functionalities, requirements, stakeholders, and documents are added, the dashboard's statistics section — toward the bottom of the page — fills in with a breakdown of requirement states across the project.
+
+![Project statistics, at the bottom of the dashboard](../../assets/screenshots/user_manual/project_statistics.png)
 
 Deactivated or removed entities are excluded from these statistics.
 

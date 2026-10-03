@@ -6,6 +6,8 @@ Documents are files attached to a project — specifications, diagrams, meeting 
 
 Anyone linked to a project can view its non-removed documents from the project's **Documents** view. Each entry shows the file name and the requirements it's linked to. Removed documents are visible to project managers only.
 
+![Documents view](../assets/screenshots/user_manual/documents_page.png)
+
 ## Uploading a document
 
 Project managers and requirement engineers linked to the project can upload a document:
@@ -13,6 +15,8 @@ Project managers and requirement engineers linked to the project can upload a do
 1. Select **Upload document** from the Documents view.
 2. Choose a file from your device.
 3. Confirm the upload.
+
+![Document upload dialog](../assets/screenshots/user_manual/upload_document.png)
 
 IR-Board stores the file name and MIME type alongside the file content, and the new document appears in the project's document list.
 
