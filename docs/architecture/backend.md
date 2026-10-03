@@ -2,6 +2,8 @@
 
 The backend blends **hexagonal architecture** (ports and adapters) with the explicit layering of **Clean Architecture**: three concentric layers — domain, application, and infrastructure — with a strict dependency rule that outer layers depend on inner ones, never the reverse.
 
+![Backend package diagram](../assets/diagrams/backendPackageDiagram.svg)
+
 ## Layers
 
 ### Domain
@@ -32,6 +34,8 @@ The outermost layer, holding all technology-specific implementations (the adapte
 - **Persistence** — Spring Data JPA repository implementations.
 - **Configuration** — Spring context wiring, security settings, and environment-specific properties.
 
+![Backend hexagonal architecture diagram](../assets/diagrams/backendHexagonalDiagram.svg)
+
 ## Why this separation
 
 - Domain and application logic can be tested in complete isolation, with Ory ecosystem components replaced by mocks injected through the port interfaces.
@@ -39,6 +43,10 @@ The outermost layer, holding all technology-specific implementations (the adapte
 - HTTP-level concerns (request mapping, response serialization, error translation) stay out of the domain model entirely.
 
 New endpoints that require permission checks call into `PermissionService` rather than re-implementing relationship checks locally, keeping authorization logic centralized and consistent with the [ReBAC model](security/rebac.md).
+
+## Domain model
+
+![Domain class diagram](../assets/diagrams/backendClassDiagram.svg)
 
 ## Entity identifiers
 

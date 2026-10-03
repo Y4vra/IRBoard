@@ -26,6 +26,12 @@ A secondary set of supporting containers is present but not part of the core req
 
 See [Technology Stack](technology-stack.md) for the languages and frameworks each of these is built with, and [Observability](observability.md) for how the logging/metrics containers are used in practice.
 
+![Architecture C2 container diagram](../assets/diagrams/ArchitectureC2.svg)
+*Main request flow shown as solid arrows; secondary inter-service messaging as dotted arrows.*
+
+??? note "Full architecture diagram, including supporting containers"
+    ![Complete architecture diagram](../assets/diagrams/ArchitectureC2_complete.svg)
+
 ## Request flow
 
 A typical authenticated request follows this path:

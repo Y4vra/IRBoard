@@ -4,6 +4,8 @@ The frontend is a Single Page Application built with React and TypeScript, serve
 
 ## Package organization
 
+![Frontend package diagram](../assets/diagrams/frontendPackageDiagram.svg)
+
 | Package | Contents |
 |---|---|
 | `pages` | One top-level component per route, responsible for data-fetching, permission checks, and layout for its view. |
@@ -40,6 +42,8 @@ As a rule, permissions are never inferred client-side from role names or other h
 Several DTOs are intentionally partial depending on the calling context, mirroring the data the originating service call actually needs rather than always returning the full entity graph. The clearest example is the requirement DTO: list-oriented endpoints may omit the `children` collection entirely or return it empty, while detail-oriented endpoints populate it. Code consuming these types checks the specific endpoint's expected shape rather than assuming a field is always present just because the TypeScript type declares it.
 
 ## Navigability
+
+![Navigability diagram](../assets/diagrams/navigabilityDiagram.svg)
 
 The application is modeled as two top-level regions, split by the `ProtectedRoute` guard:
 

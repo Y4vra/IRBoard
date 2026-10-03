@@ -2,6 +2,8 @@
 
 The relational schema is a direct projection of the domain model onto PostgreSQL. A few design decisions shape how it's structured.
 
+![Relational database schema](../assets/diagrams/backendDatabaseDiagram.svg)
+
 ## Central aggregation around `project`
 
 Every primary entity — `functionality`, `requirement`, `stakeholder`, `document` — carries a `project_id` foreign key. This makes the project the natural access-control boundary and simplifies bulk operations such as project export or archival.
