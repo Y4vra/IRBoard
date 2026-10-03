@@ -9,6 +9,11 @@ theme:
   name: material
   language: en
 
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences  
+
 plugins:
   - search:
       lang:
