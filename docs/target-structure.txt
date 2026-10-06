@@ -1,0 +1,56 @@
+docs/
+├── index.md
+│
+├── about/
+│   ├── index.md
+│   ├── objectives-and-scope.md
+│   └── project-context.md
+│
+├── user-guide/
+│   ├── index.md
+│   ├── getting-started.md
+│   ├── projects/
+│   ├── requirements/
+│   ├── stakeholders.md
+│   ├── documents.md
+│   └── access-control.md
+│
+├── architecture/
+│   ├── index.md
+│   ├── system-overview.md
+│   ├── technology-stack.md
+│   ├── backend.md
+│   ├── frontend.md
+│   ├── database.md
+│   ├── security/
+│   ├── lifecycle-and-workflows.md
+│   ├── concurrency.md
+│   └── observability.md
+│
+├── development/
+│   ├── index.md
+│   ├── prerequisites.md
+│   ├── local-setup.md
+│   ├── repository-structure.md
+│   ├── backend-development.md
+│   ├── frontend-development.md
+│   ├── database-development.md
+│   ├── api-development.md
+│   └── contributing.md
+│
+├── deployment/
+│   ├── index.md
+│   ├── docker-compose.md
+│   ├── configuration.md
+│   ├── services.md
+│   ├── database-setup.md
+│   ├── backups-and-maintenance.md
+│   └── troubleshooting.md
+│
+└── testing/
+    ├── index.md
+    ├── test-strategy.md
+    ├── functional-testing.md
+    ├── security-testing.md
+    ├── usability-and-accessibility.md
+    └── load-testing.md
