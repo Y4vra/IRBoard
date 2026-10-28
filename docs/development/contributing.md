@@ -40,6 +40,7 @@ Details on each layer are in [Testing](../testing/index.md).
 - [ ] Domain rules live in the domain layer, orchestration in the application layer, and external calls behind the existing ports. See [Backend Development](backend-development.md).
 - [ ] Permission checks go through `PermissionService`, and the frontend reads permission fields from the backend rather than inferring them. See [Frontend Development](frontend-development.md).
 - [ ] All tests pass and coverage stays above the threshold.
+- [ ] If the change affects behavior, configuration, or architecture, the relevant documentation page is updated, and it builds cleanly (`mkdocs build --strict`). See [Local Setup](local-setup.md#running-the-documentation-locally).
 - [ ] The change is complete on its own, with no half-finished features.
 
 ## Open areas

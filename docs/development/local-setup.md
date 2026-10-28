@@ -44,6 +44,27 @@ docker compose down -v
 
 The `-v` flag also removes the stack's volumes, so this wipes the database and any uploaded documents along with it — don't run it if you have local state you want to keep.
 
+## Running the documentation locally
+
+The documentation you're reading is a MkDocs site, built from the `docs/` folder and configured by `mkdocs.yml` at the repository root. It has its own Compose file, separate from the application stack, so you can preview documentation changes without starting IR-Board itself:
+
+```shell-unix-generic
+docker compose -f docker-compose.docs.yaml up
+```
+
+Once the container is running, open the address it prints (for MkDocs the default is `http://localhost:8000`; check `docker-compose.docs.yaml` if you've changed the port). The site rebuilds and reloads as you edit files under `docs/`.
+
+Stop it with `Ctrl+C`, or with `docker compose -f docker-compose.docs.yaml down` if you started it detached (`-d`).
+
+!!! note
+    Images are referenced from `docs/assets/`. If a diagram or screenshot appears broken, check that the file exists at that path.
+
+To check the documentation builds cleanly before opening a pull request, run a strict build, which fails on broken links and missing files instead of only warning:
+
+```shell-unix-generic
+mkdocs build --strict
+```
+
 ## Where to go next
 
 - [Repository Structure](repository-structure.md) — understand how the codebase is laid out before making changes.

@@ -8,6 +8,9 @@ IR-Board is deployed as a containerized stack with Docker Compose, with no cloud
 | **Production** | `docker-compose.yaml` (explicitly) | A real deployment, without development tooling. |
 | **Load testing** | `docker-compose.load-testing.yaml` | A production-like stack prepared for load tests. |
 
+!!! note "Documentation preview"
+    `docker-compose.docs.yaml` isn't a deployment profile. It only serves this documentation locally (`docker compose -f docker-compose.docs.yaml up`). See [Development › Local Setup](../development/local-setup.md#running-the-documentation-locally).
+
 ## Development
 
 `docker-compose.yaml` defines the production stack. When no file is specified, Docker Compose also picks up `docker-compose.override.yaml`, which extends the base with development-specific configuration: the final Dockerfile stages for the backend and frontend, additional exposed ports, and extra environment variables. Running `docker compose up` with no arguments therefore produces the development environment.

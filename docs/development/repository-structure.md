@@ -9,6 +9,9 @@ The repository is split into two top-level applications, plus the infrastructure
 ├── docker-compose.yaml            # Production stack definition
 ├── docker-compose.override.yaml   # Development-specific overrides (auto-applied)
 ├── docker-compose.load-testing.yaml
+├── docker-compose.docs.yaml       # Serves this documentation locally
+├── docs/                  # Documentation source (Markdown) and assets
+├── mkdocs.yml             # Documentation site configuration
 ├── .env.example
 └── ...                    # Ory configuration, Traefik dynamic config
 ```
@@ -28,6 +31,7 @@ Infrastructure definitions live at the repository root, alongside the applicatio
 - **Docker Compose files** — one per deployment profile. See [Deployment › Docker Compose](../deployment/docker-compose.md).
 - **Ory configuration** — Kratos identity schemas, Oathkeeper access rules, Keto permission definitions (OPL).
 - **Traefik dynamic configuration** — routing rules for the gateway.
+- **Documentation** — the `docs/` folder holds the Markdown source and `docs/assets/` the diagrams and screenshots. `mkdocs.yml` defines the navigation, and `docker-compose.docs.yaml` serves it locally. See [Local Setup](local-setup.md#running-the-documentation-locally).
 - **`.env.example`** — the template for the environment configuration every profile depends on.
 
 ## Before making changes
