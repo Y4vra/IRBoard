@@ -36,7 +36,7 @@ In the development defaults every domain lives under `irboard.local`. The refere
 
 ## Why a real domain is required
 
-The Ory components don't treat `localhost` as a valid setup: they expect a proper domain to be available at all times, because session cookies and flow redirects are tied to it. That has two practical consequences:
+The Ory components don't work with a plain `localhost` setup: they expect a proper domain to be available at all times. That has two practical consequences:
 
 - **Development.** Add every configured domain to your hosts file, pointing at `127.0.0.1`. The exact line is in [Development › Local Setup](../development/local-setup.md). If you change the domains in `.env`, change the hosts entry to match.
 - **Production.** Use a domain you control, with DNS records for each subdomain pointing at the server's public IP.
